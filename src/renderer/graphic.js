@@ -159,7 +159,7 @@ export function svgArcBezie(point_array)
 var G_y_char_offsets = {};
 
 
-function GetPixelRatio(canvas) {
+export function GetPixelRatio(canvas) {
     var ctx = canvas.getContext("2d"),
         dpr = window.devicePixelRatio || 1;
     let bsr =
@@ -173,7 +173,7 @@ function GetPixelRatio(canvas) {
     return dpr / bsr;
 }
 
-function SetupHiDPICanvas(canvas, w, h, ratio) {
+export function SetupHiDPICanvas(canvas, w, h, ratio) {
     if (!ratio) ratio = GetPixelRatio(canvas);
 
     //console.log(ratio + "/" + w + "," + h);

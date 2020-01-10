@@ -81,7 +81,7 @@ export class MobileRenderer extends Renderer {
 
         //canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
 
-        this.param.pixel_ratio = this.GetPixelRatio(canvas);
+        this.param.pixel_ratio = graphic.GetPixelRatio(canvas);
         //this.param.text_y_offset = JudgeTextYPosOffset(canvas, "", "Arial", this.param.base_font_size);
 
         this.track = null;

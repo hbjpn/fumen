@@ -7,10 +7,11 @@
     <script type="text/javascript">
       function hoge(){
             var code = document.getElementById("code").value;
+            var canvas = document.getElementById("canvas");
             var parser = new Fumen.Parser();
             var track = parser.parse(code);
-            var renderer = new Fumen.MobileRenderer();
-            renderer.render();
+            var renderer = new Fumen.MobileRenderer(canvas, {});
+            renderer.render(track);
       }
     </script>
     <style>

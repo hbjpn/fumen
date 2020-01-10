@@ -1,5 +1,5 @@
 import '@babel/polyfill';
-import {Track} from '../common/common';
+import * as common from '../common/common';
 
 function charIsIn(c, chars)
 {
@@ -48,9 +48,9 @@ var TOKEN_ATMARK = 40; // @
 var TOKEN_COLON = 41; // :
 var TOKEN_PERIOD = 42; // .
 
-var WORD_DEFINIITON_GENERAL = /^(\w[\w\.\,\-\+\#\:]*)/;
-var WORD_DEFINITION_IN_REHARSAL_MARK = /^[^\[\]]*/;
-var WORD_DEFINITION_CHORD_SYMBOL = /^[\w\.\,\-\+\#\/\(\)\:\~]*/;
+var WORD_DEFINIITON_GENERAL = /^(\w[\w¥.,\-+#:]*)/;
+var WORD_DEFINITION_IN_REHARSAL_MARK = /^[^[\]]*/;
+var WORD_DEFINITION_CHORD_SYMBOL = /^[\w.,\-+#/():~]*/;
 
 export class Parser{
 
@@ -113,7 +113,7 @@ nextToken(s, dont_skip_spaces)
 	}
 
 	var m = null;
-	m = s.match(/^(\:\|\|\:?)(x(\d+|X))?/); // ":||" or ":||:". Repeat number can be specified as "x<digit|n>"
+	m = s.match(/^(:\|\|:?)(x(\d+|X))?/); // ":||" or ":||:". Repeat number can be specified as "x<digit|n>"
 	if (m != null)
 	{
 		var loopTimes = 2;
@@ -125,7 +125,7 @@ nextToken(s, dont_skip_spaces)
 		return {token:m[0],s:s.substr(m[0].length), ss:skipped_spaces, type:(m[1]==':||:' ? TOKEN_MB_LOOP_BOTH : TOKEN_MB_LOOP_END),param:{times:loopTimes,ntimes:isNTimes}};
 	}
 
-	var r = charIsIn(s[0], '[]<>(){},\n\/%=@:.');
+	r = charIsIn(s[0], '[]<>(){},\n/%=@:.');
 	if(r != null){
 		return {token: s[0], s: s.substr(1), ss:skipped_spaces,
 			type: [
@@ -148,7 +148,6 @@ nextToken(s, dont_skip_spaces)
 	}
 
 	throw 'INVALID_TOKEN_DETECTED';
-	return {token:null, s:null, type:TOKEN_INVALID, ss:skipped_spaces};
 }
 
 parseGroup(profile, s, errmsg)
@@ -177,7 +176,7 @@ parseGroup(profile, s, errmsg)
 			case '+':
 				if(r.type != expected_token_type){
 					if(l.length == 0) this.onParseError(errmsg);
-					else { loop_flag = false; break; }
+					else { loop_flg = false; break; }
 				}
 				l.push(r.token);
 				s = r.s;
@@ -228,7 +227,7 @@ parseLoopIndicator(trig_token_type, s)
 		else if(r.type != TOKEN_COMMA) this.onParseError('ERROR_WHILE_PARSE_LOOP_INDICATOR');
 	}
 
-	return {loopIndicator: new LoopIndicator(indicators), s:s};
+	return {loopIndicator: new common.LoopIndicator(indicators), s:s};
 }
 
 parseLongRestIndicator(trig_token_type, s)
@@ -241,14 +240,14 @@ parseLongRestIndicator(trig_token_type, s)
 
 	if(r.type != TOKEN_WORD) this.onParseError('ERROR_WHILE_PARSE_OMIT_INDICATOR');
 
-	longrestlen = r.token;
+	let longrestlen = r.token;
 
 	r = this.nextToken(s);
 	s = r.s;
 
 	if(r.type != TOKEN_BRACKET_RW) this.onParseError('ERROR_WHILE_PARSE_OMIT_INDICATOR');
 
-	return {longRestIndicator: new LongRestIndicator(longrestlen), s:s};
+	return {longRestIndicator: new common.LongRestIndicator(longrestlen), s:s};
 }
 
 parseTime(trig_token_type, s)
@@ -276,7 +275,7 @@ parseTime(trig_token_type, s)
 	s = r.s;
 	if(r.type != TOKEN_BRACKET_RR) this.onParseError('ERROR_WHILE_PARSE_TIME');
 
-	return {time: new Time(numer, denom), s:s};
+	return {time: new common.Time(numer, denom), s:s};
 }
 
 parseSign(trig_token_type, s)
@@ -292,41 +291,41 @@ parseSign(trig_token_type, s)
 	// "D.S.([0-9]+)?( al Coda([0-9]+)?)
 	var r = this.nextToken(signStr, WORD_DEFINIITON_GENERAL);
 	if(r.type != TOKEN_WORD) throw 'Parse error on Sign(1)';
-	regDS = /D\.S\.([0-9]+)?/;
-	regCoda = /Coda([0-9]+)?/;
-	regSegno = /S(egno)?([0-9]+)?$/;
+	let regDS = /D\.S\.([0-9]+)?/;
+	let regCoda = /Coda([0-9]+)?/;
+	let regSegno = /S(egno)?([0-9]+)?$/;
+	let sign = null;
 	var m = null;
 	if(r.token == 'Fine'){
-		sign = new Fine();
+		sign = new common.Fine();
 	}else if(r.token == 'D.C.'){
-		sign = new DaCapo();
+		sign = new common.DaCapo();
 	}else if((m = r.token.match(regCoda)) !== null){
-		sign = new Coda(m[1] === undefined ? null : m[1]);
+		sign = new common.Coda(m[1] === undefined ? null : m[1]);
 	}else if((m = r.token.match(regSegno)) !== null){
 		var m2 = r.s.match(/^\s*(straight|((with\s+)repeat))/);
 		//console.log(r.s + "/" + signStr + m2);
-		sign = new Segno(m[2] === undefined ? null : m[2], m2 ? m2[1] : null);
+		sign = new common.Segno(m[2] === undefined ? null : m[2], m2 ? m2[1] : null);
 	}else if(r.token == 'to'){
 		r = this.nextToken(r.s, WORD_DEFINIITON_GENERAL);
 		if(r.type != TOKEN_WORD) throw 'Invalid token after to.';
 		m = r.token.match(regCoda);
 		if(m === null) throw 'Coda was not detected';
-		sign = new ToCoda(m[1] === undefined ? null : m[1]);
+		sign = new common.ToCoda(m[1] === undefined ? null : m[1]);
 	}else if( (m = r.token.match(regDS)) !== null){
 		var dsNumber = m[1] === undefined ? null : m[1];
 		var al = null;
 		r = this.nextToken(r.s, WORD_DEFINIITON_GENERAL);
-		if(r.type == TOKEN_END){
-		}else{
+		if(r.type != TOKEN_END){
 			if(r.type != TOKEN_WORD) throw 'Invalid token after D.S.(1)';
 			if(r.token != 'al') throw 'Invalid token after D.S.(2)';
 			r = this.nextToken(r.s, WORD_DEFINIITON_GENERAL);
 			if(r.type != TOKEN_WORD) throw 'Invalid token after al';
-			if(r.token == 'Fine') al = new Fine();
-			else if( (m = r.token.match(regCoda)) !== null ) al = new Coda(m[1] === undefined ? null : m[1]);
+			if(r.token == 'Fine') al = new common.Fine();
+			else if( (m = r.token.match(regCoda)) !== null ) al = new common.Coda(m[1] === undefined ? null : m[1]);
 			else throw 'Invalid token after al(2)';
 		}
-		sign = new DalSegno(dsNumber, al);
+		sign = new common.DalSegno(dsNumber, al);
 	}else{
 		throw 'Invalid token in parse sign';
 	}
@@ -344,13 +343,13 @@ parseChordSymbol(trig_token, trig_token_type, s)
 	//      Validtion of chord symbol notation is sperately conducted by
 	//      Chord class.
 
-	chord_symbol = trig_token;
+	let chord_symbol = trig_token;
 	var m = s.match(WORD_DEFINITION_CHORD_SYMBOL);
 	if(m){
 		chord_symbol += m[0];
 		s = s.substr(m[0].length);
 	}
-	var chord = new Chord(chord_symbol);
+	var chord = new common.Chord(chord_symbol);
 	return {s:s, chord:chord};
 }
 
@@ -361,13 +360,12 @@ parseInMeasSimile(trig_token, trig_token_type, s)
 	// Parsing rule:
 	//      Any continuous string of "/" and following period "."
 
-	chord_symbol = trig_token;
 	var m = s.match(/(\/+)\./);
 	var simile = null;
 	if(m){
 		var numslash = m[1].length;
 		s = s.substr(m[0].length);
-		simile = new Simile(numslash);
+		simile = new common.Simile(numslash);
 	}
 	
 	return {s:s, simile:simile};
@@ -376,10 +374,10 @@ parseInMeasSimile(trig_token, trig_token_type, s)
 parseRest(trig_token, trig_token_type, s)
 {
 	// Analyze Rest symbol
-	var r = /^r\:(([\d_]+)(\.*))$/;
+	var r = /^r:(([\d_]+)(\.*))$/;
 	var m = trig_token.match(r);
 	var rest = null;
-	if(m) rest = new Rest(m[1]);
+	if(m) rest = new common.Rest(m[1]);
 	return {s:s, rest:rest};
 }
 
@@ -389,22 +387,22 @@ parseMeasure(trig_token_obj, s)
 	//   trig_boundary == TOKEN_MB || TOKEN_MB_DBL || TOKEN_MB_LOOP_BEGIN || TOKEN_MB_DBL_SIMILE
 	// note:
 	//   | or || or ||: or :|| at the end of the measure will "not" be consumed.
-	var measure = new Measure();
+	var measure = new common.Measure();
 
 	if(trig_token_obj.type == TOKEN_MB)
-		measure.elements.push(new MeasureBoundaryMark(1));
+		measure.elements.push(new common.MeasureBoundaryMark(1));
 	else if(trig_token_obj.type == TOKEN_MB_DBL)
-		measure.elements.push(new MeasureBoundaryMark(2));
+		measure.elements.push(new common.MeasureBoundaryMark(2));
 	else if(trig_token_obj.type == TOKEN_MB_LOOP_END)
-		measure.elements.push(new LoopEndMark(trig_token_obj.param));
+		measure.elements.push(new common.LoopEndMark(trig_token_obj.param));
 	else if(trig_token_obj.type == TOKEN_MB_LOOP_BEGIN)
-		measure.elements.push(new LoopBeginMark());
+		measure.elements.push(new common.LoopBeginMark());
 	else if(trig_token_obj.type == TOKEN_MB_LOOP_BOTH)
-		measure.elements.push(new LoopBothMark(trig_token_obj.param));
+		measure.elements.push(new common.LoopBothMark(trig_token_obj.param));
 	else if(trig_token_obj.type == TOKEN_MB_FIN)
-		measure.elements.push(new MeasureBoundaryFinMark());
+		measure.elements.push(new common.MeasureBoundaryFinMark());
 	else if(trig_token_obj.type == TOKEN_MB_DBL_SIMILE)
-		measure.elements.push(new MeasureBoundaryDblSimile());
+		measure.elements.push(new common.MeasureBoundaryDblSimile());
 
 	var loop_flg = true;
 	var atmark_detected = false;
@@ -413,7 +411,7 @@ parseMeasure(trig_token_obj, s)
 		var r = this.nextToken(s);
 		switch(r.type){
 		case TOKEN_STRING:
-			measure.elements.push(new Chord(r.token));
+			measure.elements.push(new common.Chord(r.token));
 			s = r.s;
 			break;
 		case TOKEN_STRING_SQ:
@@ -427,7 +425,7 @@ parseMeasure(trig_token_obj, s)
 			s = r.s;
 			break;
 		case TOKEN_STRING_GRAVE_ACCENT:
-			var lyric = new Lyric(r.token, atmark_detected);
+			var lyric = new common.Lyric(r.token, atmark_detected);
 			if(atmark_detected){
 				associated_chord.setLyric(lyric);
 				atmark_detected = false;
@@ -438,7 +436,7 @@ parseMeasure(trig_token_obj, s)
 			break;
 		case TOKEN_ATMARK:
 			var a_chord = measure.elements[measure.elements.length-1];
-			if(!(a_chord instanceof Chord))
+			if(!(a_chord instanceof common.Chord))
 				throw 'ATMARK_NOT_AFTER_CHORD_SYMBOL';
 			associated_chord = a_chord;
 			atmark_detected = true;
@@ -453,64 +451,65 @@ parseMeasure(trig_token_obj, s)
 				break;
 			}
 			// To SLASH or COLON
+		// eslint-disable-next-line no-fallthrough
 		case TOKEN_SLASH:
 		case TOKEN_COLON:
-			var r = this.parseChordSymbol(r.token, r.type, r.s);
+			r = this.parseChordSymbol(r.token, r.type, r.s);
 			measure.elements.push(r.chord);
 			s = r.s;
 			break;
 		case TOKEN_PERIOD:
 			// Only simile symbol at this moment
-			var r = this.parseInMeasSimile(r.token, r.type, r.s);
+			r = this.parseInMeasSimile(r.token, r.type, r.s);
 			measure.elements.push(r.simile);
 			s = r.s;
 			break;
 		case TOKEN_BRACKET_LA:
-			var r = this.parseSign(r.type, r.s);
+			r = this.parseSign(r.type, r.s);
 			measure.elements.push(r.sign);
 			s = r.s;
 			break;
 		case TOKEN_BRACKET_LR:
-			var r = this.parseTime(r.type, r.s);
+			r = this.parseTime(r.type, r.s);
 			measure.elements.push(r.time);
 			s = r.s;
 			break;
 		case TOKEN_BRACKET_LS:
-			var r = this.parseLoopIndicator(r.type, r.s);
+			r = this.parseLoopIndicator(r.type, r.s);
 			measure.elements.push(r.loopIndicator);
 			s = r.s;
 			break;
 		case TOKEN_BRACKET_LW:
-			var r = this.parseLongRestIndicator(r.type, r.s);
+			r = this.parseLongRestIndicator(r.type, r.s);
 			measure.elements.push(r.longRestIndicator);
 			s = r.s;
 			break;
 		case TOKEN_MB:
-			measure.elements.push(new MeasureBoundaryMark(1));
+			measure.elements.push(new common.MeasureBoundaryMark(1));
 			loop_flg = false;
 			break;
 		case TOKEN_MB_DBL:
-			measure.elements.push(new MeasureBoundaryMark(2));
+			measure.elements.push(new common.MeasureBoundaryMark(2));
 			loop_flg = false;
 			break;
 		case TOKEN_MB_LOOP_END:
-			measure.elements.push(new LoopEndMark(r.param));
+			measure.elements.push(new common.LoopEndMark(r.param));
 			loop_flg = false;
 			break;
 		case TOKEN_MB_LOOP_BEGIN:
-			measure.elements.push(new LoopBeginMark());
+			measure.elements.push(new common.LoopBeginMark());
 			loop_flg = false;
 			break;
 		case TOKEN_MB_LOOP_BOTH:
-			measure.elements.push(new LoopBothMark(r.param));
+			measure.elements.push(new common.LoopBothMark(r.param));
 			loop_flg = false;
 			break;
 		case TOKEN_MB_FIN:
-			measure.elements.push(new MeasureBoundaryFinMark());
+			measure.elements.push(new common.MeasureBoundaryFinMark());
 			loop_flg = false;
 			break;
 		case TOKEN_MB_DBL_SIMILE:
-			measure.elements.push(new MeasureBoundaryDblSimile());
+			measure.elements.push(new common.MeasureBoundaryDblSimile());
 			loop_flg = false;
 			break;
 		default:
@@ -574,10 +573,10 @@ parseMacro(s)
 	if(r.type != TOKEN_WORD) this.onParseError('ERROR_WHILE_PARSE_MACRO');
 	key = r.token;
 	s = r.s;
-	var r = this.nextToken(s);
+	r = this.nextToken(s);
 	if(r.type != TOKEN_EQUAL) this.onParseError('ERROR_WHILE_PARSE_MACRO');
 	s = r.s;
-	var r = this.nextToken(s);
+	r = this.nextToken(s);
 	if(r.type != TOKEN_STRING) this.onParseError('ERROR_WHILE_PARSE_MACRO');
 	s = r.s;
 	value = r.token;
@@ -608,11 +607,12 @@ parse(s)
 	var r = null;
 	var loop_cnt = 0;
 
-	var track = new Track();
+	var track = new common.Track();
 
 	var currentReharsalGroup = null;
 	var currentBlock = null;
 
+	// eslint-disable-next-line no-constant-condition
 	while(true){
 		r = this.nextToken(s);
 		//console.log(r);
@@ -627,7 +627,7 @@ parse(s)
 				//console.log("Reharsal Mark:"+r.reharsalMarkName);
 				if(currentReharsalGroup != null)
 					track.reharsal_groups.push(currentReharsalGroup);
-				currentReharsalGroup = new ReharsalGroup();
+				currentReharsalGroup = new common.ReharsalGroup();
 				currentReharsalGroup.name = r.reharsalMarkName;
 			}else if([TOKEN_MB, TOKEN_MB_DBL, TOKEN_MB_LOOP_BEGIN, TOKEN_MB_LOOP_BOTH, TOKEN_MB_FIN, TOKEN_MB_DBL_SIMILE].indexOf(r.type) >= 0){
 				r = this.parseMeasures(r, r.s);
@@ -639,7 +639,7 @@ parse(s)
 					if(this.context.contiguous_line_break >= 2){
 						currentReharsalGroup.blocks.push(new Array());
 					}else{
-						 // When new line in the fumen code in the middle of a block
+						// When new line in the fumen code in the middle of a block
 						r.measures[0].raw_new_line = true;
 					}
 					var blocklen = currentReharsalGroup.blocks.length;
@@ -678,7 +678,7 @@ parse(s)
 	{
 		var rg = track.reharsal_groups[i];
 		if(rg.name in rgmap){
-			track.reharsal_groups[i] = deepcopy(rgmap[rg.name]); // Deep Copy
+			track.reharsal_groups[i] = common.deepcopy(rgmap[rg.name]); // Deep Copy
 		}else{
 			rgmap[rg.name] = rg;
 		}

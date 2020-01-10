@@ -86,7 +86,36 @@ export class MobileRenderer extends Renderer
 		};
 	}
 	
-render(canvas, track, param)
+	render(track, async_mode, progress_cb)
+	{
+		this.track = track;
+
+		// Simplifed renderer
+		// Rewrite parameters based on global_scale parameter
+
+		// Always works as asynchronously
+		// Preload images, which is done asynchronously
+		var urls = ['assets/img/segno.svg',
+					'assets/img/coda.svg',
+					'assets/img/flat.svg',
+					'assets/img/sharp.svg',
+					'assets/img/rest1.svg',
+					'assets/img/rest2.svg',
+					'assets/img/rest4.svg',
+					'assets/img/rest8.svg'];
+		var param = this.param;
+		var canvas = this.canvas;
+		return PreloadImages(urls).then(function(result){
+			// make map with url
+			for(var ii=0; ii<result.length; ++ii){
+				G_imgmap[result[ii].url]=result[ii].img;
+			}
+			// Returns last y position
+			return render_impl(canvas, track, param);
+		});
+	}
+
+render_impl(canvas, track, param)
 {
 	var origin = param.origin; //{x:0,y:0};
 

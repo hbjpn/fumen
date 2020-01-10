@@ -423,7 +423,7 @@ export class MobileRenderer extends Renderer {
             // measure object
             let m = row_elements_list[ml];
             var elements = this.classifyElements(m);
-            elements.header.forEach(function(e) {
+            elements.header.forEach( (e) => {
                 if (e instanceof common.MeasureBoundary) {
                     var pm = ml == 0 ? prev_measure : row_elements_list[ml - 1];
                     var ne = pm ? pm.elements[pm.elements.length - 1] : null;
@@ -448,7 +448,7 @@ export class MobileRenderer extends Renderer {
             if (elements.body.length == 0) {
                 flexible_width += 1 * param.base_font_size;
             } else {
-                elements.body.forEach(function(e) {
+                elements.body.forEach( (e) => {
                     if (e instanceof common.Chord) {
                         var cr = this.render_chord_simplified(
                             false,
@@ -473,7 +473,7 @@ export class MobileRenderer extends Renderer {
                 });
             }
             // Draw footer
-            elements.footer.forEach(function(e) {
+            elements.footer.forEach((e) => {
                 if (e instanceof common.MeasureBoundary) {
                     var nm =
                         ml == row_elements_list.length - 1
@@ -570,7 +570,7 @@ export class MobileRenderer extends Renderer {
             var header_rs_area_width = 0;
             var header_body_area_width = 0;
             // Clef, Key, Begin Boundary, Time(1st one) are included in this area
-            elements.header.forEach(function(e) {
+            elements.header.forEach((e) => {
                 if (e instanceof common.MeasureBoundary) {
                     var pm = ml == 0 ? prev_measure : row_elements_list[ml - 1];
                     var ne = pm ? pm.elements[pm.elements.length - 1] : null;
@@ -634,7 +634,7 @@ export class MobileRenderer extends Renderer {
             if (elements.body.length == 0) {
                 x += 1 * param.base_font_size * scaling;
             } else {
-                elements.body.forEach(function(e) {
+                elements.body.forEach((e) => {
                     if (e instanceof common.Chord) {
                         var cr = this.render_chord_simplified(
                             true,
@@ -1219,7 +1219,7 @@ export class MobileRenderer extends Renderer {
         var tensions_width = 0;
         var onbass_width = 0;
 
-        var rootCharHeight = this.GetCharProfile(B).height;
+        var rootCharHeight = graphic.GetCharProfile(B).height;
 
         var root = bases[0];
         var onbass = bases[1];
@@ -1302,7 +1302,7 @@ export class MobileRenderer extends Renderer {
             }
         }
 
-        _3rdelem.forEach(function(e) {
+        _3rdelem.forEach((e) => {
             if (e.type == "M" && _6791113suselem.length > 0) {
                 let r = graphic.CanvasText(
                     canvas,
@@ -1331,7 +1331,7 @@ export class MobileRenderer extends Renderer {
                 // Unkown type
             }
         });
-        _6791113suselem.forEach(function(e) {
+        _6791113suselem.forEach((e) => {
             if (e.type == "dig") {
                 let r = graphic.CanvasText(
                     canvas,
@@ -1382,7 +1382,7 @@ export class MobileRenderer extends Renderer {
                 lower_width += r.width;
             }
         });
-        _5thelem.forEach(function(e) {
+        _5thelem.forEach((e) => {
             if (e.type == "b") {
                 let r = graphic.CanvasText(
                     canvas,
@@ -1424,7 +1424,7 @@ export class MobileRenderer extends Renderer {
             );
             tensions_width += r.width;
             var h = graphic.GetCharProfile(B * 0.5).height;
-            _alteredelem.forEach(function(e, index) {
+            _alteredelem.forEach((e, index) => {
                 if (e.type == "b") {
                     if (draw)
                         canvas

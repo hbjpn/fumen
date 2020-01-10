@@ -597,7 +597,7 @@ export class Chord {
 
         var tranposed_note = null;
         if (this.note_base !== undefined)
-            tranposed_note = Chord.getTranpsoedNote(
+            tranposed_note = this.getTranpsoedNote(
                 tranpose,
                 half_type,
                 this.note_base,
@@ -605,7 +605,7 @@ export class Chord {
             );
         var transposed_base_note = null;
         if (this.base_note_base !== undefined) {
-            transposed_base_note = Chord.getTranpsoedNote(
+            transposed_base_note = this.getTranpsoedNote(
                 tranpose,
                 half_type,
                 this.base_note_base,

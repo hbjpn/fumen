@@ -95,8 +95,7 @@ export class MobileRenderer extends Renderer {
     render(track, async_mode, progress_cb) {
         this.track = track;
 
-        // Simplifed renderer
-        // Rewrite parameters based on global_scale parameter
+        graphic.SetupHiDPICanvas(this.canvas, this.param.paper_width, this.param.paper_height);
 
         // Always works as asynchronously
         // Preload images, which is done asynchronously

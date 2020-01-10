@@ -459,7 +459,7 @@ export class Parser {
                     s = r.s;
                     break;
                 case TOKEN_STRING_SQ:
-                    var comment = new Comment(r.token, atmark_detected);
+                    var comment = new common.Comment(r.token, atmark_detected);
                     if (atmark_detected) {
                         associated_chord.setException(comment);
                         atmark_detected = false;

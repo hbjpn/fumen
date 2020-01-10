@@ -10,36 +10,53 @@
             var canvas = document.getElementById("canvas");
             var parser = new Fumen.Parser();
             var track = parser.parse(code);
-            var renderer = new Fumen.MobileRenderer(canvas, {});
+            var renderer = new Fumen.MobileRenderer(canvas, {paper_width:400});
             renderer.render(track);
       }
     </script>
     <style>
+* {
+  margin: 0px;
+  padding: 0px;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    height: 100%;
+}
+
 .div1 {
  float:left;
  width: 50%;
+ height: 100%;
  min-height: 400px;
- margin: 0px;
- padding: 0px;
  background-color:azure;
  border: 0px black solid;
 }
 .div2 {
 float:right;
 width: 50%;
-margin: 0px;
-padding: 0px;
+height: 100%;
 background-color: blanchedalmond;
 border: 0px black solid;
 }
 
 .main {
+height: 90%;
 min-height:200px;
 }
 
+.header {
+  height: 20px;
+}
+
 #code{
-    width: 100%;
+    width: 90%;
     height: 100%;
+    padding: 10px;
 }
     </style>
 </head>
@@ -47,8 +64,9 @@ min-height:200px;
 
 </div>
   <body>
+  <div class="header">
     <button onclick="hoge()">Hoge</button>
-
+  </div>
   <div class="main">
     <div class="div1">
         <textarea id="code">

@@ -138,11 +138,9 @@ export class Renderer {
                     header_elements.push(e);
                 } else if (e instanceof common.Lyric) {
                     header_elements.push(e);
-                } else if (e instanceof common.ArMark) {
-                    // Associate the Chord and Comment or Lyric symbols here
-                    var chord = m.elements[ei - 1];
-                    var obj = m.elements[ei + 1];
-                }
+                } else{
+					throw "Unkown component found";
+				}
             }
         }
 

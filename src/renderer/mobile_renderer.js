@@ -1,5 +1,8 @@
 import "@babel/polyfill";
 import { Renderer } from "./renderer";
+import * as common from "../common/common";
+import * as graphic from "./graphic";
+import {getGlobalMacros, getMacros} from "../parser/parser";
 
 var SR_RENDER_PARAM = {
     origin: { x: 0, y: 0 },
@@ -36,9 +39,7 @@ var SR_RENDER_PARAM = {
 };
 
 // Simple renderer offsets
-var G_y_char_offsets = {};
-var G_memCanvas = null;
-var G_pixelRatio = null;
+
 var G_imgmap = {};
 
 function PreloadImages(imageurls) {
@@ -80,7 +81,7 @@ export class MobileRenderer extends Renderer {
 
         //canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
 
-        this.param.pixel_ratio = GetPixelRatio(canvas);
+        this.param.pixel_ratio = this.GetPixelRatio(canvas);
         //this.param.text_y_offset = JudgeTextYPosOffset(canvas, "", "Arial", this.param.base_font_size);
 
         this.track = null;
@@ -117,7 +118,7 @@ export class MobileRenderer extends Renderer {
                 G_imgmap[result[ii].url] = result[ii].img;
             }
             // Returns last y position
-            return render_impl(canvas, track, param);
+            return this.render_impl(canvas, track, param);
         });
     }
 
@@ -141,7 +142,7 @@ export class MobileRenderer extends Renderer {
         var paper = canvas;
 
         // Title
-        var ri = CanvasText(
+        var ri = graphic.CanvasText(
             paper,
             x_offset + width / 2,
             y_title_offset,
@@ -153,7 +154,7 @@ export class MobileRenderer extends Renderer {
 
         // Sub Title
         if (global_macros.sub_title != "")
-            CanvasText(
+            graphic.CanvasText(
                 paper,
                 x_offset + width / 2,
                 y_title_offset + ri.height,
@@ -163,7 +164,7 @@ export class MobileRenderer extends Renderer {
             );
 
         // Artist
-        CanvasText(
+        graphic.CanvasText(
             paper,
             x_offset + width,
             y_author_offset,
@@ -201,7 +202,7 @@ export class MobileRenderer extends Renderer {
                     cont: track.reharsal_groups[i],
                     macros: rg_macros
                 });
-            var rg = track.reharsal_groups[i];
+            let rg = track.reharsal_groups[i];
             for (var bi = 0; bi < rg.blocks.length; ++bi) {
                 var block_measures = rg.blocks[bi];
                 var row_max_height = 0;
@@ -251,14 +252,15 @@ export class MobileRenderer extends Renderer {
             var yse = pageslist[pageidx];
             for (var pei = 0; pei < yse.length; ++pei) {
                 // Loop each y_stacks
+                // eslint-disable-next-line no-empty
                 if (yse[pei].type == "titles") {
                 } else if (
                     yse[pei].type == "reharsal" &&
                     yse[pei].macros.reharsal_mark_position != "Inner"
                 ) {
-                    var rg = yse[pei].cont;
+                    let rg = yse[pei].cont;
 
-                    CanvasTextWithBox(
+                    graphic.CanvasTextWithBox(
                         paper,
                         x_offset,
                         y_base,
@@ -269,7 +271,7 @@ export class MobileRenderer extends Renderer {
                     y_base += param.rm_area_height; // Reharsal mark area height
                 } else if (yse[pei].type == "meas") {
                     var row_elements_list = yse[pei].cont;
-                    var r = render_measure_row_simplified(
+                    let r = this.render_measure_row_simplified(
                         x_offset,
                         paper,
                         yse[pei].macros,
@@ -288,10 +290,10 @@ export class MobileRenderer extends Renderer {
                 }
             }
             // Page number footer
-            footerstr =
+            let footerstr =
                 songname + " - " + (pageidx + 1) + " of " + pageslist.length;
             //alert(footerstr);
-            CanvasText(
+            graphic.CanvasText(
                 paper,
                 origin.x + score_width / 2,
                 origin.y + score_height - 60,
@@ -341,28 +343,28 @@ export class MobileRenderer extends Renderer {
         var _5lines_intv = param.rs_area_height / (5 - 1);
 
         // Screening of y-axis areas
-        for (var ml = 0; ml < row_elements_list.length; ++ml) {
+        for (let ml = 0; ml < row_elements_list.length; ++ml) {
             var m = row_elements_list[ml];
-            for (var ei = 0; ei < m.elements.length; ++ei) {
+            for (let ei = 0; ei < m.elements.length; ++ei) {
                 var e = m.elements[ei];
                 if (
-                    e instanceof Coda ||
-                    e instanceof Segno ||
-                    e instanceof Comment ||
-                    e instanceof LoopIndicator ||
-                    e instanceof ToCoda ||
-                    e instanceof DalSegno
+                    e instanceof common.Coda ||
+                    e instanceof common.Segno ||
+                    e instanceof common.Comment ||
+                    e instanceof common.LoopIndicator ||
+                    e instanceof common.ToCoda ||
+                    e instanceof common.DalSegno
                 ) {
                     mu_area_detected = true;
-                } else if (e instanceof MeasureBoundary) {
+                } else if (e instanceof common.MeasureBoundary) {
                     ml_area_detected =
                         ml_area_detected ||
                         (e.times != null && (e.ntimes || e.times != 2));
-                } else if (e instanceof Chord) {
+                } else if (e instanceof common.Chord) {
                     //rs_area_detected |= (e.nglist !== null);
                     var bases = e.getChordStrBase(0, "flat");
                     ml_area_detected = ml_area_detected || bases[1] != null;
-                } else if (e instanceof Lyric) {
+                } else if (e instanceof common.Lyric) {
                     ml_area_detected = true;
                     lyric_rows = Math.max(
                         e.lyric.split("/").length,
@@ -417,15 +419,15 @@ export class MobileRenderer extends Renderer {
         // Determine the width of each measure
         var fixed_width = 0;
         var flexible_width = 0;
-        for (var ml = 0; ml < row_elements_list.length; ++ml) {
+        for (let ml = 0; ml < row_elements_list.length; ++ml) {
             // measure object
-            var m = row_elements_list[ml];
-            var elements = classifyElements(m);
+            let m = row_elements_list[ml];
+            var elements = this.classifyElements(m);
             elements.header.forEach(function(e) {
-                if (e instanceof MeasureBoundary) {
+                if (e instanceof common.MeasureBoundary) {
                     var pm = ml == 0 ? prev_measure : row_elements_list[ml - 1];
                     var ne = pm ? pm.elements[pm.elements.length - 1] : null;
-                    var r = draw_boundary_simplified(
+                    let r = this.draw_boundary_simplified(
                         "begin",
                         ne,
                         e,
@@ -438,7 +440,7 @@ export class MobileRenderer extends Renderer {
                     );
                     fixed_width += r.width;
                     e.renderprop = { w: r.width };
-                } else if (e instanceof Time) {
+                } else if (e instanceof common.Time) {
                     fixed_width += 10;
                     e.renderprop = { w: 10 };
                 }
@@ -447,8 +449,8 @@ export class MobileRenderer extends Renderer {
                 flexible_width += 1 * param.base_font_size;
             } else {
                 elements.body.forEach(function(e) {
-                    if (e instanceof Chord) {
-                        var cr = render_chord_simplified(
+                    if (e instanceof common.Chord) {
+                        var cr = this.render_chord_simplified(
                             false,
                             e,
                             transpose,
@@ -461,10 +463,10 @@ export class MobileRenderer extends Renderer {
                         );
                         e.renderprop = { w: cr.width };
                         flexible_width += e.renderprop.w;
-                    } else if (e instanceof Rest) {
+                    } else if (e instanceof common.Rest) {
                         e.renderprop = { w: 1 * param.base_font_size };
                         flexible_width += e.renderprop.w;
-                    } else if (e instanceof Simile) {
+                    } else if (e instanceof common.Simile) {
                         e.renderprop = { w: 2 * param.base_font_size };
                         flexible_width += e.renderprop.w;
                     }
@@ -472,13 +474,13 @@ export class MobileRenderer extends Renderer {
             }
             // Draw footer
             elements.footer.forEach(function(e) {
-                if (e instanceof MeasureBoundary) {
+                if (e instanceof common.MeasureBoundary) {
                     var nm =
                         ml == row_elements_list.length - 1
                             ? next_measure
                             : row_elements_list[ml + 1];
                     var ne = nm ? nm.elements[0] : null;
-                    var r = draw_boundary_simplified(
+                    let r = this.draw_boundary_simplified(
                         "end",
                         e,
                         ne,
@@ -492,10 +494,14 @@ export class MobileRenderer extends Renderer {
 
                     e.renderprop = { w: r.width };
                     fixed_width += r.width;
-                } else if (e instanceof DaCapo) {
-                } else if (e instanceof DalSegno) {
-                } else if (e instanceof ToCoda) {
-                } else if (e instanceof Fine) {
+                // eslint-disable-next-line no-empty
+                } else if (e instanceof common.DaCapo) {
+                // eslint-disable-next-line no-empty
+                } else if (e instanceof common.DalSegno) {
+                // eslint-disable-next-line no-empty
+                } else if (e instanceof common.ToCoda) {
+                // eslint-disable-next-line no-empty
+                } else if (e instanceof common.Fine) {
                 }
             });
         }
@@ -506,19 +512,18 @@ export class MobileRenderer extends Renderer {
         // For each measure in this row
         for (var ml = 0; ml < row_elements_list.length; ++ml) {
             // measure object
-            var m = row_elements_list[ml];
+            let m = row_elements_list[ml];
 
-            var elements = classifyElements(m);
+            let elements = this.classifyElements(m);
 
             var mh_offset = 0;
 
             var meas_base_x = x;
 
             for (var ei = 0; ei < elements.header.length; ++ei) {
-                var e = elements.header[ei];
-                if (e instanceof Coda) {
-                    m_mu_area_detected = false;
-                    var r = draw_coda_plain(
+                let e = elements.header[ei];
+                if (e instanceof common.Coda) {
+                    let r = this.draw_coda_plain(
                         paper,
                         meas_base_x + mh_offset,
                         y_mu_area_base,
@@ -527,9 +532,8 @@ export class MobileRenderer extends Renderer {
                         param.base_font_size
                     );
                     mh_offset += r.width;
-                } else if (e instanceof Segno) {
-                    m_mu_area_detected = false;
-                    var r = draw_segno_plain(
+                } else if (e instanceof common.Segno) {
+                    let r = this.draw_segno_plain(
                         paper,
                         meas_base_x + mh_offset,
                         y_mu_area_base,
@@ -537,11 +541,10 @@ export class MobileRenderer extends Renderer {
                         param.base_font_size
                     );
                     mh_offset += r.width;
-                } else if (e instanceof Comment) {
-                    m_mu_area_detected = false;
+                } else if (e instanceof common.Comment) {
                     // If this comment is associated with a chord with exceptional comment, not rendered here.
                     if (!e.chorddep) {
-                        var r = CanvasText(
+                        let r = graphic.CanvasText(
                             paper,
                             meas_base_x + mh_offset,
                             y_body_base,
@@ -551,8 +554,7 @@ export class MobileRenderer extends Renderer {
                         );
                         mh_offset += r.width;
                     }
-                } else if (e instanceof Lyric) {
-                    m_ml_area_detected = true;
+                } else if (e instanceof common.Lyric) {
                     if (draw) {
                         // If this comment is associated with a chord with exceptional comment, not rendered here.
                         if (!e.chorddep) {
@@ -569,10 +571,10 @@ export class MobileRenderer extends Renderer {
             var header_body_area_width = 0;
             // Clef, Key, Begin Boundary, Time(1st one) are included in this area
             elements.header.forEach(function(e) {
-                if (e instanceof MeasureBoundary) {
+                if (e instanceof common.MeasureBoundary) {
                     var pm = ml == 0 ? prev_measure : row_elements_list[ml - 1];
                     var ne = pm ? pm.elements[pm.elements.length - 1] : null;
-                    var r = draw_boundary_simplified(
+                    let r = this.draw_boundary_simplified(
                         "begin",
                         ne,
                         e,
@@ -595,7 +597,7 @@ export class MobileRenderer extends Renderer {
                         first_block_first_row &&
                         ml == 0
                     ) {
-                        var g = CanvasTextWithBox(
+                        var g = graphic.CanvasTextWithBox(
                             paper,
                             meas_base_x,
                             y_body_base,
@@ -604,8 +606,8 @@ export class MobileRenderer extends Renderer {
                         );
                         header_body_area_width += g.getBBox().width;
                     }
-                } else if (e instanceof Time) {
-                    CanvasText(
+                } else if (e instanceof common.Time) {
+                    graphic.CanvasText(
                         paper,
                         x + e.renderprop.w / 2,
                         y_body_or_rs_base,
@@ -614,7 +616,7 @@ export class MobileRenderer extends Renderer {
                         "ct",
                         e.renderprop.w
                     );
-                    CanvasText(
+                    graphic.CanvasText(
                         paper,
                         x + e.renderprop.w / 2,
                         y_body_or_rs_base + param.row_height / 2,
@@ -625,7 +627,7 @@ export class MobileRenderer extends Renderer {
                     );
                     var ly = y_body_base + param.row_height / 2;
                     if (draw && !rs_area_detected)
-                        CanvasLine(paper, x, ly, x + e.renderprop.w, ly);
+                        graphic.CanvasLine(paper, x, ly, x + e.renderprop.w, ly);
                     x += e.renderprop.w;
                 }
             });
@@ -633,8 +635,8 @@ export class MobileRenderer extends Renderer {
                 x += 1 * param.base_font_size * scaling;
             } else {
                 elements.body.forEach(function(e) {
-                    if (e instanceof Chord) {
-                        var cr = render_chord_simplified(
+                    if (e instanceof common.Chord) {
+                        var cr = this.render_chord_simplified(
                             true,
                             e,
                             transpose,
@@ -648,7 +650,7 @@ export class MobileRenderer extends Renderer {
                         x += e.renderprop.w * scaling;
 
                         if (e.exceptinal_comment !== null) {
-                            var g = CanvasText(
+                            graphic.CanvasText(
                                 paper,
                                 x,
                                 y_body_base,
@@ -660,7 +662,7 @@ export class MobileRenderer extends Renderer {
                         if (e.lyric !== null) {
                             var llist = e.lyric.lyric.split("/");
                             for (var li = 0; li < llist.length; ++li) {
-                                var g = CanvasText(
+                                graphic.CanvasText(
                                     paper,
                                     x,
                                     y_ml_area_base + li * param.ml_row_height,
@@ -670,8 +672,8 @@ export class MobileRenderer extends Renderer {
                                 );
                             }
                         }
-                    } else if (e instanceof Rest) {
-                        render_rest_plain(
+                    } else if (e instanceof common.Rest) {
+                        this.render_rest_plain(
                             e,
                             paper,
                             true,
@@ -682,8 +684,8 @@ export class MobileRenderer extends Renderer {
                             param
                         );
                         x += e.renderprop.w * scaling;
-                    } else if (e instanceof Simile) {
-                        render_simile_mark_plain(
+                    } else if (e instanceof common.Simile) {
+                        this.render_simile_mark_plain(
                             true,
                             paper,
                             x,
@@ -694,7 +696,7 @@ export class MobileRenderer extends Renderer {
                             "l"
                         );
                         x += e.renderprop.w * scaling;
-                    } else if (e instanceof Space) {
+                    } else if (e instanceof common.Space) {
                         x += e.renderprop.w * scaling;
                     }
                 });
@@ -702,15 +704,15 @@ export class MobileRenderer extends Renderer {
 
             // Draw footer
             var footer_base = x;
-            for (var ei = 0; ei < elements.footer.length; ++ei) {
-                var e = elements.footer[ei];
-                if (e instanceof MeasureBoundary) {
+            for (let ei = 0; ei < elements.footer.length; ++ei) {
+                let e = elements.footer[ei];
+                if (e instanceof common.MeasureBoundary) {
                     var nm =
                         ml == row_elements_list.length - 1
                             ? next_measure
                             : row_elements_list[ml + 1];
                     var ne = nm ? nm.elements[0] : null;
-                    var r = draw_boundary_simplified(
+                    let r = this.draw_boundary_simplified(
                         "end",
                         e,
                         ne,
@@ -724,8 +726,8 @@ export class MobileRenderer extends Renderer {
 
                     m.renderprop.ex = x;
                     x += e.renderprop.w;
-                } else if (e instanceof DaCapo) {
-                    CanvasText(
+                } else if (e instanceof common.DaCapo) {
+                    graphic.CanvasText(
                         paper,
                         x,
                         y_body_or_rs_base,
@@ -737,8 +739,8 @@ export class MobileRenderer extends Renderer {
                     //text = raphaelText(paper, x, y_body_or_rs_base - 8 /* + row_height + 8*/, e.toString(), 15, lr+"c").attr(param.repeat_mark_font);
                     //if(rs_area_detected) x += text.getBBox().width;
                     //rs_area_svg_groups.push(text);
-                } else if (e instanceof DalSegno) {
-                    CanvasText(
+                } else if (e instanceof common.DalSegno) {
+                    graphic.CanvasText(
                         paper,
                         x,
                         y_body_or_rs_base,
@@ -750,8 +752,9 @@ export class MobileRenderer extends Renderer {
                     //text = raphaelText(paper, x, y_body_or_rs_base - 8 /* + row_height + 8*/, e.toString(), 15, lr+"c").attr(param.repeat_mark_font);
                     //if(rs_area_detected) x += text.getBBox().width;
                     //rs_area_svg_groups.push(text);
-                } else if (e instanceof ToCoda) {
+                } else if (e instanceof common.ToCoda) {
                     if (rs_area_detected) {
+						/*
                         var text = raphaelText(
                             paper,
                             x,
@@ -770,9 +773,10 @@ export class MobileRenderer extends Renderer {
                             e
                         );
                         x += coda.getBBox().width;
-                        rs_area_svg_groups.push(coda);
+						rs_area_svg_groups.push(coda);
+						*/
                     } else {
-                        var r = draw_coda_plain(
+                        let r = this.draw_coda_plain(
                             paper,
                             x,
                             y_body_or_rs_base,
@@ -781,7 +785,7 @@ export class MobileRenderer extends Renderer {
                             param.base_font_size
                         );
                         //paper.getContext("2d").drawImage(G_imgmap["assets/img/coda.svg"], x - 15, y_body_or_rs_base - 15, 15, 15);
-                        CanvasText(
+                        graphic.CanvasText(
                             paper,
                             x - r.width,
                             y_body_or_rs_base,
@@ -790,8 +794,8 @@ export class MobileRenderer extends Renderer {
                             "rb"
                         );
                     }
-                } else if (e instanceof Fine) {
-                    CanvasText(
+                } else if (e instanceof common.Fine) {
+                    graphic.CanvasText(
                         paper,
                         x,
                         y_body_or_rs_base,
@@ -808,17 +812,17 @@ export class MobileRenderer extends Renderer {
             var meas_end_x = x;
 
             // Draw Upper and Lower Signs
-            for (var ei = 0; ei < elements.measure_wide.length; ++ei) {
-                var e = elements.measure_wide[ei];
-                if (e instanceof LoopIndicator) {
+            for (let ei = 0; ei < elements.measure_wide.length; ++ei) {
+                let e = elements.measure_wide[ei];
+                if (e instanceof common.LoopIndicator) {
                     var oy = 10;
                     var ly = y_body_base - 2 - oy;
                     var sx = meas_start_x;
                     var fx = meas_start_x + (meas_end_x - meas_start_x) * 0.7;
-                    CanvasLine(paper, sx, ly, sx, ly + oy);
-                    CanvasLine(paper, sx, ly, fx, ly);
+                    graphic.CanvasLine(paper, sx, ly, sx, ly + oy);
+                    graphic.CanvasLine(paper, sx, ly, fx, ly);
                     var s = e.indicators.join(",");
-                    CanvasText(
+                    graphic.CanvasText(
                         paper,
                         sx + 2,
                         ly,
@@ -826,12 +830,12 @@ export class MobileRenderer extends Renderer {
                         param.base_font_size / 3,
                         "lt"
                     );
-                } else if (e instanceof LongRestIndicator) {
-                    var sx =
+                } else if (e instanceof common.LongRestIndicator) {
+                    let sx =
                         meas_start_x +
                         m.header_width -
                         param.header_body_margin; // More beautiful for long rest if header body margin is omitted
-                    var fx = meas_end_x - m.footer_width;
+                    let fx = meas_end_x - m.footer_width;
                     var rh = param.row_height;
                     var r_lrmargin = 0.05;
                     var min_lrmargin = 5;
@@ -839,7 +843,7 @@ export class MobileRenderer extends Renderer {
                     var yshift = param.row_height / 6;
                     var vlmargin = 0.2;
 
-                    lrmargin = Math.max(
+                    let lrmargin = Math.max(
                         min_lrmargin,
                         Math.min(max_lrmargin, (sx + fx) * r_lrmargin)
                     );
@@ -848,7 +852,7 @@ export class MobileRenderer extends Renderer {
                     var rx = fx - lrmargin;
 
                     if (draw)
-                        CanvasLine(
+                        graphic.CanvasLine(
                             paper,
                             lx,
                             y_body_or_rs_base + param.row_height / 2 + yshift,
@@ -857,7 +861,7 @@ export class MobileRenderer extends Renderer {
                             { width: "7" }
                         );
                     if (draw)
-                        CanvasLine(
+                        graphic.CanvasLine(
                             paper,
                             lx,
                             y_body_or_rs_base + rh * vlmargin + yshift,
@@ -866,7 +870,7 @@ export class MobileRenderer extends Renderer {
                             { width: "1" }
                         );
                     if (draw)
-                        CanvasLine(
+                        graphic.CanvasLine(
                             paper,
                             rx,
                             y_body_or_rs_base + rh * vlmargin + yshift,
@@ -875,7 +879,7 @@ export class MobileRenderer extends Renderer {
                             { width: "1" }
                         );
                     if (draw) {
-                        CanvasText(
+                        graphic.CanvasText(
                             paper,
                             (sx + fx) / 2,
                             y_body_or_rs_base,
@@ -888,14 +892,14 @@ export class MobileRenderer extends Renderer {
                     }
 
                     //rest_or_long_rests_detected |= true;
-                } else if (e instanceof Simile) {
+                } else if (e instanceof common.Simile) {
                     // Simile mark in measure wide element if there is no other body elements in this measure
-                    var sx =
+                    let sx =
                         meas_start_x +
                         m.header_width -
                         param.header_body_margin; // More beautiful for long rest if header body margin is omitted
-                    var fx = meas_end_x - m.footer_width;
-                    render_simile_mark_plain(
+                    let fx = meas_end_x - m.footer_width;
+                    this.render_simile_mark_plain(
                         draw,
                         paper,
                         (sx + fx) / 2,
@@ -915,121 +919,6 @@ export class MobileRenderer extends Renderer {
         return { y_base: y_next_base };
     }
 
-    CanvasRect(canvas, x, y, w, h) {
-        var context = canvas.getContext("2d");
-        context.beginPath();
-        context.rect(x, y, w, h);
-        context.stroke();
-    }
-
-    CanvasCircle(canvas, x, y, r) {
-        var context = canvas.getContext("2d");
-        context.beginPath();
-        context.arc(x, y, r, 0, Math.PI * 2, false);
-        context.fill();
-    }
-
-    CanvasLine(canvas, x0, y0, x1, y1, opt) {
-        var context = canvas.getContext("2d");
-        context.beginPath();
-        if (opt && opt.dash) context.setLineDash([2, 2]);
-        if (opt && opt.width) context.lineWidth = opt.width;
-        context.moveTo(x0, y0);
-        context.lineTo(x1, y1);
-        context.stroke();
-        if (opt && opt.dash) context.setLineDash([]);
-        if (opt && opt.width) context.lineWidth = 1;
-    }
-
-    GetCharProfile(fsize) {
-        bold = ""; //"bold ";
-        fontfamily = "Arial";
-        var key = bold + fsize + fontfamily;
-
-        if (key in G_y_char_offsets) yroom = G_y_char_offsets[key];
-        else {
-            if (!G_memCanvas) {
-                G_memCanvas = document.createElement("canvas");
-                G_pixelRatio = GetPixelRatio(G_memCanvas);
-                SetupHiDPICanvas(G_memCanvas, 200, 200, G_pixelRatio);
-                console.log("Pixel ratio = " + G_pixelRatio);
-            }
-            yroom = JudgeTextYPosOffset(G_memCanvas, bold, fontfamily, fsize);
-            G_y_char_offsets[key] = yroom;
-        }
-
-        return yroom;
-    }
-
-    CanvasText(canvas, x, y, text, fsize, align, xwidth, notdraw, opt) {
-        var context = canvas.getContext("2d");
-        var ta = {
-            l: "left",
-            c: "center",
-            r: "right"
-        };
-        var tb = {
-            t: "top",
-            m: "middle",
-            b: "bottom"
-        };
-        var orgfont = context.font;
-        bold = ""; //"bold ";
-        fontfamily = "Arial";
-
-        var yroom = GetCharProfile(fsize);
-
-        let yadjust = 0;
-        if (align[1] == "t") {
-            yadjust = -yroom.top_room;
-        } else if (align[1] == "m") {
-            yadjust = -(yroom.top_room + yroom.height / 2.0); // This is just a huristic guess
-        } else {
-            yadjust = -(yroom.top_room + yroom.height);
-        }
-
-        //console.log("yoffset/yadjust/key = " + JSON.stringify(yroom) + "/" + yadjust);
-
-        context.font = bold + fsize + "px '" + fontfamily + "'";
-        context.textAlign = ta[align[0]];
-        context.textBaseline = "top"; //tb[align[1]];
-
-        orgValues = {};
-        if (opt != null) {
-            for (let key in opt) {
-                orgValues[key] = context[key];
-                context[key] = opt[key];
-            }
-        }
-
-        if (notdraw != true) context.fillText(text, x, y + yadjust, xwidth);
-        var width = context.measureText(text).width;
-        if (xwidth != null) width = Math.min(xwidth, width);
-
-        if (false) {
-            CanvasLine(canvas, x, y, x + xwidth, y);
-            CanvasLine(canvas, x, y + yadjust, x + xwidth, y + yadjust, {
-                dash: true
-            });
-            CanvasLine(canvas, x, y, x, y + fsize);
-        }
-
-        if (opt != null) {
-            for (let key in orgValues) {
-                context[key] = orgValues[key];
-            }
-        }
-        context.font = orgfont;
-
-        var ret = { width: width };
-        Object.assign(ret, yroom);
-        return ret;
-    }
-
-    CanvasTextWithBox(canvas, x, y, text, fsize) {
-        var ret = CanvasText(canvas, x, y, text, fsize, "lt");
-        CanvasRect(canvas, x - 1, y - 1, ret.width + 2, ret.height + 2);
-    }
 
     draw_segno_plain(paper, x, y, segno, B) {
         var lx = x;
@@ -1038,11 +927,11 @@ export class MobileRenderer extends Renderer {
             .drawImage(G_imgmap["assets/img/segno.svg"], lx, y, B / 3, B / 2);
         lx += B / 3;
         if (segno.number !== null) {
-            var r = CanvasText(paper, lx, y + 15, segno.number, B / 2, "lb");
+            let r = graphic.CanvasText(paper, lx, y + 15, segno.number, B / 2, "lb");
             lx += r.width;
         }
         if (segno.opt !== null) {
-            var r = CanvasText(
+            let r = graphic.CanvasText(
                 paper,
                 lx,
                 y + 15,
@@ -1068,7 +957,7 @@ export class MobileRenderer extends Renderer {
 
         if (align[0] == "r") {
             if (coda.number !== null) {
-                var r = CanvasText(
+                let r = graphic.CanvasText(
                     paper,
                     x,
                     img_y + B / 2,
@@ -1100,7 +989,7 @@ export class MobileRenderer extends Renderer {
                 );
             width += B / 2;
             if (coda.number !== null) {
-                var r = CanvasText(
+                let r = graphic.CanvasText(
                     paper,
                     x + width,
                     img_y + B / 2,
@@ -1117,7 +1006,7 @@ export class MobileRenderer extends Renderer {
     }
 
     render_chord_as_string_plain(chord, paper, x, y_body_base, param, draw) {
-        var r = CanvasText(
+        let r = graphic.CanvasText(
             paper,
             x,
             y_body_base + param.row_height / 2,
@@ -1173,9 +1062,10 @@ export class MobileRenderer extends Renderer {
         var oy = yoffsets[rd];
         var fs = 14;
         var ctx = paper.getContext("2d");
+        // eslint-disable-next-line no-constant-condition
         if (false) {
             for (var i = 0; i < 5; ++i) {
-                CanvasLine(
+                graphic.CanvasLine(
                     paper,
                     x,
                     y_body_or_rs_base + i * _5i,
@@ -1197,7 +1087,7 @@ export class MobileRenderer extends Renderer {
                 img.height / s
             );
         } else {
-            var nKasane = myLog2(rd) - 2;
+            var nKasane = common.myLog2(rd) - 2;
             var rdx = 2;
             var rdy = -_5i;
             for (var k = 0; k < nKasane; ++k) {
@@ -1212,7 +1102,7 @@ export class MobileRenderer extends Renderer {
         }
         // dots
         for (var di = 0; di < numdot; ++di) {
-            CanvasCircle(
+            graphic.CanvasCircle(
                 paper,
                 x + dot_xoffsets[rd] + di * 5,
                 y_body_or_rs_base + param.row_height / 2 - _5i / 2,
@@ -1246,12 +1136,12 @@ export class MobileRenderer extends Renderer {
 
         var x0 = x;
         if (draw)
-            CanvasCircle(paper, x + cm, y_body_base + _5lines_intv * 1.5, cr);
-        for (var r = 0; r < numslash; ++r) {
+            graphic.CanvasCircle(paper, x + cm, y_body_base + _5lines_intv * 1.5, cr);
+        for (let r = 0; r < numslash; ++r) {
             var y = y_body_base;
             x += (h + i) * r;
             if (draw) {
-                var path = svgPath(
+                var path = graphic.svgPath(
                     [
                         [x, y + _5lines_intv * 3],
                         [x + h, y + _5lines_intv * 3],
@@ -1265,7 +1155,7 @@ export class MobileRenderer extends Renderer {
             }
         }
         if (draw)
-            CanvasCircle(
+            graphic.CanvasCircle(
                 paper,
                 x + h + H - cm,
                 y_body_base + (row_height / 4) * 2.5,
@@ -1273,7 +1163,7 @@ export class MobileRenderer extends Renderer {
             );
         if (put_boundary) {
             if (draw)
-                CanvasLine(
+                graphic.CanvasLine(
                     paper,
                     x0 + width / 2,
                     y_body_base,
@@ -1297,7 +1187,7 @@ export class MobileRenderer extends Renderer {
         C7_width
     ) {
         if (!chord.is_valid_chord) {
-            return render_chord_as_string_plain(
+            return this.render_chord_as_string_plain(
                 chord,
                 canvas,
                 x,
@@ -1307,7 +1197,7 @@ export class MobileRenderer extends Renderer {
             );
         }
 
-        var ce = chord_elem_classify(chord, transpose, half_type);
+        var ce = this.chord_elem_classify(chord, transpose, half_type);
         var bases = ce.bases;
         var elems = ce.mid_elem_objs;
 
@@ -1329,7 +1219,7 @@ export class MobileRenderer extends Renderer {
         var tensions_width = 0;
         var onbass_width = 0;
 
-        var rootCharHeight = GetCharProfile(B).height;
+        var rootCharHeight = this.GetCharProfile(B).height;
 
         var root = bases[0];
         var onbass = bases[1];
@@ -1337,7 +1227,7 @@ export class MobileRenderer extends Renderer {
         var coeff1 = 0.5;
 
         if (root) {
-            CanvasText(canvas, x, y, root[0], B, "lt", B * coeff1, !draw);
+            graphic.CanvasText(canvas, x, y, root[0], B, "lt", B * coeff1, !draw);
             upper_width = B * coeff1;
             lower_width = B * coeff1;
             if (root.length == 2) {
@@ -1372,7 +1262,7 @@ export class MobileRenderer extends Renderer {
         }
 
         if (onbass != null) {
-            var r = CanvasText(
+            let r = graphic.CanvasText(
                 canvas,
                 x,
                 y + rootCharHeight,
@@ -1414,7 +1304,7 @@ export class MobileRenderer extends Renderer {
 
         _3rdelem.forEach(function(e) {
             if (e.type == "M" && _6791113suselem.length > 0) {
-                var r = CanvasText(
+                let r = graphic.CanvasText(
                     canvas,
                     x + lower_width,
                     y + rootCharHeight,
@@ -1426,7 +1316,7 @@ export class MobileRenderer extends Renderer {
                 );
                 lower_width += r.width;
             } else if (e.type == "m") {
-                var r = CanvasText(
+                let r = graphic.CanvasText(
                     canvas,
                     x + lower_width,
                     y + rootCharHeight,
@@ -1443,7 +1333,7 @@ export class MobileRenderer extends Renderer {
         });
         _6791113suselem.forEach(function(e) {
             if (e.type == "dig") {
-                var r = CanvasText(
+                let r = graphic.CanvasText(
                     canvas,
                     x + lower_width,
                     y + rootCharHeight,
@@ -1455,7 +1345,7 @@ export class MobileRenderer extends Renderer {
                 );
                 lower_width += r.width;
             } else if (e.type == "sus" || e.type == "add") {
-                var r = CanvasText(
+                let r = graphic.CanvasText(
                     canvas,
                     x + lower_width,
                     y + rootCharHeight,
@@ -1467,7 +1357,7 @@ export class MobileRenderer extends Renderer {
                 );
                 lower_width += r.width;
             } else if (e.type == "dim") {
-                var r = CanvasText(
+                let r = graphic.CanvasText(
                     canvas,
                     x + lower_width,
                     y + rootCharHeight,
@@ -1479,7 +1369,7 @@ export class MobileRenderer extends Renderer {
                 );
                 lower_width += r.width;
             } else if (e.type == "M") {
-                var r = CanvasText(
+                let r = graphic.CanvasText(
                     canvas,
                     x + lower_width,
                     y + rootCharHeight,
@@ -1494,7 +1384,7 @@ export class MobileRenderer extends Renderer {
         });
         _5thelem.forEach(function(e) {
             if (e.type == "b") {
-                var r = CanvasText(
+                let r = graphic.CanvasText(
                     canvas,
                     x + upper_width,
                     y,
@@ -1506,7 +1396,7 @@ export class MobileRenderer extends Renderer {
                 );
                 upper_width += r.width;
             } else if (e.type == "#") {
-                var r = CanvasText(
+                let r = graphic.CanvasText(
                     canvas,
                     x + upper_width,
                     y,
@@ -1522,7 +1412,7 @@ export class MobileRenderer extends Renderer {
 
         if (_alteredelem.length > 0) {
             var tensions_pos = Math.max(upper_width, lower_width, onbass_width);
-            var r = CanvasText(
+            let r = graphic.CanvasText(
                 canvas,
                 x + tensions_pos,
                 y,
@@ -1533,7 +1423,7 @@ export class MobileRenderer extends Renderer {
                 !draw
             );
             tensions_width += r.width;
-            var h = GetCharProfile(B * 0.5).height;
+            var h = graphic.GetCharProfile(B * 0.5).height;
             _alteredelem.forEach(function(e, index) {
                 if (e.type == "b") {
                     if (draw)
@@ -1560,7 +1450,7 @@ export class MobileRenderer extends Renderer {
                             );
                     tensions_width += B * 0.2;
                 }
-                var r = CanvasText(
+                let r = graphic.CanvasText(
                     canvas,
                     x + tensions_pos + tensions_width,
                     y,
@@ -1572,7 +1462,7 @@ export class MobileRenderer extends Renderer {
                 );
                 tensions_width += r.width;
                 if (index != _alteredelem.length - 1) {
-                    var r = CanvasText(
+                    let r = graphic.CanvasText(
                         canvas,
                         x + tensions_pos + tensions_width,
                         y,
@@ -1585,7 +1475,7 @@ export class MobileRenderer extends Renderer {
                     tensions_width += r.width;
                 }
             });
-            var r = CanvasText(
+            r = graphic.CanvasText(
                 canvas,
                 x + tensions_pos + tensions_width,
                 y,
@@ -1651,12 +1541,13 @@ export class MobileRenderer extends Renderer {
         }
 
         if (hasNewLine === null || hasNewLine == false) {
-            draw_type = boundary_type_without_line_break(e0, e1);
+            draw_type = this.boundary_type_without_line_break(e0, e1);
         } else {
-            draw_type = boundary_type_with_line_break(e0, e1, side);
+            draw_type = this.boundary_type_with_line_break(e0, e1, side);
         }
 
-        //console.log([draw_type, side]);
+		//console.log([draw_type, side]);
+		let xshift = null;
 
         switch (draw_type) {
             case "s":
@@ -1667,7 +1558,7 @@ export class MobileRenderer extends Renderer {
                 w = 1 + (nline - 1) * barintv;
                 for (var li = 0; li < nline; ++li) {
                     if (draw)
-                        CanvasLine(
+                        graphic.CanvasLine(
                             canvas,
                             x + li * barintv,
                             y_body_base,
@@ -1680,7 +1571,7 @@ export class MobileRenderer extends Renderer {
                 // begin only
                 w = 8;
                 if (draw)
-                    CanvasLine(
+                    graphic.CanvasLine(
                         canvas,
                         x,
                         y_body_base,
@@ -1689,7 +1580,7 @@ export class MobileRenderer extends Renderer {
                         { width: 2 }
                     );
                 if (draw)
-                    CanvasLine(
+                    graphic.CanvasLine(
                         canvas,
                         x + 3,
                         y_body_base,
@@ -1697,14 +1588,14 @@ export class MobileRenderer extends Renderer {
                         y_body_base + row_height
                     );
                 if (draw)
-                    CanvasCircle(
+                    graphic.CanvasCircle(
                         canvas,
                         x + 7,
                         y_body_base + (row_height / 4) * 1.5,
                         1
                     );
                 if (draw)
-                    CanvasCircle(
+                    graphic.CanvasCircle(
                         canvas,
                         x + 7,
                         y_body_base + (row_height / 4) * 2.5,
@@ -1714,23 +1605,23 @@ export class MobileRenderer extends Renderer {
             case "e":
                 // begin and end
                 w = 8;
-                var xshift = side == "end" ? 0 : 0;
+                xshift = side == "end" ? 0 : 0;
                 if (draw)
-                    CanvasCircle(
+                    graphic.CanvasCircle(
                         canvas,
                         x + xshift,
                         y_body_base + (row_height / 4) * 1.5,
                         1
                     );
                 if (draw)
-                    CanvasCircle(
+                    graphic.CanvasCircle(
                         canvas,
                         x + xshift,
                         y_body_base + (row_height / 4) * 2.5,
                         1
                     );
                 if (draw)
-                    CanvasLine(
+                    graphic.CanvasLine(
                         canvas,
                         x + xshift + 4,
                         y_body_base,
@@ -1738,7 +1629,7 @@ export class MobileRenderer extends Renderer {
                         y_body_base + row_height
                     );
                 if (draw)
-                    CanvasLine(
+                    graphic.CanvasLine(
                         canvas,
                         x + xshift + 7,
                         y_body_base,
@@ -1747,9 +1638,9 @@ export class MobileRenderer extends Renderer {
                         { width: 2 }
                     );
                 if (e0.times !== null && (e0.ntimes || e0.times != 2)) {
-                    stimes = e0.ntimes == true ? "X" : "" + e0.times;
+                    let stimes = e0.ntimes == true ? "X" : "" + e0.times;
                     if (draw)
-                        CanvasText(
+                        graphic.CanvasText(
                             canvas,
                             x + xshift + w,
                             y_body_base + row_height,
@@ -1764,21 +1655,21 @@ export class MobileRenderer extends Renderer {
                 // begin only
                 w = 15;
                 if (draw)
-                    CanvasCircle(
+                    graphic.CanvasCircle(
                         canvas,
                         x,
                         y_body_base + (row_height / 4) * 1.5,
                         1
                     );
                 if (draw)
-                    CanvasCircle(
+                    graphic.CanvasCircle(
                         canvas,
                         x,
                         y_body_base + (row_height / 4) * 2.5,
                         1
                     );
                 if (draw)
-                    CanvasLine(
+                    graphic.CanvasLine(
                         canvas,
                         x + 4,
                         y_body_base,
@@ -1786,7 +1677,7 @@ export class MobileRenderer extends Renderer {
                         y_body_base + row_height
                     );
                 if (draw)
-                    CanvasLine(
+                    graphic.CanvasLine(
                         canvas,
                         x + 7,
                         y_body_base,
@@ -1795,7 +1686,7 @@ export class MobileRenderer extends Renderer {
                         { width: 2 }
                     );
                 if (draw)
-                    CanvasLine(
+                    graphic.CanvasLine(
                         canvas,
                         x + 10,
                         y_body_base,
@@ -1804,9 +1695,9 @@ export class MobileRenderer extends Renderer {
                     );
 
                 if (e0.times !== null && (e0.ntimes || e0.times != 2)) {
-                    stimes = e0.ntimes == true ? "X" : "" + e0.times;
+                    let stimes = e0.ntimes == true ? "X" : "" + e0.times;
                     if (draw)
-                        CanvasText(
+                        graphic.CanvasText(
                             canvas,
                             x + 8,
                             y_body_base + row_height,
@@ -1816,14 +1707,14 @@ export class MobileRenderer extends Renderer {
                         );
                 }
                 if (draw)
-                    CanvasCircle(
+                    graphic.CanvasCircle(
                         canvas,
                         x + 14,
                         y_body_base + (row_height / 4) * 1.5,
                         1
                     );
                 if (draw)
-                    CanvasCircle(
+                    graphic.CanvasCircle(
                         canvas,
                         x + 14,
                         y_body_base + (row_height / 4) * 2.5,
@@ -1833,9 +1724,9 @@ export class MobileRenderer extends Renderer {
             case "f":
                 // begin and end (normally, end)
                 w = 5;
-                var xshift = side == "end" ? 0 : 0;
+                xshift = side == "end" ? 0 : 0;
                 if (draw)
-                    CanvasLine(
+                    graphic.CanvasLine(
                         canvas,
                         x + xshift,
                         y_body_base,
@@ -1843,7 +1734,7 @@ export class MobileRenderer extends Renderer {
                         y_body_base + row_height
                     );
                 if (draw)
-                    CanvasLine(
+                    graphic.CanvasLine(
                         canvas,
                         x + xshift + 3,
                         y_body_base,
@@ -1853,7 +1744,7 @@ export class MobileRenderer extends Renderer {
                     );
                 break;
             case "r":
-                var width = render_simile_mark_plain(
+                var width = this.render_simile_mark_plain(
                     draw,
                     canvas,
                     x,
@@ -1872,94 +1763,5 @@ export class MobileRenderer extends Renderer {
         return { width: w };
     }
 
-    GetPixelRatio(canvas) {
-        var ctx = canvas.getContext("2d"),
-            dpr = window.devicePixelRatio || 1;
-        bsr =
-            ctx.webkitBackingStorePixelRatio ||
-            ctx.mozBackingStorePixelRatio ||
-            ctx.msBackingStorePixelRatio ||
-            ctx.oBackingStorePixelRatio ||
-            ctx.backingStorePixelRatio ||
-            1;
 
-        return dpr / bsr;
-    }
-
-    SetupHiDPICanvas(canvas, w, h, ratio) {
-        if (!ratio) ratio = GetPixelRatio(canvas);
-
-        //console.log(ratio + "/" + w + "," + h);
-
-        var ctx = canvas.getContext("2d");
-        canvas.width = w * ratio;
-        canvas.height = h * ratio;
-        canvas.style.width = w + "px";
-        canvas.style.height = h + "px";
-        ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        return { ratio: ratio };
-    }
-
-    JudgeTextYPosOffset(canvas, bold, fontfamily, fontsize) {
-        var context = canvas.getContext("2d");
-
-        var bs = fontsize * G_pixelRatio;
-
-        context.clearRect(0, 0, bs, bs);
-        context.font = bold + fontsize + "px '" + fontfamily + "'";
-        context.textAlign = "left";
-        context.textBaseline = "top";
-        context.fillText("M", 0, 0);
-        var imageData = context.getImageData(0, 0, bs, bs); // Always inside fontsize*fontsize box
-        var data = imageData.data;
-        var top_room = 0;
-        var found_nonwhite = false;
-        //console.log(imageData);
-        var row;
-        var col;
-        for (row = 0; row < imageData.height; ++row) {
-            for (col = 0; col < imageData.width; ++col) {
-                var R = data[col * 4 + 0 + row * imageData.width * 4];
-                var G = data[col * 4 + 1 + row * imageData.width * 4];
-                var B = data[col * 4 + 2 + row * imageData.width * 4];
-                var A = data[col * 4 + 3 + row * imageData.width * 4];
-                //console.log([row, col, R,G,B,A]);
-                var nonwhite = A > 0 && (R < 255 || G < 255 || B < 255);
-                if (nonwhite) {
-                    found_nonwhite = true;
-                    break;
-                }
-            }
-            if (found_nonwhite) break;
-            else ++top_room;
-        }
-
-        // Judge hight of char
-        var found_white = false;
-        var M_height = 0;
-        for (; row < imageData.height; ++row) {
-            //for(; col < imageData.width; ++col ){
-            var R = data[col * 4 + 0 + row * imageData.width * 4];
-            var G = data[col * 4 + 1 + row * imageData.width * 4];
-            var B = data[col * 4 + 2 + row * imageData.width * 4];
-            var A = data[col * 4 + 3 + row * imageData.width * 4];
-            //console.log([row, col, R,G,B,A]);
-            var nonwhite = A > 0 && (R < 255 || G < 255 || B < 255);
-            if (!nonwhite) {
-                found_white = true;
-                break;
-            }
-            //}
-            if (found_white) break;
-            else ++M_height;
-        }
-
-        return {
-            top_room: top_room / G_pixelRatio,
-            height: M_height / G_pixelRatio
-        };
-    }
 }

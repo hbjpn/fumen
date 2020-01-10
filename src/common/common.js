@@ -9,6 +9,20 @@ function deepcopy(obj) {
     return JSON.parse(JSON.stringify(obj));
 }
 
+export function myLog2(integer) {
+	var log2 = {
+		1: 0,
+		2: 1,
+		4: 2,
+		8: 3,
+		16: 4,
+		32: 5,
+		64: 6,
+		128: 7
+	};
+	return log2[integer];
+}
+
 export class TaskQueue {
     constructor() {
         this.task_queue = {};
@@ -199,7 +213,7 @@ export class Track {
         this.reharsal_groups = new Array();
         this.macros = {};
         this.pre_render_info = {};
-    }
+	}
 }
 
 export class ReharsalGroup {
@@ -636,36 +650,39 @@ export class MeasureBoundary {
     constructor() {}
 }
 
-export class MeasureBoundaryMark {
+export class MeasureBoundaryMark extends MeasureBoundary {
     constructor(nline) {
+		super();
         this.nline = nline;
     }
 }
 
-export class LoopBeginMark {
-    constructor() {}
+export class LoopBeginMark  extends MeasureBoundary {
+    constructor() { super(); }
 }
 
-export class LoopEndMark {
+export class LoopEndMark  extends MeasureBoundary {
     constructor(param) {
+		super();
         this.times = param.times;
         this.ntimes = param.ntimes;
     }
 }
 
-export class LoopBothMark {
+export class LoopBothMark  extends MeasureBoundary {
     constructor(param) {
+		super();
         this.times = param.times;
         this.ntimes = param.ntimes;
     }
 }
 
-export class MeasureBoundaryFinMark {
-    constructor() {}
+export class MeasureBoundaryFinMark  extends MeasureBoundary {
+    constructor() { super(); }
 }
 
-export class MeasureBoundaryDblSimile {
-    constructor() {}
+export class MeasureBoundaryDblSimile  extends MeasureBoundary {
+    constructor() { super(); }
 }
 /*
 	var inherits = function inherits(sub, sup) {

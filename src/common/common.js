@@ -1,10 +1,10 @@
 import "@babel/polyfill";
 
-function shallowcopy(obj) {
+export function shallowcopy(obj) {
     return Object.assign({}, obj);
 }
 
-function deepcopy(obj) {
+export function deepcopy(obj) {
     //return jQuery.extend(true, {}, obj);
     return JSON.parse(JSON.stringify(obj));
 }

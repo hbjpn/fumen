@@ -461,7 +461,7 @@ function parseChordNotes(str) {
     while (true) {
         var ret = parseNoteGroup(str);
         nglist.push(ret.ng);
-        let str = ret.s;
+        str = ret.s;
         if (str[0] == ",") {
             str = str.substr(1);
         } else if (str[0] == ")") {

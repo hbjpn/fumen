@@ -2,7 +2,7 @@ import '@babel/polyfill';
 
 function shallowcopy(obj)
 {
-	return jQuery.extend({}, obj);
+	return Object.assign({}, obj);
 }
 
 function deepcopy(obj)
@@ -11,11 +11,7 @@ function deepcopy(obj)
 	return JSON.parse(JSON.stringify(obj));
 }
 
-//
-// Task and Task queue class
-//
-// var the_task_queue = new TaskQueue();
-	
+
 export class TaskQueue
 {
 	constructor(){
@@ -46,8 +42,8 @@ export class TaskQueue
 			return;
 	
 		if((!(task.task_type in this.task_queue)) ||
-		   (this.task_queue[task.task_type].length == 0) ||
-		   (this.task_queue[task.task_type][0] != task)){
+           (this.task_queue[task.task_type].length == 0) ||
+           (this.task_queue[task.task_type][0] != task)){
 			alert('Invalid task execution state detected');
 		}else{
 			var q = this.task_queue[task.task_type];
@@ -60,6 +56,12 @@ export class TaskQueue
 		}
 	}
 }	
+
+//
+// Task and Task queue class
+//
+var the_task_queue = new TaskQueue();
+
 
 export class Task
 {
@@ -130,7 +132,7 @@ export class Task
 		return new Task({func:func, farg:farg, i:0, func_ret:undefined}, function(ctx){
 			if(ctx.i > 0)
 				return true; // Waste function's result : TODO : Handle function result to then
-			ret = ctx.func.apply(null, ctx.farg);
+			let ret = ctx.func.apply(null, ctx.farg);
 			ctx.func_ret = ret;
 			if(ret===undefined) ret = true; // Force to exit 1 time even if the function returns undefined.
 			++ctx.i;
@@ -233,7 +235,7 @@ export class Simile{
 	
 	
 	var cnrg = new RegExp();
-	cnrg.compile(/^((sus(4|2)?)|(add(9|13))|(alt)|(dim)|(7|9|6|11|13)|((\+|\#)(5|9|13|11))|((\-|b)(5|9|13))|([Mm]([Aa][Jj]?|[Ii][Nn]?)?)|([\,\(\)]))/);
+	cnrg.compile(/^((sus(4|2)?)|(add(9|13))|(alt)|(dim)|(7|9|6|11|13)|((\+|#)(5|9|13|11))|((-|b)(5|9|13))|([Mm]([Aa][Jj]?|[Ii][Nn]?)?)|([,()]))/);
 	var CS_IDX_OFFSET=2;
 	
 	var CS_SUS=0;
@@ -261,7 +263,7 @@ export class Simile{
 		var objholder = [];
 		while(s.length > 0){
 			//if([",","(",")"].indexOf(s[0]) >= 0){ s = s.substr(1); continue; }
-			m = s.match(cnrg);
+			let m = s.match(cnrg);
 			//console.log(m);
 			if(m === null){
 				console.log('Invalid code notation : ' + s);
@@ -279,10 +281,11 @@ export class Simile{
 		}
 	
 		var minor_exists = false;
-		for(var i = 0; i < holder.length; ++i){
+		for(let i = 0; i < holder.length; ++i){
+			let s = '';
 			switch(holder[i].cs){
 			case CS_M:
-				var s = holder[i].s;
+				s = holder[i].s;
 				var isMaj = (s == 'M' || s.toLowerCase() == 'maj' || s.toLowerCase() == 'ma');
 				if(isMaj == false) minor_exists = true;
 	
@@ -292,6 +295,7 @@ export class Simile{
 						objholder.push({type:'M',param:holder[i+1].s});
 						++i; // Skip next CS_DIG
 					}else{
+						throw Error('Invalid statement');
 					}
 				}else if(isMaj){
 					objholder.push({type:'M'});
@@ -330,7 +334,7 @@ export class Simile{
 	// Parse strings of number + dot
 	function parseLengthIndicator(length_s)
 	{
-		var mm = length_s.match(/(\d+)((_(3|5|6|7))|(\.+))?(\~)?/);
+		var mm = length_s.match(/(\d+)((_(3|5|6|7))|(\.+))?(~)?/);
 		if(!mm) return null;
 	
 		var base = parseInt(mm[1]);
@@ -375,7 +379,7 @@ export class Simile{
 			}
 	
 			sng = sng.substr(sngi+1); // Skip )
-			var r = /\:(([\d_]+)(\.*)(\~)?)/;
+			var r = /:(([\d_]+)(\.*)(~)?)/;
 			var m = sng.match(r);
 	
 			if(!m[0])
@@ -387,10 +391,11 @@ export class Simile{
 		};
 	
 		var nglist = [];
+		// eslint-disable-next-line no-constant-condition
 		while(true){
 			var ret = parseNoteGroup(str);
 			nglist.push(ret.ng);
-			var str = ret.s;
+			let str = ret.s;
 			if(str[0] == ','){
 				str = str.substr(1);
 			}else if(str[0] == ')'){
@@ -419,7 +424,7 @@ export class Chord{
 		this.nglist = null;
 	
 		// Analyze Chord symbol
-		var r = /^(((A|B|C|D|E|F|G)(#|b)?([^\/\:]*))?(\/(A|B|C|D|E|F|G)(#|b)?)?)(:((([\d_]+)(\.*)(\~)?)|(\(.*\))))?/;
+		var r = /^(((A|B|C|D|E|F|G)(#|b)?([^/:]*))?(\/(A|B|C|D|E|F|G)(#|b)?)?)(:((([\d_]+)(\.*)(~)?)|(\(.*\))))?/;
 		var m = chord_str.match(r);
 		//console.log(m);
 		// [0] is entire matched string
@@ -507,13 +512,10 @@ export class Chord{
 				}else{
 					return s[1]; // Sharp based
 				}
-				break;
 			case 'SHARP':
 				return s[0];
-				break;
 			case 'FLAT':
 				return s[1];
-				break;
 			}
 		}
 		return null;
@@ -545,7 +547,7 @@ export class LoopIndicator{
 		this.intindicators = [];
 		var intrg = new RegExp(/(\d+)/);
 		for(var i = 0; i < this.indicators.length; ++i){
-			m = this.indicators[i].match(intrg);
+			let m = this.indicators[i].match(intrg);
 			if(m){
 				this.intindicators.push(parseInt(m[0]));
 			}

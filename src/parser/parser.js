@@ -1,5 +1,5 @@
 import "@babel/polyfill";
-import {Chord} from '../common/common';
+import {Track} from '../common/common';
 
 function charIsIn(c, chars)
 {
@@ -60,7 +60,6 @@ constructor(error_msg_callback)
 	this.error_msg_callback = error_msg_callback;
 }
 
-
 onParseError(msg)
 {
 	var errormsg = "Parse error on Line " + this.context.line + " : " + msg;
@@ -76,7 +75,7 @@ onParseError(msg)
 
 nextToken(s, dont_skip_spaces)
 {
-	word_def = WORD_DEFINIITON_GENERAL;
+	let word_def = WORD_DEFINIITON_GENERAL;
 
 	var skipped_spaces = 0;
 	if(!(dont_skip_spaces === true)){
@@ -201,10 +200,10 @@ parseGroup(profile, s, errmsg)
 parseReharsalMark(trig_token, s)
 {
 	// "Word characters"
-	m = s.match(WORD_DEFINITION_IN_REHARSAL_MARK);
+	let m = s.match(WORD_DEFINITION_IN_REHARSAL_MARK);
 	if (m != null)
 	{
-		reharsalMarkName = m[0];
+		let reharsalMarkName = m[0];
 		var r = this.nextToken(s.substr(m[0].length));
 		if(r.type == TOKEN_BRACKET_RS)
 			return {reharsalMarkName: reharsalMarkName, s:r.s};

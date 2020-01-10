@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>test</title>
+    <script type="text/javascript" src="fumen2.js"></script></body>
+    <script type="text/javascript">
+      function hoge(){
+            var code = document.getElementById("code").value;
+            var canvas = document.getElementById("canvas");
+            var parser = new Fumen.Parser();
+            var track = parser.parse(code);
+            var renderer = new Fumen.MobileRenderer(canvas, {});
+            renderer.render(track);
+      }
+    </script>
+    <style>
+.div1 {
+ float:left;
+ width: 50%;
+ min-height: 400px;
+ margin: 0px;
+ padding: 0px;
+ background-color:azure;
+ border: 0px black solid;
+}
+.div2 {
+float:right;
+width: 50%;
+margin: 0px;
+padding: 0px;
+background-color: blanchedalmond;
+border: 0px black solid;
+}
+
+.main {
+min-height:200px;
+}
+
+#code{
+    width: 100%;
+    height: 100%;
+}
+    </style>
+</head>
+<div>
+
+</div>
+  <body>
+    <button onclick="hoge()">Hoge</button>
+
+  <div class="main">
+    <div class="div1">
+        <textarea id="code">
+%TIELE="Title"
+%ARTIST="Mikael"
+
+[A]
+| Am7-5 |
+        </textarea>
+    </div>
+    <div class="div2">
+        <canvas id="canvas"></canvas>
+    </div>
+   </div>
+
+  </body>
+</html>

@@ -1,4 +1,4 @@
-import '@babel/polyfill';
+import "@babel/polyfill";
 
 function shallowcopy(obj)
 {
@@ -26,7 +26,7 @@ export class TaskQueue
 			if(! (task.task_type in this.task_queue) )
 				this.task_queue[task.task_type] = [];
 			this.task_queue[task.task_type].push(task);
-			console.log('Enqueue task for queue \'' + task.task_type + '\'. Size = ' + this.task_queue[task.task_type].length);
+			console.log("Enqueue task for queue '" + task.task_type + "'. Size = " + this.task_queue[task.task_type].length);
 			if(this.task_queue[task.task_type].length == 1){
 				setTimeout(task.run.bind(task), 0);
 			}
@@ -44,11 +44,11 @@ export class TaskQueue
 		if((!(task.task_type in this.task_queue)) ||
            (this.task_queue[task.task_type].length == 0) ||
            (this.task_queue[task.task_type][0] != task)){
-			alert('Invalid task execution state detected');
+			alert("Invalid task execution state detected");
 		}else{
 			var q = this.task_queue[task.task_type];
 			q.shift();
-			console.log('Dequeue task for queue \'' + task.task_type + '\'. Size = ' + q.length);
+			console.log("Dequeue task for queue '" + task.task_type + "'. Size = " + q.length);
 			if(q.length > 0){
 				// TODO : Set timer for next task run ?
 				q[0].run();
@@ -107,7 +107,7 @@ export class Task
 				// End of task
 				// false, 0, true, ... all the values other than Task and undefined is land in here.
 				// ret is treated as a parameter for resolve
-				if(me.resolve === null){ alert('Invalid state detected'); }
+				if(me.resolve === null){ alert("Invalid state detected"); }
 				me.resolve(taskret);
 				// Note that resolve will invoke then "later".
 				// finish notification will invoke a next task.
@@ -118,7 +118,7 @@ export class Task
 			// End of task
 			// false, 0, true, ... all the values other than Task and undefined is land in here.
 			// ret is treated as a parameter for resolve
-			if(this.resolve === null){ alert('Invalid state detected'); }
+			if(this.resolve === null){ alert("Invalid state detected"); }
 			this.resolve(ret);
 			// Note that resolve will invoke then "later".
 			// finish notification will invoke a next task.
@@ -197,7 +197,7 @@ export class Measure{
 	constructor()
 	{
 		this.elements = new Array();
-		this.boundary_info = ['n','n'];
+		this.boundary_info = ["n","n"];
 		// "n" : normal boundary
 		// "b" : loop Begin boundary
 		// "e" : loop End boundary
@@ -266,7 +266,7 @@ export class Simile{
 			let m = s.match(cnrg);
 			//console.log(m);
 			if(m === null){
-				console.log('Invalid code notation : ' + s);
+				console.log("Invalid code notation : " + s);
 				return null;
 			}
 			for(var i = 0; i < CS_LIST.length; ++i){
@@ -282,36 +282,36 @@ export class Simile{
 	
 		var minor_exists = false;
 		for(let i = 0; i < holder.length; ++i){
-			let s = '';
+			let s = "";
 			switch(holder[i].cs){
 			case CS_M:
 				s = holder[i].s;
-				var isMaj = (s == 'M' || s.toLowerCase() == 'maj' || s.toLowerCase() == 'ma');
+				var isMaj = (s == "M" || s.toLowerCase() == "maj" || s.toLowerCase() == "ma");
 				if(isMaj == false) minor_exists = true;
 	
 				if(minor_exists && isMaj == true){
 					// mM7 Chord is expected
 					if(holder[i+1].cs == CS_DIG){
-						objholder.push({type:'M',param:holder[i+1].s});
+						objholder.push({type:"M",param:holder[i+1].s});
 						++i; // Skip next CS_DIG
 					}else{
-						throw Error('Invalid statement');
+						throw Error("Invalid statement");
 					}
 				}else if(isMaj){
-					objholder.push({type:'M'});
+					objholder.push({type:"M"});
 				}else{
-					objholder.push({type:'m'});
+					objholder.push({type:"m"});
 				}
 				break;
 			case CS_DIG:
-				objholder.push({type:'dig',param:holder[i].s});
+				objholder.push({type:"dig",param:holder[i].s});
 				break;
-			case CS_SUS: objholder.push({type:'sus', param:holder[i].s.substr(3)});	break;
-			case CS_DIM: objholder.push({type:'dim'}); break;
-			case CS_MNS: objholder.push({type:'b', param:holder[i].s.substr(1)});	break;
-			case CS_PLS: objholder.push({type:'#', param:holder[i].s.substr(1)});	break;
-			case CS_ADD: objholder.push({type:'add', param:holder[i].s.substr(3)});  break;
-			case CS_ALT: objholder.push({type:'alt'}); break;
+			case CS_SUS: objholder.push({type:"sus", param:holder[i].s.substr(3)});	break;
+			case CS_DIM: objholder.push({type:"dim"}); break;
+			case CS_MNS: objholder.push({type:"b", param:holder[i].s.substr(1)});	break;
+			case CS_PLS: objholder.push({type:"#", param:holder[i].s.substr(1)});	break;
+			case CS_ADD: objholder.push({type:"add", param:holder[i].s.substr(3)});  break;
+			case CS_ALT: objholder.push({type:"alt"}); break;
 			}
 		}
 		//console.log(objholder);
@@ -321,11 +321,11 @@ export class Simile{
 	
 	function getNoteProfile(note_str)
 	{
-		var IDX={'C':0,'D':2,'E':4,'F':5,'G':7,'A':9,'B':11};
-		var ACC={'b':11,'#':1,'bb':12,'##':2};
+		var IDX={"C":0,"D":2,"E":4,"F":5,"G":7,"A":9,"B":11};
+		var ACC={"b":11,"#":1,"bb":12,"##":2};
 		var m = note_str.match(/([A-G])(#|b)?(\d+)/);
 		if(!m) return null;
-		var code = parseInt(m[3])*12 + IDX[m[1]] + (m[2]=='#'?1:-1) - 36 + 0x3C; // C3 bocomes 0x3C
+		var code = parseInt(m[3])*12 + IDX[m[1]] + (m[2]=="#"?1:-1) - 36 + 0x3C; // C3 bocomes 0x3C
 		var accidental = 0;
 		if(m[2]) accidental = ACC[m[2]];
 		return {code:code, note:{name:m[1],accidental:accidental,octave:parseInt(m[3])}};
@@ -363,18 +363,18 @@ export class Simile{
 		var parseNoteGroup = function(sng){
 			var sngi = 0;
 			sng = sng.substr(1); // first (
-			var tmp = '';
-			while(sng[sngi] != ')'){
+			var tmp = "";
+			while(sng[sngi] != ")"){
 				tmp += sng[sngi];
 				++sngi;
 			}
-			var notes_str = tmp.split(',');
+			var notes_str = tmp.split(",");
 			var nr = [];
 			for(var nsi=0; nsi < notes_str.length; ++nsi){
 				//var m = notes_str[nsi].match(/([A-G])(#|b)?(\d+)/);
 				var np = getNoteProfile(notes_str[nsi]);
 				if(!np)
-					throw 'INVALID_TOKEN_DETECTED : invalid note notation';
+					throw "INVALID_TOKEN_DETECTED : invalid note notation";
 				nr.push(np);
 			}
 	
@@ -383,7 +383,7 @@ export class Simile{
 			var m = sng.match(r);
 	
 			if(!m[0])
-				throw 'INVALID_TOKEN_DETECTED';
+				throw "INVALID_TOKEN_DETECTED";
 	
 			var li = parseLengthIndicator(m[1]);
 	
@@ -396,12 +396,12 @@ export class Simile{
 			var ret = parseNoteGroup(str);
 			nglist.push(ret.ng);
 			let str = ret.s;
-			if(str[0] == ','){
+			if(str[0] == ","){
 				str = str.substr(1);
-			}else if(str[0] == ')'){
+			}else if(str[0] == ")"){
 				break;
 			}else{
-				throw 'INVALID_TOKEN_DETECTED';
+				throw "INVALID_TOKEN_DETECTED";
 			}
 		}
 		return nglist;
@@ -431,7 +431,7 @@ export class Chord{
 	
 		this.chord_name_str = null;
 	
-		if( m && m[0] != ''){
+		if( m && m[0] != ""){
 			this.chord_name_str = m[1];
 			this.note_base = m[3];
 			this.sharp_flat = m[4];
@@ -483,7 +483,7 @@ export class Chord{
 	
 	getTranpsoedNote(transpose, half_type, note_base, sharp_flat)
 	{
-		var seq = [ ['A'],['A#','Bb'],['B','Cb'],['C'],['C#','Db'],['D'],['D#','Eb'],['E','Fb'],['F'],['F#','Gb'],['G'],['G#','Ab'] ];
+		var seq = [ ["A"],["A#","Bb"],["B","Cb"],["C"],["C#","Db"],["D"],["D#","Eb"],["E","Fb"],["F"],["F#","Gb"],["G"],["G#","Ab"] ];
 		var note = note_base;
 		if(sharp_flat !== undefined)
 			note += sharp_flat;
@@ -504,17 +504,17 @@ export class Chord{
 			return s[0];
 		}else{
 			switch(half_type){
-			case 'GUESS':
+			case "GUESS":
 				// TODO : More intelligent transposing based on key of the track.
 				if(sharp_flat){
-					if(sharp_flat == '#') return s[0];
+					if(sharp_flat == "#") return s[0];
 					else return s[1];
 				}else{
 					return s[1]; // Sharp based
 				}
-			case 'SHARP':
+			case "SHARP":
 				return s[0];
-			case 'FLAT':
+			case "FLAT":
 				return s[1];
 			}
 		}
@@ -639,7 +639,7 @@ export class DaCapo{
 	}
 	
 	toString(){
-		return 'D.C.';
+		return "D.C.";
 	}
 }
 	
@@ -651,8 +651,8 @@ export class DalSegno{
 	}
 	
 	toString(){
-		var dss='D.S.'+(this.number===null?'':this.number);
-		var als=this.al===null?'':(' al '+this.al.toString());
+		var dss="D.S."+(this.number===null?"":this.number);
+		var als=this.al===null?"":(" al "+this.al.toString());
 		return dss+als;
 	}
 }
@@ -672,7 +672,7 @@ export class Coda{
 	}
 	
 	toString(){
-		return 'Coda'+(this.number===null?'':this.number);
+		return "Coda"+(this.number===null?"":this.number);
 	}
 }
 	
@@ -689,7 +689,7 @@ export class Fine{
 	}
 	
 	toString(){
-		return 'Fine';
+		return "Fine";
 	}
 }
 	

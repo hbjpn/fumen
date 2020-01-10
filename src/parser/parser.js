@@ -1,5 +1,5 @@
-import '@babel/polyfill';
-import * as common from '../common/common';
+import "@babel/polyfill";
+import * as common from "../common/common";
 
 function charIsIn(c, chars)
 {
@@ -62,7 +62,7 @@ constructor(error_msg_callback)
 
 onParseError(msg)
 {
-	var errormsg = 'Parse error on Line ' + this.context.line + ' : ' + msg;
+	var errormsg = "Parse error on Line " + this.context.line + " : " + msg;
 	console.log(errormsg);
 	console.trace();
 	if(this.error_msg_callback){
@@ -70,7 +70,7 @@ onParseError(msg)
 	}else{
 		alert(errormsg);
 	}
-	throw 'Parse error';
+	throw "Parse error";
 }
 
 nextToken(s, dont_skip_spaces)
@@ -79,7 +79,7 @@ nextToken(s, dont_skip_spaces)
 
 	var skipped_spaces = 0;
 	if(!(dont_skip_spaces === true)){
-		while(s.length > 0 && charIsIn(s[0], ' 	')){
+		while(s.length > 0 && charIsIn(s[0], " 	")){
 			s = s.substr(1);
 			++skipped_spaces;
 		}
@@ -88,23 +88,23 @@ nextToken(s, dont_skip_spaces)
 	if(s.length == 0) return {token:null, s:s, type:TOKEN_END, ss:skipped_spaces};
 
 	// At first, plain string is analyzed irrespective of word_def.
-	if(s[0] == '"' || s[0] == '\'' || s[0] == '`')
+	if(s[0] == "\"" || s[0] == "'" || s[0] == "`")
 	{
 		var quote = s[0];
-		var plain_str = '';
+		var plain_str = "";
 		s = s.substr(1);
 		while( s.length > 0 && s[0] != quote){
 			plain_str += s[0];
 			s = s.substr(1);
 		}
 		var strclosed = (s.length > 0 && s[0] == quote);
-		if(!strclosed) this.onParseError('ERROR_WHILE_PARSING_PLAIN_STRING');
+		if(!strclosed) this.onParseError("ERROR_WHILE_PARSING_PLAIN_STRING");
 		s = s.substr(1);
 
-		return {token:plain_str, s:s, type:(quote == '"' ? TOKEN_STRING : (quote == '\'' ? TOKEN_STRING_SQ : TOKEN_STRING_GRAVE_ACCENT)), ss:skipped_spaces};
+		return {token:plain_str, s:s, type:(quote == "\"" ? TOKEN_STRING : (quote == "'" ? TOKEN_STRING_SQ : TOKEN_STRING_GRAVE_ACCENT)), ss:skipped_spaces};
 	}
 
-	var r = charStartsWithAmong(s, ['||:','||.','||','|','./|/.']);
+	var r = charStartsWithAmong(s, ["||:","||.","||","|","./|/."]);
 	if(r != null){
 		return {token:r.s, s:s.substr(r.s.length), ss:skipped_spaces,
 			type: [
@@ -119,13 +119,13 @@ nextToken(s, dont_skip_spaces)
 		var loopTimes = 2;
 		var isNTimes=false;
 		if(m[2]!=null){
-			if(m[3]=='X') isNTimes = true;
+			if(m[3]=="X") isNTimes = true;
 			else loopTimes = Number(m[3]);
 		}
-		return {token:m[0],s:s.substr(m[0].length), ss:skipped_spaces, type:(m[1]==':||:' ? TOKEN_MB_LOOP_BOTH : TOKEN_MB_LOOP_END),param:{times:loopTimes,ntimes:isNTimes}};
+		return {token:m[0],s:s.substr(m[0].length), ss:skipped_spaces, type:(m[1]==":||:" ? TOKEN_MB_LOOP_BOTH : TOKEN_MB_LOOP_END),param:{times:loopTimes,ntimes:isNTimes}};
 	}
 
-	r = charIsIn(s[0], '[]<>(){},\n/%=@:.');
+	r = charIsIn(s[0], "[]<>(){},\n/%=@:.");
 	if(r != null){
 		return {token: s[0], s: s.substr(1), ss:skipped_spaces,
 			type: [
@@ -147,7 +147,7 @@ nextToken(s, dont_skip_spaces)
 		return {token:w, s:s.substr(w.length), type:TOKEN_WORD, ss:skipped_spaces};
 	}
 
-	throw 'INVALID_TOKEN_DETECTED';
+	throw "INVALID_TOKEN_DETECTED";
 }
 
 parseGroup(profile, s, errmsg)
@@ -162,18 +162,18 @@ parseGroup(profile, s, errmsg)
 		while(loop_flg){
 			var r = this.nextToken(s);
 			switch(ns){
-			case '':
+			case "":
 				if(r.type != expected_token_type) this.onParseError(errmsg);
 				l.push(r.token);
 				s = r.s;
 				loop_flg = false;
 				break;
-			case '*':
+			case "*":
 				if(r.type != expected_token_type){ loop_flg = false; break; }
 				l.push(r.token);
 				s = r.s;
 				break;
-			case '+':
+			case "+":
 				if(r.type != expected_token_type){
 					if(l.length == 0) this.onParseError(errmsg);
 					else { loop_flg = false; break; }
@@ -181,13 +181,13 @@ parseGroup(profile, s, errmsg)
 				l.push(r.token);
 				s = r.s;
 				break;
-			case '?':
+			case "?":
 				if(r.type != expected_token_type) break;
 				l.push(r.token);
 				s = r.s;
 				break;
 			default:
-				throw 'ASSERTION ERROR';
+				throw "ASSERTION ERROR";
 			}
 		}
 		tokens.push(l);
@@ -207,7 +207,7 @@ parseReharsalMark(trig_token, s)
 		if(r.type == TOKEN_BRACKET_RS)
 			return {reharsalMarkName: reharsalMarkName, s:r.s};
 	}
-	throw 'Invalid reharsal mark';
+	throw "Invalid reharsal mark";
 }
 
 parseLoopIndicator(trig_token_type, s)
@@ -218,13 +218,13 @@ parseLoopIndicator(trig_token_type, s)
 	var indicators = new Array();
 	while(loop_flg){
 		var r = this.nextToken(s);
-		if(r.type != TOKEN_WORD) this.onParseError('ERROR_WHILE_PARSE_LOOP_INDICATOR');
+		if(r.type != TOKEN_WORD) this.onParseError("ERROR_WHILE_PARSE_LOOP_INDICATOR");
 		indicators.push(r.token);
 		s = r.s;
 		r = this.nextToken(s);
 		s = r.s;
 		if(r.type == TOKEN_BRACKET_RS) break;
-		else if(r.type != TOKEN_COMMA) this.onParseError('ERROR_WHILE_PARSE_LOOP_INDICATOR');
+		else if(r.type != TOKEN_COMMA) this.onParseError("ERROR_WHILE_PARSE_LOOP_INDICATOR");
 	}
 
 	return {loopIndicator: new common.LoopIndicator(indicators), s:s};
@@ -238,14 +238,14 @@ parseLongRestIndicator(trig_token_type, s)
 	var r = this.nextToken(s);
 	s = r.s;
 
-	if(r.type != TOKEN_WORD) this.onParseError('ERROR_WHILE_PARSE_OMIT_INDICATOR');
+	if(r.type != TOKEN_WORD) this.onParseError("ERROR_WHILE_PARSE_OMIT_INDICATOR");
 
 	let longrestlen = r.token;
 
 	r = this.nextToken(s);
 	s = r.s;
 
-	if(r.type != TOKEN_BRACKET_RW) this.onParseError('ERROR_WHILE_PARSE_OMIT_INDICATOR');
+	if(r.type != TOKEN_BRACKET_RW) this.onParseError("ERROR_WHILE_PARSE_OMIT_INDICATOR");
 
 	return {longRestIndicator: new common.LongRestIndicator(longrestlen), s:s};
 }
@@ -259,21 +259,21 @@ parseTime(trig_token_type, s)
 
 	var r = this.nextToken(s);
 	s = r.s;
-	if(r.type != TOKEN_WORD) this.onParseError('ERROR_WHILE_PARSE_TIME');
+	if(r.type != TOKEN_WORD) this.onParseError("ERROR_WHILE_PARSE_TIME");
 	numer = r.token;
 
 	r = this.nextToken(s);
 	s = r.s;
-	if(r.type != TOKEN_SLASH) this.onParseError('ERROR_WHILE_PARSE_TIME');
+	if(r.type != TOKEN_SLASH) this.onParseError("ERROR_WHILE_PARSE_TIME");
 
 	r = this.nextToken(s);
 	s = r.s;
-	if(r.type != TOKEN_WORD) this.onParseError('ERROR_WHILE_PARSE_TIME');
+	if(r.type != TOKEN_WORD) this.onParseError("ERROR_WHILE_PARSE_TIME");
 	denom = r.token;
 
 	r = this.nextToken(s);
 	s = r.s;
-	if(r.type != TOKEN_BRACKET_RR) this.onParseError('ERROR_WHILE_PARSE_TIME');
+	if(r.type != TOKEN_BRACKET_RR) this.onParseError("ERROR_WHILE_PARSE_TIME");
 
 	return {time: new common.Time(numer, denom), s:s};
 }
@@ -281,8 +281,8 @@ parseTime(trig_token_type, s)
 parseSign(trig_token_type, s)
 {
 	// Read until ">" found
-	var index = s.indexOf('>');
-	if(index < 0) throw 'Parse error on Sign(0)';
+	var index = s.indexOf(">");
+	if(index < 0) throw "Parse error on Sign(0)";
 
 	var signStr = s.slice(0, index);
 	s = s.slice(index+1); // ">" is skipped
@@ -290,15 +290,15 @@ parseSign(trig_token_type, s)
 	// Parse sign string
 	// "D.S.([0-9]+)?( al Coda([0-9]+)?)
 	var r = this.nextToken(signStr, WORD_DEFINIITON_GENERAL);
-	if(r.type != TOKEN_WORD) throw 'Parse error on Sign(1)';
+	if(r.type != TOKEN_WORD) throw "Parse error on Sign(1)";
 	let regDS = /D\.S\.([0-9]+)?/;
 	let regCoda = /Coda([0-9]+)?/;
 	let regSegno = /S(egno)?([0-9]+)?$/;
 	let sign = null;
 	var m = null;
-	if(r.token == 'Fine'){
+	if(r.token == "Fine"){
 		sign = new common.Fine();
-	}else if(r.token == 'D.C.'){
+	}else if(r.token == "D.C."){
 		sign = new common.DaCapo();
 	}else if((m = r.token.match(regCoda)) !== null){
 		sign = new common.Coda(m[1] === undefined ? null : m[1]);
@@ -306,28 +306,28 @@ parseSign(trig_token_type, s)
 		var m2 = r.s.match(/^\s*(straight|((with\s+)repeat))/);
 		//console.log(r.s + "/" + signStr + m2);
 		sign = new common.Segno(m[2] === undefined ? null : m[2], m2 ? m2[1] : null);
-	}else if(r.token == 'to'){
+	}else if(r.token == "to"){
 		r = this.nextToken(r.s, WORD_DEFINIITON_GENERAL);
-		if(r.type != TOKEN_WORD) throw 'Invalid token after to.';
+		if(r.type != TOKEN_WORD) throw "Invalid token after to.";
 		m = r.token.match(regCoda);
-		if(m === null) throw 'Coda was not detected';
+		if(m === null) throw "Coda was not detected";
 		sign = new common.ToCoda(m[1] === undefined ? null : m[1]);
 	}else if( (m = r.token.match(regDS)) !== null){
 		var dsNumber = m[1] === undefined ? null : m[1];
 		var al = null;
 		r = this.nextToken(r.s, WORD_DEFINIITON_GENERAL);
 		if(r.type != TOKEN_END){
-			if(r.type != TOKEN_WORD) throw 'Invalid token after D.S.(1)';
-			if(r.token != 'al') throw 'Invalid token after D.S.(2)';
+			if(r.type != TOKEN_WORD) throw "Invalid token after D.S.(1)";
+			if(r.token != "al") throw "Invalid token after D.S.(2)";
 			r = this.nextToken(r.s, WORD_DEFINIITON_GENERAL);
-			if(r.type != TOKEN_WORD) throw 'Invalid token after al';
-			if(r.token == 'Fine') al = new common.Fine();
+			if(r.type != TOKEN_WORD) throw "Invalid token after al";
+			if(r.token == "Fine") al = new common.Fine();
 			else if( (m = r.token.match(regCoda)) !== null ) al = new common.Coda(m[1] === undefined ? null : m[1]);
-			else throw 'Invalid token after al(2)';
+			else throw "Invalid token after al(2)";
 		}
 		sign = new common.DalSegno(dsNumber, al);
 	}else{
-		throw 'Invalid token in parse sign';
+		throw "Invalid token in parse sign";
 	}
 
 	return {sign: sign, s:s};
@@ -437,7 +437,7 @@ parseMeasure(trig_token_obj, s)
 		case TOKEN_ATMARK:
 			var a_chord = measure.elements[measure.elements.length-1];
 			if(!(a_chord instanceof common.Chord))
-				throw 'ATMARK_NOT_AFTER_CHORD_SYMBOL';
+				throw "ATMARK_NOT_AFTER_CHORD_SYMBOL";
 			associated_chord = a_chord;
 			atmark_detected = true;
 			s = r.s;
@@ -513,7 +513,7 @@ parseMeasure(trig_token_obj, s)
 			loop_flg = false;
 			break;
 		default:
-			this.onParseError('ERROR_WHILE_PARSE_MEASURE');
+			this.onParseError("ERROR_WHILE_PARSE_MEASURE");
 			break;
 		}
 	}
@@ -557,7 +557,7 @@ parseMeasures(trig_token_obj, s, double_line_break)
 			}
 			break;
 		default:
-			this.onParseError('ERROR_WHILE_PARSE_MEASURES');
+			this.onParseError("ERROR_WHILE_PARSE_MEASURES");
 			break;
 		}
 	}
@@ -570,14 +570,14 @@ parseMacro(s)
 	var key = null;
 	var value = null;
 	var r = this.nextToken(s);
-	if(r.type != TOKEN_WORD) this.onParseError('ERROR_WHILE_PARSE_MACRO');
+	if(r.type != TOKEN_WORD) this.onParseError("ERROR_WHILE_PARSE_MACRO");
 	key = r.token;
 	s = r.s;
 	r = this.nextToken(s);
-	if(r.type != TOKEN_EQUAL) this.onParseError('ERROR_WHILE_PARSE_MACRO');
+	if(r.type != TOKEN_EQUAL) this.onParseError("ERROR_WHILE_PARSE_MACRO");
 	s = r.s;
 	r = this.nextToken(s);
-	if(r.type != TOKEN_STRING) this.onParseError('ERROR_WHILE_PARSE_MACRO');
+	if(r.type != TOKEN_STRING) this.onParseError("ERROR_WHILE_PARSE_MACRO");
 	s = r.s;
 	value = r.token;
 	return {key:key, value:value, s:s};
@@ -585,11 +585,11 @@ parseMacro(s)
 
 glanceHeader(s)
 {
-	var targetMacros = ['TITLE','ARTIST'];
+	var targetMacros = ["TITLE","ARTIST"];
 	var headers = {};
-	var c = s.split('\n');
+	var c = s.split("\n");
 	for(var i = 0; i < c.length; ++i){
-		if(c[i].length > 0 && c[i][0] == '%'){
+		if(c[i].length > 0 && c[i][0] == "%"){
 			var r = this.parseMacro(c[i].substr(1));
 			if (targetMacros.indexOf(r.key) >= 0)
 				headers[r.key]=r.value;
@@ -602,8 +602,8 @@ glanceHeader(s)
 
 parse(s)
 {
-	s.replace(/\r\n/g,'\n');
-	s.replace(/\r/g,'\n');
+	s.replace(/\r\n/g,"\n");
+	s.replace(/\r/g,"\n");
 	var r = null;
 	var loop_cnt = 0;
 
@@ -658,7 +658,7 @@ parse(s)
 				}
 			}else{
 				console.log(r.token);
-				this.onParseError('ERROR_WHILE_PARSE_MOST_OUTSIDER');
+				this.onParseError("ERROR_WHILE_PARSE_MOST_OUTSIDER");
 			}
 			this.context.contiguous_line_break = 0;
 		}

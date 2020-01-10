@@ -1,0 +1,23 @@
+{
+    "root": true,
+    "extends": "eslint:recommended",
+    "rules": {
+        "no-console": 0,
+        "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+        "quotes": ["error", "single"],
+        "semi": ["error", "always"],
+        "semi-spacing": ["error", {"after": true, "before": false}],
+        "semi-style": ["error", "last"],
+        "no-extra-semi": "error",
+        "no-unexpected-multiline": "error",
+        "no-unreachable": "error"
+    },
+    "env": {
+        "es6": true,
+        "browser": true
+    },
+    "parserOptions": {
+        "sourceType": "module",
+        "ecmaVersion": 2018
+    }
+}

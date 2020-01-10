@@ -1,90 +1,90 @@
-import "@babel/polyfill";
-import { Renderer } from "./renderer";
+import '@babel/polyfill';
+import { Renderer } from './renderer';
 
 var CHORD_RENDER_THEME = {
-	"Realbook":{
-		"_base_font_size" : 18,
-		"_base_font_family" : "realbook_music_symbol",
-		"_base_font_profile" :{
+	'Realbook':{
+		'_base_font_size' : 18,
+		'_base_font_family' : 'realbook_music_symbol',
+		'_base_font_profile' :{
 		},
-		"_on_bass_font_size" : 18,
-		"_on_bass_global_dy" : 0,
-		"_on_bass_font_profile" :{
+		'_on_bass_font_size' : 18,
+		'_on_bass_global_dy' : 0,
+		'_on_bass_font_profile' :{
 		},
-		"_3rd_global_dy" : 2,
-		"_3rd_font_profile" : {
+		'_3rd_global_dy' : 2,
+		'_3rd_font_profile' : {
 			'M'   : function(p){return [[10,3,'M']];},
 			'm'   : function(p){return [[10,3,'m']];}
 		},
-		"_6791113_global_dy" : 2,
-		"_6791113_font_profile" : {
-			'dim' : function(p){return [[11,2,"d"]];},
-			'sus' : function(p){return [[ 8,3,"s"],[13,4,p?p:""]];},
-			'M'   : function(p){return [[10,3,"M"],[13,4,p?p:""]];},
-			'm'   : function(p){return [[10,3,"m"]];},
-			'add' : function(p){return [[10,3,"a"],[13,4,p?p:""]];},
+		'_6791113_global_dy' : 2,
+		'_6791113_font_profile' : {
+			'dim' : function(p){return [[11,2,'d']];},
+			'sus' : function(p){return [[ 8,3,'s'],[13,4,p?p:'']];},
+			'M'   : function(p){return [[10,3,'M'],[13,4,p?p:'']];},
+			'm'   : function(p){return [[10,3,'m']];},
+			'add' : function(p){return [[10,3,'a'],[13,4,p?p:'']];},
 			'dig' : function(p){
-					if(!p) p = "";
-					else if(p=="11") p = "\x25";
-					else if(p=="13") p = "\x26";
+					if(!p) p = '';
+					else if(p=='11') p = '\x25';
+					else if(p=='13') p = '\x26';
 					return [[13,4,p]];
 				}
 		},
-		"_5th_global_dy" : -8,
-		"_5th_font_profile" : {
+		'_5th_global_dy' : -8,
+		'_5th_font_profile' : {
 			'#'   : function(p){return [[13,0,'+'],[13,0,p]];},
 			'b'   : function(p){return [[13,0,'-'],[13,0,p]];},
 			'dig' : function(p){return [[13,0,p]];}
 		},
-		"_altered_global_dy" : -8,
-		"_multi_altered_margin" : 0,
-		"_altered_font_profile" : {
+		'_altered_global_dy' : -8,
+		'_multi_altered_margin' : 0,
+		'_altered_font_profile' : {
 			'#'   : function(p){return [[13,0,'#'],[13,0,p]];},
 			'b'   : function(p){return [[13,0,'b'],[13,0,p]];},
 			'alt' : function(p){return [[13,0,'alt']];}
 		}
 	},
-	"Arial":{
-		"_base_font_size" : 20,
-		"_base_font_family" : "Arial",
-		"_base_font_profile" :{
+	'Arial':{
+		'_base_font_size' : 20,
+		'_base_font_family' : 'Arial',
+		'_base_font_profile' :{
 			'#'   : function(p){return [[14,0,'#','smart_music_symbol']];},
 			'b'   : function(p){return [[14,0,'b','smart_music_symbol']];},
 		},
-		"_on_bass_font_size" : 15,
-		"_on_bass_global_dy" : 1,
-		"_on_bass_font_profile" :{
+		'_on_bass_font_size' : 15,
+		'_on_bass_global_dy' : 1,
+		'_on_bass_font_profile' :{
 			'#'   : function(p){return [[13,0,'#','smart_music_symbol']];},
 			'b'   : function(p){return [[13,0,'b','smart_music_symbol']];},
 		},
-		"_3rd_global_dy" : 1,
-		"_3rd_font_profile" : {
+		'_3rd_global_dy' : 1,
+		'_3rd_font_profile' : {
 			'M'   : function(p){return [[16,0,'M']];},
 			'm'   : function(p){return [[16,0,'m']];}
 		},
-		"_6791113_global_dy" : 1,
-		"_6791113_font_profile" : {
-			'dim' : function(p){return [[16,0,"dim"]];},
-			'sus' : function(p){return [[16,0,"sus"],[15,1,p?p:""]];},
-			'M'   : function(p){return [[16,0,"M"],[15,1,p?p:""]];},
-			'm'   : function(p){return [[16,0,"m"]];},
-			'add' : function(p){return [[16,0,"add"],[15,1,p?p:""]];},
+		'_6791113_global_dy' : 1,
+		'_6791113_font_profile' : {
+			'dim' : function(p){return [[16,0,'dim']];},
+			'sus' : function(p){return [[16,0,'sus'],[15,1,p?p:'']];},
+			'M'   : function(p){return [[16,0,'M'],[15,1,p?p:'']];},
+			'm'   : function(p){return [[16,0,'m']];},
+			'add' : function(p){return [[16,0,'add'],[15,1,p?p:'']];},
 			'dig' : function(p){
-					if(!p) p = "";
+					if(!p) p = '';
 					//else if(p=="11") p = "\x25";
 					//else if(p=="13") p = "\x26";
 					return [[15,1,p]];
 				}
 		},
-		"_5th_global_dy" : -8,
-		"_5th_font_profile" : {
+		'_5th_global_dy' : -8,
+		'_5th_font_profile' : {
 			'#'   : function(p){return [[13,0,'+'],[13,0,p]];},
 			'b'   : function(p){return [[13,0,'-'],[13,0,p]];},
 			'dig' : function(p){return [[13,0,p]];}
 		},
-		"_altered_global_dy" : -8,
-		"_multi_altered_margin" : -4,
-		"_altered_font_profile" : {
+		'_altered_global_dy' : -8,
+		'_multi_altered_margin' : -4,
+		'_altered_font_profile' : {
 			'#'   : function(p){return [[13,0,'#','smart_music_symbol'],[13,0,p]];},
 			'b'   : function(p){return [[13,0,'b','smart_music_symbol'],[13,0,p]];},
 			'alt' : function(p){return [[13,0,'alt']];}
@@ -135,28 +135,28 @@ export class DefaultRenderer extends Renderer
 	
 		this.param = RENDER_PARAM; // Default parameters
 		// Overwrite
-		this.param.ncol = "ncol" in param ? param.ncol : this.param.ncol;
-		this.param.nrow = "nrow" in param ? param.nrow : this.param.ncol;
-		this.param.paper_width = "paper_width" in param ? param.paper_width : this.param.paper_width;
-		this.param.paper_height = "paper_height" in param ? param.paper_height : this.param.paper_height;
+		this.param.ncol = 'ncol' in param ? param.ncol : this.param.ncol;
+		this.param.nrow = 'nrow' in param ? param.nrow : this.param.ncol;
+		this.param.paper_width = 'paper_width' in param ? param.paper_width : this.param.paper_width;
+		this.param.paper_height = 'paper_height' in param ? param.paper_height : this.param.paper_height;
 	
 		this.track = null;
 	
 		this.context = {
 			paper: null,
 			region_id : 0
-		}
+		};
 	}
 	
 	render(track, async_mode, progress_cb)
 	{
 		this.track = track;
 	
-		if(this.rtype=="default"){
+		if(this.rtype=='default'){
 			if(async_mode){
-				Task.enqueueFunctionCall(render_impl, [this.canvas, track, true, this.param, async_mode, progress_cb, this.context], "render");
-				Task.enqueueFunctionCall(identify_scaling, [track, this.param], "render");
-				var task = Task.enqueueFunctionCall(render_impl, [this.canvas, track, false, this.param, async_mode, progress_cb, this.context], "render");
+				Task.enqueueFunctionCall(render_impl, [this.canvas, track, true, this.param, async_mode, progress_cb, this.context], 'render');
+				Task.enqueueFunctionCall(identify_scaling, [track, this.param], 'render');
+				var task = Task.enqueueFunctionCall(render_impl, [this.canvas, track, false, this.param, async_mode, progress_cb, this.context], 'render');
 				return task;
 			}else{
 				render_impl(this.canvas, track, true, this.param, async_mode, progress_cb, this.context);
@@ -164,32 +164,32 @@ export class DefaultRenderer extends Renderer
 				identify_scaling(track, this.param);
 				render_impl(this.canvas, track, false, this.param, async_mode, progress_cb, this.context);
 			}
-		}else if(this.rtype=="simplified"){
+		}else if(this.rtype=='simplified'){
 			// Simplifed renderer
 			// Rewrite parameters based on global_scale parameter
 	
 			// Always works as asynchronously
 			// Preload images, which is done asynchronously
-			var urls = ["assets/img/segno.svg",
-						"assets/img/coda.svg",
-						"assets/img/flat.svg",
-						"assets/img/sharp.svg",
-						"assets/img/rest1.svg",
-						"assets/img/rest2.svg",
-						"assets/img/rest4.svg",
-						"assets/img/rest8.svg"];
+			var urls = ['assets/img/segno.svg',
+						'assets/img/coda.svg',
+						'assets/img/flat.svg',
+						'assets/img/sharp.svg',
+						'assets/img/rest1.svg',
+						'assets/img/rest2.svg',
+						'assets/img/rest4.svg',
+						'assets/img/rest8.svg'];
 			var param = this.param;
 			var canvas = this.canvas;
 			return PreloadImages(urls).then(function(result){
 				// make map with url
-				for(var ii=0; ii<result.length;++ii){
+				for(var ii=0; ii<result.length; ++ii){
 					G_imgmap[result[ii].url]=result[ii].img;
 				}
 				// Returns last y position
 				return render_impl_simplified(canvas, track, param);
 			});
 		}
-	};
+	}
 	
 	classifyElements(measure)
 	{
@@ -263,7 +263,7 @@ export class DefaultRenderer extends Renderer
 			}
 		}else if(simile_objs.length >= 1){
 			// simile mark is measure wide element
-			if(simile_objs.length != 1){ throw "Error on classifying simile marks"; }
+			if(simile_objs.length != 1){ throw 'Error on classifying simile marks'; }
 			measure_wide_elements.splice(simile_body_idx[0],0,simile_objs[0]);
 		}
 	
@@ -297,7 +297,7 @@ export class DefaultRenderer extends Renderer
 	// This function is called right after screening is done.
 	identify_scaling(track, param)
 	{
-		console.log("Identify scaling called");
+		console.log('Identify scaling called');
 		var width = param.paper_width/param.ncol - param.x_offset * 2;
 	
 		var debug_see_raw_render = false;
@@ -427,7 +427,7 @@ export class DefaultRenderer extends Renderer
 						}
 	
 						var newSumBodyWidth = width - sumFixedWidth;
-						if(newSumBodyWidth <= 0) throw "Error on scaling factor decision";
+						if(newSumBodyWidth <= 0) throw 'Error on scaling factor decision';
 	
 						var scaling = newSumBodyWidth / ( sumWidth - sumFixedWidth );
 						for(var ml = 0; ml < rows[ri].length; ++ml){
@@ -447,15 +447,15 @@ export class DefaultRenderer extends Renderer
 		}
 		$(this.canvas).children().remove();
 		pages = new Array();
-	};
+	}
 	
 	makeNewPaper(canvas, param, context)
 	{
 		context.region_id++;
 		if(context.paper == null || context.region_id >= param.ncol * param.nrow){
 			var page_id = pages.length;
-			$(canvas).append("<div id='page"+page_id+"'></div>"); // paper_div is jQuery object
-			var paper_div=$(canvas).children("#page"+page_id)[0];
+			$(canvas).append('<div id=\'page'+page_id+'\'></div>'); // paper_div is jQuery object
+			var paper_div=$(canvas).children('#page'+page_id)[0];
 			paper = Raphael(paper_div, param.paper_width, param.paper_height);
 			pages.push(paper);
 			paper.canvas.style.backgroundColor = '#FFFFFF';
@@ -470,7 +470,7 @@ export class DefaultRenderer extends Renderer
 	
 		// Logo:)
 		raphaelText(paper, origin.x + param.paper_width/param.ncol/2,
-			origin.y + param.paper_height/param.nrow - 40, "Generated by fumen ver 0.1", 12, "ct");
+			origin.y + param.paper_height/param.nrow - 40, 'Generated by fumen ver 0.1', 12, 'ct');
 	
 		// Clear buffers
 		ChordRenderBuffer = {};
@@ -496,7 +496,7 @@ export class DefaultRenderer extends Renderer
 		}else if(e instanceof MeasureBoundaryDblSimile){
 			return 'r';
 		}
-		throw "Invalid boundary object";
+		throw 'Invalid boundary object';
 	}
 	
 	boundary_type_without_line_break(b0, b1)
@@ -504,20 +504,20 @@ export class DefaultRenderer extends Renderer
 		// b0 and b1 must be either following characters
 		// s : Single, d : Double, b: Loop Begin, e: Loop End, B: Loop Both, r: Double Simile, n:null
 		var profile = {
-			"ss":"s", "sd":"d",           "sb":"b",                     "sn":"s",
-			"ds":"d", "dd":"d",           "db":"b",                     "dn":"d",
-			"es":"e", "ed":"e", "ee":"e", "eb":"B",                     "en":"e",
-										  "bb":"b",
-													"BB":"B",
-																		"fn":"f",
-															  "rr":"r",
-			"ns":"s", "nd":"d",           "nb":"b"
+			'ss':'s', 'sd':'d',           'sb':'b',                     'sn':'s',
+			'ds':'d', 'dd':'d',           'db':'b',                     'dn':'d',
+			'es':'e', 'ed':'e', 'ee':'e', 'eb':'B',                     'en':'e',
+										  'bb':'b',
+													'BB':'B',
+																		'fn':'f',
+															  'rr':'r',
+			'ns':'s', 'nd':'d',           'nb':'b'
 		};
 		var key = get_boundary_sign(b0)+get_boundary_sign(b1);
 		if(key in profile){
 			return profile[key];
 		}
-		throw ("Invalid boundary pair : " + key);
+		throw ('Invalid boundary pair : ' + key);
 	}
 	
 	boundary_type_with_line_break(b0, b1, side)
@@ -526,18 +526,18 @@ export class DefaultRenderer extends Renderer
 		// s : Single, d : Double, b: Loop Begin, e: Loop End, B: Loop Both, r: Double Simile, n:null
 		// side must be either 'end' or 'begin'
 		var profile = {
-			"ss":"ss", "sd":"sd",            "sb":"sb",
-			"ds":"ds", "dd":"dd",            "db":"db",
-			"es":"es", "ed":"ed", "ee":"es", "eb":"eb",
-											 "bb":"sb",
-														"BB":"eb",
-																   "rr":"rr"
+			'ss':'ss', 'sd':'sd',            'sb':'sb',
+			'ds':'ds', 'dd':'dd',            'db':'db',
+			'es':'es', 'ed':'ed', 'ee':'es', 'eb':'eb',
+											 'bb':'sb',
+														'BB':'eb',
+																   'rr':'rr'
 		};
 		var key = get_boundary_sign(b0)+get_boundary_sign(b1);
 		if(key in profile){
-			return profile[key][side=="begin"?1:0];
+			return profile[key][side=='begin'?1:0];
 		}
-		throw ("Invalid boundary pair : " + key);
+		throw ('Invalid boundary pair : ' + key);
 	}
 	
 	
@@ -587,64 +587,64 @@ export class DefaultRenderer extends Renderer
 		case 'd':
 			var nline = draw_type == 's' ? 1 : 2;
 			for(var li = 0; li < nline; ++li){
-				if(draw) group.push( paper.path(svgLine(x, y_body_base, x, y_body_base + row_height)).attr({"stroke-width":"1"}) );
+				if(draw) group.push( paper.path(svgLine(x, y_body_base, x, y_body_base + row_height)).attr({'stroke-width':'1'}) );
 				if(nline >= 2 && li < nline-1) x += 3;
 			}
 			bx = x;
 			break;
 		case 'b':
-			if(draw) group.push( paper.path(svgLine(x, y_body_base, x, y_body_base + row_height)).attr({"stroke-width":"2"}) );
+			if(draw) group.push( paper.path(svgLine(x, y_body_base, x, y_body_base + row_height)).attr({'stroke-width':'2'}) );
 			x += 3;
-			if(draw) group.push( paper.path(svgLine(x, y_body_base, x, y_body_base + row_height)).attr({"stroke-width":"1"}) );
+			if(draw) group.push( paper.path(svgLine(x, y_body_base, x, y_body_base + row_height)).attr({'stroke-width':'1'}) );
 			x += 4;
-			if(draw) group.push( paper.circle(x, y_body_base + row_height/4*1.5, 1).attr({fill:"black"}) );
-			if(draw) group.push( paper.circle(x, y_body_base + row_height/4*2.5, 1).attr({fill:"black"}) );
+			if(draw) group.push( paper.circle(x, y_body_base + row_height/4*1.5, 1).attr({fill:'black'}) );
+			if(draw) group.push( paper.circle(x, y_body_base + row_height/4*2.5, 1).attr({fill:'black'}) );
 			break;
 		case 'e':
-			if(draw) group.push( paper.circle(x, y_body_base + row_height/4*1.5, 1).attr({fill:"black"}) );
-			if(draw) group.push( paper.circle(x, y_body_base + row_height/4*2.5, 1).attr({fill:"black"}) );
+			if(draw) group.push( paper.circle(x, y_body_base + row_height/4*1.5, 1).attr({fill:'black'}) );
+			if(draw) group.push( paper.circle(x, y_body_base + row_height/4*2.5, 1).attr({fill:'black'}) );
 			x += 4;
-			if(draw) group.push( paper.path(svgLine(x, y_body_base, x, y_body_base + row_height)).attr({"stroke-width":"1"}) );
+			if(draw) group.push( paper.path(svgLine(x, y_body_base, x, y_body_base + row_height)).attr({'stroke-width':'1'}) );
 			x += 3;
-			if(draw) group.push( paper.path(svgLine(x, y_body_base, x, y_body_base + row_height)).attr({"stroke-width":"2"}) );
+			if(draw) group.push( paper.path(svgLine(x, y_body_base, x, y_body_base + row_height)).attr({'stroke-width':'2'}) );
 			//x += 20;
 			if(e0.times !== null && (e0.ntimes || e0.times != 2)){
-				stimes = e0.ntimes == true ? "X" : ""+e0.times;
-				if(draw) group.push( raphaelText(paper, x, y_body_base + row_height + 8, "(" + stimes +" times)", 13, "rc") );
+				stimes = e0.ntimes == true ? 'X' : ''+e0.times;
+				if(draw) group.push( raphaelText(paper, x, y_body_base + row_height + 8, '(' + stimes +' times)', 13, 'rc') );
 			}
 			bx = x;
 			break;
 		case 'B':
-			if(draw) group.push( paper.circle(x, y_body_base + row_height/4*1.5, 1).attr({fill:"black"}) );
-			if(draw) group.push( paper.circle(x, y_body_base + row_height/4*2.5, 1).attr({fill:"black"}) );
+			if(draw) group.push( paper.circle(x, y_body_base + row_height/4*1.5, 1).attr({fill:'black'}) );
+			if(draw) group.push( paper.circle(x, y_body_base + row_height/4*2.5, 1).attr({fill:'black'}) );
 			x += 4;
-			if(draw) group.push( paper.path(svgLine(x, y_body_base, x, y_body_base + row_height)).attr({"stroke-width":"1"}) );
+			if(draw) group.push( paper.path(svgLine(x, y_body_base, x, y_body_base + row_height)).attr({'stroke-width':'1'}) );
 			x += 3;
-			if(draw) group.push( paper.path(svgLine(x, y_body_base, x, y_body_base + row_height)).attr({"stroke-width":"2"}) );
+			if(draw) group.push( paper.path(svgLine(x, y_body_base, x, y_body_base + row_height)).attr({'stroke-width':'2'}) );
 			bx = x;
 			x += 3;
-			if(draw) group.push( paper.path(svgLine(x, y_body_base, x, y_body_base + row_height)).attr({"stroke-width":"1"}) );
+			if(draw) group.push( paper.path(svgLine(x, y_body_base, x, y_body_base + row_height)).attr({'stroke-width':'1'}) );
 	
 			//x += 20;
 			if(e0.times !== null && (e0.ntimes || e0.times != 2)){
-				stimes = e0.ntimes == true ? "X" : ""+e0.times;
-				if(draw) group.push( raphaelText(paper, x, y_body_base + row_height + 8, "(" + stimes +" times)", 13, "rc") );
+				stimes = e0.ntimes == true ? 'X' : ''+e0.times;
+				if(draw) group.push( raphaelText(paper, x, y_body_base + row_height + 8, '(' + stimes +' times)', 13, 'rc') );
 			}
 			x += 4;
-			if(draw) group.push( paper.circle(x, y_body_base + row_height/4*1.5, 1).attr({fill:"black"}) );
-			if(draw) group.push( paper.circle(x, y_body_base + row_height/4*2.5, 1).attr({fill:"black"}) );
+			if(draw) group.push( paper.circle(x, y_body_base + row_height/4*1.5, 1).attr({fill:'black'}) );
+			if(draw) group.push( paper.circle(x, y_body_base + row_height/4*2.5, 1).attr({fill:'black'}) );
 			break;
 		case 'f':
-			if(draw) group.push( paper.path(svgLine(x, y_body_base, x, y_body_base + row_height)).attr({"stroke-width":"1"}) );
+			if(draw) group.push( paper.path(svgLine(x, y_body_base, x, y_body_base + row_height)).attr({'stroke-width':'1'}) );
 			x += 3;
-			if(draw) group.push( paper.path(svgLine(x, y_body_base, x, y_body_base + row_height)).attr({"stroke-width":"2"}) );
+			if(draw) group.push( paper.path(svgLine(x, y_body_base, x, y_body_base + row_height)).attr({'stroke-width':'2'}) );
 			break;
 		case 'r':
 			var width = render_simile_mark(draw, paper, group, x, y_body_base, row_height, 2, true, 'l');
 			x += width;
 			break;
 		default:
-			throw "Internal error";
+			throw 'Internal error';
 		}
 		return {group:group, x:x, bx:bx};
 	}
@@ -656,7 +656,7 @@ export class DefaultRenderer extends Renderer
 	
 		var group = paper.set();
 	
-		var text = raphaelText(paper, x, y_body_base + row_height/2, chord.chord_str, 16, "lc", null);
+		var text = raphaelText(paper, x, y_body_base + row_height/2, chord.chord_str, 16, 'lc', null);
 	
 		var text_width = text.getBBox().width;
 		//x += text.getBBox().width * x_global_scale * body_scaling;
@@ -722,7 +722,7 @@ export class DefaultRenderer extends Renderer
 			_6791113suselem : _6791113suselem,
 			_alteredelem : _alteredelem,
 			_6_and_9_exists : (_6exists && _9exists)
-		}
+		};
 	}
 	
 	render_chord(chord, transpose, half_type, paper, x, y_body_base,
@@ -746,7 +746,7 @@ export class DefaultRenderer extends Renderer
 			var group = cl[0].clone();
 			group.attr({opacity:1.0}); // Buffered symbol is transparent.
 			var ref_p_0 = cl[1];
-			group.transform("T " + (ref_p[0]-ref_p_0[0]) + " " + (ref_p[1]-ref_p_0[1]));
+			group.transform('T ' + (ref_p[0]-ref_p_0[0]) + ' ' + (ref_p[1]-ref_p_0[1]));
 			//x += group.getBBox().width * x_global_scale * body_scaling;
 			//x += (chord_space*body_scaling);
 			//if(!isFinite(x)){
@@ -789,7 +789,7 @@ export class DefaultRenderer extends Renderer
 		var xl = x;
 	
 		var fp = CHORD_RENDER_THEME[theme];
-		var fontfamily = fp["_base_font_family"];
+		var fontfamily = fp['_base_font_family'];
 	
 		if(bases[0]){
 			var base_width = 0;
@@ -798,13 +798,13 @@ export class DefaultRenderer extends Renderer
 			//var base_width = text.getBBox().width;
 			//group.push(text);
 			//if(bases[0].length==2){
-				var fp2 = (bases[0][bi] in fp["_base_font_profile"]) ? fp["_base_font_profile"][bases[0][bi]]() : null;
+				var fp2 = (bases[0][bi] in fp['_base_font_profile']) ? fp['_base_font_profile'][bases[0][bi]]() : null;
 				var _b2_font_family = (fp2 && fp2[0][3]) ? fp2[0][3] : fontfamily;
-				var _b2_font_size = fp2 ? fp2[0][0] : fp["_base_font_size"];
+				var _b2_font_size = fp2 ? fp2[0][0] : fp['_base_font_size'];
 				var _b2_char = fp2 ? fp2[0][2] : bases[0][bi];
 				var _b2_yoffset = fp2 ? fp2[0][1] : 0;
 				text = raphaelText(paper, xl + base_width, y_body_base + row_height/2 + _b2_yoffset,
-					_b2_char, _b2_font_size, "lc", _b2_font_family);
+					_b2_char, _b2_font_size, 'lc', _b2_font_family);
 				base_width += text.getBBox().width;
 				group.push(text);
 			}
@@ -813,12 +813,12 @@ export class DefaultRenderer extends Renderer
 	
 		var wb3 = 0;
 		if(_3rdelem.length > 0){
-			var rp = fp["_3rd_font_profile"][_3rdelem[0].type](_3rdelem[0].param);
+			var rp = fp['_3rd_font_profile'][_3rdelem[0].type](_3rdelem[0].param);
 			var tx = 0;
 			for(var i = 0; i < rp.length; ++i){
 				text = raphaelText(paper, xl + tx,
-						y_body_base + row_height/2 + rp[i][1] + fp["_3rd_global_dy"],
-						rp[i][2], rp[i][0], "lc", fontfamily);
+						y_body_base + row_height/2 + rp[i][1] + fp['_3rd_global_dy'],
+						rp[i][2], rp[i][0], 'lc', fontfamily);
 				group.push(text);
 				tx += text.getBBox().width;
 			}
@@ -827,12 +827,12 @@ export class DefaultRenderer extends Renderer
 		var wbupper = 0;
 	
 		if(_5thelem.length > 0){
-			var rp = fp["_5th_font_profile"][_5thelem[0].type](_5thelem[0].param);
+			var rp = fp['_5th_font_profile'][_5thelem[0].type](_5thelem[0].param);
 			var tx = 0;
 			for(var i = 0; i < rp.length; ++i){
 				text = raphaelText(paper, xl + tx,
-						y_body_base + row_height/2 + rp[i][1] + fp["_5th_global_dy"],
-						rp[i][2], rp[i][0], "lc", fontfamily);
+						y_body_base + row_height/2 + rp[i][1] + fp['_5th_global_dy'],
+						rp[i][2], rp[i][0], 'lc', fontfamily);
 				group.push(text);
 				tx += text.getBBox().width;
 			}
@@ -843,13 +843,13 @@ export class DefaultRenderer extends Renderer
 		if(_6791113suselem.length > 0){
 			var tx = 0;
 			for(var n = 0; n < _6791113suselem.length; ++n){
-				var rp= fp["_6791113_font_profile"][_6791113suselem[n].type](_6791113suselem[n].param);
+				var rp= fp['_6791113_font_profile'][_6791113suselem[n].type](_6791113suselem[n].param);
 				for(var i = 0; i < rp.length; ++i){
-					if(rp[i][2] == "") continue;
+					if(rp[i][2] == '') continue;
 					text = raphaelText(paper,
 							xl + wb3 + tx,
-							y_body_base + row_height/2 + rp[i][1] + fp["_6791113_global_dy"],
-							rp[i][2], rp[i][0], "lc", fontfamily);
+							y_body_base + row_height/2 + rp[i][1] + fp['_6791113_global_dy'],
+							rp[i][2], rp[i][0], 'lc', fontfamily);
 					tx += text.getBBox().width;
 					group.push(text);
 				}
@@ -863,16 +863,16 @@ export class DefaultRenderer extends Renderer
 		var a_min_y = 10000;
 		var a_max_y = -10000;
 		var brace_margin = 5;
-		var multi_altered_margin = fp["_multi_altered_margin"];
+		var multi_altered_margin = fp['_multi_altered_margin'];
 		for(var i = 0; i < _alteredelem.length; ++i){
 			var e = _alteredelem[i];
-			var rp = fp["_altered_font_profile"][e.type](e.param);
+			var rp = fp['_altered_font_profile'][e.type](e.param);
 			var tw = 0, th = 0;
 			for(var k = 0; k < rp.length; ++k){
 				text = raphaelText(paper,
 						xl + brace_margin + tw,
-						y_body_base + row_height/2 + ah + rp[k][1] + fp["_altered_global_dy"],
-						rp[k][2], rp[k][0], "lc", (rp[k][3]?rp[k][3]:fontfamily));
+						y_body_base + row_height/2 + ah + rp[k][1] + fp['_altered_global_dy'],
+						rp[k][2], rp[k][0], 'lc', (rp[k][3]?rp[k][3]:fontfamily));
 				group.push(text);
 				tw += text.getBBox().width;
 				th = Math.max(th, text.getBBox().height);
@@ -901,16 +901,16 @@ export class DefaultRenderer extends Renderer
 		xl += aw;
 		if(bases[1])
 		{
-			var bassstr = "/"+bases[1];
+			var bassstr = '/'+bases[1];
 			var on_bass_width = 0;
 			for(var obi = 0; obi < bassstr.length; ++obi){
-				var fp2 = (bassstr[obi] in fp["_on_bass_font_profile"]) ? fp["_on_bass_font_profile"][bassstr[obi]]() : null;
+				var fp2 = (bassstr[obi] in fp['_on_bass_font_profile']) ? fp['_on_bass_font_profile'][bassstr[obi]]() : null;
 				var _b2_font_family = (fp2 && fp2[0][3]) ? fp2[0][3] : fontfamily;
-				var _b2_font_size = fp2 ? fp2[0][0] : fp["_on_bass_font_size"];
+				var _b2_font_size = fp2 ? fp2[0][0] : fp['_on_bass_font_size'];
 				var _b2_char = fp2 ? fp2[0][2] : bassstr[obi];
 				var _b2_yoffset = fp2 ? fp2[0][1] : 0;
-				text = raphaelText(paper, xl + on_bass_width, y_body_base + row_height/2 + fp["_on_bass_global_dy"] + _b2_yoffset,
-					_b2_char, _b2_font_size, "lc", _b2_font_family);
+				text = raphaelText(paper, xl + on_bass_width, y_body_base + row_height/2 + fp['_on_bass_global_dy'] + _b2_yoffset,
+					_b2_char, _b2_font_size, 'lc', _b2_font_family);
 				on_bass_width += text.getBBox().width;
 				group.push(text);
 			}
@@ -928,7 +928,7 @@ export class DefaultRenderer extends Renderer
 			ChordRenderBuffer[chord.chord_name_str] = [cloned, ref_p];
 		}
 		if(!isFinite(x)){
-			console.error("Illegal calculation of x detected");
+			console.error('Illegal calculation of x detected');
 		}
 		return {group:group, width:chord_width};
 	}
@@ -998,7 +998,7 @@ export class DefaultRenderer extends Renderer
 		else if(align == 'r') x -= width;
 		
 		var x0 = x;
-		if(draw) group.push( paper.circle(x+cm, y_body_base + _5lines_intv*1.5, cr).attr({fill:"black"}) );
+		if(draw) group.push( paper.circle(x+cm, y_body_base + _5lines_intv*1.5, cr).attr({fill:'black'}) );
 		for(var r = 0; r < numslash; ++r){
 			var y = y_body_base;
 			x += (h+i)*r;
@@ -1008,9 +1008,9 @@ export class DefaultRenderer extends Renderer
 				group.push(obj);
 			}
 		}
-		if(draw) group.push( paper.circle(x+h+H-cm, y_body_base + row_height/4*2.5, cr).attr({fill:"black"}) );
+		if(draw) group.push( paper.circle(x+h+H-cm, y_body_base + row_height/4*2.5, cr).attr({fill:'black'}) );
 		if(put_boundary){
-			if(draw) group.push( paper.path(svgLine(x0+width/2, y_body_base, x0+width/2, y_body_base + row_height)).attr({"stroke-width":"1"}) );
+			if(draw) group.push( paper.path(svgLine(x0+width/2, y_body_base, x0+width/2, y_body_base + row_height)).attr({'stroke-width':'1'}) );
 		}
 		return width;
 	}
@@ -1047,10 +1047,10 @@ export class DefaultRenderer extends Renderer
 		var gbi_at_max_y = null;
 		var cnt_y = 0;
 	
-		for(var gbi=0; gbi < balken.groups.length;++gbi){
+		for(var gbi=0; gbi < balken.groups.length; ++gbi){
 			var c = balken.groups[gbi].coord;
 	
-			for(var ci=0; ci<c[1].length;++ci){
+			for(var ci=0; ci<c[1].length; ++ci){
 				center_y += c[1][ci];
 				if(min_y > c[1][ci]){
 					min_y = c[1][ci];
@@ -1067,7 +1067,7 @@ export class DefaultRenderer extends Renderer
 		var upper_flag = center_y > (rs_y_base + _5lines_intv*2);
 	
 		// 2. Draw notes and slashes without bars, flags and balkens
-		for(var gbi=0; gbi < balken.groups.length;++gbi){
+		for(var gbi=0; gbi < balken.groups.length; ++gbi){
 			//var x = balken.groups[gbi].coord[0];
 			var ys = balken.groups[gbi].coord[1];
 			var d = balken.groups[gbi].onka;
@@ -1079,13 +1079,13 @@ export class DefaultRenderer extends Renderer
 	
 			var note_x_center = x;
 	
-			if(balken.groups[gbi].type == "slash"){
+			if(balken.groups[gbi].type == 'slash'){
 				if(d == '0' || d == '1'){
 					raphaelSlash(paper, bo_group, note_x_center, ys[0], d, numdot, _5lines_intv);
 				}else{
 					raphaelSlash(paper, bo_group, note_x_center, ys[0], d, numdot, _5lines_intv);
 				}
-			}else if(balken.groups[gbi].type == "notes"){
+			}else if(balken.groups[gbi].type == 'notes'){
 				var accidental_exists = balken.groups[gbi].sharp_flats.some(function(sf){ return (sf !== null); });
 				var as = accidental_exists ? deltax_acc : 0;
 				note_x_center = x + as;
@@ -1096,13 +1096,13 @@ export class DefaultRenderer extends Renderer
 					if(d == '0'){
 					}else if(d == '1'){
 						text = raphaelText(paper, note_x_center, y,
-							'\ue700', 7, "lc", "smart_music_symbol");
+							'\ue700', 7, 'lc', 'smart_music_symbol');
 					}else if(d == '2'){
 						text = raphaelText(paper, note_x_center, y,
-							'\ue701', 7, "lc", "smart_music_symbol");
+							'\ue701', 7, 'lc', 'smart_music_symbol');
 					}else{
 						text = raphaelText(paper, note_x_center, y,
-							'\ue702', 7, "lc", "smart_music_symbol");
+							'\ue702', 7, 'lc', 'smart_music_symbol');
 					}
 					bo_group.push(text);
 	
@@ -1112,7 +1112,7 @@ export class DefaultRenderer extends Renderer
 						var SFN_YSHIFTS = { 11:-3, 1:0, 0:0 };
 						var SHARP_FLAT_CODE = { 11:'b', 1:'#', 0:'\ue900'};
 						text = raphaelText(paper, x, y+SFN_YSHIFTS[sharp_flats[ci]],
-							SHARP_FLAT_CODE[sharp_flats[ci]], 14, "lc", "smart_music_symbol");
+							SHARP_FLAT_CODE[sharp_flats[ci]], 14, 'lc', 'smart_music_symbol');
 						bo_group.push(text);
 					}
 	
@@ -1136,7 +1136,7 @@ export class DefaultRenderer extends Renderer
 						bo_group.push(o);
 					}
 				}
-			}else if(balken.groups[gbi].type == "rest"){
+			}else if(balken.groups[gbi].type == 'rest'){
 				var rr = render_rest(balken.groups[gbi].e, paper, true, x, rs_y_base, 0, _5lines_intv, param);
 				bo_group.push(rr.group);
 			}
@@ -1148,10 +1148,10 @@ export class DefaultRenderer extends Renderer
 	
 				// Check the consistency.
 				if(pss[1].length != ys.length){
-					throw "INVALID TIE NOTATION";
+					throw 'INVALID TIE NOTATION';
 				}
 	
-				if(balken.groups[gbi].type == "slash"){
+				if(balken.groups[gbi].type == 'slash'){
 					// slash only has down flag
 					var dy = -10;
 					var sdx = 12;
@@ -1175,16 +1175,16 @@ export class DefaultRenderer extends Renderer
 						// Make sure to create curve on the paper on which previous RS is drawn.
 						var brace_points = [[pss[0] + sdx,pss[1][ci]+dy], [pss[0] + sdx, pss[1][ci]-round+dy],
 																[psm.renderprop.meas_end_x+20, pss[1][ci]-round+dy], [psm.renderprop.meas_end_x+20,pss[1][ci]+dy]];
-						clip = (pss[0]+sdx) + "," + (pss[1][ci]-50) + ","+(psm.renderprop.meas_end_x-(pss[0]+sdx)+5)+",100";
-						console.log("brace:"+brace_points);
-						console.log("clip:"+clip);
+						clip = (pss[0]+sdx) + ',' + (pss[1][ci]-50) + ','+(psm.renderprop.meas_end_x-(pss[0]+sdx)+5)+',100';
+						console.log('brace:'+brace_points);
+						console.log('clip:'+clip);
 	
 						var bl = music_context.tie_info.rs_prev_tie_paper.path(svgArcBezie(brace_points)).attr('stroke-width','2px').attr({'clip-rect':clip});
 						music_context.tie_info.rs_prev_tie_paper.set().push(bl);
 	
 						brace_points = [[meas_start_x - 20, y+dy], [meas_start_x - 20, y-round+dy],
 																[x, y-round+dy], [x,y+dy]];
-						clip = (meas_start_x-5) + "," + (y-50) + ","+(x-(meas_start_x-5))+",100";
+						clip = (meas_start_x-5) + ',' + (y-50) + ','+(x-(meas_start_x-5))+',100';
 						//console.log("clip:"+clip);
 						bl = paper.path(svgArcBezie(brace_points)).attr('stroke-width','2px').attr({'clip-rect':clip});
 						group.push(bl);
@@ -1236,10 +1236,10 @@ export class DefaultRenderer extends Renderer
 	
 		// 4. Draw bars, flags
 		var bar_flag_group = paper.set();
-		for(var gbi=0; gbi < balken.groups.length;++gbi){
+		for(var gbi=0; gbi < balken.groups.length; ++gbi){
 			var note_x_center = balken.groups[gbi].renderprop.note_x_center;
 	
-			if(balken.groups[gbi].type == "slash"){
+			if(balken.groups[gbi].type == 'slash'){
 				var numdot = balken.groups[gbi].numdot;
 				if(d == '0' || d == '1'){
 				}else{
@@ -1247,7 +1247,7 @@ export class DefaultRenderer extends Renderer
 						slope*(note_x_center)+intercept)).attr({'stroke-width':'1px'});
 				}
 				bar_flag_group.push(o);
-			}else if(balken.groups[gbi].type == "notes"){
+			}else if(balken.groups[gbi].type == 'notes'){
 				if(d == '0' || d == '1'){
 	
 				}else{
@@ -1258,7 +1258,7 @@ export class DefaultRenderer extends Renderer
 						slope*(note_x_center+deltax)+intercept)).attr({'stroke-width':'1px'});
 					bar_flag_group.push(o);
 				}
-			}else if(balken.groups[gbi].type == "rest"){
+			}else if(balken.groups[gbi].type == 'rest'){
 	
 			}
 		}
@@ -1312,13 +1312,13 @@ export class DefaultRenderer extends Renderer
 						var ro = 12;
 						var center_x = ((pssx+deltax) + (psex+deltax))/2.0;
 						var text = raphaelText(paper, center_x, slope*center_x+intercept+(upper_flag ? -ro : ro),
-							same_sds[0].lengthIndicator.renpu+"", 12, "cc", "realbook_music_symbol");
+							same_sds[0].lengthIndicator.renpu+'', 12, 'cc', 'realbook_music_symbol');
 						group.push(text);
 	
 						if( same_sds[0].onka < 8){
 							var rno = 10;
 							var rnh = 4;
-							var clip = text.getBBox().x+ "," + text.getBBox().y + ","+text.getBBox().width+","+text.getBBox().height;
+							var clip = text.getBBox().x+ ',' + text.getBBox().y + ','+text.getBBox().width+','+text.getBBox().height;
 							var path1 = svgPath( [
 								[pssx+deltax,slope*(pssx+deltax)+intercept+(upper_flag ? -rnh : rnh)],
 								[pssx+deltax,slope*(pssx+deltax)+intercept+(upper_flag ? -rno : rno)],
@@ -1335,14 +1335,14 @@ export class DefaultRenderer extends Renderer
 					}
 				}
 			}
-		}else if(balken.groups.length == 1 && balken.groups[0].type != "rest"){
+		}else if(balken.groups.length == 1 && balken.groups[0].type != 'rest'){
 			// Normal drawing of flags
 			var note_x_center = balken.groups[0].renderprop.note_x_center;
 			var d = balken.groups[0].onka;
 			var numflag = myLog2(parseInt(d)) - 2;
 			for(var fi = 0; fi < numflag; ++fi){
 				var text = raphaelText(paper, note_x_center+deltax, slope*(note_x_center+deltax)+intercept+(upper_flag ? 1+fi*6 : -1-fi*6),
-					(upper_flag ? '\ue710' : '\ue711'), 16, "lc", "smart_music_symbol");
+					(upper_flag ? '\ue710' : '\ue711'), 16, 'lc', 'smart_music_symbol');
 				group.push(text);
 				// Additional vertical line
 				var line  = paper.path(svgLine(note_x_center+deltax, slope*(note_x_center+deltax)+intercept,
@@ -1378,7 +1378,7 @@ export class DefaultRenderer extends Renderer
 			var e = elems[ei];
 			// no duration information
 			if(e.nglist === null){
-				throw "SOMETHING WRONG WITH LENGTH INDICATOR SCREENING";
+				throw 'SOMETHING WRONG WITH LENGTH INDICATOR SCREENING';
 			}
 	
 			//var x = e.renderprop.x;
@@ -1438,7 +1438,7 @@ export class DefaultRenderer extends Renderer
 			music_context.pos_in_a_measure += chord_length;
 			balken.groups.push({
 				e : e,
-				type : (e instanceof Rest ? "rest" : (rhythm_only ? "slash" : "notes")),
+				type : (e instanceof Rest ? 'rest' : (rhythm_only ? 'slash' : 'notes')),
 				numdot : numdot,
 				coord : [x, group_y],
 				onka : d,
@@ -1487,14 +1487,14 @@ export class DefaultRenderer extends Renderer
 		var oy = yoffsets[rd];
 		var fs = 14;
 		if(rd <= 4){
-			var text = raphaelText(paper, x, y_body_or_rs_base + param.row_height/2 + oy, cmap[rd], fs, "lc", "realbook_music_symbol");
+			var text = raphaelText(paper, x, y_body_or_rs_base + param.row_height/2 + oy, cmap[rd], fs, 'lc', 'realbook_music_symbol');
 			rg.push(text);
 		}else{
 			var nKasane = myLog2(rd) - 2;
 			var rdx = 2;
 			var rdy = -7;
 			for(var k = 0; k < nKasane; ++k){
-				var text = raphaelText(paper, x + k*rdx, y_body_or_rs_base + param.row_height/2 + k*rdy + oy, '\ue603', fs, "lc", "realbook_music_symbol");
+				var text = raphaelText(paper, x + k*rdx, y_body_or_rs_base + param.row_height/2 + k*rdy + oy, '\ue603', fs, 'lc', 'realbook_music_symbol');
 				rg.push(text);
 			}
 		}
@@ -1519,7 +1519,7 @@ export class DefaultRenderer extends Renderer
 		var theme = macros.theme;
 	
 		/* Reference reserved width for empty measures or chord symbol without base names*/
-		var text = raphaelText(paper, 0, 0,"C7", 16, "lc", "realbook_music_symbol");
+		var text = raphaelText(paper, 0, 0,'C7', 16, 'lc', 'realbook_music_symbol');
 		var C7_width = text.getBBox().width;
 		text.remove();
 	
@@ -1529,7 +1529,7 @@ export class DefaultRenderer extends Renderer
 		var lyric_rows = 0;
 	
 		//var draw_5line = false;
-		if(staff == "ON"){
+		if(staff == 'ON'){
 			rs_area_detected = true;
 		}
 		// interval of 5 lines
@@ -1547,11 +1547,11 @@ export class DefaultRenderer extends Renderer
 					rs_area_detected |= (e.nglist !== null);
 				}else if( e instanceof Lyric){
 					ml_area_detected = true;
-					lyric_rows = Math.max(e.lyric.split("/").length, lyric_rows);
+					lyric_rows = Math.max(e.lyric.split('/').length, lyric_rows);
 				}
 			}
 		}
-		if(staff == "OFF"){
+		if(staff == 'OFF'){
 			rs_area_detected = false;
 		}
 	
@@ -1575,9 +1575,9 @@ export class DefaultRenderer extends Renderer
 		// Debug of y-base lines
 		if(false && draw){
 			var lines = [y_base, y_mu_area_base, y_body_base, y_rs_area_base, y_ml_area_base, y_next_base];
-			var colors = ["black","red","blue","green","orange","pink"];
+			var colors = ['black','red','blue','green','orange','pink'];
 			for(var ii=0; ii<lines.length; ++ii)
-				paper.path(svgLine(0+ii*30, lines[ii], 20+ii*30, lines[ii])).attr({"stroke-width":"1","stroke":colors[ii]});
+				paper.path(svgLine(0+ii*30, lines[ii], 20+ii*30, lines[ii])).attr({'stroke-width':'1','stroke':colors[ii]});
 		}
 	
 		var measure_height = y_next_base - y_base;
@@ -1613,7 +1613,7 @@ export class DefaultRenderer extends Renderer
 				if(e instanceof Coda){
 					m_mu_area_detected = true;
 					if(draw){
-						var g = draw_coda(paper, meas_base_x + mh_offset, y_mu_area_base, "lt", e);
+						var g = draw_coda(paper, meas_base_x + mh_offset, y_mu_area_base, 'lt', e);
 						mh_offset += g.getBBox().width;
 					}
 				}else if(e instanceof Segno){
@@ -1627,7 +1627,7 @@ export class DefaultRenderer extends Renderer
 					if(draw){
 						// If this comment is associated with a chord with exceptional comment, not rendered here.
 						if (!e.chorddep){
-							var g = raphaelText(paper, meas_base_x + mh_offset, y_body_base, e.comment, 15, "lb");
+							var g = raphaelText(paper, meas_base_x + mh_offset, y_body_base, e.comment, 15, 'lb');
 							mh_offset += g.getBBox().width;
 						}
 					}
@@ -1672,15 +1672,15 @@ export class DefaultRenderer extends Renderer
 					var hlw = 0;
 					var lx = x;
 					var timeGroup = paper.set();
-					var textn = raphaelText(paper, lx, y_body_or_rs_base,                e.numer, 12, "lt", "realbook_music_symbol");
+					var textn = raphaelText(paper, lx, y_body_or_rs_base,                e.numer, 12, 'lt', 'realbook_music_symbol');
 					hlw = textn.getBBox().width;
-					var textd = raphaelText(paper, lx, y_body_or_rs_base + param.row_height/2, e.denom, 12, "lt", "realbook_music_symbol");
+					var textd = raphaelText(paper, lx, y_body_or_rs_base + param.row_height/2, e.denom, 12, 'lt', 'realbook_music_symbol');
 					hlw = Math.max(hlw, textd.getBBox().width);
 					textn.attr({'x':textn.attr('x') + (hlw - textn.getBBox().width)/2});
 					textd.attr({'x':textd.attr('x') + (hlw - textd.getBBox().width)/2});
 					timeGroup.push(textn, textd);
 					var ly = y_body_base + param.row_height/2;
-					if(draw && (!rs_area_detected)) timeGroup.push( paper.path(svgLine(lx, ly, lx+hlw, ly)).attr({"stroke-width":"1"}) );
+					if(draw && (!rs_area_detected)) timeGroup.push( paper.path(svgLine(lx, ly, lx+hlw, ly)).attr({'stroke-width':'1'}) );
 					//console.log("hlw = " + hlw);
 					rs_area_svg_groups.push(timeGroup);
 					x += hlw;
@@ -1742,7 +1742,7 @@ export class DefaultRenderer extends Renderer
 				}else if(all_has_length && e instanceof Chord &&
 					(groupedBodyElems[gbei].elems[0] instanceof Chord) && // Rest and chords will not be in the same group
 					(music_context.tie_info.prev_has_tie ||
-					 e.chord_name_str == "" ||
+					 e.chord_name_str == '' ||
 					 (e.is_valid_chord && chord_name_str && (chord_name_str == e.chord_name_str)))){
 						 // Keep in the same group
 				}else{ // flush
@@ -1792,7 +1792,7 @@ export class DefaultRenderer extends Renderer
 				}else{
 	
 					if(body_elems.elems.length != 1)
-						throw "SOMETHING WRONG WITH CHORD GROUPING";
+						throw 'SOMETHING WRONG WITH CHORD GROUPING';
 	
 					var e0 = body_elems.elems[0];
 					var chord_symbol_width = 0;
@@ -1823,14 +1823,14 @@ export class DefaultRenderer extends Renderer
 						if(e.exceptinal_comment !== null){
 							if(draw)
 								var g = raphaelText(paper, e.renderprop.x, y_body_base,
-									e.exceptinal_comment.comment, 15, "lb");
+									e.exceptinal_comment.comment, 15, 'lb');
 						}
 						if(e.lyric !== null){
 							if(draw){
-								var llist = e.lyric.lyric.split("/");
+								var llist = e.lyric.lyric.split('/');
 								for(var li=0; li < llist.length; ++li){
 									var g = raphaelText(paper, e.renderprop.x, y_ml_area_base + li*param.ml_row_height,
-										llist[li], 10, "lt");
+										llist[li], 10, 'lt');
 								}
 							}
 						}
@@ -1844,7 +1844,7 @@ export class DefaultRenderer extends Renderer
 					}else if(e instanceof Simile){
 						// Do nothing as already drawn
 					}else{
-						throw "Unkown instance of body elements";
+						throw 'Unkown instance of body elements';
 					}
 				});
 			});
@@ -1879,33 +1879,33 @@ export class DefaultRenderer extends Renderer
 					x = r.x;
 					if(r.group) rs_area_svg_groups.push(r.group);
 				}else if(e instanceof DaCapo){
-					text = raphaelText(paper, x, y_body_or_rs_base - 8 /* + row_height + 8*/, e.toString(), 15, lr+"c").attr(param.repeat_mark_font);
+					text = raphaelText(paper, x, y_body_or_rs_base - 8 /* + row_height + 8*/, e.toString(), 15, lr+'c').attr(param.repeat_mark_font);
 					if(rs_area_detected) x += text.getBBox().width;
 					rs_area_svg_groups.push(text);
 				}else if(e instanceof DalSegno){
-					text = raphaelText(paper, x, y_body_or_rs_base - 8 /* + row_height + 8*/, e.toString(), 15, lr+"c").attr(param.repeat_mark_font);
+					text = raphaelText(paper, x, y_body_or_rs_base - 8 /* + row_height + 8*/, e.toString(), 15, lr+'c').attr(param.repeat_mark_font);
 					if(rs_area_detected) x += text.getBBox().width;
 					rs_area_svg_groups.push(text);
 				}else if(e instanceof ToCoda){
 					if(rs_area_detected){
-						var text = raphaelText(paper, x, y_body_or_rs_base, "To", 15, "lb").attr(param.repeat_mark_font);
+						var text = raphaelText(paper, x, y_body_or_rs_base, 'To', 15, 'lb').attr(param.repeat_mark_font);
 						x += (text.getBBox().width + 5);
 						rs_area_svg_groups.push(text);
-						var coda = draw_coda(paper, x, y_body_or_rs_base, "lb", e);
+						var coda = draw_coda(paper, x, y_body_or_rs_base, 'lb', e);
 						x += coda.getBBox().width;
 						rs_area_svg_groups.push(coda);
 					}else{
-						var coda = draw_coda(paper, x, y_body_or_rs_base, "rb", e);
-						text = raphaelText(paper, x - coda.getBBox().width - 5, y_body_or_rs_base, "To", 15, "rb").attr(param.repeat_mark_font);
+						var coda = draw_coda(paper, x, y_body_or_rs_base, 'rb', e);
+						text = raphaelText(paper, x - coda.getBBox().width - 5, y_body_or_rs_base, 'To', 15, 'rb').attr(param.repeat_mark_font);
 						rs_area_svg_groups.push(coda);
 						rs_area_svg_groups.push(text);
 					}
 				}else if(e instanceof Fine){
-					text = raphaelText(paper, x, y_body_or_rs_base - 8 /* + row_height + 8*/, e.toString(), 15, lr+"c").attr(param.repeat_mark_font);
+					text = raphaelText(paper, x, y_body_or_rs_base - 8 /* + row_height + 8*/, e.toString(), 15, lr+'c').attr(param.repeat_mark_font);
 					if(rs_area_detected) x += text.getBBox().width;
 					rs_area_svg_groups.push(text);
 				}else{
-					throw "Unkown instance of footer elements";
+					throw 'Unkown instance of footer elements';
 				}
 			}
 	
@@ -1922,10 +1922,10 @@ export class DefaultRenderer extends Renderer
 					var ly = y_body_base - 2 - oy;
 					var sx = meas_start_x;
 					var fx = meas_end_x;
-					if(draw) paper.path(svgLine(sx, ly, sx, ly + oy)).attr({"stroke-width":"1"});
-					if(draw) paper.path(svgLine(sx, ly, fx, ly)).attr({"stroke-width":"1"});
-					var s = e.indicators.join(",");
-					if(draw) raphaelText(paper, sx + 2, ly, s, 10, "lt");
+					if(draw) paper.path(svgLine(sx, ly, sx, ly + oy)).attr({'stroke-width':'1'});
+					if(draw) paper.path(svgLine(sx, ly, fx, ly)).attr({'stroke-width':'1'});
+					var s = e.indicators.join(',');
+					if(draw) raphaelText(paper, sx + 2, ly, s, 10, 'lt');
 				}else if(e instanceof LongRestIndicator){
 					var sx = meas_start_x + m.header_width - param.header_body_margin; // More beautiful for long rest if header body margin is omitted
 					var fx = meas_end_x - m.footer_width;
@@ -1943,12 +1943,12 @@ export class DefaultRenderer extends Renderer
 					var lriGroup = paper.set();
 	
 					if(draw) lriGroup.push( paper.path(svgLine(lx, y_body_or_rs_base + param.row_height/2,
-							rx, y_body_or_rs_base + param.row_height/2)).attr({"stroke-width":"7"}) );
+							rx, y_body_or_rs_base + param.row_height/2)).attr({'stroke-width':'7'}) );
 					if(draw) lriGroup.push( paper.path(svgLine(lx, y_body_or_rs_base + rh * vlmargin,
-							lx, y_body_or_rs_base + rh - rh * vlmargin)).attr({"stroke-width":"1"}) );
+							lx, y_body_or_rs_base + rh - rh * vlmargin)).attr({'stroke-width':'1'}) );
 					if(draw) lriGroup.push( paper.path(svgLine(rx, y_body_or_rs_base + rh * vlmargin,
-							rx, y_body_or_rs_base + rh - rh * vlmargin)).attr({"stroke-width":"1"}) );
-					if(draw) lriGroup.push( raphaelText(paper, (sx+fx)/2, y_body_or_rs_base, e.longrestlen, 14, "cm","realbook_music_symbol") );
+							rx, y_body_or_rs_base + rh - rh * vlmargin)).attr({'stroke-width':'1'}) );
+					if(draw) lriGroup.push( raphaelText(paper, (sx+fx)/2, y_body_or_rs_base, e.longrestlen, 14, 'cm','realbook_music_symbol') );
 	
 					if(draw) rs_area_svg_groups.push(lriGroup);
 	
@@ -1961,7 +1961,7 @@ export class DefaultRenderer extends Renderer
 					var swidth = render_simile_mark(draw, paper, sgroup, (sx+fx)/2, y_body_or_rs_base, param.rs_area_height, e.numslash, false, 'c');
 					if(draw) rs_area_svg_groups.push(sgroup);
 				}else{
-					throw "Unkown measure wide instance detected";
+					throw 'Unkown measure wide instance detected';
 				}
 			}
 	
@@ -1995,7 +1995,7 @@ export class DefaultRenderer extends Renderer
 			});
 			if(rs_min_y < y_rs_area_base){
 				rs_area_svg_groups.forEach(function(g){
-					g.transform("t"+0 +","+(y_rs_area_base - rs_min_y));
+					g.transform('t'+0 +','+(y_rs_area_base - rs_min_y));
 				});
 			}
 		}
@@ -2011,71 +2011,71 @@ export class DefaultRenderer extends Renderer
 	{
 		var global_macros = {};
 	
-		global_macros.title = "NO TITLE";
-		if( "TITLE" in track.macros ){
-			global_macros.title = track.macros["TITLE"];
+		global_macros.title = 'NO TITLE';
+		if( 'TITLE' in track.macros ){
+			global_macros.title = track.macros['TITLE'];
 		}
 	
-		global_macros.artist = "NO ARTIST";
-		if( "ARTIST" in track.macros ){
-			global_macros.artist = track.macros["ARTIST"];
+		global_macros.artist = 'NO ARTIST';
+		if( 'ARTIST' in track.macros ){
+			global_macros.artist = track.macros['ARTIST'];
 		}
 	
-		global_macros.sub_title = "";
-		if( "SUB_TITLE" in track.macros ){
-			global_macros.sub_title = track.macros["SUB_TITLE"];
+		global_macros.sub_title = '';
+		if( 'SUB_TITLE' in track.macros ){
+			global_macros.sub_title = track.macros['SUB_TITLE'];
 		}
 	
 		global_macros.x_global_scale = 1.0;
-		if( "XSCALE" in track.macros ){
-			global_macros.x_global_scale = parseFloat(track.macros["XSCALE"]);
+		if( 'XSCALE' in track.macros ){
+			global_macros.x_global_scale = parseFloat(track.macros['XSCALE']);
 		}
 	
 		global_macros.transpose = 0;
-		if( "TRANSPOSE" in track.macros)
+		if( 'TRANSPOSE' in track.macros)
 		{
-			var t = parseInt(track.macros["TRANSPOSE"]);
+			var t = parseInt(track.macros['TRANSPOSE']);
 			if(!isNaN(t))
 				global_macros.transpose = t;
 		}
 	
-		global_macros.half_type = "GUESS";
-		if( "HALF_TYPE" in track.macros)
+		global_macros.half_type = 'GUESS';
+		if( 'HALF_TYPE' in track.macros)
 		{
-			global_macros.half_type = track.macros["HALF_TYPE"]; // "SHARP","FLAT","GUESS"
+			global_macros.half_type = track.macros['HALF_TYPE']; // "SHARP","FLAT","GUESS"
 		}
 	
-		global_macros.staff = "AUTO";
-		if( "STAFF" in track.macros)
+		global_macros.staff = 'AUTO';
+		if( 'STAFF' in track.macros)
 		{
-			global_macros.staff = track.macros["STAFF"];
+			global_macros.staff = track.macros['STAFF'];
 		}
 	
 		global_macros.r_row_margin = 1.0;
-		if( "ROW_MARGIN" in track.macros)
+		if( 'ROW_MARGIN' in track.macros)
 		{
-			global_macros.r_row_margin = parseFloat(track.macros["ROW_MARGIN"]);
+			global_macros.r_row_margin = parseFloat(track.macros['ROW_MARGIN']);
 		}
 	
 		global_macros.r_above_rs_area_margin = 1.0;
-		if( "ABOVE_RS_AREA_MARGIN" in track.macros)
+		if( 'ABOVE_RS_AREA_MARGIN' in track.macros)
 		{
-			global_macros.r_above_rs_area_margin = parseFloat(track.macros["ABOVE_RS_AREA_MARGIN"]);
+			global_macros.r_above_rs_area_margin = parseFloat(track.macros['ABOVE_RS_AREA_MARGIN']);
 		}
 	
-		global_macros.theme = "Arial";
-		if( "THEME" in track.macros)
+		global_macros.theme = 'Arial';
+		if( 'THEME' in track.macros)
 		{
-			global_macros.theme = track.macros["THEME"] == "Default" ? "Arial" : track.macros["THEME"];
+			global_macros.theme = track.macros['THEME'] == 'Default' ? 'Arial' : track.macros['THEME'];
 		}
 	
-		global_macros.reharsal_mark_position = "Default";
-		if( "REHARSAL_MARK" in track.macros)
+		global_macros.reharsal_mark_position = 'Default';
+		if( 'REHARSAL_MARK' in track.macros)
 		{
-			global_macros.reharsal_mark_position = track.macros["REHARSAL_MARK"];
+			global_macros.reharsal_mark_position = track.macros['REHARSAL_MARK'];
 	
-			if(global_macros.reharsal_mark_position == "Inner" && global_macros.staff != "ON"){
-				alert("REHARSAL_MARK=\"Inner\" needs to be specified with STAFF=\"ON\"");
+			if(global_macros.reharsal_mark_position == 'Inner' && global_macros.staff != 'ON'){
+				alert('REHARSAL_MARK="Inner" needs to be specified with STAFF="ON"');
 			}
 		}
 	
@@ -2088,35 +2088,35 @@ export class DefaultRenderer extends Renderer
 	{
 		var macros_to_apply = deepcopy(global_macros); // Deep copy
 	
-		if( "XSCALE" in rg.macros ){
-			macros_to_apply.x_global_scale = parseFloat(rg.macros["XSCALE"]);
+		if( 'XSCALE' in rg.macros ){
+			macros_to_apply.x_global_scale = parseFloat(rg.macros['XSCALE']);
 		}
 	
-		if( "TRANSPOSE" in rg.macros)
+		if( 'TRANSPOSE' in rg.macros)
 		{
-			var t = parseInt(rg.macros["TRANSPOSE"]);
+			var t = parseInt(rg.macros['TRANSPOSE']);
 			if(!isNaN(t))
 				macros_to_apply.transpose = t;
 		}
 	
-		if( "HALF_TYPE" in rg.macros)
+		if( 'HALF_TYPE' in rg.macros)
 		{
-			macros_to_apply.half_type = rg.macros["HALF_TYPE"]; // "SHARP","FLAT","GUESS"
+			macros_to_apply.half_type = rg.macros['HALF_TYPE']; // "SHARP","FLAT","GUESS"
 		}
 	
-		if( "STAFF" in rg.macros)
+		if( 'STAFF' in rg.macros)
 		{
-			macros_to_apply.staff = rg.macros["STAFF"];
+			macros_to_apply.staff = rg.macros['STAFF'];
 		}
 	
-		if( "ROW_MARGIN" in rg.macros)
+		if( 'ROW_MARGIN' in rg.macros)
 		{
-			macros_to_apply.r_row_margin = parseFloat(rg.macros["ROW_MARGIN"]);
+			macros_to_apply.r_row_margin = parseFloat(rg.macros['ROW_MARGIN']);
 		}
 	
-		if( "ABOVE_RS_AREA_MARGIN" in rg.macros)
+		if( 'ABOVE_RS_AREA_MARGIN' in rg.macros)
 		{
-			macros_to_apply.r_above_rs_area_margin = parseFloat(rg.macros["ABOVE_RS_AREA_MARGIN"]);
+			macros_to_apply.r_above_rs_area_margin = parseFloat(rg.macros['ABOVE_RS_AREA_MARGIN']);
 		}
 	
 	
@@ -2125,15 +2125,15 @@ export class DefaultRenderer extends Renderer
 	
 	makeDammyPaper()
 	{
-		$("body").append("<div id='invisible_view2'></div>");
-		$("#invisible_view2").css({opacity:0.2, position:"absolute",top:0, left:0});
-		paper = Raphael($("#invisible_view2")[0],1,1);
+		$('body').append('<div id=\'invisible_view2\'></div>');
+		$('#invisible_view2').css({opacity:0.2, position:'absolute',top:0, left:0});
+		paper = Raphael($('#invisible_view2')[0],1,1);
 		return paper;
 	}
 	
 	removeDammyPaper()
 	{
-		$("#invisible_view2").remove();
+		$('#invisible_view2').remove();
 	}
 	
 	Initialize()
@@ -2141,11 +2141,11 @@ export class DefaultRenderer extends Renderer
 		// Pre-load web-fonts because BBox of the fonts can not be correctly retrieved
 		// for the first-rendered fonts. This may be a browser bug ?
 		var paper = makeDammyPaper();
-		var FONT_FAMILIES=["realbook_music_symbol","Arial"]; // List all the fonts used
+		var FONT_FAMILIES=['realbook_music_symbol','Arial']; // List all the fonts used
 		for(var i=0; i < FONT_FAMILIES.length; ++i){
-			var text = raphaelText(paper, 100, 100, "ABCDEFG#b123456789dsMm", 16, "lt",FONT_FAMILIES[i]);
+			var text = raphaelText(paper, 100, 100, 'ABCDEFG#b123456789dsMm', 16, 'lt',FONT_FAMILIES[i]);
 		}
-		raphaelText(paper, 100, 120, "b#\ue700\ue701\ue702\ue710\ue711\ue900\ue800\ue801", 16, "lt",'smart_music_symbol');
+		raphaelText(paper, 100, 120, 'b#\ue700\ue701\ue702\ue710\ue711\ue900\ue800\ue801', 16, 'lt','smart_music_symbol');
 		removeDammyPaper();
 	}
 	
@@ -2153,7 +2153,7 @@ export class DefaultRenderer extends Renderer
 	{
 		var draw = !just_to_estimate_size;
 	
-		console.log("render_impl called with " + draw);
+		console.log('render_impl called with ' + draw);
 	
 		var paper = null;
 		var origin = {x:0,y:0};
@@ -2169,26 +2169,26 @@ export class DefaultRenderer extends Renderer
 		var y_title_offset = param.y_title_offset;
 		var x_offset = origin.x + param.x_offset;
 		var score_width = param.paper_width/param.ncol;
-		var score_height = param.paper_height/param.nrow
+		var score_height = param.paper_height/param.nrow;
 		var width = param.paper_width/param.ncol - param.x_offset * 2;
 	
 		var y_base = param.y_first_page_offset;
 	
-		var songname = "";
+		var songname = '';
 	
 		var global_macros = getGlobalMacros(track);
 	
 		// Title
-		if(draw) raphaelText(paper, x_offset + width/2, y_title_offset, global_macros.title, param.title_font_size, "ct");
+		if(draw) raphaelText(paper, x_offset + width/2, y_title_offset, global_macros.title, param.title_font_size, 'ct');
 		songname = global_macros.title;
 	
 		// Sub Title
-		if(draw && global_macros.sub_title != "")
-			raphaelText(paper, x_offset + width/2, y_title_offset + 28, global_macros.sub_title, param.sub_title_font_size, "ct");
+		if(draw && global_macros.sub_title != '')
+			raphaelText(paper, x_offset + width/2, y_title_offset + 28, global_macros.sub_title, param.sub_title_font_size, 'ct');
 	
 		// Artist
-		if(draw) raphaelText(paper, x_offset + width, param.y_author_offset, global_macros.artist, param.sub_title_font_size, "rt");
-		songname += ("/"+global_macros.artist);
+		if(draw) raphaelText(paper, x_offset + width, param.y_author_offset, global_macros.artist, param.sub_title_font_size, 'rt');
+		songname += ('/'+global_macros.artist);
 	
 		// Music context
 		var music_context = {
@@ -2206,7 +2206,7 @@ export class DefaultRenderer extends Renderer
 		};
 	
 		/* Paging */
-		console.log("render_impl called with " + draw + " : Making pagination");
+		console.log('render_impl called with ' + draw + ' : Making pagination');
 	
 		var pageslist = [];
 		if(draw){
@@ -2215,10 +2215,10 @@ export class DefaultRenderer extends Renderer
 			for(var i = 0; i < track.reharsal_groups.length; ++i)
 			{
 				var rg_macros = getMacros(global_macros, track.reharsal_groups[i]);
-				console.group("Macro for " + track.reharsal_groups[i].name);
+				console.group('Macro for ' + track.reharsal_groups[i].name);
 				console.log(rg_macros);
 				console.groupEnd();
-				if(global_macros.reharsal_mark_position != "Inner")
+				if(global_macros.reharsal_mark_position != 'Inner')
 					y_stacks.push({type:'reharsal',height:param.rm_area_height,cont:track.reharsal_groups[i],macros:rg_macros});
 				var rg = track.reharsal_groups[i];
 				for(var bi = 0; bi < rg.blocks.length; ++bi){
@@ -2259,8 +2259,8 @@ export class DefaultRenderer extends Renderer
 				}else{
 					if(avoid_separated_rm &&
 						 page_cont.length >= 1 &&
-						 page_cont[page_cont.length-1].type=="reharsal" &&
-						 y_stacks[i].type=="meas")
+						 page_cont[page_cont.length-1].type=='reharsal' &&
+						 y_stacks[i].type=='meas')
 					{
 						var prev_ys = page_cont.pop();
 						pageslist.push(page_cont);
@@ -2299,7 +2299,7 @@ export class DefaultRenderer extends Renderer
 		}
 	
 		/* Paging */
-		console.log("render_impl called with " + draw + " : Invoke async loop execution");
+		console.log('render_impl called with ' + draw + ' : Invoke async loop execution');
 	
 		if(async_mode){
 			Task.Foreach(pageslist, function(pageidx, len, page, ctx1){
@@ -2307,12 +2307,12 @@ export class DefaultRenderer extends Renderer
 				Task.Foreach(page, function(pei,yselen, yse, ctx2){
 	
 					if(progress_cb){
-						progress_cb((ctx2.draw ? "":"Pre-")+"Rendering block " + pei + " in page " + (pageidx+1) + " of " + songname);
+						progress_cb((ctx2.draw ? '':'Pre-')+'Rendering block ' + pei + ' in page ' + (pageidx+1) + ' of ' + songname);
 					}
 	
 					if(yse.type == 'titles'){
 	
-					}else if(yse.type == 'reharsal' && yse.macros.reharsal_mark_position != "Inner"){
+					}else if(yse.type == 'reharsal' && yse.macros.reharsal_mark_position != 'Inner'){
 						var rg = yse.cont;
 	
 						if(ctx2.draw){
@@ -2328,17 +2328,17 @@ export class DefaultRenderer extends Renderer
 								ctx2.paper, yse.macros, row_elements_list, yse.rg, yse.pm, yse.nm,
 								ctx2.y_base, ctx2.param, ctx2.draw,
 								(yse.block_id==0 && yse.row_id_in_block==0),
-								yse.macros.reharsal_mark_position=="Inner", music_context);
+								yse.macros.reharsal_mark_position=='Inner', music_context);
 						ctx2.y_base = r.y_base;
 					}
 	
-				}, ctx1, "renderpageelemloop");
+				}, ctx1, 'renderpageelemloop');
 	
 				var lasttask = Task.enqueueFunctionCall(function(){
 					// Page number footer
-					footerstr = (songname + " - " + (pageidx+1) + " of " + (pageslist.length));
+					footerstr = (songname + ' - ' + (pageidx+1) + ' of ' + (pageslist.length));
 					//alert(footerstr);
-					raphaelText(ctx1.paper, ctx1.origin.x + score_width/2, ctx1.origin.y + score_height - 60, footerstr, 12, "ct");
+					raphaelText(ctx1.paper, ctx1.origin.x + score_width/2, ctx1.origin.y + score_height - 60, footerstr, 12, 'ct');
 	
 					// Make new page
 					if(ctx1.draw && pageidx != pageslist.length-1){
@@ -2347,17 +2347,17 @@ export class DefaultRenderer extends Renderer
 						ctx1.y_base = mnret.origin.y + ctx1.param.y_offset;
 						ctx1.origin = mnret.origin;
 						ctx1.x_offset = mnret.origin.x + param.x_offset;
-					}}, [], "renderpageelemloop");
+					}}, [], 'renderpageelemloop');
 	
 				return lasttask;
 	
-			},{param:param,draw:draw,paper:paper,y_base:y_base,origin:origin,x_offset:x_offset}, "renderpageloop");
+			},{param:param,draw:draw,paper:paper,y_base:y_base,origin:origin,x_offset:x_offset}, 'renderpageloop');
 	
 			var task = Task.enqueueFunctionCall(function(){
 				if(!draw){
 					removeDammyPaper();
 				}
-			}, [], "renderpageloop");
+			}, [], 'renderpageloop');
 	
 			return task;
 	
@@ -2369,7 +2369,7 @@ export class DefaultRenderer extends Renderer
 				for(var pei = 0; pei < yse.length; ++pei){ // Loop each y_stacks
 					if(yse[pei].type == 'titles'){
 	
-					}else if(yse[pei].type == 'reharsal' && yse[pei].macros.reharsal_mark_position != "Inner"){
+					}else if(yse[pei].type == 'reharsal' && yse[pei].macros.reharsal_mark_position != 'Inner'){
 						var rg = yse[pei].cont;
 	
 						if(draw){
@@ -2385,15 +2385,15 @@ export class DefaultRenderer extends Renderer
 								yse[pei].rg, yse[pei].pm, yse[pei].nm,
 								y_base, param, draw,
 								(yse[pei].block_id==0 && yse[pei].row_id_in_block==0),
-								yse[pei].macros.reharsal_mark_position == "Inner", music_context);
+								yse[pei].macros.reharsal_mark_position == 'Inner', music_context);
 						y_base = r.y_base;
 					}
 				}
 				// Page number footer
-				footerstr = (songname + " - " + (pageidx+1) + " of " + (pageslist.length));
+				footerstr = (songname + ' - ' + (pageidx+1) + ' of ' + (pageslist.length));
 				//alert(footerstr);
 				raphaelText(paper, origin.x + score_width/2,
-						origin.y + score_height - 60, footerstr, 12, "ct");
+						origin.y + score_height - 60, footerstr, 12, 'ct');
 	
 				if(draw && pageidx != pageslist.length-1){
 					var mnret = makeNewPaper(canvas, param, context);
@@ -2416,14 +2416,14 @@ export class DefaultRenderer extends Renderer
 	{
 		var lx = x;
 		var group = paper.set();
-		group.push( raphaelText(paper, x, y, '\ue801', 18, "lt", "smart_music_symbol") );
+		group.push( raphaelText(paper, x, y, '\ue801', 18, 'lt', 'smart_music_symbol') );
 		lx = x + group.getBBox().width;
 		if(segno.number !== null){
-			group.push( raphaelText(paper, lx, y + group.getBBox().height, segno.number, 18, "lb") );
+			group.push( raphaelText(paper, lx, y + group.getBBox().height, segno.number, 18, 'lb') );
 			lx = x + group.getBBox().width;
 		}
 		if(segno.opt !== null){
-			group.push( raphaelText(paper, lx, y + group.getBBox().height, "("+segno.opt+")", 16, "lb"));
+			group.push( raphaelText(paper, lx, y + group.getBBox().height, '('+segno.opt+')', 16, 'lb'));
 			lx = x + group.getBBox().width;
 		}
 	
@@ -2437,13 +2437,13 @@ export class DefaultRenderer extends Renderer
 		if(align[0] == 'r'){
 			if(coda.number !== null)
 				group.push( raphaelText(paper, x, y, coda.number, 18, align) );
-			group.push( raphaelText(paper, x - (coda.number !== null ? group.getBBox().width : 0), y, '\ue800', 18, align, "smart_music_symbol") );
+			group.push( raphaelText(paper, x - (coda.number !== null ? group.getBBox().width : 0), y, '\ue800', 18, align, 'smart_music_symbol') );
 		}else if(align[0] == 'l'){
-			group.push( raphaelText(paper, x, y, '\ue800', 18, align, "smart_music_symbol") );
+			group.push( raphaelText(paper, x, y, '\ue800', 18, align, 'smart_music_symbol') );
 			if(coda.number !== null)
 				group.push( raphaelText(paper, x + group.getBBox().width, y, coda.number, 18, align) );
 		}else{
-			throw "NOT SUPPORTED";
+			throw 'NOT SUPPORTED';
 		}
 		return group;
 	}

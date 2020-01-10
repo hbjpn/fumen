@@ -1,4 +1,4 @@
-import "@babel/polyfill";
+import '@babel/polyfill';
 
 function shallowcopy(obj)
 {
@@ -30,14 +30,14 @@ export class TaskQueue
 			if(! (task.task_type in this.task_queue) )
 				this.task_queue[task.task_type] = [];
 			this.task_queue[task.task_type].push(task);
-			console.log("Enqueue task for queue '" + task.task_type + "'. Size = " + this.task_queue[task.task_type].length);
+			console.log('Enqueue task for queue \'' + task.task_type + '\'. Size = ' + this.task_queue[task.task_type].length);
 			if(this.task_queue[task.task_type].length == 1){
 				setTimeout(task.run.bind(task), 0);
 			}
 		}else{
 			setTimeout(task.run.bind(task),0); // Just run it immediately if task type is null
 		}
-	};
+	}
 	
 	finish(task)
 	{
@@ -48,17 +48,17 @@ export class TaskQueue
 		if((!(task.task_type in this.task_queue)) ||
 		   (this.task_queue[task.task_type].length == 0) ||
 		   (this.task_queue[task.task_type][0] != task)){
-			alert("Invalid task execution state detected");
+			alert('Invalid task execution state detected');
 		}else{
 			var q = this.task_queue[task.task_type];
 			q.shift();
-			console.log("Dequeue task for queue '" + task.task_type + "'. Size = " + q.length);
+			console.log('Dequeue task for queue \'' + task.task_type + '\'. Size = ' + q.length);
 			if(q.length > 0){
 				// TODO : Set timer for next task run ?
 				q[0].run();
 			}
 		}
-	};
+	}
 }	
 
 export class Task
@@ -91,7 +91,7 @@ export class Task
 	
 	then(func){
 		return this.promise.then(func);
-	};
+	}
 	
 	
 	run (){
@@ -105,7 +105,7 @@ export class Task
 				// End of task
 				// false, 0, true, ... all the values other than Task and undefined is land in here.
 				// ret is treated as a parameter for resolve
-				if(me.resolve === null){ alert("Invalid state detected"); }
+				if(me.resolve === null){ alert('Invalid state detected'); }
 				me.resolve(taskret);
 				// Note that resolve will invoke then "later".
 				// finish notification will invoke a next task.
@@ -116,14 +116,14 @@ export class Task
 			// End of task
 			// false, 0, true, ... all the values other than Task and undefined is land in here.
 			// ret is treated as a parameter for resolve
-			if(this.resolve === null){ alert("Invalid state detected"); }
+			if(this.resolve === null){ alert('Invalid state detected'); }
 			this.resolve(ret);
 			// Note that resolve will invoke then "later".
 			// finish notification will invoke a next task.
 			// It is required to wait a 1msec to keep order of the "then" and next task call.
 			setTimeout(this.queue.finish.bind(this.queue, this), 1);
 		}
-	};
+	}
 
 	enqueueFunctionCall(func, farg, task_type)
 	{
@@ -136,7 +136,7 @@ export class Task
 			++ctx.i;
 			return ret;
 		}, task_type); // Make one shot task
-	};
+	}
 	
 	_ForeachWorker(wc)
 	{
@@ -152,7 +152,7 @@ export class Task
 			return new Task(newwc, Task._ForeachWorker, null);
 		}, 0, tempqueue);
 		return task;
-	};
+	}
 	
 	Foreach(looptarget, worker, context, task_type)
 	{
@@ -164,7 +164,7 @@ export class Task
 		var task = new Task(wcontext, Task._ForeachWorker, task_type);
 	
 		return task;
-	};
+	}
 }
 
 	//
@@ -264,7 +264,7 @@ export class Simile{
 			m = s.match(cnrg);
 			//console.log(m);
 			if(m === null){
-				console.log("Invalid code notation : " + s);
+				console.log('Invalid code notation : ' + s);
 				return null;
 			}
 			for(var i = 0; i < CS_LIST.length; ++i){
@@ -283,7 +283,7 @@ export class Simile{
 			switch(holder[i].cs){
 			case CS_M:
 				var s = holder[i].s;
-				var isMaj = (s == "M" || s.toLowerCase() == "maj" || s.toLowerCase() == "ma");
+				var isMaj = (s == 'M' || s.toLowerCase() == 'maj' || s.toLowerCase() == 'ma');
 				if(isMaj == false) minor_exists = true;
 	
 				if(minor_exists && isMaj == true){
@@ -313,7 +313,7 @@ export class Simile{
 		//console.log(objholder);
 	
 		return [holder, objholder];
-	};
+	}
 	
 	function getNoteProfile(note_str)
 	{
@@ -359,18 +359,18 @@ export class Simile{
 		var parseNoteGroup = function(sng){
 			var sngi = 0;
 			sng = sng.substr(1); // first (
-			var tmp = "";
-			while(sng[sngi] != ")"){
+			var tmp = '';
+			while(sng[sngi] != ')'){
 				tmp += sng[sngi];
 				++sngi;
 			}
-			var notes_str = tmp.split(",");
+			var notes_str = tmp.split(',');
 			var nr = [];
 			for(var nsi=0; nsi < notes_str.length; ++nsi){
 				//var m = notes_str[nsi].match(/([A-G])(#|b)?(\d+)/);
 				var np = getNoteProfile(notes_str[nsi]);
 				if(!np)
-					throw "INVALID_TOKEN_DETECTED : invalid note notation"
+					throw 'INVALID_TOKEN_DETECTED : invalid note notation';
 				nr.push(np);
 			}
 	
@@ -379,7 +379,7 @@ export class Simile{
 			var m = sng.match(r);
 	
 			if(!m[0])
-				throw "INVALID_TOKEN_DETECTED";
+				throw 'INVALID_TOKEN_DETECTED';
 	
 			var li = parseLengthIndicator(m[1]);
 	
@@ -391,12 +391,12 @@ export class Simile{
 			var ret = parseNoteGroup(str);
 			nglist.push(ret.ng);
 			var str = ret.s;
-			if(str[0] == ","){
+			if(str[0] == ','){
 				str = str.substr(1);
-			}else if(str[0] == ")"){
+			}else if(str[0] == ')'){
 				break;
 			}else{
-				throw "INVALID_TOKEN_DETECTED";
+				throw 'INVALID_TOKEN_DETECTED';
 			}
 		}
 		return nglist;
@@ -426,7 +426,7 @@ export class Chord{
 	
 		this.chord_name_str = null;
 	
-		if( m && m[0] != ""){
+		if( m && m[0] != ''){
 			this.chord_name_str = m[1];
 			this.note_base = m[3];
 			this.sharp_flat = m[4];
@@ -478,7 +478,7 @@ export class Chord{
 	
 	getTranpsoedNote(transpose, half_type, note_base, sharp_flat)
 	{
-		var seq = [ ["A"],["A#","Bb"],["B","Cb"],["C"],["C#","Db"],["D"],["D#","Eb"],["E","Fb"],["F"],["F#","Gb"],["G"],["G#","Ab"] ];
+		var seq = [ ['A'],['A#','Bb'],['B','Cb'],['C'],['C#','Db'],['D'],['D#','Eb'],['E','Fb'],['F'],['F#','Gb'],['G'],['G#','Ab'] ];
 		var note = note_base;
 		if(sharp_flat !== undefined)
 			note += sharp_flat;
@@ -499,25 +499,25 @@ export class Chord{
 			return s[0];
 		}else{
 			switch(half_type){
-			case "GUESS":
+			case 'GUESS':
 				// TODO : More intelligent transposing based on key of the track.
 				if(sharp_flat){
-					if(sharp_flat == "#") return s[0];
+					if(sharp_flat == '#') return s[0];
 					else return s[1];
 				}else{
 					return s[1]; // Sharp based
 				}
 				break;
-			case "SHARP":
+			case 'SHARP':
 				return s[0];
 				break;
-			case "FLAT":
+			case 'FLAT':
 				return s[1];
 				break;
 			}
 		}
 		return null;
-	};
+	}
 	
 	getChordStrBase(tranpose, half_type)
 	{
@@ -533,7 +533,7 @@ export class Chord{
 		}
 	
 		return [tranposed_note, transposed_base_note];
-	};
+	}
 }
 
 export class LoopIndicator{
@@ -637,8 +637,8 @@ export class DaCapo{
 	}
 	
 	toString(){
-		return "D.C.";
-	};
+		return 'D.C.';
+	}
 }
 	
 export class DalSegno{
@@ -649,10 +649,10 @@ export class DalSegno{
 	}
 	
 	toString(){
-		var dss="D.S."+(this.number===null?"":this.number);
-		var als=this.al===null?"":(" al "+this.al.toString());
+		var dss='D.S.'+(this.number===null?'':this.number);
+		var als=this.al===null?'':(' al '+this.al.toString());
 		return dss+als;
-	};
+	}
 }
 	
 export class Segno{
@@ -670,8 +670,8 @@ export class Coda{
 	}
 	
 	toString(){
-		return "Coda"+(this.number===null?"":this.number);
-	};
+		return 'Coda'+(this.number===null?'':this.number);
+	}
 }
 	
 export class ToCoda{
@@ -687,8 +687,8 @@ export class Fine{
 	}
 	
 	toString(){
-		return "Fine";
-	};
+		return 'Fine';
+	}
 }
 	
 export class Comment{

@@ -112,7 +112,7 @@ export class MobileRenderer extends Renderer {
         ];
         var param = this.param;
         var canvas = this.canvas;
-        return PreloadImages(urls).then(function(result) {
+        return PreloadImages(urls).then((result) => {
             // make map with url
             for (var ii = 0; ii < result.length; ++ii) {
                 G_imgmap[result[ii].url] = result[ii].img;

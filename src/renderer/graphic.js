@@ -40,10 +40,10 @@ export function GetCharProfile(fsize) {
         if (!G_memCanvas) {
             G_memCanvas = document.createElement("canvas");
             G_pixelRatio = GetPixelRatio(G_memCanvas);
-            this.SetupHiDPICanvas(G_memCanvas, 200, 200, G_pixelRatio);
+            SetupHiDPICanvas(G_memCanvas, 200, 200, G_pixelRatio);
             console.log("Pixel ratio = " + G_pixelRatio);
         }
-        yroom = this.JudgeTextYPosOffset(G_memCanvas, bold, fontfamily, fsize);
+        yroom = JudgeTextYPosOffset(G_memCanvas, bold, fontfamily, fsize);
         G_y_char_offsets[key] = yroom;
     }
 
@@ -66,7 +66,7 @@ export function CanvasText(canvas, x, y, text, fsize, align, xwidth, notdraw, op
     let bold = ""; //"bold ";
     let fontfamily = "Arial";
 
-    var yroom = this.GetCharProfile(fsize);
+    var yroom = GetCharProfile(fsize);
 
     let yadjust = 0;
     if (align[1] == "t") {

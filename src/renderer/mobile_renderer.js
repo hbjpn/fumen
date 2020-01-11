@@ -319,38 +319,15 @@ export class MobileRenderer extends Renderer {
         return { y: y_base };
     }
 
-    render_measure_row_simplified(
-        x,
-        paper,
-        macros,
-        row_elements_list,
-        reharsal_group,
-        prev_measure,
-        next_measure,
-        y_base,
-        param,
-        draw,
-        first_block_first_row,
-        inner_reharsal_mark,
-        ylimit,
-        music_context
-    ) {
-        var x_global_scale = macros.x_global_scale;
-        var transpose = macros.transpose;
-        var half_type = macros.half_type;
-        var staff = macros.staff;
-        var theme = macros.theme;
-
-        /* Reference reserved width for empty measures or chord symbol without base names*/
-        var C7_width = 20;
-
+    screening_y_areas(row_elements_list, y_base, param, staff){
 
         var yprof = {
             mu:    {detected:false, height: param.mu_area_height, margin:[0, param.below_mu_area_margin]},
             body:  {detected:true,  height: param.row_height,     margin:[0, param.below_mu_area_margin]},
             rs:    {detected:false, height: param.rs_area_height, margin:[param.above_rs_area_margin, 0]},
-            ml:    {detected:false, height: param.ml_row_height, margin:[param.above_ml_area_margin, 0]},
-            rm:    {detected:true,  height: param.row_margin,     margin:[0, 0]}
+            ml:    {detected:false, height: param.ml_row_height,  margin:[param.above_ml_area_margin, 0]},
+            rm:    {detected:true,  height: param.row_margin,     margin:[0, 0]},
+            end:   {detected:true,  height: 0,                    margin:[0, 0]} // Vitrual row representing start of end of row = start of next row
         };
 
         var lyric_rows = 0;
@@ -397,7 +374,7 @@ export class MobileRenderer extends Renderer {
         }
 
         // Calculate yposition  for each area
-        var ycomps = ["mu","body","rs","ml","rm"];
+        var ycomps = ["mu","body","rs","ml","rm","end"];
         for(let i = 0; i < ycomps.length; ++i){
             let name = ycomps[i];
             yprof[name].y = (i==0 ? y_base : yprof[ycomps[i-1]].y + yprof[ycomps[i-1]].actual_height);
@@ -411,8 +388,43 @@ export class MobileRenderer extends Renderer {
                 }
             }
         }
-        var y_next_base = yprof.rm.y + yprof.rm.actual_height;
+       
+        return yprof;
+    }
 
+    render_measure_row_simplified(
+        x,
+        paper,
+        macros,
+        row_elements_list,
+        reharsal_group,
+        prev_measure,
+        next_measure,
+        y_base,
+        param,
+        draw,
+        first_block_first_row,
+        inner_reharsal_mark,
+        ylimit,
+        music_context
+    ) {
+        var x_global_scale = macros.x_global_scale;
+        var transpose = macros.transpose;
+        var half_type = macros.half_type;
+        var staff = macros.staff;
+        var theme = macros.theme;
+
+        /* Reference reserved width for empty measures or chord symbol without base names*/
+        var C7_width = 20;
+
+        if (staff == "ON") {
+            // rs_area_detected = true; // Fix me : Not supported in simplified renderer
+        }
+        // interval of 5 lines
+        var _5lines_intv = param.rs_area_height / (5 - 1);
+
+        var yprof = this.screening_y_areas(row_elements_list, y_base, param, staff);
+        var y_next_base = yprof.end.y;
 
         var y_body_or_rs_base = yprof.rs.detected ? yprof.rs.y : yprof.body.y;
 

@@ -344,9 +344,15 @@ export class MobileRenderer extends Renderer {
         /* Reference reserved width for empty measures or chord symbol without base names*/
         var C7_width = 20;
 
-        var rs_area_detected = false; // Rhthm Slash Area : Fix me : Not supported in simplified renderer
-        var mu_area_detected = false; // Measure Upper Area ( Above the chord symbol )
-        var ml_area_detected = false; // Measure Lower Area ( Blow the chord & rhythm slash area)
+
+        var yprof = {
+            mu:    {detected:false, height: param.mu_area_height, margin:[0, param.below_mu_area_margin]},
+            body:  {detected:true,  height: param.row_height,     margin:[0, param.below_mu_area_margin]},
+            rs:    {detected:false, height: param.rs_area_height, margin:[param.above_rs_area_margin, 0]},
+            ml:    {detected:false, height: param.ml_row_height, margin:[param.above_ml_area_margin, 0]},
+            rm:    {detected:true,  height: param.row_margin,     margin:[0, 0]}
+        };
+
         var lyric_rows = 0;
 
         //var draw_5line = false;
@@ -369,17 +375,16 @@ export class MobileRenderer extends Renderer {
                     e instanceof common.ToCoda ||
                     e instanceof common.DalSegno
                 ) {
-                    mu_area_detected = true;
+                    yprof.mu.detected = true;
                 } else if (e instanceof common.MeasureBoundary) {
-                    ml_area_detected =
-                        ml_area_detected ||
+                    yprof.ml.detected =
+                    yprof.ml.detected ||
                         (e.times != null && (e.ntimes || e.times != 2));
                 } else if (e instanceof common.Chord) {
-                    //rs_area_detected |= (e.nglist !== null);
                     var bases = e.getChordStrBase(0, "flat");
-                    ml_area_detected = ml_area_detected || bases[1] != null;
+                    yprof.ml.detected = yprof.ml.detected || bases[1] != null;
                 } else if (e instanceof common.Lyric) {
-                    ml_area_detected = true;
+                    yprof.ml.detected = true;
                     lyric_rows = Math.max(
                         e.lyric.split("/").length,
                         lyric_rows
@@ -388,36 +393,28 @@ export class MobileRenderer extends Renderer {
             }
         }
         if (staff == "OFF") {
-            rs_area_detected = false;
+            yprof.rs.detected = false;
         }
 
-        var y_mu_area_base = y_base; // top of mu area(segno, coda, etc..)
-        var y_body_base =
-            y_base +
-            (mu_area_detected
-                ? param.mu_area_height + param.below_mu_area_margin
-                : 0); // top of chord area
+        // Calculate yposition  for each area
+        var ycomps = ["mu","body","rs","ml","rm"];
+        for(let i = 0; i < ycomps.length; ++i){
+            let name = ycomps[i];
+            yprof[name].y = (i==0 ? y_base : yprof[ycomps[i-1]].y + yprof[ycomps[i-1]].actual_height);
+            if(!yprof[name].detected){
+                yprof[name].actual_height = 0;
+            }else{
+                if(name == "ml"){
+                    yprof[name].actual_height = Math.max(1, lyric_rows) * yprof[name].height; // multiplied by lyric ros
+                }else{
+                    yprof[name].actual_height = yprof[name].height + yprof[name].margin[0] + yprof[name].margin[1];
+                }
+            }
+        }
+        var y_next_base = yprof.rm.y + yprof.rm.actual_height;
 
-        var y_rs_area_base =
-            y_body_base +
-            +param.row_height +
-            (rs_area_detected
-                ? param.above_rs_area_margin * macros.r_above_rs_area_margin
-                : 0); // top of rs area, note that this is same as y_body_base if rs are a is not drawn. Currenly rs height shoudl be equal to row height
 
-        var y_ml_area_base =
-            y_rs_area_base +
-            (rs_area_detected ? param.rs_area_height : 0) +
-            (ml_area_detected ? param.above_ml_area_margin : 0);
-
-        var y_next_base =
-            y_ml_area_base +
-            (ml_area_detected
-                ? Math.max(1, lyric_rows) * param.ml_row_height
-                : 0) +
-            param.row_margin * macros.r_row_margin;
-
-        var y_body_or_rs_base = rs_area_detected ? y_rs_area_base : y_body_base;
+        var y_body_or_rs_base = yprof.rs.detected ? yprof.rs.y : yprof.body.y;
 
         // if ylimit is specified, and drawing region surpass that limit, do not render
         if (ylimit !== null && y_next_base > ylimit) {
@@ -429,9 +426,6 @@ export class MobileRenderer extends Renderer {
 
         var first_meas_start_x = x;
         var last_meas_end_x = x;
-
-        var body_area_svg_groups = [];
-        var rs_area_svg_groups = [];
 
         var total_width = param.paper_width - 2 * param.x_offset;
 
@@ -476,7 +470,7 @@ export class MobileRenderer extends Renderer {
                             half_type,
                             paper,
                             x,
-                            y_body_base,
+                            yprof.body.y,
                             param,
                             C7_width
                         );
@@ -545,7 +539,7 @@ export class MobileRenderer extends Renderer {
                     let r = this.draw_coda_plain(
                         paper,
                         meas_base_x + mh_offset,
-                        y_mu_area_base,
+                        yprof.mu.y,
                         "lt",
                         e,
                         param.base_font_size
@@ -555,7 +549,7 @@ export class MobileRenderer extends Renderer {
                     let r = this.draw_segno_plain(
                         paper,
                         meas_base_x + mh_offset,
-                        y_mu_area_base,
+                        yprof.mu.y,
                         e,
                         param.base_font_size
                     );
@@ -566,7 +560,7 @@ export class MobileRenderer extends Renderer {
                         let r = graphic.CanvasText(
                             paper,
                             meas_base_x + mh_offset,
-                            y_body_base,
+                            yprof.body.y,
                             e.comment,
                             param.base_font_size / 2,
                             "lb"
@@ -612,14 +606,14 @@ export class MobileRenderer extends Renderer {
                     // Header 1. Reharsal mark in row
                     if (
                         inner_reharsal_mark &&
-                        rs_area_detected &&
+                        yprof.rs.detected &&
                         first_block_first_row &&
                         ml == 0
                     ) {
                         var g = graphic.CanvasTextWithBox(
                             paper,
                             meas_base_x,
-                            y_body_base,
+                            yprof.body.y,
                             reharsal_group.name,
                             param.reharsal_mark_font_size
                         );
@@ -644,8 +638,8 @@ export class MobileRenderer extends Renderer {
                         "ct",
                         e.renderprop.w
                     );
-                    var ly = y_body_base + param.row_height / 2;
-                    if (draw && !rs_area_detected)
+                    var ly = yprof.body.y + param.row_height / 2;
+                    if (draw && !yprof.rs.detected)
                         graphic.CanvasLine(
                             paper,
                             x,
@@ -668,7 +662,7 @@ export class MobileRenderer extends Renderer {
                             half_type,
                             paper,
                             x,
-                            y_body_base,
+                            yprof.body.y,
                             param,
                             C7_width
                         );
@@ -678,7 +672,7 @@ export class MobileRenderer extends Renderer {
                             graphic.CanvasText(
                                 paper,
                                 x,
-                                y_body_base,
+                                yprof.body.y,
                                 e.exceptinal_comment.comment,
                                 param.base_font_size / 2,
                                 "lb"
@@ -690,7 +684,7 @@ export class MobileRenderer extends Renderer {
                                 graphic.CanvasText(
                                     paper,
                                     x,
-                                    y_ml_area_base + li * param.ml_row_height,
+                                    yprof.ml.y + li * param.ml_row_height,
                                     llist[li],
                                     param.base_font_size / 3,
                                     "lt"
@@ -760,7 +754,7 @@ export class MobileRenderer extends Renderer {
                         param.base_font_size / 2,
                         "rb"
                     );
-                    if (rs_area_detected) x += 15 * 4;
+                    if (yprof.rs.detected) x += 15 * 4;
                     //text = raphaelText(paper, x, y_body_or_rs_base - 8 /* + row_height + 8*/, e.toString(), 15, lr+"c").attr(param.repeat_mark_font);
                     //if(rs_area_detected) x += text.getBBox().width;
                     //rs_area_svg_groups.push(text);
@@ -773,12 +767,12 @@ export class MobileRenderer extends Renderer {
                         param.base_font_size / 2,
                         "rb"
                     );
-                    if (rs_area_detected) x += 15 * 4;
+                    if (yprof.rs.detected) x += 15 * 4;
                     //text = raphaelText(paper, x, y_body_or_rs_base - 8 /* + row_height + 8*/, e.toString(), 15, lr+"c").attr(param.repeat_mark_font);
                     //if(rs_area_detected) x += text.getBBox().width;
                     //rs_area_svg_groups.push(text);
                 } else if (e instanceof common.ToCoda) {
-                    if (rs_area_detected) {
+                    if (yprof.rs.detected) {
                         /*
                         var text = raphaelText(
                             paper,
@@ -828,7 +822,7 @@ export class MobileRenderer extends Renderer {
                         param.base_font_size / 2,
                         "rb"
                     );
-                    if (rs_area_detected) x += 15 * 4;
+                    if (yprof.rs.detected) x += 15 * 4;
                 } else {
                     throw "Unkown instance of footer elements";
                 }
@@ -841,7 +835,7 @@ export class MobileRenderer extends Renderer {
                 let e = elements.measure_wide[ei];
                 if (e instanceof common.LoopIndicator) {
                     var oy = 10;
-                    var ly = y_body_base - 2 - oy;
+                    var ly = yprof.body.y - 2 - oy;
                     var sx = meas_start_x;
                     var fx = meas_start_x + (meas_end_x - meas_start_x) * 0.7;
                     graphic.CanvasLine(paper, sx, ly, sx, ly + oy);

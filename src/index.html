@@ -7,10 +7,9 @@
     <script type="text/javascript">
       function hoge(){
             var code = document.getElementById("code").value;
-            var canvas = document.getElementById("canvas");
             var parser = new Fumen.Parser();
             var track = parser.parse(code);
-            var renderer = new Fumen.MobileRenderer(canvas, {
+            var renderer = new Fumen.MobileRenderer(null, {
               paper_width:400, 
               paper_height:400,
               canvas_provider: function(){
@@ -135,7 +134,6 @@ min-height:200px;
         </textarea>
     </div>
     <div class="div2"  id="scores_area">
-        <canvas id="canvas"></canvas>
     </div>
    </div>
 

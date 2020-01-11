@@ -72,13 +72,6 @@ export class MobileRenderer extends Renderer {
             this.param[key] = param[key];
         }
 
-        // SetupHiDPICanvas(canvas, canvas.width, canvas.height);
-
-        //canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
-
-        this.param.pixel_ratio = graphic.GetPixelRatio(canvas);
-        //this.param.text_y_offset = JudgeTextYPosOffset(canvas, "", "Arial", this.param.base_font_size);
-
         this.track = null;
 
         this.context = {

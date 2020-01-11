@@ -61,9 +61,10 @@ export class Parser {
         if (this.error_msg_callback) {
             this.error_msg_callback(errormsg);
         } else {
-            alert(errormsg);
+            console.warn(errormsg);
         }
-        throw "Parse error";
+
+        throw "Parser Error";
     }
 
     nextToken(s, dont_skip_spaces) {
@@ -643,102 +644,107 @@ export class Parser {
     }
 
     parse(s) {
-        s.replace(/\r\n/g, "\n");
-        s.replace(/\r/g, "\n");
-        var r = null;
-        var loop_cnt = 0;
+        try{
+            s.replace(/\r\n/g, "\n");
+            s.replace(/\r/g, "\n");
+            var r = null;
+            var loop_cnt = 0;
 
-        var track = new common.Track();
+            var track = new common.Track();
 
-        var currentReharsalGroup = null;
-        var currentBlock = null;
+            var currentReharsalGroup = null;
+            var currentBlock = null;
 
-        // eslint-disable-next-line no-constant-condition
-        while (true) {
-            r = this.nextToken(s);
-            //console.log(r);
-            if (r.type == TOKEN_END) break;
+            // eslint-disable-next-line no-constant-condition
+            while (true) {
+                r = this.nextToken(s);
+                //console.log(r);
+                if (r.type == TOKEN_END) break;
 
-            if (r.type == TOKEN_NL) {
-                this.context.line += 1;
-                this.context.contiguous_line_break += 1;
-            } else {
-                if (r.type == TOKEN_BRACKET_LS) {
-                    r = this.parseReharsalMark(r.token, r.s);
-                    //console.log("Reharsal Mark:"+r.reharsalMarkName);
-                    if (currentReharsalGroup != null)
-                        track.reharsal_groups.push(currentReharsalGroup);
-                    currentReharsalGroup = new common.ReharsalGroup();
-                    currentReharsalGroup.name = r.reharsalMarkName;
-                } else if (
-                    [
-                        TOKEN_MB,
-                        TOKEN_MB_DBL,
-                        TOKEN_MB_LOOP_BEGIN,
-                        TOKEN_MB_LOOP_BOTH,
-                        TOKEN_MB_FIN,
-                        TOKEN_MB_DBL_SIMILE
-                    ].indexOf(r.type) >= 0
-                ) {
-                    r = this.parseMeasures(r, r.s);
-                    if (currentReharsalGroup.blocks.length == 0) {
-                        currentReharsalGroup.blocks.push(new Array());
-                        currentReharsalGroup.blocks[0] = currentReharsalGroup.blocks[0].concat(
-                            r.measures
-                        );
-                    } else {
-                        if (this.context.contiguous_line_break >= 2) {
-                            currentReharsalGroup.blocks.push(new Array());
-                        } else {
-                            // When new line in the fumen code in the middle of a block
-                            r.measures[0].raw_new_line = true;
-                        }
-                        var blocklen = currentReharsalGroup.blocks.length;
-                        currentReharsalGroup.blocks[
-                            blocklen - 1
-                        ] = currentReharsalGroup.blocks[blocklen - 1].concat(
-                            r.measures
-                        );
-                    }
-                    //currentReharsalGroup.measures =
-                    //	currentReharsalGroup.measures.concat(r.measures);
-                } else if (r.type == TOKEN_PERCENT) {
-                    // Expression
-                    r = this.parseMacro(r.s);
-                    if (currentReharsalGroup) {
-                        currentReharsalGroup.macros[r.key] = r.value;
-                    } else {
-                        track.macros[r.key] = r.value;
-                    }
+                if (r.type == TOKEN_NL) {
+                    this.context.line += 1;
+                    this.context.contiguous_line_break += 1;
                 } else {
-                    console.log(r.token);
-                    this.onParseError("ERROR_WHILE_PARSE_MOST_OUTSIDER");
+                    if (r.type == TOKEN_BRACKET_LS) {
+                        r = this.parseReharsalMark(r.token, r.s);
+                        //console.log("Reharsal Mark:"+r.reharsalMarkName);
+                        if (currentReharsalGroup != null)
+                            track.reharsal_groups.push(currentReharsalGroup);
+                        currentReharsalGroup = new common.ReharsalGroup();
+                        currentReharsalGroup.name = r.reharsalMarkName;
+                    } else if (
+                        [
+                            TOKEN_MB,
+                            TOKEN_MB_DBL,
+                            TOKEN_MB_LOOP_BEGIN,
+                            TOKEN_MB_LOOP_BOTH,
+                            TOKEN_MB_FIN,
+                            TOKEN_MB_DBL_SIMILE
+                        ].indexOf(r.type) >= 0
+                    ) {
+                        r = this.parseMeasures(r, r.s);
+                        if (currentReharsalGroup.blocks.length == 0) {
+                            currentReharsalGroup.blocks.push(new Array());
+                            currentReharsalGroup.blocks[0] = currentReharsalGroup.blocks[0].concat(
+                                r.measures
+                            );
+                        } else {
+                            if (this.context.contiguous_line_break >= 2) {
+                                currentReharsalGroup.blocks.push(new Array());
+                            } else {
+                                // When new line in the fumen code in the middle of a block
+                                r.measures[0].raw_new_line = true;
+                            }
+                            var blocklen = currentReharsalGroup.blocks.length;
+                            currentReharsalGroup.blocks[
+                                blocklen - 1
+                            ] = currentReharsalGroup.blocks[blocklen - 1].concat(
+                                r.measures
+                            );
+                        }
+                        //currentReharsalGroup.measures =
+                        //	currentReharsalGroup.measures.concat(r.measures);
+                    } else if (r.type == TOKEN_PERCENT) {
+                        // Expression
+                        r = this.parseMacro(r.s);
+                        if (currentReharsalGroup) {
+                            currentReharsalGroup.macros[r.key] = r.value;
+                        } else {
+                            track.macros[r.key] = r.value;
+                        }
+                    } else {
+                        console.log(r.token);
+                        this.onParseError("ERROR_WHILE_PARSE_MOST_OUTSIDER");
+                    }
+                    this.context.contiguous_line_break = 0;
                 }
-                this.context.contiguous_line_break = 0;
+                s = r.s;
+                loop_cnt++;
+                if (loop_cnt >= 1000) break;
             }
-            s = r.s;
-            loop_cnt++;
-            if (loop_cnt >= 1000) break;
-        }
 
-        if (currentReharsalGroup != null) {
-            track.reharsal_groups.push(currentReharsalGroup);
-            currentReharsalGroup = null;
-        }
-
-        // If same reharsal mark appears, preceeding one is applied
-        var rgmap = {};
-        for (var i = 0; i < track.reharsal_groups.length; ++i) {
-            var rg = track.reharsal_groups[i];
-            if (rg.name in rgmap) {
-                track.reharsal_groups[i] = common.deepcopy(rgmap[rg.name]); // Deep Copy
-            } else {
-                rgmap[rg.name] = rg;
+            if (currentReharsalGroup != null) {
+                track.reharsal_groups.push(currentReharsalGroup);
+                currentReharsalGroup = null;
             }
-        }
 
-        return track;
-	}
+            // If same reharsal mark appears, preceeding one is applied
+            var rgmap = {};
+            for (var i = 0; i < track.reharsal_groups.length; ++i) {
+                var rg = track.reharsal_groups[i];
+                if (rg.name in rgmap) {
+                    track.reharsal_groups[i] = common.deepcopy(rgmap[rg.name]); // Deep Copy
+                } else {
+                    rgmap[rg.name] = rg;
+                }
+            }
+
+            return track;
+        }catch(e){
+            console.warn(e);
+            return null;
+        }
+    }
 }
 
 export function getGlobalMacros(track) {

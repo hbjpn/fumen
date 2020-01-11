@@ -6,7 +6,7 @@ import { getGlobalMacros, getMacros } from "../parser/parser";
 
 var SR_RENDER_PARAM = {
     origin: { x: 0, y: 0 },
-    y_title_offset: 1,
+    y_title_offset: 2,
     y_author_offset: 20,
     y_first_page_offset: 30,
     y_offset: 10,
@@ -36,7 +36,7 @@ var SR_RENDER_PARAM = {
     reharsal_mark_font_size: 12,
     title_font_size: 14,
     sub_title_font_size: 14,
-    base_font_size: 30,
+    base_font_size: 28,
     canvas_provider: null
 };
 
@@ -426,7 +426,7 @@ export class MobileRenderer extends Renderer {
 
         // Determine the width of each measure
         var fixed_width = 0;
-        var flexible_width = 0;
+        var num_flexible_rooms = 0;
         for (let ml = 0; ml < row_elements_list.length; ++ml) {
             // measure object
             let m = row_elements_list[ml];
@@ -454,7 +454,8 @@ export class MobileRenderer extends Renderer {
                 }
             });
             if (elements.body.length == 0) {
-                flexible_width += 1 * param.base_font_size;
+                fixed_width += 1 * param.base_font_size;
+                num_flexible_rooms++;
             } else {
                 elements.body.forEach(e => {
                     if (e instanceof common.Chord) {
@@ -470,13 +471,16 @@ export class MobileRenderer extends Renderer {
                             C7_width
                         );
                         e.renderprop = { w: cr.width };
-                        flexible_width += e.renderprop.w;
+                        fixed_width += e.renderprop.w;
+                        num_flexible_rooms++;
                     } else if (e instanceof common.Rest) {
                         e.renderprop = { w: 1 * param.base_font_size };
-                        flexible_width += e.renderprop.w;
+                        fixed_width += e.renderprop.w;
+                        num_flexible_rooms++;
                     } else if (e instanceof common.Simile) {
                         e.renderprop = { w: 2 * param.base_font_size };
-                        flexible_width += e.renderprop.w;
+                        fixed_width += e.renderprop.w;
+                        num_flexible_rooms++;
                     }
                 });
             }
@@ -516,7 +520,7 @@ export class MobileRenderer extends Renderer {
 
         // Now determine scaling of each measure to fit within width
         var free_width = total_width - fixed_width;
-        var scaling = free_width / flexible_width;
+        var room_per_elem = free_width / num_flexible_rooms;
 
         // Reharsal mark if any
         if(first_block_first_row && !inner_reharsal_mark){
@@ -659,7 +663,7 @@ export class MobileRenderer extends Renderer {
                 }
             });
             if (elements.body.length == 0) {
-                x += 1 * param.base_font_size * scaling;
+                x += (1 * param.base_font_size + room_per_elem);
             } else {
                 elements.body.forEach(e => {
                     if (e instanceof common.Chord) {
@@ -674,7 +678,7 @@ export class MobileRenderer extends Renderer {
                             param,
                             C7_width
                         );
-                        x += e.renderprop.w * scaling;
+                        x += ( e.renderprop.w + room_per_elem);
 
                         if (e.exceptinal_comment !== null) {
                             graphic.CanvasText(
@@ -710,7 +714,7 @@ export class MobileRenderer extends Renderer {
                             _5lines_intv,
                             param
                         );
-                        x += e.renderprop.w * scaling;
+                        x += (e.renderprop.w +room_per_elem); 
                     } else if (e instanceof common.Simile) {
                         this.render_simile_mark_plain(
                             true,
@@ -722,9 +726,9 @@ export class MobileRenderer extends Renderer {
                             false,
                             "l"
                         );
-                        x += e.renderprop.w * scaling;
+                        x += (e.renderprop.w +room_per_elem); 
                     } else if (e instanceof common.Space) {
-                        x += e.renderprop.w * scaling;
+                        x += (e.renderprop.w +room_per_elem); 
                     }
                 });
             }

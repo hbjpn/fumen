@@ -10,7 +10,18 @@
             var canvas = document.getElementById("canvas");
             var parser = new Fumen.Parser();
             var track = parser.parse(code);
-            var renderer = new Fumen.MobileRenderer(canvas, {paper_width:400, paper_height:1000});
+            var renderer = new Fumen.MobileRenderer(canvas, {
+              paper_width:400, 
+              paper_height:400,
+              canvas_provider: function(){
+                var score_area = document.getElementById("scores_area");
+                var new_canvas = document.createElement("canvas");
+                var hr = document.createElement("hr");
+                score_area.appendChild(hr);
+                score_area.appendChild(new_canvas);
+                return new_canvas;
+              }
+            });
             renderer.render(track);
       }
     </script>
@@ -123,7 +134,7 @@ min-height:200px;
 
         </textarea>
     </div>
-    <div class="div2">
+    <div class="div2"  id="scores_area">
         <canvas id="canvas"></canvas>
     </div>
    </div>

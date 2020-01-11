@@ -2,7 +2,7 @@ import "@babel/polyfill";
 import { Renderer } from "./renderer";
 import * as common from "../common/common";
 import * as graphic from "./graphic";
-import {getGlobalMacros, getMacros} from "../parser/parser";
+import { getGlobalMacros, getMacros } from "../parser/parser";
 
 var SR_RENDER_PARAM = {
     origin: { x: 0, y: 0 },
@@ -11,6 +11,7 @@ var SR_RENDER_PARAM = {
     y_first_page_offset: 30,
     y_offset: 10,
     x_offset: 10,
+    y_footer_offset: 10,
     min_measure_width: 100,
     row_height: 24, // Basic height of the measure when no rs, mu and ml area is drawn
     row_margin: 2, // Margin between next y_base and lower edge of Measure Lower Area
@@ -35,7 +36,8 @@ var SR_RENDER_PARAM = {
     reharsal_mark_font_size: 12,
     title_font_size: 14,
     sub_title_font_size: 14,
-    base_font_size: 30
+    base_font_size: 30,
+    canvas_provider: null
 };
 
 // Simple renderer offsets
@@ -66,16 +68,9 @@ export class MobileRenderer extends Renderer {
 
         this.param = SR_RENDER_PARAM; // Default parameters
         // Overwrite
-        this.param.ncol = "ncol" in param ? param.ncol : this.param.ncol;
-        this.param.nrow = "nrow" in param ? param.nrow : this.param.ncol;
-        this.param.paper_width =
-            "paper_width" in param ? param.paper_width : this.param.paper_width;
-        this.param.paper_height =
-            "paper_height" in param
-                ? param.paper_height
-                : this.param.paper_height;
-        this.param.origin =
-            "origin" in param ? param.origin : this.param.origin;
+        for (let key in param) {
+            this.param[key] = param[key];
+        }
 
         // SetupHiDPICanvas(canvas, canvas.width, canvas.height);
 
@@ -95,8 +90,6 @@ export class MobileRenderer extends Renderer {
     render(track, async_mode, progress_cb) {
         this.track = track;
 
-        graphic.SetupHiDPICanvas(this.canvas, this.param.paper_width, this.param.paper_height);
-
         // Always works as asynchronously
         // Preload images, which is done asynchronously
         var urls = [
@@ -110,18 +103,36 @@ export class MobileRenderer extends Renderer {
             "assets/img/rest8.svg"
         ];
         var param = this.param;
-        var canvas = this.canvas;
-        return PreloadImages(urls).then((result) => {
+        return PreloadImages(urls).then(result => {
             // make map with url
             for (var ii = 0; ii < result.length; ++ii) {
                 G_imgmap[result[ii].url] = result[ii].img;
             }
             // Returns last y position
-            return this.render_impl(canvas, track, param);
+            return this.render_impl(track, param);
         });
     }
 
-    render_impl(canvas, track, param) {
+    render_footer(canvaslist, songname){
+        var score_width = this.param.paper_width / this.param.ncol;
+        var score_height = this.param.paper_height / this.param.nrow;
+        canvaslist.forEach((canvas,pageidx)=>{
+            // Page number footer
+            let footerstr =
+                songname + " - " + (pageidx + 1) + " of " + canvaslist.length;
+            //alert(footerstr);
+            graphic.CanvasText(
+                canvas,
+                this.param.origin.x + score_width / 2,
+                this.param.origin.y + score_height - this.param.y_footer_offset,
+                footerstr,
+                12,
+                "ct"
+            );
+        });
+    }
+
+    async render_impl(track, param) {
         var origin = param.origin; //{x:0,y:0};
 
         var y_title_offset = origin.y + param.y_title_offset;
@@ -137,12 +148,19 @@ export class MobileRenderer extends Renderer {
 
         var global_macros = getGlobalMacros(track);
 
-        // We do not use Raphael in simplifed renderer
-        var paper = canvas;
+        let canvas = this.canvas;
+        if (canvas == null) {
+            canvas = await this.param.canvas_provider();
+        }
+        graphic.SetupHiDPICanvas(
+            canvas,
+            this.param.paper_width,
+            this.param.paper_height
+        );
 
         // Title
         var ri = graphic.CanvasText(
-            paper,
+            canvas,
             x_offset + width / 2,
             y_title_offset,
             global_macros.title,
@@ -154,7 +172,7 @@ export class MobileRenderer extends Renderer {
         // Sub Title
         if (global_macros.sub_title != "")
             graphic.CanvasText(
-                paper,
+                canvas,
                 x_offset + width / 2,
                 y_title_offset + ri.height,
                 global_macros.sub_title,
@@ -164,7 +182,7 @@ export class MobileRenderer extends Renderer {
 
         // Artist
         graphic.CanvasText(
-            paper,
+            canvas,
             x_offset + width,
             y_author_offset,
             global_macros.artist,
@@ -244,63 +262,66 @@ export class MobileRenderer extends Renderer {
             }
         }
 
-        // Single page for pagelist
-        var pageslist = [y_stacks];
+        var yse = y_stacks;
+        let canvaslist = [canvas];
 
-        for (var pageidx = 0; pageidx < pageslist.length; ++pageidx) {
-            var yse = pageslist[pageidx];
-            for (var pei = 0; pei < yse.length; ++pei) {
-                // Loop each y_stacks
-                // eslint-disable-next-line no-empty
-                if (yse[pei].type == "titles") {
-                } else if (
-                    yse[pei].type == "reharsal" &&
-                    yse[pei].macros.reharsal_mark_position != "Inner"
-                ) {
-                    let rg = yse[pei].cont;
+        for (var pei = 0; pei < yse.length; ++pei) {
+            // Loop each y_stacks
+            // eslint-disable-next-line no-empty
+            if (yse[pei].type == "titles") {
+            } else if (
+                yse[pei].type == "reharsal" &&
+                yse[pei].macros.reharsal_mark_position != "Inner"
+            ) {
+                let rg = yse[pei].cont;
 
-                    graphic.CanvasTextWithBox(
-                        paper,
-                        x_offset,
-                        y_base,
-                        rg.name,
-                        param.reharsal_mark_font_size
+                graphic.CanvasTextWithBox(
+                    canvas,
+                    x_offset,
+                    y_base,
+                    rg.name,
+                    param.reharsal_mark_font_size
+                );
+
+                y_base += param.rm_area_height; // Reharsal mark area height
+            } else if (yse[pei].type == "meas") {
+                var row_elements_list = yse[pei].cont;
+                let r = this.render_measure_row_simplified(
+                    x_offset,
+                    canvas,
+                    yse[pei].macros,
+                    row_elements_list,
+                    yse[pei].rg,
+                    yse[pei].pm,
+                    yse[pei].nm,
+                    y_base,
+                    param,
+                    true,
+                    yse[pei].block_id == 0 && yse[pei].row_id_in_block == 0,
+                    yse[pei].macros.reharsal_mark_position == "Inner",
+                    this.param.canvas_provider != null
+                        ? score_height - param.y_offset
+                        : null,
+                    music_context
+                );
+                if (!r) {
+                    canvas = await this.param.canvas_provider();
+                    canvaslist.push(canvas);
+                    graphic.SetupHiDPICanvas(
+                        canvas,
+                        this.param.paper_width,
+                        this.param.paper_height
                     );
-
-                    y_base += param.rm_area_height; // Reharsal mark area height
-                } else if (yse[pei].type == "meas") {
-                    var row_elements_list = yse[pei].cont;
-                    let r = this.render_measure_row_simplified(
-                        x_offset,
-                        paper,
-                        yse[pei].macros,
-                        row_elements_list,
-                        yse[pei].rg,
-                        yse[pei].pm,
-                        yse[pei].nm,
-                        y_base,
-                        param,
-                        true,
-                        yse[pei].block_id == 0 && yse[pei].row_id_in_block == 0,
-                        yse[pei].macros.reharsal_mark_position == "Inner",
-                        music_context
-                    );
+                    y_base = origin.y + this.param.y_offset;
+                    // try again next page
+                    pei = pei - 1;
+                } else {
                     y_base = r.y_base;
                 }
             }
-            // Page number footer
-            let footerstr =
-                songname + " - " + (pageidx + 1) + " of " + pageslist.length;
-            //alert(footerstr);
-            graphic.CanvasText(
-                paper,
-                origin.x + score_width / 2,
-                origin.y + score_height - 60,
-                footerstr,
-                12,
-                "ct"
-            );
-        } // reharsal group loop
+        }
+
+        this.render_footer(canvaslist, songname);
 
         return { y: y_base };
     }
@@ -318,6 +339,7 @@ export class MobileRenderer extends Renderer {
         draw,
         first_block_first_row,
         inner_reharsal_mark,
+        ylimit,
         music_context
     ) {
         var x_global_scale = macros.x_global_scale;
@@ -404,6 +426,11 @@ export class MobileRenderer extends Renderer {
 
         var y_body_or_rs_base = rs_area_detected ? y_rs_area_base : y_body_base;
 
+        // if ylimit is specified, and drawing region surpass that limit, do not render
+        if (ylimit !== null && y_next_base > ylimit) {
+            return null;
+        }
+
         var measure_height = y_next_base - y_base;
         var measure_heights = [];
 
@@ -422,7 +449,7 @@ export class MobileRenderer extends Renderer {
             // measure object
             let m = row_elements_list[ml];
             var elements = this.classifyElements(m);
-            elements.header.forEach( (e) => {
+            elements.header.forEach(e => {
                 if (e instanceof common.MeasureBoundary) {
                     var pm = ml == 0 ? prev_measure : row_elements_list[ml - 1];
                     var ne = pm ? pm.elements[pm.elements.length - 1] : null;
@@ -447,7 +474,7 @@ export class MobileRenderer extends Renderer {
             if (elements.body.length == 0) {
                 flexible_width += 1 * param.base_font_size;
             } else {
-                elements.body.forEach( (e) => {
+                elements.body.forEach(e => {
                     if (e instanceof common.Chord) {
                         var cr = this.render_chord_simplified(
                             false,
@@ -472,7 +499,7 @@ export class MobileRenderer extends Renderer {
                 });
             }
             // Draw footer
-            elements.footer.forEach((e) => {
+            elements.footer.forEach(e => {
                 if (e instanceof common.MeasureBoundary) {
                     var nm =
                         ml == row_elements_list.length - 1
@@ -493,13 +520,13 @@ export class MobileRenderer extends Renderer {
 
                     e.renderprop = { w: r.width };
                     fixed_width += r.width;
-                // eslint-disable-next-line no-empty
+                    // eslint-disable-next-line no-empty
                 } else if (e instanceof common.DaCapo) {
-                // eslint-disable-next-line no-empty
+                    // eslint-disable-next-line no-empty
                 } else if (e instanceof common.DalSegno) {
-                // eslint-disable-next-line no-empty
+                    // eslint-disable-next-line no-empty
                 } else if (e instanceof common.ToCoda) {
-                // eslint-disable-next-line no-empty
+                    // eslint-disable-next-line no-empty
                 } else if (e instanceof common.Fine) {
                 }
             });
@@ -569,7 +596,7 @@ export class MobileRenderer extends Renderer {
             var header_rs_area_width = 0;
             var header_body_area_width = 0;
             // Clef, Key, Begin Boundary, Time(1st one) are included in this area
-            elements.header.forEach((e) => {
+            elements.header.forEach(e => {
                 if (e instanceof common.MeasureBoundary) {
                     var pm = ml == 0 ? prev_measure : row_elements_list[ml - 1];
                     var ne = pm ? pm.elements[pm.elements.length - 1] : null;
@@ -626,14 +653,20 @@ export class MobileRenderer extends Renderer {
                     );
                     var ly = y_body_base + param.row_height / 2;
                     if (draw && !rs_area_detected)
-                        graphic.CanvasLine(paper, x, ly, x + e.renderprop.w, ly);
+                        graphic.CanvasLine(
+                            paper,
+                            x,
+                            ly,
+                            x + e.renderprop.w,
+                            ly
+                        );
                     x += e.renderprop.w;
                 }
             });
             if (elements.body.length == 0) {
                 x += 1 * param.base_font_size * scaling;
             } else {
-                elements.body.forEach((e) => {
+                elements.body.forEach(e => {
                     if (e instanceof common.Chord) {
                         var cr = this.render_chord_simplified(
                             true,
@@ -753,7 +786,7 @@ export class MobileRenderer extends Renderer {
                     //rs_area_svg_groups.push(text);
                 } else if (e instanceof common.ToCoda) {
                     if (rs_area_detected) {
-						/*
+                        /*
                         var text = raphaelText(
                             paper,
                             x,
@@ -918,7 +951,6 @@ export class MobileRenderer extends Renderer {
         return { y_base: y_next_base };
     }
 
-
     draw_segno_plain(paper, x, y, segno, B) {
         var lx = x;
         paper
@@ -926,7 +958,14 @@ export class MobileRenderer extends Renderer {
             .drawImage(G_imgmap["assets/img/segno.svg"], lx, y, B / 3, B / 2);
         lx += B / 3;
         if (segno.number !== null) {
-            let r = graphic.CanvasText(paper, lx, y + 15, segno.number, B / 2, "lb");
+            let r = graphic.CanvasText(
+                paper,
+                lx,
+                y + 15,
+                segno.number,
+                B / 2,
+                "lb"
+            );
             lx += r.width;
         }
         if (segno.opt !== null) {
@@ -1135,7 +1174,12 @@ export class MobileRenderer extends Renderer {
 
         var x0 = x;
         if (draw)
-            graphic.CanvasCircle(paper, x + cm, y_body_base + _5lines_intv * 1.5, cr);
+            graphic.CanvasCircle(
+                paper,
+                x + cm,
+                y_body_base + _5lines_intv * 1.5,
+                cr
+            );
         for (let r = 0; r < numslash; ++r) {
             var y = y_body_base;
             x += (h + i) * r;
@@ -1226,7 +1270,16 @@ export class MobileRenderer extends Renderer {
         var coeff1 = 0.5;
 
         if (root) {
-            graphic.CanvasText(canvas, x, y, root[0], B, "lt", B * coeff1, !draw);
+            graphic.CanvasText(
+                canvas,
+                x,
+                y,
+                root[0],
+                B,
+                "lt",
+                B * coeff1,
+                !draw
+            );
             upper_width = B * coeff1;
             lower_width = B * coeff1;
             if (root.length == 2) {
@@ -1301,7 +1354,7 @@ export class MobileRenderer extends Renderer {
             }
         }
 
-        _3rdelem.forEach((e) => {
+        _3rdelem.forEach(e => {
             if (e.type == "M" && _6791113suselem.length > 0) {
                 let r = graphic.CanvasText(
                     canvas,
@@ -1330,7 +1383,7 @@ export class MobileRenderer extends Renderer {
                 // Unkown type
             }
         });
-        _6791113suselem.forEach((e) => {
+        _6791113suselem.forEach(e => {
             if (e.type == "dig") {
                 let r = graphic.CanvasText(
                     canvas,
@@ -1381,7 +1434,7 @@ export class MobileRenderer extends Renderer {
                 lower_width += r.width;
             }
         });
-        _5thelem.forEach((e) => {
+        _5thelem.forEach(e => {
             if (e.type == "b") {
                 let r = graphic.CanvasText(
                     canvas,
@@ -1545,8 +1598,8 @@ export class MobileRenderer extends Renderer {
             draw_type = this.boundary_type_with_line_break(e0, e1, side);
         }
 
-		//console.log([draw_type, side]);
-		let xshift = null;
+        //console.log([draw_type, side]);
+        let xshift = null;
 
         switch (draw_type) {
             case "s":
@@ -1761,6 +1814,4 @@ export class MobileRenderer extends Renderer {
         }
         return { width: w };
     }
-
-
 }

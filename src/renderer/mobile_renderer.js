@@ -14,12 +14,12 @@ var SR_RENDER_PARAM = {
     y_footer_offset: 10,
     min_measure_width: 100,
     row_height: 24, // Basic height of the measure when no rs, mu and ml area is drawn
-    row_margin: 2, // Margin between next y_base and lower edge of Measure Lower Area
+    row_margin: 4, // Margin between next y_base and lower edge of Measure Lower Area
     rs_area_height: 24, // Rhythm Slashes Area // ! Currently this should be same as row_height
     rm_area_height: 15, // Reharsal Mark Area
     mu_area_height: 15, // Measure Upper Area ( Repeat signs area )
     ml_row_height: 10, // Measure Lower Area ( Lyrics etc.. )
-    below_mu_area_margin: 0, // Margin between MU and chord
+    below_mu_area_margin: 2, // Margin between MU and chord
     above_rs_area_margin: 0, // Margin between chord and rythm slash
     above_ml_area_margin: 0, // Margin between (chord/rythm slash) and measure lower(lyrics etc) rea
     header_body_margin: 0, // Margin between header and body (x-direction)
@@ -205,13 +205,13 @@ export class MobileRenderer extends Renderer {
             //console.group("Macro for " + track.reharsal_groups[i].name);
             //console.log(rg_macros);
             //console.groupEnd();
-            if (global_macros.reharsal_mark_position != "Inner")
+            /*if (global_macros.reharsal_mark_position != "Inner")
                 y_stacks.push({
                     type: "reharsal",
                     height: param.rm_area_height,
                     cont: track.reharsal_groups[i],
                     macros: rg_macros
-                });
+                });*/
             let rg = track.reharsal_groups[i];
             for (var bi = 0; bi < rg.blocks.length; ++bi) {
                 var block_measures = rg.blocks[bi];
@@ -262,7 +262,7 @@ export class MobileRenderer extends Renderer {
             // Loop each y_stacks
             // eslint-disable-next-line no-empty
             if (yse[pei].type == "titles") {
-            } else if (
+            /*} else if (
                 yse[pei].type == "reharsal" &&
                 yse[pei].macros.reharsal_mark_position != "Inner"
             ) {
@@ -276,7 +276,7 @@ export class MobileRenderer extends Renderer {
                     param.reharsal_mark_font_size
                 );
 
-                y_base += param.rm_area_height; // Reharsal mark area height
+                y_base += param.rm_area_height; // Reharsal mark area height*/
             } else if (yse[pei].type == "meas") {
                 var row_elements_list = yse[pei].cont;
                 let r = this.render_measure_row_simplified(
@@ -319,14 +319,18 @@ export class MobileRenderer extends Renderer {
         return { y: y_base };
     }
 
-    screening_y_areas(row_elements_list, y_base, param, staff){
+    screening_y_areas(row_elements_list, y_base, param, staff, 
+        first_block_first_row,
+        inner_reharsal_mark){
 
+        var ycomps = ["rm", "mu","body","rs","ml","irm","end"];
         var yprof = {
+            rm:    {detected:false, height: param.rm_area_height, margin:[0, 0]}, // Rhearsal mark if any
             mu:    {detected:false, height: param.mu_area_height, margin:[0, param.below_mu_area_margin]},
-            body:  {detected:true,  height: param.row_height,     margin:[0, param.below_mu_area_margin]},
+            body:  {detected:true,  height: param.row_height,     margin:[0, 0]},
             rs:    {detected:false, height: param.rs_area_height, margin:[param.above_rs_area_margin, 0]},
             ml:    {detected:false, height: param.ml_row_height,  margin:[param.above_ml_area_margin, 0]},
-            rm:    {detected:true,  height: param.row_margin,     margin:[0, 0]},
+            irm:   {detected:true,  height: param.row_margin,     margin:[0, 0]}, // Virtual row represeinting fixed inter-row margin
             end:   {detected:true,  height: 0,                    margin:[0, 0]} // Vitrual row representing start of end of row = start of next row
         };
 
@@ -373,8 +377,15 @@ export class MobileRenderer extends Renderer {
             yprof.rs.detected = false;
         }
 
+        if(first_block_first_row){
+            if(inner_reharsal_mark){
+                yprof.mu.detected = true; // In MU area
+            }else{
+                yprof.rm.detected = true; // dedecated rehardsal mark region
+            }
+        }
+
         // Calculate yposition  for each area
-        var ycomps = ["mu","body","rs","ml","rm","end"];
         for(let i = 0; i < ycomps.length; ++i){
             let name = ycomps[i];
             yprof[name].y = (i==0 ? y_base : yprof[ycomps[i-1]].y + yprof[ycomps[i-1]].actual_height);
@@ -423,7 +434,9 @@ export class MobileRenderer extends Renderer {
         // interval of 5 lines
         var _5lines_intv = param.rs_area_height / (5 - 1);
 
-        var yprof = this.screening_y_areas(row_elements_list, y_base, param, staff);
+        var yprof = this.screening_y_areas(row_elements_list, y_base, param, staff, 
+            first_block_first_row, inner_reharsal_mark);
+
         var y_next_base = yprof.end.y;
 
         var y_body_or_rs_base = yprof.rs.detected ? yprof.rs.y : yprof.body.y;
@@ -432,12 +445,6 @@ export class MobileRenderer extends Renderer {
         if (ylimit !== null && y_next_base > ylimit) {
             return null;
         }
-
-        var measure_height = y_next_base - y_base;
-        var measure_heights = [];
-
-        var first_meas_start_x = x;
-        var last_meas_end_x = x;
 
         var total_width = param.paper_width - 2 * param.x_offset;
 
@@ -531,8 +538,20 @@ export class MobileRenderer extends Renderer {
             });
         }
 
+        // Now determine scaling of each measure to fit within width
         var free_width = total_width - fixed_width;
         var scaling = free_width / flexible_width;
+
+        // Reharsal mark if any
+        if(first_block_first_row && !inner_reharsal_mark){
+            let r = graphic.CanvasTextWithBox(
+                paper,
+                param.x_offset,
+                yprof.rm.y,
+                reharsal_group.name,
+                param.reharsal_mark_font_size
+            );
+        }
 
         // For each measure in this row
         for (var ml = 0; ml < row_elements_list.length; ++ml) {
@@ -544,6 +563,20 @@ export class MobileRenderer extends Renderer {
             var mh_offset = 0;
 
             var meas_base_x = x;
+
+            // Inner reharsal mark in MU area
+            if(first_block_first_row && inner_reharsal_mark){
+
+                let r = graphic.CanvasTextWithBox(
+                    paper,
+                    param.x_offset,
+                    yprof.mu.y,
+                    reharsal_group.name,
+                    param.reharsal_mark_font_size
+                );
+
+                mh_offset += r.width;
+            }
 
             for (var ei = 0; ei < elements.header.length; ++ei) {
                 let e = elements.header[ei];

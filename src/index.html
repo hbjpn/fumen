@@ -6,9 +6,14 @@
     <script type="text/javascript" src="fumen2.js"></script></body>
     <script type="text/javascript">
       function hoge(){
+            var score_area = document.getElementById("scores_area");
+            while (score_area.firstChild) {
+              score_area.removeChild(score_area.firstChild);
+            }
             var code = document.getElementById("code").value;
             var parser = new Fumen.Parser();
             var track = parser.parse(code);
+            
             var renderer = new Fumen.MobileRenderer(null, {
               paper_width:400, 
               paper_height:400,

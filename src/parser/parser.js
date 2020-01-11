@@ -809,7 +809,7 @@ export function getGlobalMacros(track) {
 			global_macros.reharsal_mark_position == "Inner" &&
 			global_macros.staff != "ON"
 		) {
-			alert(
+			console.warn(
 				"REHARSAL_MARK=\"Inner\" needs to be specified with STAFF=\"ON\""
 			);
 		}

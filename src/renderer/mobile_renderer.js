@@ -202,16 +202,6 @@ export class MobileRenderer extends Renderer {
         var y_stacks = [{ type: "titles", height: param.y_first_page_offset }];
         for (var i = 0; i < track.reharsal_groups.length; ++i) {
             var rg_macros = getMacros(global_macros, track.reharsal_groups[i]);
-            //console.group("Macro for " + track.reharsal_groups[i].name);
-            //console.log(rg_macros);
-            //console.groupEnd();
-            /*if (global_macros.reharsal_mark_position != "Inner")
-                y_stacks.push({
-                    type: "reharsal",
-                    height: param.rm_area_height,
-                    cont: track.reharsal_groups[i],
-                    macros: rg_macros
-                });*/
             let rg = track.reharsal_groups[i];
             for (var bi = 0; bi < rg.blocks.length; ++bi) {
                 var block_measures = rg.blocks[bi];
@@ -262,21 +252,7 @@ export class MobileRenderer extends Renderer {
             // Loop each y_stacks
             // eslint-disable-next-line no-empty
             if (yse[pei].type == "titles") {
-            /*} else if (
-                yse[pei].type == "reharsal" &&
-                yse[pei].macros.reharsal_mark_position != "Inner"
-            ) {
-                let rg = yse[pei].cont;
 
-                graphic.CanvasTextWithBox(
-                    canvas,
-                    x_offset,
-                    y_base,
-                    rg.name,
-                    param.reharsal_mark_font_size
-                );
-
-                y_base += param.rm_area_height; // Reharsal mark area height*/
             } else if (yse[pei].type == "meas") {
                 var row_elements_list = yse[pei].cont;
                 let r = this.render_measure_row_simplified(
@@ -549,7 +525,9 @@ export class MobileRenderer extends Renderer {
                 param.x_offset,
                 yprof.rm.y,
                 reharsal_group.name,
-                param.reharsal_mark_font_size
+                param.reharsal_mark_font_size,
+                2, 
+                graphic.GetCharProfile(param.reharsal_mark_font_size).height
             );
         }
 
@@ -565,17 +543,19 @@ export class MobileRenderer extends Renderer {
             var meas_base_x = x;
 
             // Inner reharsal mark in MU area
-            if(first_block_first_row && inner_reharsal_mark){
+            if(first_block_first_row && inner_reharsal_mark && ml==0){
 
                 let r = graphic.CanvasTextWithBox(
                     paper,
                     param.x_offset,
                     yprof.mu.y,
                     reharsal_group.name,
-                    param.reharsal_mark_font_size
+                    param.reharsal_mark_font_size,
+                    2, 
+                    graphic.GetCharProfile(param.reharsal_mark_font_size).height
                 );
 
-                mh_offset += r.width;
+                mh_offset += (r.width+2);
             }
 
             for (var ei = 0; ei < elements.header.length; ++ei) {
@@ -647,23 +627,6 @@ export class MobileRenderer extends Renderer {
                     m.renderprop.sx = x;
                     m.renderprop.paper = paper;
                     x += e.renderprop.w;
-
-                    // Header 1. Reharsal mark in row
-                    if (
-                        inner_reharsal_mark &&
-                        yprof.rs.detected &&
-                        first_block_first_row &&
-                        ml == 0
-                    ) {
-                        var g = graphic.CanvasTextWithBox(
-                            paper,
-                            meas_base_x,
-                            yprof.body.y,
-                            reharsal_group.name,
-                            param.reharsal_mark_font_size
-                        );
-                        header_body_area_width += g.getBBox().width;
-                    }
                 } else if (e instanceof common.Time) {
                     graphic.CanvasText(
                         paper,

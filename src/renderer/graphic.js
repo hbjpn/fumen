@@ -116,9 +116,21 @@ export function CanvasText(canvas, x, y, text, fsize, align, xwidth, notdraw, op
     return ret;
 }
 
-export function CanvasTextWithBox(canvas, x, y, text, fsize) {
-    var ret = CanvasText(canvas, x, y, text, fsize, "lt");
-    CanvasRect(canvas, x - 1, y - 1, ret.width + 2, ret.height + 2);
+export function CanvasTextWithBox(canvas, x, y, text, fsize, margin=2, min_width=null) {
+    let ret = null;
+    if(min_width != null){
+        ret = CanvasText(canvas, x + margin, y + margin, text, fsize, "lt", undefined, true);
+        if(ret.width < min_width){
+            ret = CanvasText(canvas, x + margin + min_width/2, y + margin, text, fsize, "ct");
+            ret.width = min_width;
+        }else{
+            ret = CanvasText(canvas, x + margin, y + margin, text, fsize, "lt");
+        }
+    }else{
+        ret = CanvasText(canvas, x + margin, y + margin, text, fsize, "lt");
+    }
+    CanvasRect(canvas, x, y, ret.width + 2*margin, ret.height + 2*margin);
+    return {width: ret.width+2*margin, height:ret.height+2*margin};
 }
 
 // SVG related

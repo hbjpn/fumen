@@ -13,7 +13,7 @@ var SR_RENDER_PARAM = {
     x_offset: 10,
     y_footer_offset: 10,
     min_measure_width: 100,
-    row_height: 24, // Basic height of the measure when no rs, mu and ml area is drawn
+    row_height: 28, // Basic height of the measure when no rs, mu and ml area is drawn
     row_margin: 4, // Margin between next y_base and lower edge of Measure Lower Area
     rs_area_height: 24, // Rhythm Slashes Area // ! Currently this should be same as row_height
     rm_area_height: 15, // Reharsal Mark Area
@@ -631,10 +631,10 @@ export class MobileRenderer extends Renderer {
                     graphic.CanvasText(
                         paper,
                         x + e.renderprop.w / 2,
-                        y_body_or_rs_base,
+                        y_body_or_rs_base + param.row_height / 2,
                         e.numer,
                         param.base_font_size / 2,
-                        "ct",
+                        "cb",
                         e.renderprop.w
                     );
                     graphic.CanvasText(
@@ -1268,10 +1268,10 @@ export class MobileRenderer extends Renderer {
             graphic.CanvasText(
                 canvas,
                 x,
-                y,
+                y + param.row_height/2,
                 root[0],
                 B,
-                "lt",
+                "lm",
                 B * coeff1,
                 !draw
             );
@@ -1285,7 +1285,7 @@ export class MobileRenderer extends Renderer {
                             .drawImage(
                                 G_imgmap["assets/img/flat.svg"],
                                 x + upper_width,
-                                y,
+                                y + param.row_height/2 - rootCharHeight/2,
                                 B * 0.2,
                                 rootCharHeight / 2.0
                             );
@@ -1297,7 +1297,7 @@ export class MobileRenderer extends Renderer {
                             .drawImage(
                                 G_imgmap["assets/img/sharp.svg"],
                                 x + upper_width,
-                                y,
+                                y + param.row_height/2 - rootCharHeight/2,
                                 B * 0.2,
                                 rootCharHeight / 2.0
                             );
@@ -1312,7 +1312,7 @@ export class MobileRenderer extends Renderer {
             let r = graphic.CanvasText(
                 canvas,
                 x,
-                y + rootCharHeight,
+                y + param.row_height/2 + rootCharHeight/2,
                 "/" + onbass[0],
                 B * 0.45,
                 "lt",
@@ -1328,7 +1328,7 @@ export class MobileRenderer extends Renderer {
                             .drawImage(
                                 G_imgmap["assets/img/flat.svg"],
                                 x + onbass_width,
-                                y + rootCharHeight,
+                                y + param.row_height/2 + rootCharHeight/2,
                                 B * 0.2,
                                 r.height
                             );
@@ -1340,7 +1340,7 @@ export class MobileRenderer extends Renderer {
                             .drawImage(
                                 G_imgmap["assets/img/sharp.svg"],
                                 x + onbass_width,
-                                y + rootCharHeight,
+                                y + param.row_height/2 + rootCharHeight/2,
                                 B * 0.2,
                                 r.height
                             );
@@ -1354,7 +1354,7 @@ export class MobileRenderer extends Renderer {
                 let r = graphic.CanvasText(
                     canvas,
                     x + lower_width,
-                    y + rootCharHeight,
+                    y + param.row_height/2 + rootCharHeight/2,
                     String.fromCharCode(0x0394),
                     B * 0.5,
                     "lb",
@@ -1366,7 +1366,7 @@ export class MobileRenderer extends Renderer {
                 let r = graphic.CanvasText(
                     canvas,
                     x + lower_width,
-                    y + rootCharHeight,
+                    y + param.row_height/2 + rootCharHeight/2,
                     String.fromCharCode(0x2013),
                     B * 0.5,
                     "lb",
@@ -1383,7 +1383,7 @@ export class MobileRenderer extends Renderer {
                 let r = graphic.CanvasText(
                     canvas,
                     x + lower_width,
-                    y + rootCharHeight,
+                    y + param.row_height/2 + rootCharHeight/2,
                     e.param,
                     B * 0.5,
                     "lb",
@@ -1395,7 +1395,7 @@ export class MobileRenderer extends Renderer {
                 let r = graphic.CanvasText(
                     canvas,
                     x + lower_width,
-                    y + rootCharHeight,
+                    y + param.row_height/2 + rootCharHeight/2,
                     e.type + (e.param ? e.param : ""),
                     B * 0.5,
                     "lb",
@@ -1407,7 +1407,7 @@ export class MobileRenderer extends Renderer {
                 let r = graphic.CanvasText(
                     canvas,
                     x + lower_width,
-                    y + rootCharHeight,
+                    y + param.row_height/2 + rootCharHeight/2,
                     String.fromCharCode(0x004f) + (e.param ? e.param : ""),
                     B * 0.5,
                     "lb",
@@ -1419,7 +1419,7 @@ export class MobileRenderer extends Renderer {
                 let r = graphic.CanvasText(
                     canvas,
                     x + lower_width,
-                    y + rootCharHeight,
+                    y + param.row_height/2 + rootCharHeight/2,
                     String.fromCharCode(0x0394) + (e.param ? e.param : ""),
                     B * 0.5,
                     "lb",
@@ -1434,7 +1434,7 @@ export class MobileRenderer extends Renderer {
                 let r = graphic.CanvasText(
                     canvas,
                     x + upper_width,
-                    y,
+                    y + param.row_height/2 - rootCharHeight/2,
                     "-5",
                     B * 0.5,
                     "lt",
@@ -1446,7 +1446,7 @@ export class MobileRenderer extends Renderer {
                 let r = graphic.CanvasText(
                     canvas,
                     x + upper_width,
-                    y,
+                    y + param.row_height/2 - rootCharHeight/2,
                     "+5",
                     B * 0.5,
                     "lt",
@@ -1462,7 +1462,7 @@ export class MobileRenderer extends Renderer {
             let r = graphic.CanvasText(
                 canvas,
                 x + tensions_pos,
-                y,
+                y + param.row_height/2 - rootCharHeight/2,
                 "(",
                 B * 0.5,
                 "lt",
@@ -1479,7 +1479,7 @@ export class MobileRenderer extends Renderer {
                             .drawImage(
                                 G_imgmap["assets/img/flat.svg"],
                                 x + tensions_pos + tensions_width,
-                                y,
+                                y + param.row_height/2 - rootCharHeight/2,
                                 B * 0.2,
                                 h
                             );
@@ -1491,7 +1491,7 @@ export class MobileRenderer extends Renderer {
                             .drawImage(
                                 G_imgmap["assets/img/sharp.svg"],
                                 x + tensions_pos + tensions_width,
-                                y,
+                                y + param.row_height/2 - rootCharHeight/2,
                                 B * 0.2,
                                 h
                             );
@@ -1500,7 +1500,7 @@ export class MobileRenderer extends Renderer {
                 let r = graphic.CanvasText(
                     canvas,
                     x + tensions_pos + tensions_width,
-                    y,
+                    y + param.row_height/2 - rootCharHeight/2,
                     e.param,
                     B * 0.5,
                     "lt",
@@ -1512,7 +1512,7 @@ export class MobileRenderer extends Renderer {
                     let r = graphic.CanvasText(
                         canvas,
                         x + tensions_pos + tensions_width,
-                        y,
+                        y + param.row_height/2 - rootCharHeight/2,
                         ", ",
                         B * 0.5,
                         "lt",
@@ -1525,7 +1525,7 @@ export class MobileRenderer extends Renderer {
             r = graphic.CanvasText(
                 canvas,
                 x + tensions_pos + tensions_width,
-                y,
+                y + param.row_height/2 - rootCharHeight/2,
                 ")",
                 B * 0.5,
                 "lt",

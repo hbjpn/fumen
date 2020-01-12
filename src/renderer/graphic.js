@@ -29,7 +29,7 @@ export function CanvasLine(canvas, x0, y0, x1, y1, opt) {
     if (opt && opt.width) context.lineWidth = 1;
 }
 
-export function CanvasPath(canvas, svgpathdata, opt) {
+export function CanvasPath(canvas, svgpathdata, fill=false, opt) {
 
     var ctx = canvas.getContext("2d");
 
@@ -49,7 +49,8 @@ export function CanvasPath(canvas, svgpathdata, opt) {
 
     var p = new Path2D(svgpathdata);
     ctx.stroke(p);
-    ctx.fill(p);
+    if(fill)
+       ctx.fill(p);
 
     if (opt != null) {
         for (let key in orgValues) {

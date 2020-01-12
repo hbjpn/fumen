@@ -477,7 +477,7 @@ export class Renderer {
 
             if (balken.groups[gbi].type == "slash") {
                 if (d == "0" || d == "1") {
-                    this.raphaelSlash(
+                    this.render_slash(
                         paper,
                         bo_group,
                         note_x_center,
@@ -487,7 +487,7 @@ export class Renderer {
                         _5lines_intv
                     );
                 } else {
-                    this.raphaelSlash(
+                    this.render_slash(
                         paper,
                         bo_group,
                         note_x_center,
@@ -720,7 +720,7 @@ export class Renderer {
                             .attr({ "clip-rect": clip });
                         music_context.tie_info.rs_prev_tie_paper.set().push(bl);
                         */
-                        graphic.CanvasPath(paper, graphic.svgArcBezie(brace_points),
+                        graphic.CanvasPath(paper, graphic.svgArcBezie(brace_points), false,
                             {"clip-rect":[pss[0]+sdx, (pss[1][ci] - 50), 
                                 (psm.renderprop.meas_end_x - (pss[0] + sdx) + 5), 100]});
 
@@ -746,7 +746,7 @@ export class Renderer {
                             .attr({ "clip-rect": clip });
                         group.push(bl);
                         */
-                        graphic.CanvasPath(paper, graphic.svgArcBezie(brace_points),
+                        graphic.CanvasPath(paper, graphic.svgArcBezie(brace_points), false,
                             {"clip-rect":[meas_start_x - 5, (y - 50), 
                                 (x - (meas_start_x - 5)), 100]});
 
@@ -762,7 +762,7 @@ export class Renderer {
                             .attr("stroke-width", "2px");
                         group.push(bl);*/
 
-                        graphic.CanvasPath(paper, graphic.svgArcBezie(brace_points));
+                        graphic.CanvasPath(paper, graphic.svgArcBezie(brace_points), false);
                     }
                 }
             }
@@ -1145,7 +1145,7 @@ export class Renderer {
         return { x: x };
     }
 
-    raphaelSlash(paper, group, x, y, d, numdot, _5lines_intv) {
+    render_slash(paper, group, x, y, d, numdot, _5lines_intv) {
         var rsgw = 8;
         var rsgh = _5lines_intv * 2;
         var rsh = 4;
@@ -1161,11 +1161,11 @@ export class Renderer {
         //var obj = null;
         if (d == "1" || d == "2") {
             //obj = paper.path(path).attr({ "stroke-width": "1px" });
-            graphic.CanvasPath(paper, path, {"lineWidth":1});
+            graphic.CanvasPath(paper, path, false, {"lineWidth":1});
         } else {
             // '0' and other
             //obj = paper.path(path).attr({ fill: "#000000" });
-            graphic.CanvasPath(paper, path, {"lineWidth":1, "fillStyle":"#000"});
+            graphic.CanvasPath(paper, path, true, {"lineWidth":1, "fillStyle":"#000"});
         }
         //group.push(obj);
         for (var i = 0; i < numdot; ++i) {

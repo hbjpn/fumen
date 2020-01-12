@@ -1221,7 +1221,7 @@ export class DefaultRenderer extends Renderer {
         return { group: group, width: chord_width };
     }
 
-    raphaelSlash(paper, group, x, y, d, numdot, _5lines_intv) {
+    render_slash(paper, group, x, y, d, numdot, _5lines_intv) {
         var rsgw = 8;
         var rsgh = _5lines_intv * 2;
         var rsh = 4;

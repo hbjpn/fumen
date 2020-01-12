@@ -268,7 +268,7 @@ export class Renderer {
             }
 
             //var x = e.renderprop.x;
-            var barlen = 15;
+            var barlen = 25;
             var flagintv = 5;
             var chord_length = 10000000;
 
@@ -1118,7 +1118,7 @@ export class Renderer {
                     slope * (note_x_center + deltax) +
                         intercept +
                         (upper_flag ? 1 + fi * 6 : -1 - fi * 6),
-                    null, null, "lm");
+                    null, null, "l"+(upper_flag?"t":"b"));
                 
                 // Additional vertical line
                 /*var line = paper
@@ -1135,6 +1135,7 @@ export class Renderer {
                     .attr({ "stroke-width": "1px" });
                 group.push(line);*/
 
+                /*
                 graphic.CanvasLine(paper,
                     note_x_center + deltax,
                     slope * (note_x_center + deltax) + intercept,
@@ -1143,6 +1144,7 @@ export class Renderer {
                         intercept +
                         (upper_flag ? -8 : 8),
                     {width:1});
+                */
             }
         }
 

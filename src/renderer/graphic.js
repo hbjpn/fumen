@@ -192,8 +192,8 @@ export function CanvasImage(canvas, img, x, y, w, h, align = "lt")
     else if(align[0]=="c") x_shift = -act_w/2;
 
     let y_shift = 0;
-    if(align[0]=="b") y_shift = -act_h;
-    else if(align[0]=="m") x_shift = -act_h/2;
+    if(align[1]=="b") y_shift = -act_h;
+    else if(align[1]=="m") y_shift = -act_h/2;
 
     ctx.drawImage(
         img,

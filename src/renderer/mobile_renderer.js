@@ -379,6 +379,8 @@ export class MobileRenderer extends Renderer {
 
         var total_width = param.paper_width - 2 * param.x_offset;
 
+        music_context.pos_in_a_measure = 0; // reset
+
         // Determine the width of each measure
         var fixed_width = 0;
         var num_flexible_rooms = 0;
@@ -723,7 +725,7 @@ export class MobileRenderer extends Renderer {
                 all_has_length &&
                 e instanceof common.Chord &&
                 groupedBodyElems[gbei].elems[0] instanceof common.Chord && // Rest and chords will not be in the same group
-                (music_context.tie_info.prev_has_tie ||
+                (music_context.tie_info.prev_has_tie || // this prev_has_tie is used only here and not used other places.
                     e.chord_name_str == "" ||
                     (e.is_valid_chord &&
                         chord_name_str &&
@@ -744,9 +746,6 @@ export class MobileRenderer extends Renderer {
 
             if (e instanceof common.Chord) chord_name_str = e.chord_name_str;
         });
-
-        // reset pos inside a measure
-        music_context.pos_in_a_measure = 0;
 
         return {groupedBodyElems: groupedBodyElems, all_has_length:all_has_length};
     }
@@ -808,7 +807,8 @@ export class MobileRenderer extends Renderer {
             m.renderprop.body_grouping_info = geret;
         }
 
-        // Screening x elements and determine the rendering policy for x-axis
+        // Screening x elements and determine the rendering policy for x-axis.
+        let dammy_music_context = common.deepcopy(music_context); // Maybe not required ?
         var sxaret = this.screening_x_areas(
             x,
             paper,
@@ -818,7 +818,7 @@ export class MobileRenderer extends Renderer {
             next_measure,
             param,
             yprof,
-            music_context
+            dammy_music_context
         );
 
         var room_per_elem = sxaret.room_per_elem;
@@ -846,6 +846,9 @@ export class MobileRenderer extends Renderer {
             var mh_offset = 0;
 
             var meas_base_x = x;
+
+            // reset pos inside a measure
+            music_context.pos_in_a_measure = 0;
 
             // Inner reharsal mark in MU area
             if(first_block_first_row && inner_reharsal_mark && ml==0){
@@ -1193,6 +1196,9 @@ export class MobileRenderer extends Renderer {
                     throw "Unkown measure wide instance detected";
                 }
             }
+
+            m.renderprop.meas_end_x = meas_end_x;
+            m.renderprop.meas_start_x = meas_start_x;
         } // measure loop
 
         // return {y_base:y_base + param.row_height + param.row_margin};

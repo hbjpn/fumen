@@ -33,6 +33,8 @@ export function CanvasPath(canvas, svgpathdata, fill=false, opt) {
 
     var ctx = canvas.getContext("2d");
 
+    ctx.save();
+
     let orgValues = {};
     if (opt != null) {
         for (let key in opt) {
@@ -52,11 +54,13 @@ export function CanvasPath(canvas, svgpathdata, fill=false, opt) {
     if(fill)
        ctx.fill(p);
 
-    if (opt != null) {
+    ctx.restore();
+ /*   if (opt != null) {
         for (let key in orgValues) {
             ctx[key] = orgValues[key];
         }
     }
+    */
 }
 
 export function GetCharProfile(fsize) {

@@ -22,7 +22,7 @@ var SR_RENDER_PARAM = {
     below_mu_area_margin: 2, // Margin between MU and chord
     above_rs_area_margin: 0, // Margin between chord and rythm slash
     above_ml_area_margin: 0, // Margin between (chord/rythm slash) and measure lower(lyrics etc) rea
-    header_body_margin: 0, // Margin between header and body (x-direction)
+    header_body_margin: 2, // Margin between header and body (x-direction)
     max_scaling: 1.2,
     paper_width: (96 * 210) / 25.4, // 96dpi * A4_width[mm] / 25.4[mm/inche]
     paper_height: (96 * 297) / 25.4, // 96dpi * A4_height[mm] / 25.4[mm/inche]

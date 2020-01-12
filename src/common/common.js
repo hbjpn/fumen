@@ -206,7 +206,7 @@ export class Task {
 // Parser
 //
 
-var WHOLE_NOTE_LENGTH = 2 * 3 * 5 * 7 * 9 * 11 * 13 * 64;
+export var WHOLE_NOTE_LENGTH = 2 * 3 * 5 * 7 * 9 * 11 * 13 * 64;
 
 export class Track {
     constructor() {

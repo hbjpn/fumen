@@ -29,6 +29,35 @@ export function CanvasLine(canvas, x0, y0, x1, y1, opt) {
     if (opt && opt.width) context.lineWidth = 1;
 }
 
+export function CanvasPath(canvas, svgpathdata, opt) {
+
+    var ctx = canvas.getContext("2d");
+
+    let orgValues = {};
+    if (opt != null) {
+        for (let key in opt) {
+            orgValues[key] = ctx[key];
+            ctx[key] = opt[key];
+        }
+    }
+
+    if("clip-rect" in opt){
+        ctx.beginPath();
+        ctx.rect(opt["clip-rect"][0], opt["clip-rect"][1], opt["clip-rect"][2], opt["clip-rect"][3]);
+        ctx.clip();
+    }
+
+    var p = new Path2D(svgpathdata);
+    ctx.stroke(p);
+    ctx.fill(p);
+
+    if (opt != null) {
+        for (let key in orgValues) {
+            ctx[key] = orgValues[key];
+        }
+    }
+}
+
 export function GetCharProfile(fsize) {
     let bold = ""; //"bold ";
     let fontfamily = "Arial";
@@ -131,6 +160,43 @@ export function CanvasTextWithBox(canvas, x, y, text, fsize, margin=2, min_width
     }
     CanvasRect(canvas, x, y, ret.width + 2*margin, ret.height + 2*margin);
     return {width: ret.width+2*margin, height:ret.height+2*margin};
+}
+
+export function CanvasImage(canvas, img, x, y, w, h, align = "lt")
+{
+    let ctx = canvas.getContext("2d");
+    let act_w = img.width;
+    let act_h = img.height;
+
+    // only if one of w or y is not specified, scaling applies. 
+    if(w != null && h == null){
+        let s = img.width / w;
+        act_w = w;
+        act_h = img.height / s;
+    }else if(w == null && h != null){
+        let s = img.height / h;
+        act_h = h;
+        act_w = img.width / s;
+    }else if(w != null && h != null){
+        act_h = h;
+        act_w = w;
+    }
+
+    let x_shift = 0;
+    if(align[0]=="r") x_shift = -act_w;
+    else if(align[0]=="c") x_shift = -act_w/2;
+
+    let y_shift = 0;
+    if(align[0]=="b") y_shift = -act_h;
+    else if(align[0]=="m") x_shift = -act_h/2;
+
+    ctx.drawImage(
+        img,
+        x + x_shift,
+        y + y_shift,
+        act_w,
+        act_h
+    );
 }
 
 // SVG related
@@ -260,4 +326,32 @@ function JudgeTextYPosOffset(canvas, bold, fontfamily, fontsize) {
         top_room: top_room / G_pixelRatio,
         height: M_height / G_pixelRatio
     };
+
+}
+
+export var G_imgmap = {};
+
+export function PreloadImages(imageurls) {
+    var promises = [];
+
+    for (var i = 0; i < imageurls.length; ++i) {
+        if(imageurls[i] in G_imgmap) continue;
+        var p = new Promise(function(resolve, reject) {
+            var url = imageurls[i];
+            var img = new Image();
+            img.src = url;
+            img.onload = function() {
+                resolve({ img: img, url: url });
+            };
+        });
+        promises.push(p);
+    }
+    
+    return Promise.all(promises).then(result => {
+        // make map with url
+        for (var ii = 0; ii < result.length; ++ii) {
+            G_imgmap[result[ii].url] = result[ii].img;
+        }
+        return result;
+    });
 }

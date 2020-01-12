@@ -42,23 +42,6 @@ var SR_RENDER_PARAM = {
 
 // Simple renderer offsets
 
-var G_imgmap = {};
-
-function PreloadImages(imageurls) {
-    var promises = [];
-    for (var i = 0; i < imageurls.length; ++i) {
-        var p = new Promise(function(resolve, reject) {
-            var url = imageurls[i];
-            var img = new Image();
-            img.src = url;
-            img.onload = function() {
-                resolve({ img: img, url: url });
-            };
-        });
-        promises.push(p);
-    }
-    return Promise.all(promises);
-}
 
 export class MobileRenderer extends Renderer {
     constructor(canvas, param) {
@@ -90,18 +73,20 @@ export class MobileRenderer extends Renderer {
             "assets/img/coda.svg",
             "assets/img/flat.svg",
             "assets/img/sharp.svg",
+            "assets/img/natural.svg",
             "assets/img/rest1.svg",
             "assets/img/rest2.svg",
             "assets/img/rest4.svg",
-            "assets/img/rest8.svg"
+            "assets/img/rest8.svg",
+            "assets/img/w1note.svg",
+            "assets/img/w2note.svg",
+            "assets/img/bnote.svg",
+            "assets/img/flag_f.svg",
+            "assets/img/flag_i.svg",
+            
         ];
         var param = this.param;
-        return PreloadImages(urls).then(result => {
-            // make map with url
-            for (var ii = 0; ii < result.length; ++ii) {
-                G_imgmap[result[ii].url] = result[ii].img;
-            }
-            // Returns last y position
+        return graphic.PreloadImages(urls).then( () => {
             return this.render_impl(track, param);
         });
     }
@@ -662,6 +647,11 @@ export class MobileRenderer extends Renderer {
                     x += e.renderprop.w;
                 }
             });
+
+            // Do grouping of body elements which share the same balken
+
+            
+
             if (elements.body.length == 0) {
                 x += (1 * param.base_font_size + room_per_elem);
             } else {
@@ -815,7 +805,7 @@ export class MobileRenderer extends Renderer {
                             e,
                             param.base_font_size
                         );
-                        //paper.getContext("2d").drawImage(G_imgmap["assets/img/coda.svg"], x - 15, y_body_or_rs_base - 15, 15, 15);
+                        //paper.getContext("2d").drawImage(graphic.G_imgmap["assets/img/coda.svg"], x - 15, y_body_or_rs_base - 15, 15, 15);
                         graphic.CanvasText(
                             paper,
                             x - r.width,
@@ -954,7 +944,7 @@ export class MobileRenderer extends Renderer {
         var lx = x;
         paper
             .getContext("2d")
-            .drawImage(G_imgmap["assets/img/segno.svg"], lx, y, B / 3, B / 2);
+            .drawImage(graphic.G_imgmap["assets/img/segno.svg"], lx, y, B / 3, B / 2);
         lx += B / 3;
         if (segno.number !== null) {
             let r = graphic.CanvasText(
@@ -1007,7 +997,7 @@ export class MobileRenderer extends Renderer {
             paper
                 .getContext("2d")
                 .drawImage(
-                    G_imgmap["assets/img/coda.svg"],
+                    graphic.G_imgmap["assets/img/coda.svg"],
                     x - width - B / 2,
                     img_y,
                     B / 2,
@@ -1018,7 +1008,7 @@ export class MobileRenderer extends Renderer {
             paper
                 .getContext("2d")
                 .drawImage(
-                    G_imgmap["assets/img/coda.svg"],
+                    graphic.G_imgmap["assets/img/coda.svg"],
                     x,
                     img_y,
                     B / 2,
@@ -1113,7 +1103,7 @@ export class MobileRenderer extends Renderer {
             }
         }
 
-        var img = G_imgmap["assets/img/rest" + (rd <= 4 ? rd : 8) + ".svg"];
+        var img = graphic.G_imgmap["assets/img/rest" + (rd <= 4 ? rd : 8) + ".svg"];
         var s = img.height / heights[rd];
         if (rd <= 4) {
             ctx.drawImage(
@@ -1287,7 +1277,7 @@ export class MobileRenderer extends Renderer {
                         canvas
                             .getContext("2d")
                             .drawImage(
-                                G_imgmap["assets/img/flat.svg"],
+                                graphic.G_imgmap["assets/img/flat.svg"],
                                 x + upper_width,
                                 y + param.row_height/2 - rootCharHeight/2,
                                 B * 0.2,
@@ -1299,7 +1289,7 @@ export class MobileRenderer extends Renderer {
                         canvas
                             .getContext("2d")
                             .drawImage(
-                                G_imgmap["assets/img/sharp.svg"],
+                                graphic.G_imgmap["assets/img/sharp.svg"],
                                 x + upper_width,
                                 y + param.row_height/2 - rootCharHeight/2,
                                 B * 0.2,
@@ -1330,7 +1320,7 @@ export class MobileRenderer extends Renderer {
                         canvas
                             .getContext("2d")
                             .drawImage(
-                                G_imgmap["assets/img/flat.svg"],
+                                graphic.G_imgmap["assets/img/flat.svg"],
                                 x + onbass_width,
                                 y + param.row_height/2 + rootCharHeight/2,
                                 B * 0.2,
@@ -1342,7 +1332,7 @@ export class MobileRenderer extends Renderer {
                         canvas
                             .getContext("2d")
                             .drawImage(
-                                G_imgmap["assets/img/sharp.svg"],
+                                graphic.G_imgmap["assets/img/sharp.svg"],
                                 x + onbass_width,
                                 y + param.row_height/2 + rootCharHeight/2,
                                 B * 0.2,
@@ -1481,7 +1471,7 @@ export class MobileRenderer extends Renderer {
                         canvas
                             .getContext("2d")
                             .drawImage(
-                                G_imgmap["assets/img/flat.svg"],
+                                graphic.G_imgmap["assets/img/flat.svg"],
                                 x + tensions_pos + tensions_width,
                                 y + param.row_height/2 - rootCharHeight/2,
                                 B * 0.2,
@@ -1493,7 +1483,7 @@ export class MobileRenderer extends Renderer {
                         canvas
                             .getContext("2d")
                             .drawImage(
-                                G_imgmap["assets/img/sharp.svg"],
+                                graphic.G_imgmap["assets/img/sharp.svg"],
                                 x + tensions_pos + tensions_width,
                                 y + param.row_height/2 - rootCharHeight/2,
                                 B * 0.2,
@@ -1813,4 +1803,6 @@ export class MobileRenderer extends Renderer {
         }
         return { width: w };
     }
+
+
 }

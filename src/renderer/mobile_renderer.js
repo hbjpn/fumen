@@ -299,11 +299,9 @@ export class MobileRenderer extends Renderer {
 
         //var draw_5line = false;
         if (staff == "ON") {
-            // rs_area_detected = true; // Fix me : Not supported in simplified renderer
+            yprof.rs.detected = true; 
         }
-        // interval of 5 lines
-        var _5lines_intv = param.rs_area_height / (5 - 1);
-
+        
         // Screening of y-axis areas
         for (let ml = 0; ml < row_elements_list.length; ++ml) {
             var m = row_elements_list[ml];
@@ -325,6 +323,7 @@ export class MobileRenderer extends Renderer {
                 } else if (e instanceof common.Chord) {
                     var bases = e.getChordStrBase(0, "flat");
                     yprof.ml.detected = yprof.ml.detected || bases[1] != null;
+                    yprof.rs.detected |= e.nglist !== null;
                 } else if (e instanceof common.Lyric) {
                     yprof.ml.detected = true;
                     lyric_rows = Math.max(

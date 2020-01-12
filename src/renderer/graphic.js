@@ -41,7 +41,7 @@ export function CanvasPath(canvas, svgpathdata, opt) {
         }
     }
 
-    if("clip-rect" in opt){
+    if(opt && "clip-rect" in opt){
         ctx.beginPath();
         ctx.rect(opt["clip-rect"][0], opt["clip-rect"][1], opt["clip-rect"][2], opt["clip-rect"][3]);
         ctx.clip();

@@ -255,7 +255,7 @@ export class Renderer {
         };
 
         var drawn = false;
-        var group = paper.set();
+        var group = null; //paper.set();
 
         // elements in a measure
         for (var ei = 0; ei < elems.length; ++ei) {
@@ -401,7 +401,7 @@ export class Renderer {
             }
         }
 
-        return { group: drawn ? group : null, x: x };
+        return { x: x };
     }
 
     draw_notes(
@@ -462,7 +462,7 @@ export class Renderer {
             var sharp_flats = balken.groups[gbi].sharp_flats;
             var numdot = balken.groups[gbi].numdot;
 
-            var bo_group = paper.set();
+            var bo_group = null; //paper.set();
 
             var note_x_center = x;
 
@@ -771,10 +771,12 @@ export class Renderer {
             balken.groups[gbi].renderprop.note_x_center = note_x_center;
 
             // Here is the only update of x
+            /*
             x +=
                 (bo_group.getBBox().width + 10) * body_scaling * x_global_scale; // TODO : 10 should be refined
 
-            group.push(bo_group);
+            group.push(bo_group);*/
+            x += 10; // TODO : FIXME to cater for actual width of components
         }
 
         // 3. Determine the flag intercept and slope
@@ -805,7 +807,7 @@ export class Renderer {
         intercept = intercept - slope * deltax;
 
         // 4. Draw bars, flags
-        var bar_flag_group = paper.set();
+        var bar_flag_group = null; //paper.set();
         for (var gbi = 0; gbi < balken.groups.length; ++gbi) {
             let note_x_center = balken.groups[gbi].renderprop.note_x_center;
 
@@ -865,7 +867,7 @@ export class Renderer {
             } else if (balken.groups[gbi].type == "rest") {
             }
         }
-        group.push(bar_flag_group);
+        //group.push(bar_flag_group);
 
         // 5. Draw balkens
 
@@ -1148,7 +1150,6 @@ export class Renderer {
             true
         );
         //var obj = null;
-        //var group = paper.set();
         if (d == "1" || d == "2") {
             //obj = paper.path(path).attr({ "stroke-width": "1px" });
             graphic.CanvasPath(paper, path, {"lineWidth":1});

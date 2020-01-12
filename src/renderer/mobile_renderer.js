@@ -301,7 +301,7 @@ export class MobileRenderer extends Renderer {
         if (staff == "ON") {
             yprof.rs.detected = true; 
         }
-        
+
         // Screening of y-axis areas
         for (let ml = 0; ml < row_elements_list.length; ++ml) {
             var m = row_elements_list[ml];
@@ -505,6 +505,9 @@ export class MobileRenderer extends Renderer {
                     e.renderprop = { w: 10 };
                 }
             });
+
+            fixed_width += param.header_body_margin;
+
             if (elements.body.length == 0) {
                 fixed_width += 1 * param.base_font_size;
                 num_flexible_rooms++;
@@ -714,6 +717,8 @@ export class MobileRenderer extends Renderer {
                     x += e.renderprop.w;
                 }
             });
+
+            x += param.header_body_margin;
 
             // Grouping body elements which share the same balken
             let geret = this.grouping_body_elemnts(elements.body, music_context);

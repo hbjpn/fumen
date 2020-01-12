@@ -15,7 +15,7 @@ var SR_RENDER_PARAM = {
     min_measure_width: 100,
     row_height: 28, // Basic height of the measure when no rs, mu and ml area is drawn
     row_margin: 4, // Margin between next y_base and lower edge of Measure Lower Area
-    rs_area_height: 24, // Rhythm Slashes Area // ! Currently this should be same as row_height
+    rs_area_height: 28, // Rhythm Slashes Area // ! Currently this should be same as row_height
     rm_area_height: 15, // Reharsal Mark Area
     mu_area_height: 15, // Measure Upper Area ( Repeat signs area )
     ml_row_height: 10, // Measure Lower Area ( Lyrics etc.. )
@@ -348,14 +348,14 @@ export class MobileRenderer extends Renderer {
         // Calculate yposition  for each area
         for(let i = 0; i < ycomps.length; ++i){
             let name = ycomps[i];
-            yprof[name].y = (i==0 ? y_base : yprof[ycomps[i-1]].y + yprof[ycomps[i-1]].actual_height);
+            yprof[name].y = (i==0 ? y_base : yprof[ycomps[i-1]].y + yprof[ycomps[i-1]].whole_height) + yprof[name].margin[0];
             if(!yprof[name].detected){
-                yprof[name].actual_height = 0;
+                yprof[name].whole_height = 0;
             }else{
                 if(name == "ml"){
-                    yprof[name].actual_height = Math.max(1, lyric_rows) * yprof[name].height; // multiplied by lyric ros
+                    yprof[name].whole_height = Math.max(1, lyric_rows) * yprof[name].height; // multiplied by lyric ros
                 }else{
-                    yprof[name].actual_height = yprof[name].height + yprof[name].margin[0] + yprof[name].margin[1];
+                    yprof[name].whole_height = yprof[name].height + yprof[name].margin[0] + yprof[name].margin[1];
                 }
             }
         }
@@ -400,6 +400,7 @@ export class MobileRenderer extends Renderer {
                         paper,
                         x,
                         0,
+                        yprof.rs.detected ? param.rs_area_height : param.row_height,
                         param,
                         false
                     );
@@ -479,6 +480,7 @@ export class MobileRenderer extends Renderer {
                         paper,
                         x,
                         0,
+                        yprof.rs.detected ? param.rs_area_height : param.row_height,
                         param,
                         false
                     );
@@ -565,7 +567,7 @@ export class MobileRenderer extends Renderer {
                     body_elems.elems,
                     paper,
                     yprof.rs.y,
-                    _5lines_intv,
+                    yprof.rs.height,
                     meas_start_x,
                     meas_end_x,
                     draw,
@@ -641,7 +643,7 @@ export class MobileRenderer extends Renderer {
                             x,
                             y_body_or_rs_base,
                             C7_width,
-                            _5lines_intv,
+                            yprof.rs.detected ? param.rs_area_height : param.row_height,
                             param
                         );
                         if(draw)
@@ -928,6 +930,7 @@ export class MobileRenderer extends Renderer {
                         paper,
                         x,
                         y_body_or_rs_base,
+                        yprof.rs.detected ? param.rs_area_height : param.row_height,
                         param,
                         true
                     );
@@ -936,10 +939,11 @@ export class MobileRenderer extends Renderer {
                     m.renderprop.paper = paper;
                     x += e.renderprop.w;
                 } else if (e instanceof common.Time) {
+                    let height = yprof.rs.detected ?param.rs_area_height : param.row_height;
                     graphic.CanvasText(
                         paper,
                         x + e.renderprop.w / 2,
-                        y_body_or_rs_base + param.row_height / 2,
+                        y_body_or_rs_base + height / 2,
                         e.numer,
                         param.base_font_size / 2,
                         "cb",
@@ -948,13 +952,13 @@ export class MobileRenderer extends Renderer {
                     graphic.CanvasText(
                         paper,
                         x + e.renderprop.w / 2,
-                        y_body_or_rs_base + param.row_height / 2,
+                        y_body_or_rs_base + height / 2,
                         e.denom,
                         param.base_font_size / 2,
                         "ct",
                         e.renderprop.w
                     );
-                    var ly = yprof.body.y + param.row_height / 2;
+                    var ly = yprof.body.y + height / 2;
                     if (draw && !yprof.rs.detected)
                         graphic.CanvasLine(
                             paper,
@@ -1003,6 +1007,7 @@ export class MobileRenderer extends Renderer {
                         paper,
                         x,
                         y_body_or_rs_base,
+                        yprof.rs.detected ? param.rs_area_height : param.row_height,
                         param,
                         true
                     );
@@ -1114,16 +1119,17 @@ export class MobileRenderer extends Renderer {
                         "lt"
                     );
                 } else if (e instanceof common.LongRestIndicator) {
+                    let height = yprof.rs.detected ? param.rs_area_height : param.row_height;
                     let sx =
                         meas_start_x +
                         m.header_width -
                         param.header_body_margin; // More beautiful for long rest if header body margin is omitted
                     let fx = meas_end_x - m.footer_width;
-                    var rh = param.row_height;
+                    var rh = height;
                     var r_lrmargin = 0.05;
                     var min_lrmargin = 5;
                     var max_lrmargin = 10;
-                    var yshift = param.row_height / 6;
+                    var yshift = 0; // height / 6;
                     var vlmargin = 0.2;
 
                     let lrmargin = Math.max(
@@ -1138,10 +1144,10 @@ export class MobileRenderer extends Renderer {
                         graphic.CanvasLine(
                             paper,
                             lx,
-                            y_body_or_rs_base + param.row_height / 2 + yshift,
+                            y_body_or_rs_base + height / 2 + yshift,
                             rx,
-                            y_body_or_rs_base + param.row_height / 2 + yshift,
-                            { width: "7" }
+                            y_body_or_rs_base + height / 2 + yshift,
+                            { width: height/5 }
                         );
                     if (draw)
                         graphic.CanvasLine(
@@ -1200,6 +1206,20 @@ export class MobileRenderer extends Renderer {
             m.renderprop.meas_end_x = meas_end_x;
             m.renderprop.meas_start_x = meas_start_x;
         } // measure loop
+
+        // 0. Draw 5 lines
+        if(draw && yprof.rs.detected){
+            let start_x = row_elements_list[row_elements_list.length-1].renderprop.meas_end_x;
+            let end_x   = row_elements_list[0].renderprop.meas_start_x;
+            for (let i = 0; i < 5; ++i) {
+                let intv = _5lines_intv;
+                let dy = 0;
+                graphic.CanvasLine(paper, 
+                    start_x, yprof.rs.y + i*intv+dy,
+                    end_x,   yprof.rs.y + i*intv+dy,
+                    {width:1});
+            }      
+        }
 
         // return {y_base:y_base + param.row_height + param.row_margin};
         return { y_base: y_next_base };
@@ -1319,9 +1339,10 @@ export class MobileRenderer extends Renderer {
         x,
         y_body_or_rs_base,
         C7_width,
-        _5i,
+        row_height,
         param
     ) {
+        let _5i = row_height / 4; 
         var yoffsets = {
             1: -_5i,
             2: (-_5i / 6) * 4,
@@ -1375,7 +1396,7 @@ export class MobileRenderer extends Renderer {
                 ctx.drawImage(
                     img,
                     x,
-                    y_body_or_rs_base + param.row_height / 2 + oy,
+                    y_body_or_rs_base + row_height / 2 + oy,
                     img.width / s,
                     img.height / s
                 );
@@ -1387,7 +1408,7 @@ export class MobileRenderer extends Renderer {
                     ctx.drawImage(
                         img,
                         x + k * rdx,
-                        y_body_or_rs_base + param.row_height / 2 + k * rdy + oy,
+                        y_body_or_rs_base + row_height / 2 + k * rdy + oy,
                         img.width / s,
                         img.height / s
                     );
@@ -1398,7 +1419,7 @@ export class MobileRenderer extends Renderer {
                 graphic.CanvasCircle(
                     paper,
                     x + dot_xoffsets[rd] + di * 5,
-                    y_body_or_rs_base + param.row_height / 2 - _5i / 2,
+                    y_body_or_rs_base + row_height / 2 - _5i / 2,
                     1
                 );
             }
@@ -1830,10 +1851,10 @@ export class MobileRenderer extends Renderer {
         canvas,
         x,
         y_body_base,
+        row_height,
         param,
         draw
     ) {
-        var row_height = param.row_height;
 
         var draw_type = null; // "s, d, lb, le, lb, f"
 

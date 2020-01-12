@@ -235,7 +235,7 @@ export class Renderer {
         elems,
         paper,
         rs_y_base,
-        _5lines_intv,
+        row_height,
         meas_start_x,
         meas_end_x,
         draw,
@@ -253,6 +253,8 @@ export class Renderer {
         let balken = {
             groups: []
         };
+
+        let _5lines_intv = row_height/4;
 
         var drawn = false;
         var group = null; //paper.set();
@@ -295,7 +297,7 @@ export class Renderer {
                 } else {
                     // notes
                     for (var nri = 0; nri < nr.length; ++nri) {
-                        var dy = _5lines_intv / 2; // 1/2 of interval of 5 lines
+                        let dy = _5lines_intv / 2; // 1/2 of interval of 5 lines
                         var NLIST = {
                             C: 0,
                             D: 1,
@@ -340,7 +342,7 @@ export class Renderer {
                     group,
                     balken,
                     rs_y_base,
-                    _5lines_intv,
+                    row_height,
                     meas_start_x,
                     meas_end_x,
                     body_scaling,
@@ -386,7 +388,7 @@ export class Renderer {
                     group,
                     balken,
                     rs_y_base,
-                    _5lines_intv,
+                    row_height,
                     meas_start_x,
                     meas_end_x,
                     body_scaling,
@@ -413,7 +415,7 @@ export class Renderer {
         group,
         balken,
         rs_y_base,
-        _5lines_intv,
+        row_height,
         meas_start_x,
         meas_end_x,
         body_scaling,
@@ -433,7 +435,9 @@ export class Renderer {
             return {x:x + width};
         }
 
-        var deltax_acc = 10;
+        let _5lines_intv = row_height / 4;
+
+        var deltax_acc = 10;  
 
         // 1. determine the flag direction here
         var center_y = 0.0;
@@ -574,8 +578,8 @@ export class Renderer {
                     }
 
                     // dots
-                    for (var i = 0; i < numdot; ++i) {
-                        var dy =
+                    for (let i = 0; i < numdot; ++i) {
+                        let dy =
                             pos_on_5lines[ci] % 2 == 0 ? -_5lines_intv / 2 : 0;
                         /*bo_group.push(
                             paper
@@ -651,7 +655,7 @@ export class Renderer {
                     x,
                     rs_y_base,
                     0,
-                    _5lines_intv,
+                    row_height,
                     this.param
                 );
             }

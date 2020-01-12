@@ -334,6 +334,7 @@ export class Renderer {
                 balken.groups.length > 0
             ) {
                 var dbret = this.draw_notes(
+                    draw, 
                     x,
                     paper,
                     group,
@@ -379,6 +380,7 @@ export class Renderer {
                 ei == elems.length - 1
             ) {
                 let dbret = this.draw_notes(
+                    draw, 
                     x,
                     paper,
                     group,
@@ -405,6 +407,7 @@ export class Renderer {
     }
 
     draw_notes(
+        draw, 
         x,
         paper,
         group,
@@ -423,6 +426,12 @@ export class Renderer {
         param
     ) {
         // Evaluate the flag direction(up or down) by the center of the y-axis position of all the notes/slashes
+
+        let balken_group_size = 10;
+        let width = balken_group_size * balken.groups.length;
+        if(!draw){
+            return {x:x + width};
+        }
 
         var deltax_acc = 10;
 
@@ -776,7 +785,7 @@ export class Renderer {
                 (bo_group.getBBox().width + 10) * body_scaling * x_global_scale; // TODO : 10 should be refined
 
             group.push(bo_group);*/
-            x += 10; // TODO : FIXME to cater for actual width of components
+            x += balken_group_size * body_scaling; // TODO : FIXME to cater for actual width of components
         }
 
         // 3. Determine the flag intercept and slope

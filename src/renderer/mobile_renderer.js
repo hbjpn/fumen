@@ -532,6 +532,32 @@ export class MobileRenderer extends Renderer {
         geret.groupedBodyElems.forEach( (body_elems, gbei) => {
             // Draw Rythm Slashes, first
             if (yprof.rs.detected && geret.all_has_length) {
+
+                var e0 = body_elems.elems[0];
+                var first_symbol_width = 0;
+                let cr = null;
+                if (e0 instanceof common.Chord) {
+                    cr = this.render_chord_simplified(
+                        draw, 
+                        e0,
+                        transpose,
+                        half_type,
+                        paper,
+                        x,
+                        yprof.body.y,
+                        param,
+                        C7_width
+                    );
+
+                    if(draw)  first_symbol_width += ( e0.renderprop.w + room_per_elem);
+
+                } else if (e0 instanceof common.Rest) {
+                    // Rest is drawn in render_rs_area function in RS area
+                    // However store rendering information for this element as a representative
+                    cr = {width: 10}; // TODO : Use dynamic value ?
+                    if(draw)  first_symbol_width += ( e0.renderprop.w + room_per_elem);
+                }
+
                 var g = this.render_rs_area(
                     x,
                     body_elems.elems,
@@ -551,29 +577,15 @@ export class MobileRenderer extends Renderer {
 
                 //if (g.group) rs_area_svg_groups.push(g.group);
 
-                var rs_area_width = 0; // g.x - x; // FIXME
+                var rs_area_width = g.x - x;
 
-                var e0 = body_elems.elems[0];
-                var chord_symbol_width = 0;
-                if (e0 instanceof common.Chord) {
-                    var cr = this.render_chord_simplified(
-                        true, 
-                        e0,
-                        transpose,
-                        half_type,
-                        paper,
-                        x,
-                        yprof.body.y,
-                        param,
-                        C7_width
-                    );
-                    chord_symbol_width += ( e0.renderprop.w + room_per_elem);
-
-                } else if (e0 instanceof common.Rest) {
-                    // Rest is drawn in render_rs_area function in RS area
+                if(draw)
+                    x += Math.max(rs_area_width, first_symbol_width);
+                else{
+                    e0.renderprop.w = Math.max(rs_area_width, cr.width);
+                    fixed_width += e0.renderprop.w;
+                    num_flexible_rooms++;
                 }
-
-                x += Math.max(rs_area_width, chord_symbol_width);
             } else{
                 body_elems.elems.forEach(e=>{
                     if (e instanceof common.Chord) {
@@ -1350,38 +1362,40 @@ export class MobileRenderer extends Renderer {
             }
         }
 
-        var img = graphic.G_imgmap["assets/img/rest" + (rd <= 4 ? rd : 8) + ".svg"];
-        var s = img.height / heights[rd];
-        if (rd <= 4) {
-            ctx.drawImage(
-                img,
-                x,
-                y_body_or_rs_base + param.row_height / 2 + oy,
-                img.width / s,
-                img.height / s
-            );
-        } else {
-            var nKasane = common.myLog2(rd) - 2;
-            var rdx = 2;
-            var rdy = -_5i;
-            for (var k = 0; k < nKasane; ++k) {
+        if(draw){
+            var img = graphic.G_imgmap["assets/img/rest" + (rd <= 4 ? rd : 8) + ".svg"];
+            var s = img.height / heights[rd];
+            if (rd <= 4) {
                 ctx.drawImage(
                     img,
-                    x + k * rdx,
-                    y_body_or_rs_base + param.row_height / 2 + k * rdy + oy,
+                    x,
+                    y_body_or_rs_base + param.row_height / 2 + oy,
                     img.width / s,
                     img.height / s
                 );
+            } else {
+                var nKasane = common.myLog2(rd) - 2;
+                var rdx = 2;
+                var rdy = -_5i;
+                for (var k = 0; k < nKasane; ++k) {
+                    ctx.drawImage(
+                        img,
+                        x + k * rdx,
+                        y_body_or_rs_base + param.row_height / 2 + k * rdy + oy,
+                        img.width / s,
+                        img.height / s
+                    );
+                }
             }
-        }
-        // dots
-        for (var di = 0; di < numdot; ++di) {
-            graphic.CanvasCircle(
-                paper,
-                x + dot_xoffsets[rd] + di * 5,
-                y_body_or_rs_base + param.row_height / 2 - _5i / 2,
-                1
-            );
+            // dots
+            for (var di = 0; di < numdot; ++di) {
+                graphic.CanvasCircle(
+                    paper,
+                    x + dot_xoffsets[rd] + di * 5,
+                    y_body_or_rs_base + param.row_height / 2 - _5i / 2,
+                    1
+                );
+            }
         }
 
         return { width: 10 };

@@ -364,6 +364,74 @@ export class MobileRenderer extends Renderer {
         return yprof;
     }
 
+    grouping_body_elemnts(body_elements, music_context){
+        // First, guess chord duration here.
+        // In current version, each chord in the measure is assumed to have the same duration.
+        // TODO : Improve based on number of spaces or duration indication mark.
+        let all_has_length = true;
+        let chord_name_str = null;
+        let sum_length = 0;
+        let rest_or_long_rests_detected = false;
+
+        body_elements.forEach(function(e) {
+            all_has_length &= e.nglist !== null;
+            if (all_has_length)
+                sum_length += e.nglist[0].lengthIndicator.length;
+            rest_or_long_rests_detected |= e instanceof common.Rest;
+        });
+
+        // Reset music context
+        // TODO : consider key infomration
+        // TODO : consider tie
+        // C3 -> 0x3C as 0 C-2 as index 0, G8 as 127(0x7F)
+        music_context.accidental_info = new Array(128).fill(0);
+
+        var tmpl = { elems: [], groupedChordsLen: 0 };
+        var groupedBodyElems = [];
+
+        if (body_elements.length > 0) groupedBodyElems.push(common.deepcopy(tmpl));
+        var gbei = 0;
+
+        // Grouping the chord and notes among which the same balken is shared.
+        body_elements.forEach((e, ei)  => {
+            // TODO : More strict judge
+            // Currently, Rest and Chords are in the different groups.
+            // However to cater for, for instance triplets including rests,
+            // they needs to be in the same group.
+            if (groupedBodyElems[gbei].elems.length == 0) {
+                // Keei pin the same group
+            } else if (
+                all_has_length &&
+                e instanceof common.Chord &&
+                groupedBodyElems[gbei].elems[0] instanceof common.Chord && // Rest and chords will not be in the same group
+                (music_context.tie_info.prev_has_tie ||
+                    e.chord_name_str == "" ||
+                    (e.is_valid_chord &&
+                        chord_name_str &&
+                        chord_name_str == e.chord_name_str))
+            ) {
+                // Keep in the same group
+            } else {
+                // flush
+                groupedBodyElems.push(common.deepcopy(tmpl));
+                ++gbei;
+            }
+
+            groupedBodyElems[gbei].elems.push(e);
+
+            music_context.tie_info.prev_has_tie = e.nglist
+                ? e.nglist[0].lengthIndicator.has_tie
+                : false;
+
+            if (e instanceof common.Chord) chord_name_str = e.chord_name_str;
+        });
+
+        // reset pos inside a measure
+        music_context.pos_in_a_measure = 0;
+
+        return {groupedBodyElems: groupedBodyElems, all_has_length:all_has_length};
+    }
+
     render_measure_row_simplified(
         x,
         paper,
@@ -648,18 +716,43 @@ export class MobileRenderer extends Renderer {
                 }
             });
 
-            // Do grouping of body elements which share the same balken
-
-            
+            // Grouping body elements which share the same balken
+            let geret = this.grouping_body_elemnts(elements.body, music_context);
 
             if (elements.body.length == 0) {
                 x += (1 * param.base_font_size + room_per_elem);
-            } else {
-                elements.body.forEach(e => {
-                    if (e instanceof common.Chord) {
+            }
+
+            geret.groupedBodyElems.forEach( (body_elems, gbei) => {
+                // Draw Rythm Slashes, first
+                if (yprof.rs.detected && geret.all_has_length) {
+                    var g = this.render_rs_area(
+                        x,
+                        body_elems.elems,
+                        paper,
+                        yprof.rs.y,
+                        _5lines_intv,
+                        meas_start_x,
+                        meas_end_x,
+                        draw,
+                        0,
+                        m.body_scaling,
+                        x_global_scale,
+                        music_context,
+                        m,
+                        param
+                    );
+
+                    //if (g.group) rs_area_svg_groups.push(g.group);
+
+                    var rs_area_width = 0; // g.x - x; // FIXME
+ 
+                    var e0 = body_elems.elems[0];
+                    var chord_symbol_width = 0;
+                    if (e0 instanceof common.Chord) {
                         var cr = this.render_chord_simplified(
-                            true,
-                            e,
+                            true, 
+                            e0,
                             transpose,
                             half_type,
                             paper,
@@ -668,60 +761,82 @@ export class MobileRenderer extends Renderer {
                             param,
                             C7_width
                         );
-                        x += ( e.renderprop.w + room_per_elem);
+                        chord_symbol_width += ( e0.renderprop.w + room_per_elem);
 
-                        if (e.exceptinal_comment !== null) {
-                            graphic.CanvasText(
+                    } else if (e0 instanceof common.Rest) {
+                        // Rest is drawn in render_rs_area function in RS area
+                    }
+
+                    x += Math.max(rs_area_width, chord_symbol_width);
+                } else{
+                    body_elems.elems.forEach(e=>{
+                        if (e instanceof common.Chord) {
+                            var cr = this.render_chord_simplified(
+                                true,
+                                e,
+                                transpose,
+                                half_type,
                                 paper,
                                 x,
                                 yprof.body.y,
-                                e.exceptinal_comment.comment,
-                                param.base_font_size / 2,
-                                "lb"
+                                param,
+                                C7_width
                             );
-                        }
-                        if (e.lyric !== null) {
-                            var llist = e.lyric.lyric.split("/");
-                            for (var li = 0; li < llist.length; ++li) {
+                            x += ( e.renderprop.w + room_per_elem);
+
+                            if (e.exceptinal_comment !== null) {
                                 graphic.CanvasText(
                                     paper,
                                     x,
-                                    yprof.ml.y + li * param.ml_row_height,
-                                    llist[li],
-                                    param.base_font_size / 3,
-                                    "lt"
+                                    yprof.body.y,
+                                    e.exceptinal_comment.comment,
+                                    param.base_font_size / 2,
+                                    "lb"
                                 );
                             }
+                            if (e.lyric !== null) {
+                                var llist = e.lyric.lyric.split("/");
+                                for (var li = 0; li < llist.length; ++li) {
+                                    graphic.CanvasText(
+                                        paper,
+                                        x,
+                                        yprof.ml.y + li * param.ml_row_height,
+                                        llist[li],
+                                        param.base_font_size / 3,
+                                        "lt"
+                                    );
+                                }
+                            }
+                        } else if (e instanceof common.Rest) {
+                            this.render_rest_plain(
+                                e,
+                                paper,
+                                true,
+                                x,
+                                y_body_or_rs_base,
+                                C7_width,
+                                _5lines_intv,
+                                param
+                            );
+                            x += (e.renderprop.w +room_per_elem); 
+                        } else if (e instanceof common.Simile) {
+                            this.render_simile_mark_plain(
+                                true,
+                                paper,
+                                x,
+                                y_body_or_rs_base,
+                                param.rs_area_height,
+                                e.numslash,
+                                false,
+                                "l"
+                            );
+                            x += (e.renderprop.w +room_per_elem); 
+                        } else if (e instanceof common.Space) {
+                            x += (e.renderprop.w +room_per_elem); 
                         }
-                    } else if (e instanceof common.Rest) {
-                        this.render_rest_plain(
-                            e,
-                            paper,
-                            true,
-                            x,
-                            y_body_or_rs_base,
-                            C7_width,
-                            _5lines_intv,
-                            param
-                        );
-                        x += (e.renderprop.w +room_per_elem); 
-                    } else if (e instanceof common.Simile) {
-                        this.render_simile_mark_plain(
-                            true,
-                            paper,
-                            x,
-                            y_body_or_rs_base,
-                            param.rs_area_height,
-                            e.numslash,
-                            false,
-                            "l"
-                        );
-                        x += (e.renderprop.w +room_per_elem); 
-                    } else if (e instanceof common.Space) {
-                        x += (e.renderprop.w +room_per_elem); 
-                    }
-                });
-            }
+                    });
+                }
+            });
 
             // Draw footer
             var footer_base = x;

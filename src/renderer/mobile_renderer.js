@@ -363,6 +363,262 @@ export class MobileRenderer extends Renderer {
         return yprof;
     }
 
+    screening_x_areas(
+        x,
+        paper,
+        macros,
+        row_elements_list,
+        prev_measure,
+        next_measure,
+        param
+    ){
+        var transpose = macros.transpose;
+        var half_type = macros.half_type;
+
+        var total_width = param.paper_width - 2 * param.x_offset;
+
+        // Determine the width of each measure
+        var fixed_width = 0;
+        var num_flexible_rooms = 0;
+        for (let ml = 0; ml < row_elements_list.length; ++ml) {
+            // measure object
+            let m = row_elements_list[ml];
+            var elements = this.classifyElements(m);
+            elements.header.forEach(e => {
+                if (e instanceof common.MeasureBoundary) {
+                    var pm = ml == 0 ? prev_measure : row_elements_list[ml - 1];
+                    var ne = pm ? pm.elements[pm.elements.length - 1] : null;
+                    let r = this.draw_boundary_simplified(
+                        "begin",
+                        ne,
+                        e,
+                        m.raw_new_line,
+                        paper,
+                        x,
+                        0,
+                        param,
+                        false
+                    );
+                    fixed_width += r.width;
+                    e.renderprop = { w: r.width };
+                } else if (e instanceof common.Time) {
+                    fixed_width += 10;
+                    e.renderprop = { w: 10 };
+                }
+            });
+
+            fixed_width += param.header_body_margin;
+
+            if (elements.body.length == 0) {
+                fixed_width += 1 * param.base_font_size;
+                num_flexible_rooms++;
+            } else {
+                elements.body.forEach(e => {
+                    if (e instanceof common.Chord) {
+                        var cr = this.render_chord_simplified(
+                            false,
+                            e,
+                            transpose,
+                            half_type,
+                            paper,
+                            x,
+                            0,
+                            param,
+                            0
+                        );
+                        e.renderprop = { w: cr.width };
+                        fixed_width += e.renderprop.w;
+                        num_flexible_rooms++;
+                    } else if (e instanceof common.Rest) {
+                        e.renderprop = { w: 1 * param.base_font_size };
+                        fixed_width += e.renderprop.w;
+                        num_flexible_rooms++;
+                    } else if (e instanceof common.Simile) {
+                        e.renderprop = { w: 2 * param.base_font_size };
+                        fixed_width += e.renderprop.w;
+                        num_flexible_rooms++;
+                    }
+                });
+            }
+            // Draw footer
+            elements.footer.forEach(e => {
+                if (e instanceof common.MeasureBoundary) {
+                    var nm =
+                        ml == row_elements_list.length - 1
+                            ? next_measure
+                            : row_elements_list[ml + 1];
+                    var ne = nm ? nm.elements[0] : null;
+                    let r = this.draw_boundary_simplified(
+                        "end",
+                        e,
+                        ne,
+                        nm ? nm.raw_new_line : false,
+                        paper,
+                        x,
+                        0,
+                        param,
+                        false
+                    );
+
+                    e.renderprop = { w: r.width };
+                    fixed_width += r.width;
+                    // eslint-disable-next-line no-empty
+                } else if (e instanceof common.DaCapo) {
+                    // eslint-disable-next-line no-empty
+                } else if (e instanceof common.DalSegno) {
+                    // eslint-disable-next-line no-empty
+                } else if (e instanceof common.ToCoda) {
+                    // eslint-disable-next-line no-empty
+                } else if (e instanceof common.Fine) {
+                }
+            });
+        }
+
+        // Now determine scaling of each measure to fit within width
+        var free_width = total_width - fixed_width;
+        var room_per_elem = free_width / num_flexible_rooms;
+
+        return {room_per_elem:room_per_elem};
+    }
+
+    render_body_elements(
+        draw, x, elements, 
+        param, music_context, 
+        room_per_elem, yprof, 
+        paper, _5lines_intv, 
+        meas_start_x, meas_end_x,
+        m,
+        x_global_scale,
+        transpose,
+        half_type,
+        C7_width,
+        y_body_or_rs_base
+    ){
+        // Grouping body elements which share the same balken
+        let geret = this.grouping_body_elemnts(elements.body, music_context);
+
+        if (elements.body.length == 0) {
+            x += (1 * param.base_font_size + room_per_elem);
+        }
+
+        geret.groupedBodyElems.forEach( (body_elems, gbei) => {
+            // Draw Rythm Slashes, first
+            if (yprof.rs.detected && geret.all_has_length) {
+                var g = this.render_rs_area(
+                    x,
+                    body_elems.elems,
+                    paper,
+                    yprof.rs.y,
+                    _5lines_intv,
+                    meas_start_x,
+                    meas_end_x,
+                    draw,
+                    0,
+                    m.body_scaling,
+                    x_global_scale,
+                    music_context,
+                    m,
+                    param
+                );
+
+                //if (g.group) rs_area_svg_groups.push(g.group);
+
+                var rs_area_width = 0; // g.x - x; // FIXME
+
+                var e0 = body_elems.elems[0];
+                var chord_symbol_width = 0;
+                if (e0 instanceof common.Chord) {
+                    var cr = this.render_chord_simplified(
+                        true, 
+                        e0,
+                        transpose,
+                        half_type,
+                        paper,
+                        x,
+                        yprof.body.y,
+                        param,
+                        C7_width
+                    );
+                    chord_symbol_width += ( e0.renderprop.w + room_per_elem);
+
+                } else if (e0 instanceof common.Rest) {
+                    // Rest is drawn in render_rs_area function in RS area
+                }
+
+                x += Math.max(rs_area_width, chord_symbol_width);
+            } else{
+                body_elems.elems.forEach(e=>{
+                    if (e instanceof common.Chord) {
+                        var cr = this.render_chord_simplified(
+                            true,
+                            e,
+                            transpose,
+                            half_type,
+                            paper,
+                            x,
+                            yprof.body.y,
+                            param,
+                            C7_width
+                        );
+                        x += ( e.renderprop.w + room_per_elem);
+
+                        if (e.exceptinal_comment !== null) {
+                            graphic.CanvasText(
+                                paper,
+                                x,
+                                yprof.body.y,
+                                e.exceptinal_comment.comment,
+                                param.base_font_size / 2,
+                                "lb"
+                            );
+                        }
+                        if (e.lyric !== null) {
+                            var llist = e.lyric.lyric.split("/");
+                            for (var li = 0; li < llist.length; ++li) {
+                                graphic.CanvasText(
+                                    paper,
+                                    x,
+                                    yprof.ml.y + li * param.ml_row_height,
+                                    llist[li],
+                                    param.base_font_size / 3,
+                                    "lt"
+                                );
+                            }
+                        }
+                    } else if (e instanceof common.Rest) {
+                        this.render_rest_plain(
+                            e,
+                            paper,
+                            true,
+                            x,
+                            y_body_or_rs_base,
+                            C7_width,
+                            _5lines_intv,
+                            param
+                        );
+                        x += (e.renderprop.w +room_per_elem); 
+                    } else if (e instanceof common.Simile) {
+                        this.render_simile_mark_plain(
+                            true,
+                            paper,
+                            x,
+                            y_body_or_rs_base,
+                            param.rs_area_height,
+                            e.numslash,
+                            false,
+                            "l"
+                        );
+                        x += (e.renderprop.w +room_per_elem); 
+                    } else if (e instanceof common.Space) {
+                        x += (e.renderprop.w +room_per_elem); 
+                    }
+                });
+            }
+        });
+
+        return {x:x};
+    }
+
     grouping_body_elemnts(body_elements, music_context){
         // First, guess chord duration here.
         // In current version, each chord in the measure is assumed to have the same duration.
@@ -474,108 +730,18 @@ export class MobileRenderer extends Renderer {
             return null;
         }
 
-        var total_width = param.paper_width - 2 * param.x_offset;
+        // Screening x elements and determine the room per elements
+        var sxaret = this.screening_x_areas(
+            x,
+            paper,
+            macros,
+            row_elements_list,
+            prev_measure,
+            next_measure,
+            param
+        );
 
-        // Determine the width of each measure
-        var fixed_width = 0;
-        var num_flexible_rooms = 0;
-        for (let ml = 0; ml < row_elements_list.length; ++ml) {
-            // measure object
-            let m = row_elements_list[ml];
-            var elements = this.classifyElements(m);
-            elements.header.forEach(e => {
-                if (e instanceof common.MeasureBoundary) {
-                    var pm = ml == 0 ? prev_measure : row_elements_list[ml - 1];
-                    var ne = pm ? pm.elements[pm.elements.length - 1] : null;
-                    let r = this.draw_boundary_simplified(
-                        "begin",
-                        ne,
-                        e,
-                        m.raw_new_line,
-                        paper,
-                        x,
-                        y_body_or_rs_base,
-                        param,
-                        false
-                    );
-                    fixed_width += r.width;
-                    e.renderprop = { w: r.width };
-                } else if (e instanceof common.Time) {
-                    fixed_width += 10;
-                    e.renderprop = { w: 10 };
-                }
-            });
-
-            fixed_width += param.header_body_margin;
-
-            if (elements.body.length == 0) {
-                fixed_width += 1 * param.base_font_size;
-                num_flexible_rooms++;
-            } else {
-                elements.body.forEach(e => {
-                    if (e instanceof common.Chord) {
-                        var cr = this.render_chord_simplified(
-                            false,
-                            e,
-                            transpose,
-                            half_type,
-                            paper,
-                            x,
-                            yprof.body.y,
-                            param,
-                            C7_width
-                        );
-                        e.renderprop = { w: cr.width };
-                        fixed_width += e.renderprop.w;
-                        num_flexible_rooms++;
-                    } else if (e instanceof common.Rest) {
-                        e.renderprop = { w: 1 * param.base_font_size };
-                        fixed_width += e.renderprop.w;
-                        num_flexible_rooms++;
-                    } else if (e instanceof common.Simile) {
-                        e.renderprop = { w: 2 * param.base_font_size };
-                        fixed_width += e.renderprop.w;
-                        num_flexible_rooms++;
-                    }
-                });
-            }
-            // Draw footer
-            elements.footer.forEach(e => {
-                if (e instanceof common.MeasureBoundary) {
-                    var nm =
-                        ml == row_elements_list.length - 1
-                            ? next_measure
-                            : row_elements_list[ml + 1];
-                    var ne = nm ? nm.elements[0] : null;
-                    let r = this.draw_boundary_simplified(
-                        "end",
-                        e,
-                        ne,
-                        nm ? nm.raw_new_line : false,
-                        paper,
-                        x,
-                        y_body_or_rs_base,
-                        param,
-                        false
-                    );
-
-                    e.renderprop = { w: r.width };
-                    fixed_width += r.width;
-                    // eslint-disable-next-line no-empty
-                } else if (e instanceof common.DaCapo) {
-                    // eslint-disable-next-line no-empty
-                } else if (e instanceof common.DalSegno) {
-                    // eslint-disable-next-line no-empty
-                } else if (e instanceof common.ToCoda) {
-                    // eslint-disable-next-line no-empty
-                } else if (e instanceof common.Fine) {
-                }
-            });
-        }
-
-        // Now determine scaling of each measure to fit within width
-        var free_width = total_width - fixed_width;
-        var room_per_elem = free_width / num_flexible_rooms;
+        var room_per_elem = sxaret.room_per_elem;
 
         // Reharsal mark if any
         if(first_block_first_row && !inner_reharsal_mark){
@@ -720,127 +886,21 @@ export class MobileRenderer extends Renderer {
 
             x += param.header_body_margin;
 
-            // Grouping body elements which share the same balken
-            let geret = this.grouping_body_elemnts(elements.body, music_context);
-
-            if (elements.body.length == 0) {
-                x += (1 * param.base_font_size + room_per_elem);
-            }
-
-            geret.groupedBodyElems.forEach( (body_elems, gbei) => {
-                // Draw Rythm Slashes, first
-                if (yprof.rs.detected && geret.all_has_length) {
-                    var g = this.render_rs_area(
-                        x,
-                        body_elems.elems,
-                        paper,
-                        yprof.rs.y,
-                        _5lines_intv,
-                        meas_start_x,
-                        meas_end_x,
-                        draw,
-                        0,
-                        m.body_scaling,
-                        x_global_scale,
-                        music_context,
-                        m,
-                        param
-                    );
-
-                    //if (g.group) rs_area_svg_groups.push(g.group);
-
-                    var rs_area_width = 0; // g.x - x; // FIXME
- 
-                    var e0 = body_elems.elems[0];
-                    var chord_symbol_width = 0;
-                    if (e0 instanceof common.Chord) {
-                        var cr = this.render_chord_simplified(
-                            true, 
-                            e0,
-                            transpose,
-                            half_type,
-                            paper,
-                            x,
-                            yprof.body.y,
-                            param,
-                            C7_width
-                        );
-                        chord_symbol_width += ( e0.renderprop.w + room_per_elem);
-
-                    } else if (e0 instanceof common.Rest) {
-                        // Rest is drawn in render_rs_area function in RS area
-                    }
-
-                    x += Math.max(rs_area_width, chord_symbol_width);
-                } else{
-                    body_elems.elems.forEach(e=>{
-                        if (e instanceof common.Chord) {
-                            var cr = this.render_chord_simplified(
-                                true,
-                                e,
-                                transpose,
-                                half_type,
-                                paper,
-                                x,
-                                yprof.body.y,
-                                param,
-                                C7_width
-                            );
-                            x += ( e.renderprop.w + room_per_elem);
-
-                            if (e.exceptinal_comment !== null) {
-                                graphic.CanvasText(
-                                    paper,
-                                    x,
-                                    yprof.body.y,
-                                    e.exceptinal_comment.comment,
-                                    param.base_font_size / 2,
-                                    "lb"
-                                );
-                            }
-                            if (e.lyric !== null) {
-                                var llist = e.lyric.lyric.split("/");
-                                for (var li = 0; li < llist.length; ++li) {
-                                    graphic.CanvasText(
-                                        paper,
-                                        x,
-                                        yprof.ml.y + li * param.ml_row_height,
-                                        llist[li],
-                                        param.base_font_size / 3,
-                                        "lt"
-                                    );
-                                }
-                            }
-                        } else if (e instanceof common.Rest) {
-                            this.render_rest_plain(
-                                e,
-                                paper,
-                                true,
-                                x,
-                                y_body_or_rs_base,
-                                C7_width,
-                                _5lines_intv,
-                                param
-                            );
-                            x += (e.renderprop.w +room_per_elem); 
-                        } else if (e instanceof common.Simile) {
-                            this.render_simile_mark_plain(
-                                true,
-                                paper,
-                                x,
-                                y_body_or_rs_base,
-                                param.rs_area_height,
-                                e.numslash,
-                                false,
-                                "l"
-                            );
-                            x += (e.renderprop.w +room_per_elem); 
-                        } else if (e instanceof common.Space) {
-                            x += (e.renderprop.w +room_per_elem); 
-                        }
-                    });
-                }
-            });
+            // Draw body
+            let rberet = this.render_body_elements(
+                true, x, elements, 
+                param, music_context, 
+                room_per_elem, yprof, 
+                paper, _5lines_intv, 
+                meas_start_x, meas_end_x,
+                m,
+                x_global_scale,
+                transpose,
+                half_type,
+                C7_width,
+                y_body_or_rs_base);
+            
+            x = rberet.x;
 
             // Draw footer
             var footer_base = x;

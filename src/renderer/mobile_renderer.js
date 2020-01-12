@@ -370,7 +370,9 @@ export class MobileRenderer extends Renderer {
         row_elements_list,
         prev_measure,
         next_measure,
-        param
+        param,
+        yprof,
+        music_context
     ){
         var transpose = macros.transpose;
         var half_type = macros.half_type;
@@ -409,6 +411,7 @@ export class MobileRenderer extends Renderer {
 
             fixed_width += param.header_body_margin;
 
+            /*
             if (elements.body.length == 0) {
                 fixed_width += 1 * param.base_font_size;
                 num_flexible_rooms++;
@@ -439,7 +442,25 @@ export class MobileRenderer extends Renderer {
                         num_flexible_rooms++;
                     }
                 });
-            }
+            }*/
+
+
+            var rberet = this.render_body_elements(
+                false, x, elements, 
+                param, music_context, 
+                0, yprof, 
+                paper, 0, 
+                0 /*meas_start_x*/, 100 /*meas_end_x*/, // TODO ?
+                m,
+                1,
+                transpose,
+                half_type,
+                0,
+                0
+            );
+            fixed_width += rberet.fixed_width;
+            num_flexible_rooms += rberet.num_flexible_rooms;
+
             // Draw footer
             elements.footer.forEach(e => {
                 if (e instanceof common.MeasureBoundary) {
@@ -475,8 +496,8 @@ export class MobileRenderer extends Renderer {
         }
 
         // Now determine scaling of each measure to fit within width
-        var free_width = total_width - fixed_width;
-        var room_per_elem = free_width / num_flexible_rooms;
+        let free_width = total_width - fixed_width;
+        let room_per_elem = free_width / num_flexible_rooms;
 
         return {room_per_elem:room_per_elem};
     }
@@ -494,12 +515,19 @@ export class MobileRenderer extends Renderer {
         C7_width,
         y_body_or_rs_base
     ){
-        // Grouping body elements which share the same balken
-        let geret = this.grouping_body_elemnts(elements.body, music_context);
+        let fixed_width = 0;
+        let num_flexible_rooms = 0;
 
         if (elements.body.length == 0) {
-            x += (1 * param.base_font_size + room_per_elem);
+            if(draw)
+                x += (1 * param.base_font_size + room_per_elem);
+            else{
+                fixed_width += (1 * param.base_font_size);
+                num_flexible_rooms++;
+            }
         }
+
+        let geret = m.renderprop.body_grouping_info;
 
         geret.groupedBodyElems.forEach( (body_elems, gbei) => {
             // Draw Rythm Slashes, first
@@ -549,8 +577,8 @@ export class MobileRenderer extends Renderer {
             } else{
                 body_elems.elems.forEach(e=>{
                     if (e instanceof common.Chord) {
-                        var cr = this.render_chord_simplified(
-                            true,
+                        let cr = this.render_chord_simplified(
+                            draw,
                             e,
                             transpose,
                             half_type,
@@ -560,9 +588,15 @@ export class MobileRenderer extends Renderer {
                             param,
                             C7_width
                         );
-                        x += ( e.renderprop.w + room_per_elem);
+                        if(draw)
+                            x += ( e.renderprop.w + room_per_elem);
+                        else{
+                            e.renderprop.w = cr.width;
+                            fixed_width += e.renderprop.w;
+                            num_flexible_rooms++;
+                        }
 
-                        if (e.exceptinal_comment !== null) {
+                        if (draw && e.exceptinal_comment !== null) {
                             graphic.CanvasText(
                                 paper,
                                 x,
@@ -572,7 +606,7 @@ export class MobileRenderer extends Renderer {
                                 "lb"
                             );
                         }
-                        if (e.lyric !== null) {
+                        if (draw && e.lyric !== null) {
                             var llist = e.lyric.lyric.split("/");
                             for (var li = 0; li < llist.length; ++li) {
                                 graphic.CanvasText(
@@ -586,20 +620,26 @@ export class MobileRenderer extends Renderer {
                             }
                         }
                     } else if (e instanceof common.Rest) {
-                        this.render_rest_plain(
+                        let cr = this.render_rest_plain(
                             e,
                             paper,
-                            true,
+                            draw,
                             x,
                             y_body_or_rs_base,
                             C7_width,
                             _5lines_intv,
                             param
                         );
-                        x += (e.renderprop.w +room_per_elem); 
+                        if(draw)
+                            x += (e.renderprop.w +room_per_elem); 
+                        else{
+                            e.renderprop.w = cr.width;
+                            fixed_width += e.renderprop.w;
+                            num_flexible_rooms++;
+                        }
                     } else if (e instanceof common.Simile) {
-                        this.render_simile_mark_plain(
-                            true,
+                        let cr = this.render_simile_mark_plain(
+                            draw,
                             paper,
                             x,
                             y_body_or_rs_base,
@@ -608,15 +648,27 @@ export class MobileRenderer extends Renderer {
                             false,
                             "l"
                         );
-                        x += (e.renderprop.w +room_per_elem); 
+                        if(draw)
+                            x += (e.renderprop.w +room_per_elem); 
+                        else{
+                            e.renderprop.w = cr.width;
+                            fixed_width += e.renderprop.w;
+                            num_flexible_rooms++;
+                        }
                     } else if (e instanceof common.Space) {
-                        x += (e.renderprop.w +room_per_elem); 
+                        if(draw)
+                            x += (e.renderprop.w +room_per_elem); 
+                        else{
+                            e.renderprop.w = 1 * param.base_font_size;
+                            fixed_width += e.renderprop.w;
+                            num_flexible_rooms++;
+                        }
                     }
                 });
             }
         });
 
-        return {x:x};
+        return {x:x, fixed_width:fixed_width, num_flexible_rooms:num_flexible_rooms};
     }
 
     grouping_body_elemnts(body_elements, music_context){
@@ -730,7 +782,21 @@ export class MobileRenderer extends Renderer {
             return null;
         }
 
-        // Screening x elements and determine the room per elements
+        // Screening music contexts and determine grouping in body elements
+        // For each measure in this row
+        for (let ml = 0; ml < row_elements_list.length; ++ml) {
+            // measure object
+            let m = row_elements_list[ml];
+
+            let elements = this.classifyElements(m); // Too much call of calssify elements.
+
+            // Grouping body elements which share the same balken
+            let geret = this.grouping_body_elemnts(elements.body, music_context);
+
+            m.renderprop.body_grouping_info = geret;
+        }
+
+        // Screening x elements and determine the rendering policy for x-axis
         var sxaret = this.screening_x_areas(
             x,
             paper,
@@ -738,7 +804,9 @@ export class MobileRenderer extends Renderer {
             row_elements_list,
             prev_measure,
             next_measure,
-            param
+            param,
+            yprof,
+            music_context
         );
 
         var room_per_elem = sxaret.room_per_elem;
@@ -757,7 +825,7 @@ export class MobileRenderer extends Renderer {
         }
 
         // For each measure in this row
-        for (var ml = 0; ml < row_elements_list.length; ++ml) {
+        for (let ml = 0; ml < row_elements_list.length; ++ml) {
             // measure object
             let m = row_elements_list[ml];
 
@@ -1383,7 +1451,7 @@ export class MobileRenderer extends Renderer {
                     { width: 1 }
                 );
         }
-        return width;
+        return {width: width};
     }
 
     render_chord_simplified(

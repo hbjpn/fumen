@@ -539,7 +539,6 @@ export class MobileRenderer extends Renderer {
             if (yprof.rs.detected && body_grouping_info.all_has_length) {
 
                 var e0 = element_group.elems[0];
-                var first_symbol_width = 0;
                 let cr = null;
                 if (e0 instanceof common.Chord) {
                     cr = this.render_chord_simplified(
@@ -578,13 +577,11 @@ export class MobileRenderer extends Renderer {
                         }
                     }
 
-                    if(draw)  first_symbol_width += ( e0.renderprop.w + room_per_elem);
-
                 } else if (e0 instanceof common.Rest) {
                     // Rest is drawn in render_rs_area function in RS area
                     // However store rendering information for this element as a representative
                     cr = {width: 10}; // TODO : Use dynamic value ?
-                    if(draw)  first_symbol_width += ( e0.renderprop.w + room_per_elem);
+                    
                 }
 
                 var g = this.render_rs_area(
@@ -608,12 +605,13 @@ export class MobileRenderer extends Renderer {
 
                 var rs_area_width = g.x - x;
 
-                if(draw)
+                if(draw){
+                    let first_symbol_width = ( element_group.renderprop.w + room_per_elem);
                     x += Math.max(rs_area_width, first_symbol_width);
-                else{
-                    e0.renderprop.w = Math.max(rs_area_width, cr.width);
+                }else{
+                    element_group.renderprop.w = Math.max(rs_area_width, cr.width);
                     if(rs_area_width)
-                    fixed_width += e0.renderprop.w;
+                    fixed_width += element_group.renderprop.w;
                     num_flexible_rooms++;
                 }
             } else{
@@ -737,7 +735,7 @@ export class MobileRenderer extends Renderer {
         // C3 -> 0x3C as 0 C-2 as index 0, G8 as 127(0x7F)
         music_context.accidental_info = new Array(128).fill(0);
 
-        var tmpl = { elems: [], groupedChordsLen: 0 };
+        var tmpl = { elems: [], groupedChordsLen: 0, renderprop:{} };
         var groupedBodyElems = [];
 
         if (body_elements.length > 0) groupedBodyElems.push(common.deepcopy(tmpl));

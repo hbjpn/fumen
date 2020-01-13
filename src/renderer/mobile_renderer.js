@@ -532,13 +532,13 @@ export class MobileRenderer extends Renderer {
             }
         }
 
-        let geret = m.renderprop.body_grouping_info;
+        let body_grouping_info = m.renderprop.body_grouping_info;
 
-        geret.groupedBodyElems.forEach( (body_elems, gbei) => {
+        body_grouping_info.groupedBodyElems.forEach( (element_group, gbei) => {
             // Draw Rythm Slashes, first
-            if (yprof.rs.detected && geret.all_has_length) {
+            if (yprof.rs.detected && body_grouping_info.all_has_length) {
 
-                var e0 = body_elems.elems[0];
+                var e0 = element_group.elems[0];
                 var first_symbol_width = 0;
                 let cr = null;
                 if (e0 instanceof common.Chord) {
@@ -559,7 +559,7 @@ export class MobileRenderer extends Renderer {
                             paper,
                             x,
                             yprof.body.y,
-                            e.exceptinal_comment.comment,
+                            e0.exceptinal_comment.comment,
                             param.base_font_size / 2,
                             "lb"
                         );
@@ -589,7 +589,7 @@ export class MobileRenderer extends Renderer {
 
                 var g = this.render_rs_area(
                     x,
-                    body_elems.elems,
+                    element_group.elems,
                     paper,
                     yprof.rs.y,
                     yprof.rs.height,
@@ -612,11 +612,12 @@ export class MobileRenderer extends Renderer {
                     x += Math.max(rs_area_width, first_symbol_width);
                 else{
                     e0.renderprop.w = Math.max(rs_area_width, cr.width);
+                    if(rs_area_width)
                     fixed_width += e0.renderprop.w;
                     num_flexible_rooms++;
                 }
             } else{
-                body_elems.elems.forEach(e=>{
+                element_group.elems.forEach(e=>{
                     if (e instanceof common.Chord) {
                         let cr = this.render_chord_simplified(
                             draw,

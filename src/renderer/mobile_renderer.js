@@ -554,6 +554,30 @@ export class MobileRenderer extends Renderer {
                         C7_width
                     );
 
+                    if (draw && e0.exceptinal_comment !== null) {
+                        graphic.CanvasText(
+                            paper,
+                            x,
+                            yprof.body.y,
+                            e.exceptinal_comment.comment,
+                            param.base_font_size / 2,
+                            "lb"
+                        );
+                    }
+                    if (draw && e0.lyric !== null) {
+                        var llist = e0.lyric.lyric.split("/");
+                        for (var li = 0; li < llist.length; ++li) {
+                            graphic.CanvasText(
+                                paper,
+                                x,
+                                yprof.ml.y + li * param.ml_row_height,
+                                llist[li],
+                                param.base_font_size / 3,
+                                "lt"
+                            );
+                        }
+                    }
+
                     if(draw)  first_symbol_width += ( e0.renderprop.w + room_per_elem);
 
                 } else if (e0 instanceof common.Rest) {
@@ -605,13 +629,6 @@ export class MobileRenderer extends Renderer {
                             param,
                             C7_width
                         );
-                        if(draw)
-                            x += ( e.renderprop.w + room_per_elem);
-                        else{
-                            e.renderprop.w = cr.width;
-                            fixed_width += e.renderprop.w;
-                            num_flexible_rooms++;
-                        }
 
                         if (draw && e.exceptinal_comment !== null) {
                             graphic.CanvasText(
@@ -636,6 +653,15 @@ export class MobileRenderer extends Renderer {
                                 );
                             }
                         }
+
+                        if(draw)
+                            x += ( e.renderprop.w + room_per_elem);
+                        else{
+                            e.renderprop.w = cr.width;
+                            fixed_width += e.renderprop.w;
+                            num_flexible_rooms++;
+                        }
+
                     } else if (e instanceof common.Rest) {
                         let cr = this.render_rest_plain(
                             e,
@@ -1037,7 +1063,7 @@ export class MobileRenderer extends Renderer {
                         param.base_font_size / 2,
                         "rb"
                     );
-                    if (yprof.rs.detected) x += 15 * 4;
+                    //if (yprof.rs.detected) x += 15 * 4;
                     //text = raphaelText(paper, x, y_body_or_rs_base - 8 /* + row_height + 8*/, e.toString(), 15, lr+"c").attr(param.repeat_mark_font);
                     //if(rs_area_detected) x += text.getBBox().width;
                     //rs_area_svg_groups.push(text);

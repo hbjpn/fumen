@@ -584,6 +584,10 @@ export class MobileRenderer extends Renderer {
                     
                 }
 
+                let scaling_for_rs = 1;
+                if(draw){
+                    scaling_for_rs = (element_group.renderprop.w + room_per_elem)/element_group.renderprop.rs_area_width;
+                }
                 var g = this.render_rs_area(
                     x,
                     element_group.elems,
@@ -594,7 +598,7 @@ export class MobileRenderer extends Renderer {
                     meas_end_x,
                     draw,
                     0,
-                    m.body_scaling,
+                    scaling_for_rs /*m.body_scaling*/,
                     x_global_scale,
                     music_context,
                     m,
@@ -610,7 +614,7 @@ export class MobileRenderer extends Renderer {
                     x += Math.max(rs_area_width, first_symbol_width);
                 }else{
                     element_group.renderprop.w = Math.max(rs_area_width, cr.width);
-                    if(rs_area_width)
+                    element_group.renderprop.rs_area_width = rs_area_width;
                     fixed_width += element_group.renderprop.w;
                     num_flexible_rooms++;
                 }

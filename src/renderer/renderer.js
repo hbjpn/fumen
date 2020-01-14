@@ -573,7 +573,7 @@ export class Renderer {
                         let svgname = { 11: "flat.svg", 1: "sharp.svg", 0: "natural.svg" };
                         let url = "assets/img/"+svgname[sharp_flats[ci]];
                         graphic.CanvasImage(paper, graphic.G_imgmap[url],
-                            x, y, null, _5lines_intv*1.5, "lm");
+                            x, y, null, _5lines_intv*2.5, "lm");
                         
                     }
 

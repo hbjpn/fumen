@@ -245,15 +245,17 @@ export class Renderer {
         music_context,
         meas,
         param,
-        room_for_rs_per_element
+        room_for_rs_per_element,
+        balken,
+        is_last_body_elem_group_in_a_measure
     ) {
         // chords is list of chords for each chord object has .renderprop.x property
         // All elements shall have length indicators
         var balken_width = "3px";
 
-        let balken = {
-            groups: []
-        };
+        //let balken = {
+        //    groups: []
+        //};
         
         var group = null; //paper.set();
 
@@ -278,8 +280,8 @@ export class Renderer {
                 balken.groups.length > 0
             ) {
                 var dbret = this.draw_rs_area_balkens(
-                    draw, 
-                    x,
+                    //draw, 
+                    //x,
                     paper,
                     group,
                     balken,
@@ -303,17 +305,18 @@ export class Renderer {
             
             music_context.pos_in_a_measure += balken_element.chord_length;
 
-            balken.groups.push({balken_element:balken_element,e:e});
+            balken.groups.push({balken_element:balken_element,e:e,
+                org_x:x,org_room_for_rs_per_element:room_for_rs_per_element});
 
             if (
                 e instanceof common.Rest ||
                 balken_element.chord_length >= common.WHOLE_NOTE_LENGTH / 4 ||
                 music_context.pos_in_a_measure % (common.WHOLE_NOTE_LENGTH / 4) == 0 ||
-                ei == elems.length - 1
+                (ei == elems.length - 1 && is_last_body_elem_group_in_a_measure)
             ) {
                 let dbret = this.draw_rs_area_balkens(
-                    draw, 
-                    x,
+                    //draw, 
+                    //x,
                     paper,
                     group,
                     balken,
@@ -571,8 +574,8 @@ export class Renderer {
     }
 
     draw_rs_area_balkens(
-        draw, 
-        x,
+        //draw, 
+        //x,
         paper,
         group,
         balken,
@@ -591,10 +594,9 @@ export class Renderer {
         room_for_rs_per_element,
     ) {
         // Evaluate the flag direction(up or down) by the center of the y-axis position of all the notes/slashes
-        
-        if(draw == false){
-            alert("This should not be called with draw=false");
-        }
+
+        // Not called with draw=false
+        let draw = true;
 
         let _5lines_intv = row_height / 4;
 
@@ -624,6 +626,8 @@ export class Renderer {
         }
         center_y = Math.floor(center_y / cnt_y);
         var upper_flag = center_y > rs_y_base + _5lines_intv * 2;
+
+        let x = balken.groups[0].org_x;
 
         // 2. Draw notes and slashes without bars, flags and balkens
         for (let gbi = 0; gbi < balken.groups.length; ++gbi) {
@@ -728,7 +732,7 @@ export class Renderer {
 
             // Here is the only update of x
 
-            x += wo_flags.bounding_box.w + room_for_rs_per_element; // TODO : FIXME to cater for actual width of components
+            x += wo_flags.bounding_box.w + balken.groups[gbi].org_room_for_rs_per_element; // TODO : FIXME to cater for actual width of components
         }
 
         // 3. Determine the flag intercept and slope

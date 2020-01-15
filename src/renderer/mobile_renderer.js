@@ -654,7 +654,9 @@ export class MobileRenderer extends Renderer {
                         music_context,
                         m,
                         param,
-                        room_for_rs_per_elem
+                        room_for_rs_per_elem,
+                        balken,
+                        (gbei == body_grouping_info.groupedBodyElems.length-1)
                     );
                     var rs_area_width = g.x - x;
                     let first_symbol_width = ( element_group.renderprop.w + room_per_elem);
@@ -1007,7 +1009,7 @@ export class MobileRenderer extends Renderer {
 
             // balken context inside a measure
             let balken = {
-                group: []
+                groups: []
             };
 
             // Inner reharsal mark in MU area

@@ -534,6 +534,11 @@ export class MobileRenderer extends Renderer {
 
         let body_grouping_info = m.renderprop.body_grouping_info;
 
+        // DEBUG
+        if(draw){
+            console.log(m.renderprop.body_grouping_info);
+        }
+
         body_grouping_info.groupedBodyElems.forEach( (element_group, gbei) => {
             // Draw Rythm Slashes, first
             if (yprof.rs.detected && body_grouping_info.all_has_length) {

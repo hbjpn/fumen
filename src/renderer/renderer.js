@@ -279,7 +279,7 @@ export class Renderer {
             var sharp_flats = [];
 
             drawn = true;
-            // Currently only one ng is assumed
+            // Currently only one note_group at a time is assumed
             for (var ngi = 0; ngi < e.note_group_list.length; ++ngi) {
                 var ng = e.note_group_list[ngi];
                 var note_profiles = ng.note_profiles;

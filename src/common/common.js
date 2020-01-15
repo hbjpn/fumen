@@ -426,7 +426,15 @@ function parseChordNotes(str) {
     str = str.substr(1); // first (
 
     var parseNoteGroup = function(sng) {
+        // pre-requisite : after outer "(" is loaded
         var sngi = 0;
+        if(sng[0] == ")"){
+            // empty note groups
+            return {
+                s: sng, // do not consume last )
+                ng: null
+            };
+        }
         sng = sng.substr(1); // first (
         var tmp = "";
         while (sng[sngi] != ")") {
@@ -460,7 +468,7 @@ function parseChordNotes(str) {
     // eslint-disable-next-line no-constant-condition
     while (true) {
         var ret = parseNoteGroup(str);
-        note_group_list.push(ret.ng);
+        if(ret.ng) note_group_list.push(ret.ng);
         str = ret.s;
         if (str[0] == ",") {
             str = str.substr(1);
@@ -522,7 +530,9 @@ export class Chord {
                     //this.tie = li.has_tie;
                 } else if (m[15]) {
                     // Notes
-                    this.note_group_list = parseChordNotes(m[15]);
+                    let ret = parseChordNotes(m[15]);
+                    if(ret.length > 0) // empty note_group_list does not work
+                        this.note_group_list = ret;
                     //console.log(this.note_group_list);
                 }
             }

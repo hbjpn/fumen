@@ -324,7 +324,7 @@ export class MobileRenderer extends Renderer {
                 } else if (e instanceof common.Chord) {
                     var bases = e.getChordStrBase(0, "flat");
                     yprof.ml.detected = yprof.ml.detected || bases[1] != null;
-                    yprof.rs.detected |= e.nglist !== null;
+                    yprof.rs.detected |= e.note_group_list !== null;
                 } else if (e instanceof common.Lyric) {
                     yprof.ml.detected = true;
                     lyric_rows = Math.max(
@@ -727,9 +727,9 @@ export class MobileRenderer extends Renderer {
         let rest_or_long_rests_detected = false;
 
         body_elements.forEach(function(e) {
-            all_has_length &= e.nglist !== null;
+            all_has_length &= e.note_group_list !== null;
             if (all_has_length)
-                sum_length += e.nglist[0].lengthIndicator.length;
+                sum_length += e.note_group_list[0].lengthIndicator.length;
             rest_or_long_rests_detected |= e instanceof common.Rest;
         });
 
@@ -772,8 +772,8 @@ export class MobileRenderer extends Renderer {
 
             groupedBodyElems[gbei].elems.push(e);
 
-            music_context.tie_info.prev_has_tie = e.nglist
-                ? e.nglist[0].lengthIndicator.has_tie
+            music_context.tie_info.prev_has_tie = e.note_group_list
+                ? e.note_group_list[0].lengthIndicator.has_tie
                 : false;
 
             if (e instanceof common.Chord) chord_name_str = e.chord_name_str;
@@ -1400,8 +1400,8 @@ export class MobileRenderer extends Renderer {
             32: 16,
             64: 18
         };
-        var rd = e.nglist[0].lengthIndicator.base;
-        var numdot = e.nglist[0].lengthIndicator.numdot;
+        var rd = e.note_group_list[0].lengthIndicator.base;
+        var numdot = e.note_group_list[0].lengthIndicator.numdot;
         var oy = yoffsets[rd];
         var fs = 14;
         var ctx = paper.getContext("2d");

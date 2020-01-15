@@ -263,7 +263,7 @@ export class Renderer {
         for (var ei = 0; ei < elems.length; ++ei) {
             var e = elems[ei];
             // no duration information
-            if (e.nglist === null) {
+            if (e.note_group_list === null) {
                 throw "SOMETHING WRONG WITH LENGTH INDICATOR SCREENING";
             }
 
@@ -272,7 +272,7 @@ export class Renderer {
             var flagintv = 5;
             var chord_length = 10000000;
 
-            var rhythm_only = e.nglist[0].nr === null;
+            var rhythm_only = e.note_group_list[0].nr === null;
             var group_y = [];
             var pos_on_5lines = []; // For notes only. bottom line is 0, second bottom line is 2, ... top line is 8
             var has_tie = false;
@@ -280,8 +280,8 @@ export class Renderer {
 
             drawn = true;
             // Currently only one ng is assumed
-            for (var ngi = 0; ngi < e.nglist.length; ++ngi) {
-                var ng = e.nglist[ngi];
+            for (var ngi = 0; ngi < e.note_group_list.length; ++ngi) {
+                var ng = e.note_group_list[ngi];
                 var nr = ng.nr;
                 var d = ng.lengthIndicator.base; //ng.length_s.match(/[0-9]+/)[0];
                 var numdot = ng.lengthIndicator.numdot; //ng.length_s.substr(d.length);
@@ -371,7 +371,7 @@ export class Renderer {
                 onka: d,
                 has_tie: has_tie,
                 pos_on_5lines: pos_on_5lines, // for notes only
-                lengthIndicator: e.nglist[0].lengthIndicator,
+                lengthIndicator: e.note_group_list[0].lengthIndicator,
                 sharp_flats: sharp_flats, // for notes only
                 renderprop: {} // for internal use
             });

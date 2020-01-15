@@ -248,7 +248,7 @@ export class Measure {
 
 export class Rest {
     constructor(length_s) {
-        this.nglist = [
+        this.note_group_list = [
             { lengthIndicator: parseLengthIndicator(length_s), nr: null }
         ];
         this.renderprop = {};
@@ -260,7 +260,7 @@ export class Simile {
         // NOTE : Double simile on measure boundary is not treated in this class, it is treated as a one of boundary type
         this.numslash = numslash;
         this.renderprop = {};
-        this.nglist = null;
+        this.note_group_list = null;
     }
 }
 
@@ -456,11 +456,11 @@ function parseChordNotes(str) {
         };
     };
 
-    var nglist = [];
+    var note_group_list = [];
     // eslint-disable-next-line no-constant-condition
     while (true) {
         var ret = parseNoteGroup(str);
-        nglist.push(ret.ng);
+        note_group_list.push(ret.ng);
         str = ret.s;
         if (str[0] == ",") {
             str = str.substr(1);
@@ -470,7 +470,7 @@ function parseChordNotes(str) {
             throw "INVALID_TOKEN_DETECTED";
         }
     }
-    return nglist;
+    return note_group_list;
 }
 
 export class Chord {
@@ -486,7 +486,7 @@ export class Chord {
 
         //this.lengthIndicator = null;
 
-        this.nglist = null;
+        this.note_group_list = null;
 
         // Analyze Chord symbol
         var r = /^(((A|B|C|D|E|F|G)(#|b)?([^/:]*))?(\/(A|B|C|D|E|F|G)(#|b)?)?)(:((([\d_]+)(\.*)(~)?)|(\(.*\))))?/;
@@ -518,12 +518,12 @@ export class Chord {
                     var li = parseLengthIndicator(m[11]);
                     //this.length_s = m[11];
                     //this.length = li.length;
-                    this.nglist = [{ lengthIndicator: li, nr: null }];
+                    this.note_group_list = [{ lengthIndicator: li, nr: null }];
                     //this.tie = li.has_tie;
                 } else if (m[15]) {
                     // Notes
-                    this.nglist = parseChordNotes(m[15]);
-                    //console.log(this.nglist);
+                    this.note_group_list = parseChordNotes(m[15]);
+                    //console.log(this.note_group_list);
                 }
             }
 

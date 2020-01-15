@@ -840,7 +840,7 @@ export class Renderer {
                     var dir = 1;
                     if (g == gg.length - 1) dir = -1;
                     var neighbor_x =
-                        gg[g + dir][gg[g + dir].length - 1].renderprop.x;
+                        gg[g + dir][gg[g + dir].length - 1].balken_element.renderprop.x;
                     var blen = Math.abs(neighbor_x - pssx) * 0.3;
 
                     for (var fi = 1; fi < numflag; ++fi) {

@@ -718,7 +718,7 @@ export class Renderer {
                 }
             }
 
-            music_context.tie_info.rs_prev_has_tie = balken.groups[gbi].has_tie;
+            music_context.tie_info.rs_prev_has_tie = balken.groups[gbi].balken_element.has_tie;
             music_context.tie_info.rs_prev_tie_paper = paper;
             music_context.tie_info.rs_prev_coord = [
                 x,

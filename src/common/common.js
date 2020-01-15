@@ -249,7 +249,7 @@ export class Measure {
 export class Rest {
     constructor(length_s) {
         this.note_group_list = [
-            { lengthIndicator: parseLengthIndicator(length_s), nr: null }
+            { lengthIndicator: parseLengthIndicator(length_s), note_profiles: null }
         ];
         this.renderprop = {};
     }
@@ -434,12 +434,12 @@ function parseChordNotes(str) {
             ++sngi;
         }
         var notes_str = tmp.split(",");
-        var nr = [];
+        var note_profiles = [];
         for (var nsi = 0; nsi < notes_str.length; ++nsi) {
             //var m = notes_str[nsi].match(/([A-G])(#|b)?(\d+)/);
             var np = getNoteProfile(notes_str[nsi]);
             if (!np) throw "INVALID_TOKEN_DETECTED : invalid note notation";
-            nr.push(np);
+            note_profiles.push(np);
         }
 
         sng = sng.substr(sngi + 1); // Skip )
@@ -452,7 +452,7 @@ function parseChordNotes(str) {
 
         return {
             s: sng.substr(m[0].length),
-            ng: { nr: nr, lengthIndicator: li }
+            ng: { note_profiles: note_profiles, lengthIndicator: li }
         };
     };
 
@@ -518,7 +518,7 @@ export class Chord {
                     var li = parseLengthIndicator(m[11]);
                     //this.length_s = m[11];
                     //this.length = li.length;
-                    this.note_group_list = [{ lengthIndicator: li, nr: null }];
+                    this.note_group_list = [{ lengthIndicator: li, note_profiles: null }];
                     //this.tie = li.has_tie;
                 } else if (m[15]) {
                     // Notes

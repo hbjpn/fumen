@@ -787,6 +787,70 @@ export class MobileRenderer extends Renderer {
         return {groupedBodyElems: groupedBodyElems, all_has_length:all_has_length};
     }
 
+    grouping_body_elemnts_enh(body_elements, music_context){
+        // First, guess chord duration here.
+        // In current version, each chord in the measure is assumed to have the same duration.
+        // TODO : Improve based on number of spaces or duration indication mark.
+        let all_has_length = true;
+        let chord_name_str = null;
+        let sum_length = 0;
+        let rest_or_long_rests_detected = false;
+
+        body_elements.forEach(function(e) {
+            all_has_length &= e.note_group_list !== null;
+            if (all_has_length)
+                sum_length += e.note_group_list[0].lengthIndicator.length;
+            rest_or_long_rests_detected |= e instanceof common.Rest;
+        });
+
+        // Reset music context
+        // TODO : consider key infomration
+        // TODO : consider tie
+        // C3 -> 0x3C as 0 C-2 as index 0, G8 as 127(0x7F)
+        music_context.accidental_info = new Array(128).fill(0);
+
+        var tmpl = { elems: [], groupedChordsLen: 0, renderprop:{} };
+        var groupedBodyElems = [];
+
+        if (body_elements.length > 0) groupedBodyElems.push(common.deepcopy(tmpl));
+        var gbei = 0;
+
+        // Grouping the chord and notes among which the x-axis rooms are shared
+        // grouping is just done whether same chord is sahred.
+        // If this measure starts with Rest/Simle, then following Rests and chord without chord 
+        // name are regarded as in the same group.
+        // IF this measure starts with Chord with no name, then folowing Rests/Similre and Chords 
+        // with no names are grouped in the same group.
+        body_elements.forEach((e, ei)  => {
+            let this_chord_str = "";
+            if(e instanceof common.Chord){
+                this_chord_str = e.chord_name_str;
+            }else{
+                this_chord_str = ""; // Rests, Simile(in body) etc are regarded as empty chord
+            }
+            if(chord_name_str === null) chord_name_str = this_chord_str;
+            
+            if (groupedBodyElems[gbei].elems.length == 0) {
+                // Keep in the same group
+            } else if (
+                all_has_length &&
+                (this_chord_str == chord_name_str ||
+                 this_chord_str == "" && chord_name_str != "")
+            ) {
+                // Keep in the same group
+            } else {
+                // flush
+                groupedBodyElems.push(common.deepcopy(tmpl));
+                ++gbei;
+            }
+
+            groupedBodyElems[gbei].elems.push(e);
+        });
+
+        return {groupedBodyElems: groupedBodyElems, all_has_length:all_has_length};
+    }
+
+
     render_measure_row_simplified(
         x,
         paper,
@@ -839,7 +903,7 @@ export class MobileRenderer extends Renderer {
             let elements = this.classifyElements(m); // Too much call of calssify elements.
 
             // Grouping body elements which share the same balken
-            let geret = this.grouping_body_elemnts(elements.body, music_context);
+            let geret = this.grouping_body_elemnts_enh(elements.body, music_context);
 
             m.renderprop.body_grouping_info = geret;
         }

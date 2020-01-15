@@ -518,7 +518,8 @@ export class MobileRenderer extends Renderer {
         transpose,
         half_type,
         C7_width,
-        y_body_or_rs_base
+        y_body_or_rs_base,
+        balken
     ){
         let fixed_width = 0;
         let num_flexible_rooms = 0;
@@ -637,21 +638,39 @@ export class MobileRenderer extends Renderer {
                     let room_for_rs = (element_group.renderprop.w + room_per_elem) 
                         - element_group.renderprop.rs_area_width; 
                     room_for_rs_per_elem = room_for_rs / element_group.elems.length;
-                }
-                element_group.elems.forEach(e=>{
-                    let balken_element = this.generate_balken_element(
-                        e, rs_x, yprof.rs.y, yprof.rs.height, music_context);
-                    let r = this.draw_rs_area_without_flag_balken(
-                        draw, paper, balken_element, rs_x, yprof.rs.y, yprof.rs.height);
-                    rs_area_bounding_box.add_rect(r.bounding_box);
-                    rs_x += r.bounding_box.w + room_for_rs_per_elem;
-                });
-                let rs_area_width = rs_area_bounding_box.get().w;
 
-                if(draw){
+                    let g = this.render_rs_area(
+                        x,
+                        element_group.elems,
+                        paper,
+                        yprof.rs.y,
+                        yprof.rs.height,
+                        meas_start_x,
+                        meas_end_x,
+                        draw,
+                        0,
+                        1.0,
+                        x_global_scale,
+                        music_context,
+                        m,
+                        param,
+                        room_for_rs_per_elem
+                    );
+                    var rs_area_width = g.x - x;
                     let first_symbol_width = ( element_group.renderprop.w + room_per_elem);
                     x += Math.max(rs_area_width, first_symbol_width);
                 }else{
+                    // Only try to esimate using non-flag-balken drawer
+                    element_group.elems.forEach(e=>{
+                        let balken_element = this.generate_balken_element(
+                            e, rs_x, yprof.rs.y, yprof.rs.height, music_context);
+                        let r = this.draw_rs_area_without_flag_balken(
+                            draw, paper, e, balken_element, rs_x, yprof.rs.y, yprof.rs.height);
+                        e.renderprop.balken_element = balken_element;
+                        rs_area_bounding_box.add_rect(r.bounding_box);
+                        rs_x += r.bounding_box.w + room_for_rs_per_elem;
+                    });
+                    let rs_area_width = rs_area_bounding_box.get().w;
                     element_group.renderprop.w = Math.max(rs_area_width, cr.width);
                     element_group.renderprop.rs_area_width = rs_area_width;
                     fixed_width += element_group.renderprop.w;
@@ -986,6 +1005,11 @@ export class MobileRenderer extends Renderer {
             // reset pos inside a measure
             music_context.pos_in_a_measure = 0;
 
+            // balken context inside a measure
+            let balken = {
+                group: []
+            };
+
             // Inner reharsal mark in MU area
             if(first_block_first_row && inner_reharsal_mark && ml==0){
 
@@ -1119,7 +1143,8 @@ export class MobileRenderer extends Renderer {
                 transpose,
                 half_type,
                 C7_width,
-                y_body_or_rs_base);
+                y_body_or_rs_base,
+                balken);
             
             x = rberet.x;
 

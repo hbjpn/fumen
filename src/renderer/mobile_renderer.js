@@ -541,8 +541,9 @@ export class MobileRenderer extends Renderer {
 
         body_grouping_info.groupedBodyElems.forEach( (element_group, gbei) => {
             // Draw Rythm Slashes, first
-            if (yprof.rs.detected && body_grouping_info.all_has_length) {
+             if (yprof.rs.detected && body_grouping_info.all_has_length) {
 
+       
                 var e0 = element_group.elems[0];
                 let cr = null;
                 if (e0 instanceof common.Chord) {
@@ -582,17 +583,20 @@ export class MobileRenderer extends Renderer {
                         }
                     }
 
-                } else if (e0 instanceof common.Rest) {
+                } else { // Rest or Simile
                     // Rest is drawn in render_rs_area function in RS area
-                    // However store rendering information for this element as a representative
-                    cr = {width: 10}; // TODO : Use dynamic value ?
+                    cr = {width:0};
                     
                 }
 
+                
+
+                /*
                 let scaling_for_rs = 1;
                 if(draw){
                     scaling_for_rs = (element_group.renderprop.w + room_per_elem)/element_group.renderprop.rs_area_width;
                 }
+
                 var g = this.render_rs_area(
                     x,
                     element_group.elems,
@@ -603,7 +607,7 @@ export class MobileRenderer extends Renderer {
                     meas_end_x,
                     draw,
                     0,
-                    scaling_for_rs /*m.body_scaling*/,
+                    scaling_for_rs,
                     x_global_scale,
                     music_context,
                     m,
@@ -623,6 +627,37 @@ export class MobileRenderer extends Renderer {
                     fixed_width += element_group.renderprop.w;
                     num_flexible_rooms++;
                 }
+                */
+
+                let rs_area_bounding_box = new common.BoundingBox();
+                let rs_x = x;
+
+                let room_for_rs_per_elem = 0;
+                if(draw){
+                    let room_for_rs = (element_group.renderprop.w + room_per_elem) 
+                        - element_group.renderprop.rs_area_width; 
+                    room_for_rs_per_elem = room_for_rs / element_group.elems.length;
+                }
+                element_group.elems.forEach(e=>{
+                    let balken_element = this.generate_balken_element(
+                        e, rs_x, yprof.rs.y, yprof.rs.height, music_context);
+                    let r = this.draw_rs_area_without_flag_balken(
+                        draw, paper, balken_element, rs_x, yprof.rs.y, yprof.rs.height);
+                    rs_area_bounding_box.add_rect(r.bounding_box);
+                    rs_x += r.bounding_box.w + room_for_rs_per_elem;
+                });
+                let rs_area_width = rs_area_bounding_box.get().w;
+
+                if(draw){
+                    let first_symbol_width = ( element_group.renderprop.w + room_per_elem);
+                    x += Math.max(rs_area_width, first_symbol_width);
+                }else{
+                    element_group.renderprop.w = Math.max(rs_area_width, cr.width);
+                    element_group.renderprop.rs_area_width = rs_area_width;
+                    fixed_width += element_group.renderprop.w;
+                    num_flexible_rooms++;
+                }
+
             } else{
                 element_group.elems.forEach(e=>{
                     if (e instanceof common.Chord) {
@@ -684,7 +719,7 @@ export class MobileRenderer extends Renderer {
                         if(draw)
                             x += (e.renderprop.w +room_per_elem); 
                         else{
-                            e.renderprop.w = cr.width;
+                            e.renderprop.w = cr.bounding_box.w;
                             fixed_width += e.renderprop.w;
                             num_flexible_rooms++;
                         }
@@ -1524,7 +1559,7 @@ export class MobileRenderer extends Renderer {
             }
         }
 
-        return { width: 10 };
+        return { bounding_box:{x:x,y:y_body_or_rs_base, w:10, h:row_height }}; // TODO : Impelment correctly
     }
 
     render_simile_mark_plain(

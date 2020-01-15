@@ -408,6 +408,239 @@ export class Renderer {
         return { x: x };
     }
 
+    generate_balken_element(e, x, rs_y_base, row_height, music_context)
+    {
+       // no duration information
+        if (e.note_group_list === null) {
+            throw "SOMETHING WRONG WITH LENGTH INDICATOR SCREENING";
+        }
+
+        let _5lines_intv = row_height / 4;
+
+        var chord_length = 10000000;
+
+        var rhythm_only = e.note_group_list[0].note_profiles === null;
+        var group_y = [];
+        var pos_on_5lines = []; // For notes only. bottom line is 0, second bottom line is 2, ... top line is 8
+        var has_tie = false;
+        var sharp_flats = [];
+
+        // Currently only one note_group at a time is assumed
+        for (var ngi = 0; ngi < e.note_group_list.length; ++ngi) {
+            var ng = e.note_group_list[ngi];
+            var note_profiles = ng.note_profiles;
+            var d = ng.lengthIndicator.base; //ng.length_s.match(/[0-9]+/)[0];
+            var numdot = ng.lengthIndicator.numdot; //ng.length_s.substr(d.length);
+            chord_length = Math.min(
+                ng.lengthIndicator.length,
+                chord_length
+            ); // Take the note group of min-length. TODO for cater for multi-group notes
+            has_tie = ng.lengthIndicator.has_tie; //ng.has_tie;
+            if (note_profiles === null) {
+                // slash or rest
+                group_y.push(parseInt(rs_y_base + _5lines_intv * 2)); // center
+                pos_on_5lines.push(4); // Not used, but put center line for now.
+            } else {
+                // notes
+                for (var nri = 0; nri < note_profiles.length; ++nri) {
+                    let dy = _5lines_intv / 2; // 1/2 of interval of 5 lines
+                    var NLIST = {
+                        C: 0,
+                        D: 1,
+                        E: 2,
+                        F: 3,
+                        G: 4,
+                        A: 5,
+                        B: 6
+                    };
+                    var pos_idx =
+                        NLIST[note_profiles[nri].note.name] +
+                        7 * (note_profiles[nri].note.octave - 3); // C3 is 0
+                    var yoffset = pos_idx * dy; // C3 offset = 0
+                    var ypos = rs_y_base + dy * 10 - yoffset; // rs_y_base corresopnds to the center of rs region and is corresponding to A3 when the notes are drawn with "top".
+                    var pos_on_5line = Math.round(yoffset / dy) - 2;
+                    group_y.push(ypos);
+                    pos_on_5lines.push(pos_on_5line);
+                    if (
+                        music_context.accidental_info[pos_idx] ==
+                        note_profiles[nri].note.accidental
+                    )
+                        sharp_flats.push(null);
+                    // no need of accidental. null is no mark. 0 is natural.
+                    else sharp_flats.push(note_profiles[nri].note.accidental); // 0 is natural. null is no mark.
+                    music_context.accidental_info[pos_idx] =
+                        note_profiles[nri].note.accidental;
+                }
+            }
+        }
+
+        music_context.pos_in_a_measure += chord_length;
+
+        let balken_element = {
+            e: e,
+            type:
+                e instanceof common.Rest
+                    ? "rest"
+                    : rhythm_only
+                    ? "slash"
+                    : "notes",
+            numdot: numdot,
+            coord: [x, group_y],
+            onka: d,
+            has_tie: has_tie,
+            pos_on_5lines: pos_on_5lines, // for notes only
+            lengthIndicator: e.note_group_list[0].lengthIndicator,
+            sharp_flats: sharp_flats, // for notes only
+            renderprop: {} // for internal use
+        };
+
+        return balken_element;
+    }
+
+    draw_rs_area_without_flag_balken(draw, paper, balken_element, x, rs_y_base, row_height){
+
+        let bounding_box = new common.BoundingBox();
+
+        let _5lines_intv = row_height / 4;
+        var deltax_acc = 10;  
+
+        var ys = balken_element.coord[1];
+        var d = balken_element.onka;
+        var pos_on_5lines = balken_element.pos_on_5lines;
+        var sharp_flats = balken_element.sharp_flats;
+        var numdot = balken_element.numdot;
+
+        var bo_group = null; //paper.set();
+
+        var note_x_center = x;
+
+        if (balken_element.type == "slash") {
+            if (d == "0" || d == "1") {
+                let ret = this.render_slash(
+                    paper,
+                    bo_group,
+                    note_x_center,
+                    ys[0],
+                    d,
+                    numdot,
+                    _5lines_intv,
+                    draw
+                );
+                bounding_box.add_rect(ret.bounding_box);
+            } else {
+                let ret = this.render_slash(
+                    paper,
+                    bo_group,
+                    note_x_center,
+                    ys[0],
+                    d,
+                    numdot,
+                    _5lines_intv,
+                    draw
+                );
+                bounding_box.add_rect(ret.bounding_box);
+            }
+        } else if(balken_element.type == "notes") {
+
+            var accidental_exists = balken_element.sharp_flats.some(
+                function(sf) {
+                    return sf !== null;
+                }
+            );
+            var as = accidental_exists ? deltax_acc : 0;
+            note_x_center = x + as;
+
+            for (let ci = 0; ci < ys.length; ++ci) {
+                var y = ys[ci];
+
+                let r = null;
+                // eslint-disable-next-line no-empty
+                if (d == "0") {
+                } else if (d == "1") {
+                    r = graphic.CanvasImage(paper, graphic.G_imgmap["assets/img/w1note.svg"],
+                        note_x_center, y, null, _5lines_intv, "lm", draw);
+                    
+                } else if (d == "2") {
+
+                    r = graphic.CanvasImage(paper, graphic.G_imgmap["assets/img/w2note.svg"],
+                    note_x_center, y, null, _5lines_intv, "lm", draw);
+                } else {
+
+                    r = graphic.CanvasImage(paper, graphic.G_imgmap["assets/img/bnote.svg"],
+                    note_x_center, y, null, _5lines_intv, "lm", draw);
+                }
+
+                if(r) bounding_box.add_rect(r.bounding_box);
+                //bo_group.push(text);
+
+                // draw sharp, flat and natrual
+                // http://finale-hossy.sakura.ne.jp/finale/2011/11/post-18.html
+                if (sharp_flats[ci] !== null) {
+
+                    let svgname = { 11: "flat.svg", 1: "sharp.svg", 0: "natural.svg" };
+                    let url = "assets/img/"+svgname[sharp_flats[ci]];
+                    r = graphic.CanvasImage(paper, graphic.G_imgmap[url],
+                        x, y, null, _5lines_intv*2.5, "lm", draw);
+                    
+                    bounding_box.add_rect(r.bounding_box);
+                }
+
+                // dots
+                for (let i = 0; i < numdot; ++i) {
+                    let dy =
+                        pos_on_5lines[ci] % 2 == 0 ? -_5lines_intv / 2 : 0;
+    
+                    r = graphic.CanvasCircle(paper, note_x_center + 12 + i * 5, y + dy, 1, draw);
+                        bounding_box.add_rect(r.bounding_box);
+                }
+
+                // Draw additional horizontal lines
+                for (var p5i = pos_on_5lines[ci]; p5i <= -2; ++p5i) {
+                    if (p5i % 2 != 0) continue;
+                    var a5y = (_5lines_intv / 2) * (8 - p5i); // rs_y_base corresponds to pos#3
+
+
+                    graphic.CanvasLine(paper,
+                        note_x_center - 3,
+                        rs_y_base + a5y,
+                        note_x_center + 12,
+                        rs_y_base + a5y,
+                        {width:1}, draw);
+                }
+                for (let p5i = pos_on_5lines[ci]; p5i >= 10; --p5i) {
+                    if (p5i % 2 != 0) continue;
+                    let a5y = (_5lines_intv / 2) * (8 - p5i); // rs_y_base corresponds to pos#3
+
+                    graphic.CanvasLine(paper,
+                        note_x_center - 3,
+                        rs_y_base + a5y,
+                        note_x_center + 12,
+                        rs_y_base + a5y,
+                        {width:1}, draw);
+                }
+            }
+        }else if (balken_element.type == "rest") {
+
+            let r = this.render_rest_plain(
+                balken_element.e,
+                paper,
+                draw,
+                x,
+                rs_y_base,
+                0,
+                row_height,
+                this.param
+            );
+
+            bounding_box.add_rect(r.bounding_box);
+
+        }else if(balken_element.type == "simile"){
+            alert("Impleetaion not ready for siile in RS area");
+        }
+
+        return {bounding_box:bounding_box.get()};
+    }
+
     draw_notes(
         draw, 
         x,
@@ -1151,38 +1384,42 @@ export class Renderer {
         return { x: x };
     }
 
-    render_slash(paper, group, x, y, d, numdot, _5lines_intv) {
+    render_slash(paper, group, x, y, d, numdot, _5lines_intv, draw=true) {
         var rsgw = 8;
         var rsgh = _5lines_intv * 2;
         var rsh = 4;
-        var path = graphic.svgPath(
-            [
-                [x, y + rsgh / 2 - rsh],
-                [x + rsgw, y - rsgh / 2],
-                [x + rsgw, y - rsgh / 2 + rsh],
-                [x, y + rsgh / 2]
-            ],
-            true
-        );
-        //var obj = null;
-        if (d == "1" || d == "2") {
-            //obj = paper.path(path).attr({ "stroke-width": "1px" });
-            graphic.CanvasPath(paper, path, false, {"lineWidth":1});
-        } else {
-            // '0' and other
-            //obj = paper.path(path).attr({ fill: "#000000" });
-            graphic.CanvasPath(paper, path, true, {"lineWidth":1, "fillStyle":"#000"});
+
+        if(draw){
+            var path = graphic.svgPath(
+                [
+                    [x, y + rsgh / 2 - rsh],
+                    [x + rsgw, y - rsgh / 2],
+                    [x + rsgw, y - rsgh / 2 + rsh],
+                    [x, y + rsgh / 2]
+                ],
+                true
+            );
+            //var obj = null;
+            if (d == "1" || d == "2") {
+                //obj = paper.path(path).attr({ "stroke-width": "1px" });
+                graphic.CanvasPath(paper, path, false, {"lineWidth":1});
+            } else {
+                // '0' and other
+                //obj = paper.path(path).attr({ fill: "#000000" });
+                graphic.CanvasPath(paper, path, true, {"lineWidth":1, "fillStyle":"#000"});
+            }
+            //group.push(obj);
+            for (var i = 0; i < numdot; ++i) {
+                /*group.push(
+                    paper
+                        .circle(x + rsgw + 5    + i * 5, y - _5lines_intv / 2, 1)
+                        .attr({ fill: "black" })
+                );*/
+                graphic.CanvasCircle(paper, x + rsgw + 5 + i * 5, y - _5lines_intv / 2, 1);
+            }
         }
-        //group.push(obj);
-        for (var i = 0; i < numdot; ++i) {
-            /*group.push(
-                paper
-                    .circle(x + rsgw + 5 + i * 5, y - _5lines_intv / 2, 1)
-                    .attr({ fill: "black" })
-            );*/
-            graphic.CanvasCircle(paper, x + rsgw + 5 + i * 5, y - _5lines_intv / 2, 1);
-        }
-        return { bar_reduction: rsgh / 2 - rsh };
+
+        return { bar_reduction: rsgh / 2 - rsh, bounding_box:{x:x, y:y, w: rsgw + 5 + numdot * 5, h:rsgh}};
     }
 
 

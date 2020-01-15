@@ -10,23 +10,29 @@ export function CanvasRect(canvas, x, y, w, h) {
     context.stroke();
 }
 
-export function CanvasCircle(canvas, x, y, r) {
-    var context = canvas.getContext("2d");
-    context.beginPath();
-    context.arc(x, y, r, 0, Math.PI * 2, false);
-    context.fill();
+export function CanvasCircle(canvas, x, y, r, draw=true) {
+    if(draw){
+        var context = canvas.getContext("2d");
+        context.beginPath();
+        context.arc(x, y, r, 0, Math.PI * 2, false);
+        context.fill();
+    }
+    return {bounding_box:{x:x-r,y:y-r,w:2*r,h:2*r}};
 }
 
-export function CanvasLine(canvas, x0, y0, x1, y1, opt) {
-    var context = canvas.getContext("2d");
-    context.beginPath();
-    if (opt && opt.dash) context.setLineDash([2, 2]);
-    if (opt && opt.width) context.lineWidth = opt.width;
-    context.moveTo(x0, y0);
-    context.lineTo(x1, y1);
-    context.stroke();
-    if (opt && opt.dash) context.setLineDash([]);
-    if (opt && opt.width) context.lineWidth = 1;
+export function CanvasLine(canvas, x0, y0, x1, y1, opt, draw=true) {
+    if(draw){
+        var context = canvas.getContext("2d");
+        context.beginPath();
+        if (opt && opt.dash) context.setLineDash([2, 2]);
+        if (opt && opt.width) context.lineWidth = opt.width;
+        context.moveTo(x0, y0);
+        context.lineTo(x1, y1);
+        context.stroke();
+        if (opt && opt.dash) context.setLineDash([]);
+        if (opt && opt.width) context.lineWidth = 1;
+    }
+    return {bounding_box:{x:Math.min(x0,x1), y:Math.min(y0,y1), w:Math.abs(x0-x1), h:Math.abs(y0-y1)}};
 }
 
 export function CanvasPath(canvas, svgpathdata, fill=false, opt) {
@@ -167,9 +173,8 @@ export function CanvasTextWithBox(canvas, x, y, text, fsize, margin=2, min_width
     return {width: ret.width+2*margin, height:ret.height+2*margin};
 }
 
-export function CanvasImage(canvas, img, x, y, w, h, align = "lt")
+export function CanvasImage(canvas, img, x, y, w, h, align = "lt", draw=true)
 {
-    let ctx = canvas.getContext("2d");
     let act_w = img.width;
     let act_h = img.height;
 
@@ -195,13 +200,18 @@ export function CanvasImage(canvas, img, x, y, w, h, align = "lt")
     if(align[1]=="b") y_shift = -act_h;
     else if(align[1]=="m") y_shift = -act_h/2;
 
-    ctx.drawImage(
-        img,
-        x + x_shift,
-        y + y_shift,
-        act_w,
-        act_h
-    );
+    if(draw){
+        let ctx = canvas.getContext("2d");
+        ctx.drawImage(
+            img,
+            x + x_shift,
+            y + y_shift,
+            act_w,
+            act_h
+        );
+    }
+
+    return {bounding_box:{x:x+x_shift, y:y+y_shift,w:act_w,h:act_h}};
 }
 
 // SVG related

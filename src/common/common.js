@@ -776,3 +776,33 @@ export class Lyric {
         this.chorddep = chorddep; // Dependency for particular chord : true/false
     }
 }
+
+
+// Utilities
+export class BoundingBox{
+    constructor(){
+        this.x = [100000, -100000];
+        this.y = [100000, -100000];
+    }
+    add(x, y, w=0, h=0){
+        this.x[0] = Math.min(x, this.x[0]);
+        this.x[1] = Math.max(x+w, this.x[1]);
+        this.y[0] = Math.min(y, this.y[0]);
+        this.y[1] = Math.max(y+h, this.y[1]);
+    }
+    add_BB(bb){ // add another bounding box
+        this.x[0] = Math.min(bb.x[0], this.x[0]);
+        this.x[1] = Math.max(bb.x[1], this.x[1]);
+        this.y[0] = Math.min(bb.y[0], this.y[0]);
+        this.y[1] = Math.max(bb.y[1], this.y[1]);
+    }
+    add_rect(rect){
+        this.x[0] = Math.min(rect.x, this.x[0]);
+        this.x[1] = Math.max(rect.x+rect.w, this.x[1]);
+        this.y[0] = Math.min(rect.y, this.y[0]);
+        this.y[1] = Math.max(rect.y+rect.h, this.y[1]);
+    }
+    get(){
+        return {x:this.x[0],y:this.y[0],w:this.x[1]-this.x[0], h:this.y[1]-this.y[0]};
+    }
+}

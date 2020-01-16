@@ -476,6 +476,8 @@ export class Renderer {
             var as = accidental_exists ? deltax_acc : 0;
             note_x_center = x + as;
 
+            balken_element.renderprop.note_x_center = note_x_center;
+
             for (let ci = 0; ci < ys.length; ++ci) {
                 var y = ys[ci];
 
@@ -628,8 +630,6 @@ export class Renderer {
             var ys = balken_element.coord[1];
             var d = balken_element.note_value;
 
-            var note_x_center = x;
-
             let wo_flags = this.draw_rs_area_without_flag_balken(draw, paper, e,
                 balken_element, x, rs_y_base, row_height);
 
@@ -732,7 +732,6 @@ export class Renderer {
 
             e.renderprop.x = x;
             balken_element.renderprop.x = x;
-            balken_element.renderprop.note_x_center = note_x_center;
 
             // Here is the only update of x
 

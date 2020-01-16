@@ -1402,7 +1402,7 @@ export class DefaultRenderer extends Renderer {
         var cnt_y = 0;
 
         for (var gbi = 0; gbi < balken.groups.length; ++gbi) {
-            var c = balken.groups[gbi].coord;
+            var c = balken.groups[gbi].notes_coord;
 
             for (var ci = 0; ci < c[1].length; ++ci) {
                 center_y += c[1][ci];
@@ -1422,8 +1422,8 @@ export class DefaultRenderer extends Renderer {
 
         // 2. Draw notes and slashes without bars, flags and balkens
         for (var gbi = 0; gbi < balken.groups.length; ++gbi) {
-            //var x = balken.groups[gbi].coord[0];
-            var ys = balken.groups[gbi].coord[1];
+            //var x = balken.groups[gbi].notes_coord[0];
+            var ys = balken.groups[gbi].notes_coord[1];
             var d = balken.groups[gbi].note_value;
             var pos_on_5lines = balken.groups[gbi].pos_on_5lines;
             var sharp_flats = balken.groups[gbi].sharp_flats;
@@ -1673,7 +1673,7 @@ export class DefaultRenderer extends Renderer {
             music_context.tie_info.rs_prev_tie_paper = paper;
             music_context.tie_info.rs_prev_coord = [
                 x,
-                balken.groups[gbi].coord[1]
+                balken.groups[gbi].notes_coord[1]
             ];
             music_context.tie_info.rs_prev_meas = meas;
 
@@ -1691,9 +1691,9 @@ export class DefaultRenderer extends Renderer {
         // 3. Determine the flag intercept and slope
         var x_at_min_y = balken.groups[gbi_at_min_y].renderprop.note_x_center;
         var x_at_max_y = balken.groups[gbi_at_max_y].renderprop.note_x_center;
-        var ps_y = balken.groups[0].coord[1];
+        var ps_y = balken.groups[0].notes_coord[1];
         var ps_bar_x = balken.groups[0].renderprop.note_x_center;
-        var pe_y = balken.groups[balken.groups.length - 1].coord[1];
+        var pe_y = balken.groups[balken.groups.length - 1].notes_coord[1];
         var pe_bar_x =
             balken.groups[balken.groups.length - 1].renderprop.note_x_center;
 
@@ -1738,7 +1738,7 @@ export class DefaultRenderer extends Renderer {
             } else if (balken.groups[gbi].type == "notes") {
                 if (d == "0" || d == "1") {
                 } else {
-                    var ys = balken.groups[gbi].coord[1];
+                    var ys = balken.groups[gbi].notes_coord[1];
                     var y0 = upper_flag
                         ? Math.max.apply(null, ys)
                         : Math.min.apply(null, ys);
@@ -2108,7 +2108,7 @@ export class DefaultRenderer extends Renderer {
                         ? "slash"
                         : "notes",
                 numdot: numdot,
-                coord: [x, group_y],
+                notes_coord: [x, group_y],
                 note_value: d,
                 has_tie: has_tie,
                 pos_on_5lines: pos_on_5lines, // for notes only

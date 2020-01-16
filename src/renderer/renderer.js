@@ -411,7 +411,7 @@ export class Renderer {
                     : "notes",
             numdot: numdot,
             chord_length: chord_length,
-            coord: [x, group_y],
+            notes_coord: [[], group_y], // x coordinates are filled out later
             note_value: d,
             has_tie: has_tie,
             pos_on_5lines: pos_on_5lines, // for notes only
@@ -430,7 +430,7 @@ export class Renderer {
         let _5lines_intv = row_height / 4;
         var deltax_acc = 10;  
 
-        var ys = balken_element.coord[1];
+        var ys = balken_element.notes_coord[1];
         var d = balken_element.note_value;
         var pos_on_5lines = balken_element.pos_on_5lines;
         var sharp_flats = balken_element.sharp_flats;
@@ -467,7 +467,13 @@ export class Renderer {
             }
             bounding_box.add_rect(ret.bounding_box);
             balken_element.renderprop.note_x_center = x;
+            if(draw){
+                balken_element.notes_coord[0]
+                    .push([x, x, x + ret.bounding_box.w]);
+            }
         } else if(balken_element.type == "notes") {
+
+            var xs = [];
 
             var accidental_exists = balken_element.sharp_flats.some(
                 function(sf) {
@@ -480,6 +486,7 @@ export class Renderer {
             balken_element.renderprop.note_x_center = note_x_center;
 
             for (let ci = 0; ci < ys.length; ++ci) {
+
                 var y = ys[ci];
 
                 let r = null;
@@ -499,9 +506,16 @@ export class Renderer {
                     note_x_center, y, null, _5lines_intv, "lm", draw);
                 }
 
-                if(r) bounding_box.add_rect(r.bounding_box);
-                //bo_group.push(text);
+                if(!r){
+                    throw "SOMETHING WRONG WITH PARSING";
+                }
 
+                bounding_box.add_rect(r.bounding_box);
+                if(draw){
+                    balken_element.notes_coord[0]
+                        .push([x, note_x_center, note_x_center + r.bounding_box.w]);
+                }
+                
                 // draw sharp, flat and natrual
                 // http://finale-hossy.sakura.ne.jp/finale/2011/11/post-18.html
                 if (sharp_flats[ci] !== null) {
@@ -603,16 +617,16 @@ export class Renderer {
         var cnt_y = 0;
 
         for (let gbi = 0; gbi < balken.groups.length; ++gbi) {
-            var c = balken.groups[gbi].balken_element.coord;
+            let ys = balken.groups[gbi].balken_element.notes_coord[1];
 
-            for (var ci = 0; ci < c[1].length; ++ci) {
-                center_y += c[1][ci];
-                if (min_y > c[1][ci]) {
-                    min_y = c[1][ci];
+            for (var ci = 0; ci < ys.length; ++ci) {
+                center_y += ys[ci];
+                if (min_y > ys[ci]) {
+                    min_y = ys[ci];
                     gbi_at_min_y = gbi;
                 }
-                if (max_y < c[1][ci]) {
-                    max_y = c[1][ci];
+                if (max_y < ys[ci]) {
+                    max_y = ys[ci];
                     gbi_at_max_y = gbi;
                 }
                 cnt_y += 1;
@@ -625,14 +639,17 @@ export class Renderer {
 
         // 2. Draw notes and slashes without bars, flags and balkens
         for (let gbi = 0; gbi < balken.groups.length; ++gbi) {
-            //var x = balken.groups[gbi].coord[0];
+            //var x = balken.groups[gbi].notes_coord[0];
             let e = balken.groups[gbi].e;
             let balken_element = balken.groups[gbi].balken_element;
-            var ys = balken_element.coord[1];
+            let ys = balken_element.notes_coord[1];
+
             var d = balken_element.note_value;
 
             let wo_flags = this.draw_rs_area_without_flag_balken(draw, paper, e,
                 balken_element, x, rs_y_base, row_height);
+
+            let xs = balken_element.notes_coord[0];
 
             if (music_context.tie_info.rs_prev_has_tie) {
                 // Draw tie line
@@ -651,17 +668,17 @@ export class Renderer {
                 if (balken.groups[gbi].type == "slash") {
                     // slash only has down flag
                     dy = -10;
-                    sdx = 12;
+                    sdx = 5;
                     round = 6;
                 } else {
                     // notes
                     if (upper_flag) {
                         dy = 3;
-                        sdx = 12;
+                        sdx = 5;
                         round = -6;
                     } else {
                         dy = -3;
-                        sdx = 12;
+                        sdx = 5;
                         round = 6;
                     }
                 }
@@ -672,8 +689,8 @@ export class Renderer {
                         // Crossing measure row. Previous RS mark could be on another page.
                         // Make sure to create curve on the paper on which previous RS is drawn.
                         var brace_points = [
-                            [pss[0] + sdx, pss[1][ci] + dy],
-                            [pss[0] + sdx, pss[1][ci] - round + dy],
+                            [pss[0][ci][2] + sdx, pss[1][ci] + dy],
+                            [pss[0][ci][2] + sdx, pss[1][ci] - round + dy],
                             [
                                 psm.renderprop.meas_end_x + 20,
                                 pss[1][ci] - round + dy
@@ -688,14 +705,14 @@ export class Renderer {
                         */
 
                         graphic.CanvasbBzierCurve(paper, brace_points, false, false, 
-                            {"clip-rect":[pss[0]+sdx, (pss[1][ci] - 50), 
-                                (psm.renderprop.meas_end_x - (pss[0] + sdx) + 5), 100]});
+                            {"clip-rect":[pss[0][ci][2]+sdx, (pss[1][ci] - 50), 
+                                (psm.renderprop.meas_end_x - (pss[0][ci][2] + sdx) + 5), 100]});
 
                         brace_points = [
                             [meas_start_x - 20, y + dy],
                             [meas_start_x - 20, y - round + dy],
-                            [x, y - round + dy],
-                            [x, y + dy]
+                            [x - sdx, y - round + dy],
+                            [x - sdx, y + dy]
                         ];
 
                         /*
@@ -709,10 +726,10 @@ export class Renderer {
                                 (x - (meas_start_x - 5)), 100]});
                     } else {
                         let brace_points = [
-                            [pss[0] + sdx, pss[1][ci] + dy],
-                            [pss[0] + sdx, pss[1][ci] - round + dy],
-                            [x, y - round + dy],
-                            [x, y + dy]
+                            [pss[0][ci][2] + sdx, pss[1][ci] + dy],
+                            [pss[0][ci][2] + sdx, pss[1][ci] - round + dy],
+                            [xs[ci][0] - sdx, y - round + dy],
+                            [xs[ci][0] - sdx, y + dy]
                         ];
 
 
@@ -726,8 +743,8 @@ export class Renderer {
             music_context.tie_info.rs_prev_has_tie = balken.groups[gbi].balken_element.has_tie;
             music_context.tie_info.rs_prev_tie_paper = paper;
             music_context.tie_info.rs_prev_coord = [
-                x,
-                balken_element.coord[1]
+                balken_element.notes_coord[0],
+                balken_element.notes_coord[1]
             ];
             music_context.tie_info.rs_prev_meas = meas;
 
@@ -742,9 +759,9 @@ export class Renderer {
         // 3. Determine the flag intercept and slope
         var x_at_min_y = balken.groups[gbi_at_min_y].balken_element.renderprop.note_x_center;
         var x_at_max_y = balken.groups[gbi_at_max_y].balken_element.renderprop.note_x_center;
-        var ps_y = balken.groups[0].balken_element.coord[1];
+        var ps_y = balken.groups[0].balken_element.notes_coord[1];
         var ps_bar_x = balken.groups[0].balken_element.renderprop.note_x_center;
-        var pe_y = balken.groups[balken.groups.length - 1].balken_element.coord[1];
+        var pe_y = balken.groups[balken.groups.length - 1].balken_element.notes_coord[1];
         var pe_bar_x =
             balken.groups[balken.groups.length - 1].balken_element.renderprop.note_x_center;
 
@@ -773,24 +790,23 @@ export class Renderer {
 
             if (balken.groups[gbi].balken_element.type == "slash") {
                 let numdot = balken.groups[gbi].balken_element.numdot;
+                let ys = balken.groups[gbi].balken_element.notes_coord[1];
                 // eslint-disable-next-line no-empty
                 if (d == "0" || d == "1") {
                 } else {
-
-                    
-                        graphic.CanvasLine(paper,
-                            note_x_center,
-                            ys[0] + 3,
-                            note_x_center,
-                            slope * note_x_center + intercept,
-                            {width:1});
+                    graphic.CanvasLine(paper,
+                        note_x_center,
+                        ys[0] + 3,
+                        note_x_center,
+                        slope * note_x_center + intercept,
+                        {width:1});
                 }
                 //bar_flag_group.push(o);
             } else if (balken.groups[gbi].balken_element.type == "notes") {
                 // eslint-disable-next-line no-empty
                 if (d == "0" || d == "1") {
                 } else {
-                    let ys = balken.groups[gbi].balken_element.coord[1];
+                    let ys = balken.groups[gbi].balken_element.notes_coord[1];
                     var y0 = upper_flag
                         ? Math.max.apply(null, ys)
                         : Math.min.apply(null, ys);
@@ -1040,7 +1056,7 @@ export class Renderer {
             }
         }
 
-        return { bar_reduction: rsgh / 2 - rsh, bounding_box:{x:x, y:y, w: rsgw + 5 + numdot * 5, h:rsgh}};
+        return { bar_reduction: rsgh / 2 - rsh, bounding_box:{x:x, y:y, w: rsgw + (numdot > 0 ? 5 + numdot * 5 : 0), h:rsgh}};
     }
 
 

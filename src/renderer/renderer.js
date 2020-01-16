@@ -521,9 +521,11 @@ export class Renderer {
                 if (sharp_flats[ci] !== null) {
 
                     let svgname = { 11: "flat.svg", 1: "sharp.svg", 0: "natural.svg" };
+                    let svg_dy = { 11: -0.5, 1: 0, 0: 0 };
                     let url = "assets/img/"+svgname[sharp_flats[ci]];
+                    let dy = svg_dy[sharp_flats[ci]];
                     r = graphic.CanvasImage(paper, graphic.G_imgmap[url],
-                        x, y, null, _5lines_intv*2.5, "lm", draw);
+                        x, y + _5lines_intv*dy, null, _5lines_intv*2.5, "lm", draw);
                     
                     bounding_box.add_rect(r.bounding_box);
                 }

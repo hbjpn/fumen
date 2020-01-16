@@ -1622,7 +1622,7 @@ export class MobileRenderer extends Renderer {
             var y = y_body_base;
             x += (h + i) * r;
             if (draw) {
-                var path = graphic.svgPath(
+                /*var path = graphic.svgPath(
                     [
                         [x, y + _5lines_intv * 3],
                         [x + h, y + _5lines_intv * 3],
@@ -1633,6 +1633,14 @@ export class MobileRenderer extends Renderer {
                 );
                 var path2d = new Path2D(path);
                 var obj = paper.getContext("2d").fill(path2d); //path(path).attr({'fill':'#000000'});
+                */
+                var points = [
+                   [x, y + _5lines_intv * 3],
+                   [x + h, y + _5lines_intv * 3],
+                    [x + h + H, y + _5lines_intv * 1],
+                    [x + H, y + _5lines_intv]
+                ];
+                graphic.CanvasPolygon(paper, points, true, true);     
             }
         }
         if (draw)

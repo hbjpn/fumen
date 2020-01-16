@@ -35,6 +35,76 @@ export function CanvasLine(canvas, x0, y0, x1, y1, opt, draw=true) {
     return {bounding_box:{x:Math.min(x0,x1), y:Math.min(y0,y1), w:Math.abs(x0-x1), h:Math.abs(y0-y1)}};
 }
 
+export function CanvasPolygon(canvas, points, close=false, fill=false, opt=null){
+    var context = canvas.getContext("2d");
+
+    context.save();
+
+    let orgValues = {};
+    if (opt != null) {
+        for (let key in opt) {
+            orgValues[key] = context[key];
+            context[key] = opt[key];
+        }
+    }
+
+    context.beginPath();
+    for(var i=0; i < points.length; ++i){
+        if(i==0){
+            context.moveTo(points[i][0], points[i][1]);
+        }else{
+            context.lineTo(points[i][0], points[i][1]);
+        }
+    }
+    if(close){
+        context.closePath();
+    }
+    context.stroke();
+    if(fill){
+        context.fill();
+    }
+
+    context.restore();
+}
+
+export function CanvasbBzierCurve(canvas, points, close=false, fill=false, opt=null){
+    // points shuld have 4 points, (start point, control point 1, control point 2, end point)
+    var context = canvas.getContext("2d");
+
+    context.save();
+
+    let orgValues = {};
+    if (opt != null) {
+        for (let key in opt) {
+            orgValues[key] = context[key];
+            context[key] = opt[key];
+        }
+    }
+
+    if(opt && "clip-rect" in opt){
+        context.beginPath();
+        context.rect(opt["clip-rect"][0], opt["clip-rect"][1], opt["clip-rect"][2], opt["clip-rect"][3]);
+        context.clip();
+    }
+
+    context.beginPath();
+    context.moveTo(points[0][0], points[0][1]);
+    context.bezierCurveTo(
+        points[1][0], points[1][1],
+        points[2][0], points[2][1],
+        points[3][0], points[3][1]);
+
+    if(close){
+        context.closePath();
+    }
+    context.stroke();
+    if(fill){
+        context.fill();
+    }
+
+    context.restore();
+}
+
 export function CanvasPath(canvas, svgpathdata, fill=false, opt) {
 
     var ctx = canvas.getContext("2d");

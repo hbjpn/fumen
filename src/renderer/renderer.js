@@ -689,7 +689,13 @@ export class Renderer {
                             [psm.renderprop.meas_end_x + 20, pss[1][ci] + dy]
                         ];
 
+                        /*
                         graphic.CanvasPath(paper, graphic.svgArcBezie(brace_points), false,
+                            {"clip-rect":[pss[0]+sdx, (pss[1][ci] - 50), 
+                                (psm.renderprop.meas_end_x - (pss[0] + sdx) + 5), 100]});
+                        */
+
+                        graphic.CanvasbBzierCurve(paper, brace_points, false, false, 
                             {"clip-rect":[pss[0]+sdx, (pss[1][ci] - 50), 
                                 (psm.renderprop.meas_end_x - (pss[0] + sdx) + 5), 100]});
 
@@ -700,10 +706,15 @@ export class Renderer {
                             [x, y + dy]
                         ];
 
+                        /*
                         graphic.CanvasPath(paper, graphic.svgArcBezie(brace_points), false,
                             {"clip-rect":[meas_start_x - 5, (y - 50), 
                                 (x - (meas_start_x - 5)), 100]});
+                        */
 
+                        graphic.CanvasbBzierCurve(paper, brace_points, false, false,
+                            {"clip-rect":[meas_start_x - 5, (y - 50), 
+                                (x - (meas_start_x - 5)), 100]});
                     } else {
                         let brace_points = [
                             [pss[0] + sdx, pss[1][ci] + dy],
@@ -713,7 +724,9 @@ export class Renderer {
                         ];
 
 
-                        graphic.CanvasPath(paper, graphic.svgArcBezie(brace_points), false);
+                        /*graphic.CanvasPath(paper, graphic.svgArcBezie(brace_points), false);*/
+
+                        graphic.CanvasbBzierCurve(paper, brace_points, false, false);
                     }
                 }
             }
@@ -896,7 +909,8 @@ export class Renderer {
                             var rno = 10;
                             var rnh = 4;
 
-                            var path1 = graphic.svgPath(
+                            // var path1 = graphic.svgPath(
+                            var points1 =
                                 [
                                     [
                                         pssx + deltax,
@@ -916,10 +930,11 @@ export class Renderer {
                                             intercept +
                                             (upper_flag ? -rno : rno)
                                     ]
-                                ],
-                                false
-                            );
-                            var path2 = graphic.svgPath(
+                                ]; //,
+                            //    false
+                            //);
+                            //var path2 = graphic.svgPath(
+                            var points2 = 
                                 [
                                     [
                                         center_x + 7,
@@ -939,11 +954,13 @@ export class Renderer {
                                             intercept +
                                             (upper_flag ? -rnh : rnh)
                                     ]
-                                ],
-                                false
-                            );
-                            graphic.CanvasPath(paper, path1);
-                            graphic.CanvasPath(paper, path2);
+                                ]; //,
+                            //    false
+                            //);
+                            //graphic.CanvasPath(paper, path1);
+                            //graphic.CanvasPath(paper, path2);
+                            graphic.CanvasPolygon(paper, points1, false, false);
+                            graphic.CanvasPolygon(paper, points2, false, false);
 
                         }
                     }
@@ -988,756 +1005,13 @@ export class Renderer {
         return { x: x };
     }
 
-    draw_notes(
-        draw, 
-        x,
-        paper,
-        group,
-        balken,
-        rs_y_base,
-        row_height,
-        meas_start_x,
-        meas_end_x,
-        body_scaling,
-        x_global_scale,
-        barlen,
-        flagintv,
-        balken_width,
-        music_context,
-        meas,
-        param
-    ) {
-        // Evaluate the flag direction(up or down) by the center of the y-axis position of all the notes/slashes
-
-        let balken_group_size = 10;
-        let width = balken_group_size * balken.groups.length;
-        if(!draw){
-            return {x:x + width};
-        }
-
-        let _5lines_intv = row_height / 4;
-
-        var deltax_acc = 10;  
-
-        // 1. determine the flag direction here
-        var center_y = 0.0;
-        var min_y = 10000000;
-        var max_y = 0;
-        var gbi_at_min_y = null;
-        var gbi_at_max_y = null;
-        var cnt_y = 0;
-
-        for (let gbi = 0; gbi < balken.groups.length; ++gbi) {
-            var c = balken.groups[gbi].coord;
-
-            for (var ci = 0; ci < c[1].length; ++ci) {
-                center_y += c[1][ci];
-                if (min_y > c[1][ci]) {
-                    min_y = c[1][ci];
-                    gbi_at_min_y = gbi;
-                }
-                if (max_y < c[1][ci]) {
-                    max_y = c[1][ci];
-                    gbi_at_max_y = gbi;
-                }
-                cnt_y += 1;
-            }
-        }
-        center_y = Math.floor(center_y / cnt_y);
-        var upper_flag = center_y > rs_y_base + _5lines_intv * 2;
-
-        // 2. Draw notes and slashes without bars, flags and balkens
-        for (let gbi = 0; gbi < balken.groups.length; ++gbi) {
-            //var x = balken.groups[gbi].coord[0];
-            var ys = balken.groups[gbi].coord[1];
-            var d = balken.groups[gbi].onka;
-            var pos_on_5lines = balken.groups[gbi].pos_on_5lines;
-            var sharp_flats = balken.groups[gbi].sharp_flats;
-            var numdot = balken.groups[gbi].numdot;
-
-            var bo_group = null; //paper.set();
-
-            var note_x_center = x;
-
-            if (balken.groups[gbi].type == "slash") {
-                if (d == "0" || d == "1") {
-                    this.render_slash(
-                        paper,
-                        bo_group,
-                        note_x_center,
-                        ys[0],
-                        d,
-                        numdot,
-                        _5lines_intv
-                    );
-                } else {
-                    this.render_slash(
-                        paper,
-                        bo_group,
-                        note_x_center,
-                        ys[0],
-                        d,
-                        numdot,
-                        _5lines_intv
-                    );
-                }
-            } else if (balken.groups[gbi].type == "notes") {
-                var accidental_exists = balken.groups[gbi].sharp_flats.some(
-                    function(sf) {
-                        return sf !== null;
-                    }
-                );
-                var as = accidental_exists ? deltax_acc : 0;
-                note_x_center = x + as;
-
-                for (let ci = 0; ci < ys.length; ++ci) {
-                    var y = ys[ci];
-
-                    // eslint-disable-next-line no-empty
-                    if (d == "0") {
-                    } else if (d == "1") {
-                        /*text = raphaelText(
-                            paper,
-                            note_x_center,
-                            y,
-                            "\ue700",
-                            7,
-                            "lc",
-                            "smart_music_symbol"
-                        );*/
-                        graphic.CanvasImage(paper, graphic.G_imgmap["assets/img/w1note.svg"],
-                            note_x_center, y, null, _5lines_intv, "lm");
-                    } else if (d == "2") {
-                        /*text = raphaelText(
-                            paper,
-                            note_x_center,
-                            y,
-                            "\ue701",
-                            7,
-                            "lc",
-                            "smart_music_symbol"
-                        );*/
-                        graphic.CanvasImage(paper, graphic.G_imgmap["assets/img/w2note.svg"],
-                        note_x_center, y, null, _5lines_intv, "lm");
-                    } else {
-                        /*text = raphaelText(
-                            paper,
-                            note_x_center,
-                            y,
-                            "\ue702",
-                            7,
-                            "lc",
-                            "smart_music_symbol"
-                        );*/
-                        graphic.CanvasImage(paper, graphic.G_imgmap["assets/img/bnote.svg"],
-                        note_x_center, y, null, _5lines_intv, "lm");
-                    }
-                    //bo_group.push(text);
-
-                    // draw sharp, flat and natrual
-                    // http://finale-hossy.sakura.ne.jp/finale/2011/11/post-18.html
-                    if (sharp_flats[ci] !== null) {
-                        /*var SFN_YSHIFTS = { 11: -3, 1: 0, 0: 0 };
-                        var SHARP_FLAT_CODE = { 11: "b", 1: "#", 0: "\ue900" };
-                        text = raphaelText(
-                            paper,
-                            x,
-                            y + SFN_YSHIFTS[sharp_flats[ci]],
-                            SHARP_FLAT_CODE[sharp_flats[ci]],
-                            14,
-                            "lc",
-                            "smart_music_symbol"
-                        );
-                        bo_group.push(text);
-                        */
-                        let svgname = { 11: "flat.svg", 1: "sharp.svg", 0: "natural.svg" };
-                        let url = "assets/img/"+svgname[sharp_flats[ci]];
-                        graphic.CanvasImage(paper, graphic.G_imgmap[url],
-                            x, y, null, _5lines_intv*2.5, "lm");
-                        
-                    }
-
-                    // dots
-                    for (let i = 0; i < numdot; ++i) {
-                        let dy =
-                            pos_on_5lines[ci] % 2 == 0 ? -_5lines_intv / 2 : 0;
-                        /*bo_group.push(
-                            paper
-                                .circle(note_x_center + 12 + i * 5, y + dy, 1)
-                                .attr({ fill: "black" })
-                        );*/
-                        graphic.CanvasCircle(paper, note_x_center + 12 + i * 5, y + dy, 1);
-                    }
-
-                    // Draw additional horizontal lines
-                    for (var p5i = pos_on_5lines[ci]; p5i <= -2; ++p5i) {
-                        if (p5i % 2 != 0) continue;
-                        var a5y = (_5lines_intv / 2) * (8 - p5i); // rs_y_base corresponds to pos#3
-                        /*var o = paper
-                            .path(
-                                svgLine(
-                                    note_x_center - 3,
-                                    rs_y_base + a5y,
-                                    note_x_center + 12,
-                                    rs_y_base + a5y
-                                )
-                            )
-                            .attr({ "stroke-width": "1px" });
-                        bo_group.push(o);*/
-
-                        graphic.CanvasLine(paper,
-                            note_x_center - 3,
-                            rs_y_base + a5y,
-                            note_x_center + 12,
-                            rs_y_base + a5y,
-                            {width:1});
-                    }
-                    for (let p5i = pos_on_5lines[ci]; p5i >= 10; --p5i) {
-                        if (p5i % 2 != 0) continue;
-                        let a5y = (_5lines_intv / 2) * (8 - p5i); // rs_y_base corresponds to pos#3
-                        /*let o = paper
-                            .path(
-                                svgLine(
-                                    note_x_center - 3,
-                                    rs_y_base + a5y,
-                                    note_x_center + 12,
-                                    rs_y_base + a5y
-                                )
-                            )
-                            .attr({ "stroke-width": "1px" });
-                        bo_group.push(o);*/
-
-                        graphic.CanvasLine(paper,
-                            note_x_center - 3,
-                            rs_y_base + a5y,
-                            note_x_center + 12,
-                            rs_y_base + a5y,
-                            {width:1});
-                    }
-                }
-            } else if (balken.groups[gbi].type == "rest") {
-                /*var rr = render_rest(
-                    balken.groups[gbi].e,
-                    paper,
-                    true,
-                    x,
-                    rs_y_base,
-                    0,
-                    _5lines_intv,
-                    param
-                );
-                bo_group.push(rr.group);*/
-
-                this.render_rest_plain(
-                    balken.groups[gbi].e,
-                    paper,
-                    true,
-                    x,
-                    rs_y_base,
-                    0,
-                    row_height,
-                    this.param
-                );
-            }
-
-            if (music_context.tie_info.rs_prev_has_tie) {
-                // Draw tie line
-                var pss = music_context.tie_info.rs_prev_coord;
-                var psm = music_context.tie_info.rs_prev_meas;
-
-                // Check the consistency.
-                if (pss[1].length != ys.length) {
-                    throw "INVALID TIE NOTATION";
-                }
-
-                let dy = 0;
-                let sdx = 0;
-                let round = 0;
-
-                if (balken.groups[gbi].type == "slash") {
-                    // slash only has down flag
-                    dy = -10;
-                    sdx = 12;
-                    round = 6;
-                } else {
-                    // notes
-                    if (upper_flag) {
-                        dy = 3;
-                        sdx = 12;
-                        round = -6;
-                    } else {
-                        dy = -3;
-                        sdx = 12;
-                        round = 6;
-                    }
-                }
-
-                for (let ci = 0; ci < ys.length; ++ci) {
-                    let y = ys[ci];
-                    if (y != pss[1][ci]) {
-                        // Crossing measure row. Previous RS mark could be on another page.
-                        // Make sure to create curve on the paper on which previous RS is drawn.
-                        var brace_points = [
-                            [pss[0] + sdx, pss[1][ci] + dy],
-                            [pss[0] + sdx, pss[1][ci] - round + dy],
-                            [
-                                psm.renderprop.meas_end_x + 20,
-                                pss[1][ci] - round + dy
-                            ],
-                            [psm.renderprop.meas_end_x + 20, pss[1][ci] + dy]
-                        ];
-                        /*
-                        clip =
-                            pss[0] +
-                            sdx +
-                            "," +
-                            (pss[1][ci] - 50) +
-                            "," +
-                            (psm.renderprop.meas_end_x - (pss[0] + sdx) + 5) +
-                            ",100";
-                        console.log("brace:" + brace_points);
-                        console.log("clip:" + clip);
-
-                        var bl = music_context.tie_info.rs_prev_tie_paper
-                            .path(svgArcBezie(brace_points))
-                            .attr("stroke-width", "2px")
-                            .attr({ "clip-rect": clip });
-                        music_context.tie_info.rs_prev_tie_paper.set().push(bl);
-                        */
-                        graphic.CanvasPath(paper, graphic.svgArcBezie(brace_points), false,
-                            {"clip-rect":[pss[0]+sdx, (pss[1][ci] - 50), 
-                                (psm.renderprop.meas_end_x - (pss[0] + sdx) + 5), 100]});
-
-                        brace_points = [
-                            [meas_start_x - 20, y + dy],
-                            [meas_start_x - 20, y - round + dy],
-                            [x, y - round + dy],
-                            [x, y + dy]
-                        ];
-                        /*
-                        clip =
-                            meas_start_x -
-                            5 +
-                            "," +
-                            (y - 50) +
-                            "," +
-                            (x - (meas_start_x - 5)) +
-                            ",100";
-                        //console.log("clip:"+clip);
-                        bl = paper
-                            .path(svgArcBezie(brace_points))
-                            .attr("stroke-width", "2px")
-                            .attr({ "clip-rect": clip });
-                        group.push(bl);
-                        */
-                        graphic.CanvasPath(paper, graphic.svgArcBezie(brace_points), false,
-                            {"clip-rect":[meas_start_x - 5, (y - 50), 
-                                (x - (meas_start_x - 5)), 100]});
-
-                    } else {
-                        let brace_points = [
-                            [pss[0] + sdx, pss[1][ci] + dy],
-                            [pss[0] + sdx, pss[1][ci] - round + dy],
-                            [x, y - round + dy],
-                            [x, y + dy]
-                        ];
-                        /*let bl = paper
-                            .path(svgArcBezie(brace_points))
-                            .attr("stroke-width", "2px");
-                        group.push(bl);*/
-
-                        graphic.CanvasPath(paper, graphic.svgArcBezie(brace_points), false);
-                    }
-                }
-            }
-
-            music_context.tie_info.rs_prev_has_tie = balken.groups[gbi].has_tie;
-            music_context.tie_info.rs_prev_tie_paper = paper;
-            music_context.tie_info.rs_prev_coord = [
-                x,
-                balken.groups[gbi].coord[1]
-            ];
-            music_context.tie_info.rs_prev_meas = meas;
-
-            balken.groups[gbi].e.renderprop.x = x;
-            balken.groups[gbi].renderprop.x = x;
-            balken.groups[gbi].renderprop.note_x_center = note_x_center;
-
-            // Here is the only update of x
-            /*
-            x +=
-                (bo_group.getBBox().width + 10) * body_scaling * x_global_scale; // TODO : 10 should be refined
-
-            group.push(bo_group);*/
-            x += balken_group_size * body_scaling; // TODO : FIXME to cater for actual width of components
-        }
-
-        // 3. Determine the flag intercept and slope
-        var x_at_min_y = balken.groups[gbi_at_min_y].renderprop.note_x_center;
-        var x_at_max_y = balken.groups[gbi_at_max_y].renderprop.note_x_center;
-        var ps_y = balken.groups[0].coord[1];
-        var ps_bar_x = balken.groups[0].renderprop.note_x_center;
-        var pe_y = balken.groups[balken.groups.length - 1].coord[1];
-        var pe_bar_x =
-            balken.groups[balken.groups.length - 1].renderprop.note_x_center;
-
-        let slope = 0;
-        if (balken.groups.length >= 2) {
-            var delta_y = upper_flag
-                ? Math.min.apply(null, pe_y) - Math.min.apply(null, ps_y)
-                : Math.max.apply(null, pe_y) - Math.max.apply(null, ps_y);
-            slope = delta_y / (pe_bar_x - ps_bar_x);
-        } else {
-            slope = 1.0; // any value is OK
-        }
-
-        var intercept =
-            (upper_flag ? min_y - barlen : max_y + barlen) -
-            slope * (upper_flag ? x_at_min_y : x_at_max_y);
-
-        // if flag is upper, then the balken is shifted +deltax, then intercept is updated.
-        var deltax = upper_flag ? 8 : 0;
-        intercept = intercept - slope * deltax;
-
-        // 4. Draw bars, flags
-        var bar_flag_group = null; //paper.set();
-        for (var gbi = 0; gbi < balken.groups.length; ++gbi) {
-            let note_x_center = balken.groups[gbi].renderprop.note_x_center;
-
-            if (balken.groups[gbi].type == "slash") {
-                let numdot = balken.groups[gbi].numdot;
-                // eslint-disable-next-line no-empty
-                if (d == "0" || d == "1") {
-                } else {
-                    /*let o = paper
-                        .path(
-                            svgLine(
-                                note_x_center,
-                                ys[0] + 3 ,
-                                note_x_center,
-                                slope * note_x_center + intercept
-                            )
-                        )
-                        .attr({ "stroke-width": "1px" });*/
-                    
-                        graphic.CanvasLine(paper,
-                            note_x_center,
-                            ys[0] + 3 /*rsr.bar_reduction*/,
-                            note_x_center,
-                            slope * note_x_center + intercept,
-                            {width:1});
-                }
-                //bar_flag_group.push(o);
-            } else if (balken.groups[gbi].type == "notes") {
-                // eslint-disable-next-line no-empty
-                if (d == "0" || d == "1") {
-                } else {
-                    let ys = balken.groups[gbi].coord[1];
-                    var y0 = upper_flag
-                        ? Math.max.apply(null, ys)
-                        : Math.min.apply(null, ys);
-                    // Draw the basic vertical line. For the note with standalone flag(s), some additional length will be added when to draw flags.
-                    /*let o = paper
-                        .path(
-                            svgLine(
-                                note_x_center + deltax,
-                                y0,
-                                note_x_center + deltax,
-                                slope * (note_x_center + deltax) + intercept
-                            )
-                        )
-                        .attr({ "stroke-width": "1px" });
-                    bar_flag_group.push(o);*/
-
-                    graphic.CanvasLine(paper,
-                        note_x_center + deltax,
-                        y0,
-                        note_x_center + deltax,
-                        slope * (note_x_center + deltax) + intercept,
-                        {width:1});
-                }
-            // eslint-disable-next-line no-empty
-            } else if (balken.groups[gbi].type == "rest") {
-            }
-        }
-        //group.push(bar_flag_group);
-
-        // 5. Draw balkens
-
-        if (balken.groups.length >= 2) {
-            // Draw flag for balken
-            // Common balken
-            if (balken.groups[0].onka >= 8) {
-                /*let o = paper
-                    .path(
-                        svgLine(
-                            ps_bar_x + deltax,
-                            slope * (ps_bar_x + deltax) + intercept,
-                            pe_bar_x + deltax,
-                            slope * (pe_bar_x + deltax) + intercept
-                        )
-                    )
-                    .attr({ "stroke-width": balken_width });
-                group.push(o);*/
-
-                graphic.CanvasLine(paper,
-                    ps_bar_x + deltax,
-                    slope * (ps_bar_x + deltax) + intercept,
-                    pe_bar_x + deltax,
-                    slope * (pe_bar_x + deltax) + intercept,
-                    {width:balken_width});
-            }
-
-            // Balken for each onka level
-            var gg = this.to_same_value_group(balken.groups, function(o) {
-                return o.onka;
-            });
-            for (var g = 0; g < gg.length; ++g) {
-                var same_sds = gg[g];
-                var sd = same_sds[0].onka;
-                var numflag = common.myLog2(parseInt(sd)) - 2;
-
-                if (same_sds.length == 1) {
-                    var pssx = same_sds[0].renderprop.note_x_center;
-
-                    // Determine which direction to draw flag. Determined from which neighboring
-                    // rhythm is more natural to coupling with.
-                    // Currently, simple strategy is adopted for now.
-                    var dir = 1;
-                    if (g == gg.length - 1) dir = -1;
-                    var neighbor_x =
-                        gg[g + dir][gg[g + dir].length - 1].renderprop.x;
-                    var blen = Math.abs(neighbor_x - pssx) * 0.3;
-
-                    for (var fi = 1; fi < numflag; ++fi) {
-                        // fi=0 is alread drawn by common balken
-                        //o = paper.path(svgLine(pss[0], rs_y_base+barlen-fi*flagintv, pss[0] + dir * blen, rs_y_base+barlen-fi*flagintv)).attr({'stroke-width':balken_width});
-                        /*o = paper
-                            .path(
-                                svgLine(
-                                    pssx + deltax,
-                                    slope * (pssx + deltax) +
-                                        intercept +
-                                        (upper_flag ? +1 : -1) * fi * flagintv,
-                                    pssx + deltax + dir * blen,
-                                    slope * (pssx + deltax + dir * blen) +
-                                        intercept +
-                                        (upper_flag ? +1 : -1) * fi * flagintv
-                                )
-                            )
-                            .attr({ "stroke-width": balken_width });
-                        group.push(o);*/
-                        graphic.CanvasLine(paper,
-                            pssx + deltax,
-                            slope * (pssx + deltax) +
-                                intercept +
-                                (upper_flag ? +1 : -1) * fi * flagintv,
-                            pssx + deltax + dir * blen,
-                            slope * (pssx + deltax + dir * blen) +
-                                intercept +
-                                (upper_flag ? +1 : -1) * fi * flagintv,
-                            {width:balken_width});
-                    }
-                } else if (same_sds.length >= 2) {
-                    let pssx = same_sds[0].renderprop.note_x_center;
-                    var psex =
-                        same_sds[same_sds.length - 1].renderprop.note_x_center;
-                    for (
-                        let fi = 1;
-                        fi < numflag;
-                        ++fi // fi=0 is alread drawn by common balken
-                    ) {
-                        /*let o = paper
-                            .path(
-                                svgLine(
-                                    pssx + deltax,
-                                    slope * (pssx + deltax) +
-                                        intercept +
-                                        (upper_flag ? +1 : -1) * fi * flagintv,
-                                    psex + deltax,
-                                    slope * (psex + deltax) +
-                                        intercept +
-                                        (upper_flag ? +1 : -1) * fi * flagintv
-                                )
-                            )
-                            .attr({ "stroke-width": balken_width });
-                        group.push(o);*/
-                        graphic.CanvasLine(paper,
-                            pssx + deltax,
-                            slope * (pssx + deltax) +
-                                intercept +
-                                (upper_flag ? +1 : -1) * fi * flagintv,
-                            psex + deltax,
-                            slope * (psex + deltax) +
-                                intercept +
-                                (upper_flag ? +1 : -1) * fi * flagintv,
-                            {width:balken_width});
-                    }
-                    if (same_sds[0].lengthIndicator.renpu) {
-                        var ro = 12;
-                        var center_x = (pssx + deltax + (psex + deltax)) / 2.0;
-                        /*var text = raphaelText(
-                            paper,
-                            center_x,
-                            slope * center_x +
-                                intercept +
-                                (upper_flag ? -ro : ro),
-                            same_sds[0].lengthIndicator.renpu + "",
-                            12,
-                            "cc",
-                            "realbook_music_symbol"
-                        );
-                        group.push(text);*/
-                        let text = graphic.CanvasText(paper,
-                            center_x,
-                            slope * center_x +
-                                intercept +
-                                (upper_flag ? -ro : ro),
-                            same_sds[0].lengthIndicator.renpu + "",
-                            12,
-                            "cc");
-
-                        if (same_sds[0].onka < 8) {
-                            var rno = 10;
-                            var rnh = 4;
-                            /*var clip =
-                                text.getBBox().x +
-                                "," +
-                                text.getBBox().y +
-                                "," +
-                                text.getBBox().width +
-                                "," +
-                                text.getBBox().height;*/
-                            var path1 = graphic.svgPath(
-                                [
-                                    [
-                                        pssx + deltax,
-                                        slope * (pssx + deltax) +
-                                            intercept +
-                                            (upper_flag ? -rnh : rnh)
-                                    ],
-                                    [
-                                        pssx + deltax,
-                                        slope * (pssx + deltax) +
-                                            intercept +
-                                            (upper_flag ? -rno : rno)
-                                    ],
-                                    [
-                                        center_x - 7,
-                                        slope * (center_x - 7) +
-                                            intercept +
-                                            (upper_flag ? -rno : rno)
-                                    ]
-                                ],
-                                false
-                            );
-                            var path2 = graphic.svgPath(
-                                [
-                                    [
-                                        center_x + 7,
-                                        slope * (center_x + 7) +
-                                            intercept +
-                                            (upper_flag ? -rno : rno)
-                                    ],
-                                    [
-                                        psex + deltax,
-                                        slope * (psex + deltax) +
-                                            intercept +
-                                            (upper_flag ? -rno : rno)
-                                    ],
-                                    [
-                                        psex + deltax,
-                                        slope * (psex + deltax) +
-                                            intercept +
-                                            (upper_flag ? -rnh : rnh)
-                                    ]
-                                ],
-                                false
-                            );
-                            graphic.CanvasPath(paper, path1);
-                            graphic.CanvasPath(paper, path2);
-                            /*
-                            var o1 = paper
-                                .path(path1)
-                                .attr({ "stroke-width": "1px" });
-                            group.push(o1);
-                            var o2 = paper
-                                .path(path2)
-                                .attr({ "stroke-width": "1px" });
-                            group.push(o2);
-                            */
-                        }
-                    }
-                }
-            }
-        } else if (
-            balken.groups.length == 1 &&
-            balken.groups[0].type != "rest"
-        ) {
-            // Normal drawing of flags
-            let note_x_center = balken.groups[0].renderprop.note_x_center;
-            let d = balken.groups[0].onka;
-            let numflag = common.myLog2(parseInt(d)) - 2;
-            for (let fi = 0; fi < numflag; ++fi) {
-                /*let text = raphaelText(
-                    paper,
-                    note_x_center + deltax,
-                    slope * (note_x_center + deltax) +
-                        intercept +
-                        (upper_flag ? 1 + fi * 6 : -1 - fi * 6),
-                    upper_flag ? "\ue710" : "\ue711",
-                    16,
-                    "lc",
-                    "smart_music_symbol"
-                );
-                group.push(text);*/
-
-                let url = "assets/img/"+(upper_flag ? "flag_f.svg" : "flag_i.svg");
-                graphic.CanvasImage(paper, graphic.G_imgmap[url],
-                    note_x_center + deltax,
-                    slope * (note_x_center + deltax) +
-                        intercept +
-                        (upper_flag ? 1 + fi * 6 : -1 - fi * 6),
-                    null, null, "l"+(upper_flag?"t":"b"));
-                
-                // Additional vertical line
-                /*var line = paper
-                    .path(
-                        svgLine(
-                            note_x_center + deltax,
-                            slope * (note_x_center + deltax) + intercept,
-                            note_x_center + deltax,
-                            slope * (note_x_center + deltax) +
-                                intercept +
-                                (upper_flag ? -8 : 8)
-                        )
-                    )
-                    .attr({ "stroke-width": "1px" });
-                group.push(line);*/
-
-                /*
-                graphic.CanvasLine(paper,
-                    note_x_center + deltax,
-                    slope * (note_x_center + deltax) + intercept,
-                    note_x_center + deltax,
-                    slope * (note_x_center + deltax) +
-                        intercept +
-                        (upper_flag ? -8 : 8),
-                    {width:1});
-                */
-            }
-        }
-
-        return { x: x };
-    }
-
     render_slash(paper, group, x, y, d, numdot, _5lines_intv, draw=true) {
         var rsgw = 8;
         var rsgh = _5lines_intv * 2;
         var rsh = 4;
 
         if(draw){
-            var path = graphic.svgPath(
+            /*var path = graphic.svgPath(
                 [
                     [x, y + rsgh / 2 - rsh],
                     [x + rsgw, y - rsgh / 2],
@@ -1745,15 +1019,24 @@ export class Renderer {
                     [x, y + rsgh / 2]
                 ],
                 true
-            );
+            );*/
+            var points = [
+                [x, y + rsgh / 2 - rsh],
+                [x + rsgw, y - rsgh / 2],
+                [x + rsgw, y - rsgh / 2 + rsh],
+                [x, y + rsgh / 2]
+            ];
+
             //var obj = null;
             if (d == "1" || d == "2") {
                 //obj = paper.path(path).attr({ "stroke-width": "1px" });
-                graphic.CanvasPath(paper, path, false, {"lineWidth":1});
+                //graphic.CanvasPath(paper, path, false, {"lineWidth":1});
+                graphic.CanvasPolygon(paper, points, true, false);
             } else {
                 // '0' and other
                 //obj = paper.path(path).attr({ fill: "#000000" });
-                graphic.CanvasPath(paper, path, true, {"lineWidth":1, "fillStyle":"#000"});
+                //graphic.CanvasPath(paper, path, true, {"lineWidth":1, "fillStyle":"#000"});
+                graphic.CanvasPolygon(paper, points, true, true);
             }
             //group.push(obj);
             for (var i = 0; i < numdot; ++i) {

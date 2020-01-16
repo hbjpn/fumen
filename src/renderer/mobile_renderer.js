@@ -901,6 +901,7 @@ export class MobileRenderer extends Renderer {
                 // flush
                 groupedBodyElems.push(common.deepcopy(tmpl));
                 ++gbei;
+                chord_name_str = this_chord_str;
             }
 
             groupedBodyElems[gbei].elems.push(e);

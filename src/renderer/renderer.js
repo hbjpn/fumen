@@ -665,22 +665,26 @@ export class Renderer {
 
                 let dy = 0;
                 let sdx = 0;
+                let edx = 0;
                 let round = 0;
 
-                if (balken.groups[gbi].type == "slash") {
+                if (balken.groups[gbi].balken_element.type == "slash") {
                     // slash only has down flag
-                    dy = -10;
-                    sdx = 5;
+                    dy = -3;
+                    sdx = 3;
+                    edx = 0;
                     round = 6;
                 } else {
                     // notes
                     if (upper_flag) {
                         dy = 3;
-                        sdx = 5;
+                        sdx = 3;
+                        edx = -3;
                         round = -6;
                     } else {
                         dy = -3;
-                        sdx = 5;
+                        sdx = 3;
+                        edx = -3;
                         round = 6;
                     }
                 }
@@ -713,8 +717,8 @@ export class Renderer {
                         brace_points = [
                             [meas_start_x - 20, y + dy],
                             [meas_start_x - 20, y - round + dy],
-                            [x - sdx, y - round + dy],
-                            [x - sdx, y + dy]
+                            [x + edx, y - round + dy],
+                            [x + edx, y + dy]
                         ];
 
                         /*
@@ -730,8 +734,8 @@ export class Renderer {
                         let brace_points = [
                             [pss[0][ci][2] + sdx, pss[1][ci] + dy],
                             [pss[0][ci][2] + sdx, pss[1][ci] - round + dy],
-                            [xs[ci][0] - sdx, y - round + dy],
-                            [xs[ci][0] - sdx, y + dy]
+                            [xs[ci][0] + edx, y - round + dy],
+                            [xs[ci][0] + edx, y + dy]
                         ];
 
 
@@ -790,17 +794,20 @@ export class Renderer {
         for (var gbi = 0; gbi < balken.groups.length; ++gbi) {
             let note_x_center = balken.groups[gbi].balken_element.renderprop.note_x_center;
 
+            let ys = balken.groups[gbi].balken_element.notes_coord[1];
+            let xs = balken.groups[gbi].balken_element.notes_coord[0];
+
             if (balken.groups[gbi].balken_element.type == "slash") {
+                let bar_x = upper_flag ? xs[0][2] : xs[0][1];
                 let numdot = balken.groups[gbi].balken_element.numdot;
-                let ys = balken.groups[gbi].balken_element.notes_coord[1];
                 // eslint-disable-next-line no-empty
                 if (d == "0" || d == "1") {
                 } else {
                     graphic.CanvasLine(paper,
-                        note_x_center,
+                        bar_x,
                         ys[0] + 3,
-                        note_x_center,
-                        slope * note_x_center + intercept,
+                        bar_x,
+                        slope * bar_x + intercept,
                         {width:1});
                 }
                 //bar_flag_group.push(o);
@@ -808,7 +815,7 @@ export class Renderer {
                 // eslint-disable-next-line no-empty
                 if (d == "0" || d == "1") {
                 } else {
-                    let ys = balken.groups[gbi].balken_element.notes_coord[1];
+                    let bar_x = upper_flag ? xs[0][2] : xs[0][1];
                     var y0 = upper_flag
                         ? Math.max.apply(null, ys)
                         : Math.min.apply(null, ys);
@@ -816,10 +823,10 @@ export class Renderer {
 
 
                     graphic.CanvasLine(paper,
-                        note_x_center + deltax,
+                        bar_x,
                         y0,
-                        note_x_center + deltax,
-                        slope * (note_x_center + deltax) + intercept,
+                        bar_x,
+                        slope * bar_x + intercept,
                         {width:1});
                 }
             // eslint-disable-next-line no-empty

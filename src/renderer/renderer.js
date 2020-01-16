@@ -832,7 +832,7 @@ export class Renderer {
             });
             for (var g = 0; g < gg.length; ++g) {
                 var same_sds = gg[g];
-                var sd = same_sds[0].note_value;
+                var sd = same_sds[0].balken_element.note_value;
                 var numflag = common.myLog2(parseInt(sd)) - 2;
 
                 if (same_sds.length == 1) {

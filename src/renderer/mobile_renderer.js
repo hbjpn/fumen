@@ -38,7 +38,10 @@ var SR_RENDER_PARAM = {
     title_font_size: 14,
     sub_title_font_size: 14,
     base_font_size: 28,
-    canvas_provider: null
+    canvas_provider: null,
+    balken_width: 3,
+    note_bar_length: 24/4*3.5, // 3.5 times of interval is the conventional length
+    note_flag_interval: 5,
 };
 
 // Simple renderer offsets

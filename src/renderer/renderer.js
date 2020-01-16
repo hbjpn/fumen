@@ -251,7 +251,7 @@ export class Renderer {
     ) {
         // chords is list of chords for each chord object has .renderprop.x property
         // All elements shall have length indicators
-        var balken_width = "3px";
+        // var balken_width = "3px";
 
         //let balken = {
         //    groups: []
@@ -268,8 +268,8 @@ export class Renderer {
             }
 
             //var x = e.renderprop.x;
-            var barlen = 25;
-            var flagintv = 5;
+            // var barlen = 25;
+            //var flagintv = 5;
 
             let balken_element = e.renderprop.balken_element;
 
@@ -291,9 +291,6 @@ export class Renderer {
                     meas_end_x,
                     body_scaling,
                     x_global_scale,
-                    barlen,
-                    flagintv,
-                    balken_width,
                     music_context,
                     meas,
                     param,
@@ -326,9 +323,6 @@ export class Renderer {
                     meas_end_x,
                     body_scaling,
                     x_global_scale,
-                    barlen,
-                    flagintv,
-                    balken_width,
                     music_context,
                     meas,
                     param,
@@ -585,9 +579,6 @@ export class Renderer {
         meas_end_x,
         body_scaling,
         x_global_scale,
-        barlen,
-        flagintv,
-        balken_width,
         music_context,
         meas,
         param,
@@ -768,7 +759,7 @@ export class Renderer {
         }
 
         var intercept =
-            (upper_flag ? min_y - barlen : max_y + barlen) -
+            (upper_flag ? min_y - param.note_bar_length : max_y + param.note_bar_length) -
             slope * (upper_flag ? x_at_min_y : x_at_max_y);
 
         // if flag is upper, then the balken is shifted +deltax, then intercept is updated.
@@ -832,7 +823,7 @@ export class Renderer {
                     slope * (ps_bar_x + deltax) + intercept,
                     pe_bar_x + deltax,
                     slope * (pe_bar_x + deltax) + intercept,
-                    {width:balken_width});
+                    {width:param.balken_width});
             }
 
             // Balken for each onka level
@@ -864,12 +855,12 @@ export class Renderer {
                             pssx + deltax,
                             slope * (pssx + deltax) +
                                 intercept +
-                                (upper_flag ? +1 : -1) * fi * flagintv,
+                                (upper_flag ? +1 : -1) * fi * param.note_flag_interval,
                             pssx + deltax + dir * blen,
                             slope * (pssx + deltax + dir * blen) +
                                 intercept +
-                                (upper_flag ? +1 : -1) * fi * flagintv,
-                            {width:balken_width});
+                                (upper_flag ? +1 : -1) * fi * param.note_flag_interval,
+                            {width:param.balken_width});
                     }
                 } else if (same_sds.length >= 2) {
                     let pssx = same_sds[0].balken_element.renderprop.note_x_center;
@@ -885,12 +876,12 @@ export class Renderer {
                             pssx + deltax,
                             slope * (pssx + deltax) +
                                 intercept +
-                                (upper_flag ? +1 : -1) * fi * flagintv,
+                                (upper_flag ? +1 : -1) * fi * param.note_flag_interval,
                             psex + deltax,
                             slope * (psex + deltax) +
                                 intercept +
-                                (upper_flag ? +1 : -1) * fi * flagintv,
-                            {width:balken_width});
+                                (upper_flag ? +1 : -1) * fi * param.note_flag_interval,
+                            {width:param.balken_width});
                     }
                     if (same_sds[0].balken_element.lengthIndicator.renpu) {
                         var ro = 12;

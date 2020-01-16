@@ -579,6 +579,11 @@ export class Renderer {
 
             bounding_box.add_rect(r.bounding_box);
 
+            if(draw){
+                balken_element.notes_coord[0]
+                    .push([x, x, x + r.bounding_box.w]);
+            }
+
         }else if(balken_element.type == "simile"){
             alert("Impleetaion not ready for siile in RS area");
         }
@@ -717,8 +722,8 @@ export class Renderer {
                         brace_points = [
                             [meas_start_x - 20, y + dy],
                             [meas_start_x - 20, y - round + dy],
-                            [x + edx, y - round + dy],
-                            [x + edx, y + dy]
+                            [xs[ci][0] + edx, y - round + dy],
+                            [xs[ci][0] + edx, y + dy]
                         ];
 
                         /*
@@ -748,10 +753,7 @@ export class Renderer {
 
             music_context.tie_info.rs_prev_has_tie = balken.groups[gbi].balken_element.has_tie;
             music_context.tie_info.rs_prev_tie_paper = paper;
-            music_context.tie_info.rs_prev_coord = [
-                balken_element.notes_coord[0],
-                balken_element.notes_coord[1]
-            ];
+            music_context.tie_info.rs_prev_coord = balken_element.notes_coord;
             music_context.tie_info.rs_prev_meas = meas;
 
             e.renderprop.x = x;
@@ -763,13 +765,16 @@ export class Renderer {
         }
 
         // 3. Determine the flag intercept and slope
-        var x_at_min_y = balken.groups[gbi_at_min_y].balken_element.renderprop.note_x_center;
-        var x_at_max_y = balken.groups[gbi_at_max_y].balken_element.renderprop.note_x_center;
+        
+        // From here other than slash and notes are not reuiqred, hence purged. 
+
+        var x_at_min_y = balken.groups[gbi_at_min_y].balken_element.notes_coord[0][0][upper_flag?2:1];
+        var x_at_max_y = balken.groups[gbi_at_max_y].balken_element.notes_coord[0][0][upper_flag?2:1];
         var ps_y = balken.groups[0].balken_element.notes_coord[1];
-        var ps_bar_x = balken.groups[0].balken_element.renderprop.note_x_center;
+        var ps_bar_x = balken.groups[0].balken_element.notes_coord[0][0][upper_flag?2:1];
         var pe_y = balken.groups[balken.groups.length - 1].balken_element.notes_coord[1];
         var pe_bar_x =
-            balken.groups[balken.groups.length - 1].balken_element.renderprop.note_x_center;
+            balken.groups[balken.groups.length - 1].balken_element.notes_coord[0][0][upper_flag?2:1];
 
         let slope = 0;
         if (balken.groups.length >= 2) {
@@ -786,20 +791,17 @@ export class Renderer {
             slope * (upper_flag ? x_at_min_y : x_at_max_y);
 
         // if flag is upper, then the balken is shifted +deltax, then intercept is updated.
-        var deltax = upper_flag ? 8 : 0;
-        intercept = intercept - slope * deltax;
+        //var deltax = upper_flag ? 8 : 0;
+        //intercept = intercept - slope * deltax;
 
         // 4. Draw bars, flags
-        var bar_flag_group = null; //paper.set();
         for (var gbi = 0; gbi < balken.groups.length; ++gbi) {
-            let note_x_center = balken.groups[gbi].balken_element.renderprop.note_x_center;
 
             let ys = balken.groups[gbi].balken_element.notes_coord[1];
             let xs = balken.groups[gbi].balken_element.notes_coord[0];
 
             if (balken.groups[gbi].balken_element.type == "slash") {
                 let bar_x = upper_flag ? xs[0][2] : xs[0][1];
-                let numdot = balken.groups[gbi].balken_element.numdot;
                 // eslint-disable-next-line no-empty
                 if (d == "0" || d == "1") {
                 } else {
@@ -844,10 +846,10 @@ export class Renderer {
 
 
                 graphic.CanvasLine(paper,
-                    ps_bar_x + deltax,
-                    slope * (ps_bar_x + deltax) + intercept,
-                    pe_bar_x + deltax,
-                    slope * (pe_bar_x + deltax) + intercept,
+                    ps_bar_x,
+                    slope * ps_bar_x + intercept,
+                    pe_bar_x,
+                    slope * pe_bar_x + intercept,
                     {width:param.balken_width});
             }
 
@@ -861,7 +863,7 @@ export class Renderer {
                 var numflag = common.myLog2(parseInt(sd)) - 2;
 
                 if (same_sds.length == 1) {
-                    var pssx = same_sds[0].balken_element.renderprop.note_x_center;
+                    var pssx = same_sds[0].balken_element.notes_coord[0][0][upper_flag?2:1];
 
                     // Determine which direction to draw flag. Determined from which neighboring
                     // rhythm is more natural to coupling with.
@@ -869,7 +871,7 @@ export class Renderer {
                     var dir = 1;
                     if (g == gg.length - 1) dir = -1;
                     var neighbor_x =
-                        gg[g + dir][gg[g + dir].length - 1].balken_element.renderprop.x;
+                        gg[g + dir][gg[g + dir].length - 1].balken_element.notes_coord[0][0][upper_flag?2:1];
                     var blen = Math.abs(neighbor_x - pssx) * 0.3;
 
                     for (var fi = 1; fi < numflag; ++fi) {
@@ -877,20 +879,20 @@ export class Renderer {
                         //o = paper.path(svgLine(pss[0], rs_y_base+barlen-fi*flagintv, pss[0] + dir * blen, rs_y_base+barlen-fi*flagintv)).attr({'stroke-width':balken_width});
 
                         graphic.CanvasLine(paper,
-                            pssx + deltax,
-                            slope * (pssx + deltax) +
+                            pssx,
+                            slope * pssx +
                                 intercept +
                                 (upper_flag ? +1 : -1) * fi * param.note_flag_interval,
-                            pssx + deltax + dir * blen,
-                            slope * (pssx + deltax + dir * blen) +
+                            pssx + dir * blen,
+                            slope * (pssx + dir * blen) +
                                 intercept +
                                 (upper_flag ? +1 : -1) * fi * param.note_flag_interval,
                             {width:param.balken_width});
                     }
                 } else if (same_sds.length >= 2) {
-                    let pssx = same_sds[0].balken_element.renderprop.note_x_center;
+                    let pssx = same_sds[0].balken_element.notes_coord[0][0][upper_flag?2:1];
                     var psex =
-                        same_sds[same_sds.length - 1].balken_element.renderprop.note_x_center;
+                        same_sds[same_sds.length - 1].balken_element.notes_coord[0][0][upper_flag?2:1];
                     for (
                         let fi = 1;
                         fi < numflag;
@@ -898,19 +900,19 @@ export class Renderer {
                     ) {
 
                         graphic.CanvasLine(paper,
-                            pssx + deltax,
-                            slope * (pssx + deltax) +
+                            pssx,
+                            slope * pssx +
                                 intercept +
                                 (upper_flag ? +1 : -1) * fi * param.note_flag_interval,
-                            psex + deltax,
-                            slope * (psex + deltax) +
+                            psex,
+                            slope * psex +
                                 intercept +
                                 (upper_flag ? +1 : -1) * fi * param.note_flag_interval,
                             {width:param.balken_width});
                     }
                     if (same_sds[0].balken_element.lengthIndicator.renpu) {
                         var ro = 12;
-                        var center_x = (pssx + deltax + (psex + deltax)) / 2.0;
+                        var center_x = (pssx + psex) / 2.0;
 
                         let text = graphic.CanvasText(paper,
                             center_x,
@@ -929,14 +931,14 @@ export class Renderer {
                             var points1 =
                                 [
                                     [
-                                        pssx + deltax,
-                                        slope * (pssx + deltax) +
+                                        pssx,
+                                        slope * pssx +
                                             intercept +
                                             (upper_flag ? -rnh : rnh)
                                     ],
                                     [
-                                        pssx + deltax,
-                                        slope * (pssx + deltax) +
+                                        pssx,
+                                        slope * pssx +
                                             intercept +
                                             (upper_flag ? -rno : rno)
                                     ],
@@ -959,14 +961,14 @@ export class Renderer {
                                             (upper_flag ? -rno : rno)
                                     ],
                                     [
-                                        psex + deltax,
-                                        slope * (psex + deltax) +
+                                        psex,
+                                        slope * psex +
                                             intercept +
                                             (upper_flag ? -rno : rno)
                                     ],
                                     [
-                                        psex + deltax,
-                                        slope * (psex + deltax) +
+                                        psex,
+                                        slope * psex +
                                             intercept +
                                             (upper_flag ? -rnh : rnh)
                                     ]
@@ -987,7 +989,7 @@ export class Renderer {
             balken.groups[0].balken_element.type != "rest"
         ) {
             // Normal drawing of flags
-            let note_x_center = balken.groups[0].balken_element.renderprop.note_x_center;
+            let bar_x = balken.groups[0].balken_element.notes_coord[0][0][upper_flag?2:1];
             let d = balken.groups[0].balken_element.note_value;
             let numflag = common.myLog2(parseInt(d)) - 2;
             for (let fi = 0; fi < numflag; ++fi) {
@@ -995,8 +997,8 @@ export class Renderer {
 
                 let url = "assets/img/"+(upper_flag ? "flag_f.svg" : "flag_i.svg");
                 graphic.CanvasImage(paper, graphic.G_imgmap[url],
-                    note_x_center + deltax,
-                    slope * (note_x_center + deltax) +
+                    bar_x,
+                    slope * bar_x +
                         intercept +
                         (upper_flag ? 1 + fi * 6 : -1 - fi * 6),
                     null, null, "l"+(upper_flag?"t":"b"));
@@ -1007,10 +1009,10 @@ export class Renderer {
                 // eslint-disable-next-line no-constant-condition
                 if(false){
                     graphic.CanvasLine(paper,
-                        note_x_center + deltax,
-                        slope * (note_x_center + deltax) + intercept,
-                        note_x_center + deltax,
-                        slope * (note_x_center + deltax) +
+                        bar_x,
+                        slope * bar_x + intercept,
+                        bar_x,
+                        slope * bar_x +
                             intercept +
                             (upper_flag ? -8 : 8),
                         {width:1});

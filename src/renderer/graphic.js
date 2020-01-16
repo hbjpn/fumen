@@ -131,7 +131,10 @@ export function CanvasText(canvas, x, y, text, fsize, align, xwidth, notdraw, op
         }
     }
 
-    if (notdraw != true) context.fillText(text, x, y + yadjust, xwidth);
+    if (notdraw != true){
+        if(xwidth != null) context.fillText(text, x, y + yadjust, xwidth);
+        else context.fillText(text, x, y + yadjust); // Nothing drawn if "undefined" is passed for 4th argument. 
+    }
     var width = context.measureText(text).width;
     if (xwidth != null) width = Math.min(xwidth, width);
 

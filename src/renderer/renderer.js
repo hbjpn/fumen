@@ -412,7 +412,7 @@ export class Renderer {
             numdot: numdot,
             chord_length: chord_length,
             coord: [x, group_y],
-            onka: d,
+            note_value: d,
             has_tie: has_tie,
             pos_on_5lines: pos_on_5lines, // for notes only
             lengthIndicator: e.note_group_list[0].lengthIndicator,
@@ -431,7 +431,7 @@ export class Renderer {
         var deltax_acc = 10;  
 
         var ys = balken_element.coord[1];
-        var d = balken_element.onka;
+        var d = balken_element.note_value;
         var pos_on_5lines = balken_element.pos_on_5lines;
         var sharp_flats = balken_element.sharp_flats;
         var numdot = balken_element.numdot;
@@ -626,7 +626,7 @@ export class Renderer {
             let e = balken.groups[gbi].e;
             let balken_element = balken.groups[gbi].balken_element;
             var ys = balken_element.coord[1];
-            var d = balken_element.onka;
+            var d = balken_element.note_value;
 
             var note_x_center = x;
 
@@ -815,7 +815,7 @@ export class Renderer {
         if (balken.groups.length >= 2) {
             // Draw flag for balken
             // Common balken
-            if (balken.groups[0].balken_element.onka >= 8) {
+            if (balken.groups[0].balken_element.note_value >= 8) {
 
 
                 graphic.CanvasLine(paper,
@@ -826,13 +826,13 @@ export class Renderer {
                     {width:param.balken_width});
             }
 
-            // Balken for each onka level
+            // Balken for each note_value level
             var gg = this.to_same_value_group(balken.groups, function(o) {
-                return o.balken_element.onka;
+                return o.balken_element.note_value;
             });
             for (var g = 0; g < gg.length; ++g) {
                 var same_sds = gg[g];
-                var sd = same_sds[0].onka;
+                var sd = same_sds[0].note_value;
                 var numflag = common.myLog2(parseInt(sd)) - 2;
 
                 if (same_sds.length == 1) {
@@ -896,7 +896,7 @@ export class Renderer {
                             12,
                             "cc");
 
-                        if (same_sds[0].balken_element.onka < 8) {
+                        if (same_sds[0].balken_element.note_value < 8) {
                             var rno = 10;
                             var rnh = 4;
 
@@ -963,7 +963,7 @@ export class Renderer {
         ) {
             // Normal drawing of flags
             let note_x_center = balken.groups[0].balken_element.renderprop.note_x_center;
-            let d = balken.groups[0].balken_element.onka;
+            let d = balken.groups[0].balken_element.note_value;
             let numflag = common.myLog2(parseInt(d)) - 2;
             for (let fi = 0; fi < numflag; ++fi) {
 

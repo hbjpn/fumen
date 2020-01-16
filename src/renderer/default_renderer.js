@@ -1424,7 +1424,7 @@ export class DefaultRenderer extends Renderer {
         for (var gbi = 0; gbi < balken.groups.length; ++gbi) {
             //var x = balken.groups[gbi].coord[0];
             var ys = balken.groups[gbi].coord[1];
-            var d = balken.groups[gbi].onka;
+            var d = balken.groups[gbi].note_value;
             var pos_on_5lines = balken.groups[gbi].pos_on_5lines;
             var sharp_flats = balken.groups[gbi].sharp_flats;
             var numdot = balken.groups[gbi].numdot;
@@ -1765,7 +1765,7 @@ export class DefaultRenderer extends Renderer {
         if (balken.groups.length >= 2) {
             // Draw flag for balken
             // Common balken
-            if (balken.groups[0].onka >= 8) {
+            if (balken.groups[0].note_value >= 8) {
                 var o = paper
                     .path(
                         svgLine(
@@ -1779,13 +1779,13 @@ export class DefaultRenderer extends Renderer {
                 group.push(o);
             }
 
-            // Balken for each onka level
+            // Balken for each note_value level
             var gg = to_same_value_group(balken.groups, function(o) {
-                return o.onka;
+                return o.note_value;
             });
             for (var g = 0; g < gg.length; ++g) {
                 var same_sds = gg[g];
-                var sd = same_sds[0].onka;
+                var sd = same_sds[0].note_value;
                 var numflag = myLog2(parseInt(sd)) - 2;
 
                 if (same_sds.length == 1) {
@@ -1860,7 +1860,7 @@ export class DefaultRenderer extends Renderer {
                         );
                         group.push(text);
 
-                        if (same_sds[0].onka < 8) {
+                        if (same_sds[0].note_value < 8) {
                             var rno = 10;
                             var rnh = 4;
                             var clip =
@@ -1935,7 +1935,7 @@ export class DefaultRenderer extends Renderer {
         ) {
             // Normal drawing of flags
             var note_x_center = balken.groups[0].renderprop.note_x_center;
-            var d = balken.groups[0].onka;
+            var d = balken.groups[0].note_value;
             var numflag = myLog2(parseInt(d)) - 2;
             for (var fi = 0; fi < numflag; ++fi) {
                 var text = raphaelText(
@@ -2109,7 +2109,7 @@ export class DefaultRenderer extends Renderer {
                         : "notes",
                 numdot: numdot,
                 coord: [x, group_y],
-                onka: d,
+                note_value: d,
                 has_tie: has_tie,
                 pos_on_5lines: pos_on_5lines, // for notes only
                 lengthIndicator: e.nglist[0].lengthIndicator,

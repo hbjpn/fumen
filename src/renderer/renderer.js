@@ -438,34 +438,35 @@ export class Renderer {
 
         var bo_group = null; //paper.set();
 
-        var note_x_center = x;
-
         if (balken_element.type == "slash") {
+            let ret = null;
+
             if (d == "0" || d == "1") {
-                let ret = this.render_slash(
+                ret = this.render_slash(
                     paper,
                     bo_group,
-                    note_x_center,
+                    x,
                     ys[0],
                     d,
                     numdot,
                     _5lines_intv,
                     draw
                 );
-                bounding_box.add_rect(ret.bounding_box);
             } else {
-                let ret = this.render_slash(
+                ret = this.render_slash(
                     paper,
                     bo_group,
-                    note_x_center,
+                    x,
                     ys[0],
                     d,
                     numdot,
                     _5lines_intv,
                     draw
                 );
-                bounding_box.add_rect(ret.bounding_box);
+
             }
+            bounding_box.add_rect(ret.bounding_box);
+            balken_element.renderprop.note_x_center = x;
         } else if(balken_element.type == "notes") {
 
             var accidental_exists = balken_element.sharp_flats.some(
@@ -474,7 +475,7 @@ export class Renderer {
                 }
             );
             var as = accidental_exists ? deltax_acc : 0;
-            note_x_center = x + as;
+            let note_x_center = x + as;
 
             balken_element.renderprop.note_x_center = note_x_center;
 

@@ -788,72 +788,7 @@ export class MobileRenderer extends Renderer {
 
         return {x:x, fixed_width:fixed_width, num_flexible_rooms:num_flexible_rooms};
     }
-
-    grouping_body_elemnts(body_elements, music_context){
-        // First, guess chord duration here.
-        // In current version, each chord in the measure is assumed to have the same duration.
-        // TODO : Improve based on number of spaces or duration indication mark.
-        let all_has_length = true;
-        let chord_name_str = null;
-        let sum_length = 0;
-        let rest_or_long_rests_detected = false;
-
-        body_elements.forEach(function(e) {
-            all_has_length &= e.note_group_list !== null;
-            if (all_has_length)
-                sum_length += e.note_group_list[0].lengthIndicator.length;
-            rest_or_long_rests_detected |= e instanceof common.Rest;
-        });
-
-        // Reset music context
-        // TODO : consider key infomration
-        // TODO : consider tie
-        // C3 -> 0x3C as 0 C-2 as index 0, G8 as 127(0x7F)
-        music_context.accidental_info = new Array(128).fill(0);
-
-        var tmpl = { elems: [], groupedChordsLen: 0, renderprop:{} };
-        var groupedBodyElems = [];
-
-        if (body_elements.length > 0) groupedBodyElems.push(common.deepcopy(tmpl));
-        var gbei = 0;
-
-        // Grouping the chord and notes among which the same balken is shared.
-        body_elements.forEach((e, ei)  => {
-            // TODO : More strict judge
-            // Currently, Rest and Chords are in the different groups.
-            // However to cater for, for instance triplets including rests,
-            // they needs to be in the same group.
-            if (groupedBodyElems[gbei].elems.length == 0) {
-                // Keei pin the same group
-            } else if (
-                all_has_length &&
-                e instanceof common.Chord &&
-                groupedBodyElems[gbei].elems[0] instanceof common.Chord && // Rest and chords will not be in the same group
-                (music_context.tie_info.prev_has_tie || // this prev_has_tie is used only here and not used other places.
-                    e.chord_name_str == "" ||
-                    (e.is_valid_chord &&
-                        chord_name_str &&
-                        chord_name_str == e.chord_name_str))
-            ) {
-                // Keep in the same group
-            } else {
-                // flush
-                groupedBodyElems.push(common.deepcopy(tmpl));
-                ++gbei;
-            }
-
-            groupedBodyElems[gbei].elems.push(e);
-
-            music_context.tie_info.prev_has_tie = e.note_group_list
-                ? e.note_group_list[0].lengthIndicator.has_tie
-                : false;
-
-            if (e instanceof common.Chord) chord_name_str = e.chord_name_str;
-        });
-
-        return {groupedBodyElems: groupedBodyElems, all_has_length:all_has_length};
-    }
-
+    
     grouping_body_elemnts_enh(body_elements, music_context){
         // First, guess chord duration here.
         // In current version, each chord in the measure is assumed to have the same duration.

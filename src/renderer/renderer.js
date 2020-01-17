@@ -293,8 +293,7 @@ export class Renderer {
                     x_global_scale,
                     music_context,
                     meas,
-                    param,
-                    room_for_rs_per_element
+                    param
                 );
                 balken.groups = [];
                 x = dbret.x;
@@ -325,8 +324,7 @@ export class Renderer {
                     x_global_scale,
                     music_context,
                     meas,
-                    param,
-                    room_for_rs_per_element
+                    param
                 );
                 x = dbret.x;
                 balken.groups = [];
@@ -606,7 +604,6 @@ export class Renderer {
         music_context,
         meas,
         param,
-        room_for_rs_per_element,
     ) {
         // Evaluate the flag direction(up or down) by the center of the y-axis position of all the notes/slashes
 

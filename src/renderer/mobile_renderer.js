@@ -638,9 +638,16 @@ export class MobileRenderer extends Renderer {
 
                 let room_for_rs_per_elem = 0;
                 if(draw){
-                    let room_for_rs = (element_group.renderprop.w + room_per_elem) 
-                        - element_group.renderprop.rs_area_width; 
-                    room_for_rs_per_elem = room_for_rs / element_group.elems.length;
+                    let room_for_fist_elem =0;
+                    if(element_group.renderprop.based_on_rs_elem){
+                        room_for_rs_per_elem = room_per_elem;
+                        room_for_fist_elem = room_per_elem * element_group.elems.length;
+                    }else{
+                        let room_for_rs = (element_group.renderprop.w + room_per_elem) 
+                            - element_group.renderprop.rs_area_width; 
+                        room_for_rs_per_elem = room_for_rs / element_group.elems.length;
+                        room_for_fist_elem = room_per_elem;
+                    }
 
                     let g = this.render_rs_area(
                         x,
@@ -662,7 +669,7 @@ export class MobileRenderer extends Renderer {
                         (gbei == body_grouping_info.groupedBodyElems.length-1)
                     );
                     var rs_area_width = g.x - x;
-                    let first_symbol_width = ( element_group.renderprop.w + room_per_elem);
+                    let first_symbol_width = ( element_group.renderprop.w + room_for_fist_elem);
                     x += Math.max(rs_area_width, first_symbol_width);
                 }else{
                     // Only try to esimate using non-flag-balken drawer
@@ -678,8 +685,9 @@ export class MobileRenderer extends Renderer {
                     let rs_area_width = rs_area_bounding_box.get().w;
                     element_group.renderprop.w = Math.max(rs_area_width, cr.width);
                     element_group.renderprop.rs_area_width = rs_area_width;
+                    element_group.renderprop.based_on_rs_elem = (rs_area_width > cr.width);
                     fixed_width += element_group.renderprop.w;
-                    num_flexible_rooms++;
+                    num_flexible_rooms += (element_group.renderprop.based_on_rs_elem ? element_group.elems.length : 1);
                 }
 
             } else{

@@ -42,6 +42,7 @@ var SR_RENDER_PARAM = {
     balken_width: 3,
     note_bar_length: 24/4*3.5, // 3.5 times of interval is the conventional length
     note_flag_interval: 5,
+    optimize_type: 0 // 0 : No optimization. 1: X-axis optimiation
 };
 
 // Simple renderer offsets
@@ -112,6 +113,84 @@ export class MobileRenderer extends Renderer {
                 "ct"
             );
         });
+    }
+
+    determine_rooms(param, reharsal_x_width_info){
+        let total_width = param.paper_width - 2*param.x_offset;
+
+        let field_sum = function(arr,field){
+            return arr.reduce( (acc,e)=>{ let obj={}; obj[field]=acc[field]+e[field]; return obj;} )[field];
+        };
+
+        // Optimize width of each measure
+        let row = 0;
+        while (row < reharsal_x_width_info.length){
+            let row_elements_list = reharsal_x_width_info[row][0];
+
+            let x_width_info = reharsal_x_width_info[row][1]; // For number of measures
+
+            //let fixed_width = x_width_info.reduce((acc,e)=> {
+             //   return {meas_fixed_width:acc.meas_fixed_width+e.meas_fixed_width};).meas_fixed_width;
+            //let num_flexible_rooms = x_width_info.reduce((acc,e) => acc+e.meas_num_flexible_rooms);
+            let fixed_width = field_sum(x_width_info,"meas_fixed_width");
+            let num_flexible_rooms = field_sum(x_width_info,"meas_num_flexible_rooms");
+            let num_meas = row_elements_list.length;
+
+            let room_per_elem = (total_width - fixed_width) / num_flexible_rooms;
+
+            if(room_per_elem < 0 || param.optimize_type == 0){
+                row_elements_list.forEach(e=>{e.renderprop.room_per_elem=room_per_elem;});
+                row++;
+            }else{
+                // Group the rows with the same number of measures from #row
+                let same_nmeas_row_group = [];
+                let rowdash;
+                for(rowdash = row; rowdash < reharsal_x_width_info.length; ++rowdash){
+                    if(reharsal_x_width_info[rowdash][0].length == num_meas){
+                        same_nmeas_row_group.push(reharsal_x_width_info[rowdash]);
+                    }else{
+                        break; // only group the continuous rows with same number of measures
+                    }
+                }
+
+                // Take maximum of each column, and check if total width wider than paper width
+                let max_widths = new Array(num_meas).fill(0);
+
+                for(rowdash=0; rowdash<same_nmeas_row_group.length; ++rowdash){
+                    let dammy_max_widths = common.deepcopy(max_widths);
+                    for(let mi=0; mi < num_meas; ++mi){
+                        let meas_fixed_width_dash = same_nmeas_row_group[rowdash][1].meas_fixed_width[mi];
+                        dammy_max_widths[mi] = Math.max(meas_fixed_width_dash, max_widths[mi]);
+                    }
+                    let dammy_max_fixed_width = dammy_max_widths.reduce((acc,e)=>acc+e);
+                    if(dammy_max_widths > total_width) break;
+                    else max_widths = dammy_max_fixed_width; // fix
+                }
+
+                // Here rowdash means number of actually grouped rows
+                let act_num_grouped_rows = rowdash;
+
+                // Width of each measure
+                let measure_widths = [];
+                let total_fixed_width = max_widths.reduce((acc,e)=>acc+e);
+                for(let mi=0; mi < num_meas; ++mi){
+                    // so that sum of measure becomes total width
+                    measure_widths.push( max_widths[mi]* (total_width/total_fixed_width));                 
+                }
+
+                // Then, at last, calculate the rooms for each row and measure
+                for(rowdash=0; rowdash<act_num_grouped_rows; ++rowdash){
+                    for(let mi=0; mi < num_meas; ++mi){
+                        let meas_fixed_width_dash = same_nmeas_row_group[rowdash][1].meas_fixed_width[mi];
+                        let num_flexible_rooms_dash = same_nmeas_row_group[rowdash][1].meas_num_flexible_rooms[mi];
+                        let m = same_nmeas_row_group[rowdash][0][mi];
+                        m.renderprop.room_per_elem = (measure_widths[mi] - meas_fixed_width_dash)/num_flexible_rooms_dash;
+                    }
+                }
+
+                row += act_num_grouped_rows;
+            }
+        }
     }
 
     async render_impl(track, param) {
@@ -234,16 +313,71 @@ export class MobileRenderer extends Renderer {
             }
         }
 
-        var yse = y_stacks;
-        let canvaslist = [canvas];
+        // Stage 1 : Screening
+        let yse = y_stacks;
 
-        for (var pei = 0; pei < yse.length; ++pei) {
+        let dammy_music_context = common.deepcopy(music_context); // Maybe not required ?
+        let reharsal_x_width_info = [];
+
+        for (let pei = 0; pei < yse.length; ++pei) {
             // Loop each y_stacks
+            let x = param.x_offset;
+            
             // eslint-disable-next-line no-empty
             if (yse[pei].type == "titles") {
 
             } else if (yse[pei].type == "meas") {
                 var row_elements_list = yse[pei].cont;
+
+                let macros = yse[pei].macros;
+        
+                // Screening music contexts and determine grouping in body elements
+                // For each measure in this row
+                for (let ml = 0; ml < row_elements_list.length; ++ml) {
+                    // measure object
+                    let m = row_elements_list[ml];
+        
+                    let elements = this.classifyElements(m); // Too much call of calssify elements.
+        
+                    // Grouping body elements which share the same balken
+                    let geret = this.grouping_body_elemnts_enh(elements.body, music_context);
+        
+                    m.renderprop.body_grouping_info = geret;
+                }
+
+                // y-screening is done in stage 2 as well : TODO : Make it once
+                var yprof = this.screening_y_areas(row_elements_list, y_base, param, macros.staff, 
+                    yse[pei].block_id == 0 && yse[pei].row_id_in_block == 0, 
+                    yse[pei].macros.reharsal_mark_position == "Inner");
+        
+                // Screening x elements and determine the rendering policy for x-axis.
+                var x_width_info = this.screening_x_areas(
+                    x,
+                    canvas,
+                    macros,
+                    row_elements_list,
+                    yse[pei].pm,
+                    yse[pei].nm,
+                    yprof,
+                    param,
+                    dammy_music_context
+                );
+                reharsal_x_width_info.push([row_elements_list, x_width_info]);
+            }
+        }
+
+        this.determine_rooms(param, reharsal_x_width_info);
+
+        // Stage 2 : Rendering
+        let canvaslist = [canvas];
+
+        for (let pei = 0; pei < yse.length; ++pei) {
+            // Loop each y_stacks
+            // eslint-disable-next-line no-empty
+            if (yse[pei].type == "titles") {
+
+            } else if (yse[pei].type == "meas") {
+                let row_elements_list = yse[pei].cont;
                 let r = this.render_measure_row_simplified(
                     x_offset,
                     canvas,
@@ -374,8 +508,8 @@ export class MobileRenderer extends Renderer {
         row_elements_list,
         prev_measure,
         next_measure,
-        param,
         yprof,
+        param,
         music_context
     ){
         var transpose = macros.transpose;
@@ -385,12 +519,16 @@ export class MobileRenderer extends Renderer {
 
         music_context.pos_in_a_measure = 0; // reset
 
+        let dammy_rs_area_height = 24; // any value is ok
+
         // Determine the width of each measure
-        var fixed_width = 0;
-        var num_flexible_rooms = 0;
+        var x_width_info = []; // for number of measures
+
         for (let ml = 0; ml < row_elements_list.length; ++ml) {
             // measure object
             let m = row_elements_list[ml];
+            let meas_fixed_width = 0;
+            var meas_num_flexible_rooms = 0;
             var elements = this.classifyElements(m);
             elements.header.forEach(e => {
                 if (e instanceof common.MeasureBoundary) {
@@ -404,58 +542,24 @@ export class MobileRenderer extends Renderer {
                         paper,
                         x,
                         0,
-                        yprof.rs.detected ? param.rs_area_height : param.row_height,
+                        dammy_rs_area_height, // any value is OK
                         param,
                         false
                     );
-                    fixed_width += r.width;
+                    meas_fixed_width += r.width;
                     e.renderprop = { w: r.width };
                 } else if (e instanceof common.Time) {
-                    fixed_width += 10;
+                    meas_fixed_width += 10;
                     e.renderprop = { w: 10 };
                 }
             });
 
-            fixed_width += param.header_body_margin;
-
-            /*
-            if (elements.body.length == 0) {
-                fixed_width += 1 * param.base_font_size;
-                num_flexible_rooms++;
-            } else {
-                elements.body.forEach(e => {
-                    if (e instanceof common.Chord) {
-                        var cr = this.render_chord_simplified(
-                            false,
-                            e,
-                            transpose,
-                            half_type,
-                            paper,
-                            x,
-                            0,
-                            param,
-                            0
-                        );
-                        e.renderprop = { w: cr.width };
-                        fixed_width += e.renderprop.w;
-                        num_flexible_rooms++;
-                    } else if (e instanceof common.Rest) {
-                        e.renderprop = { w: 1 * param.base_font_size };
-                        fixed_width += e.renderprop.w;
-                        num_flexible_rooms++;
-                    } else if (e instanceof common.Simile) {
-                        e.renderprop = { w: 2 * param.base_font_size };
-                        fixed_width += e.renderprop.w;
-                        num_flexible_rooms++;
-                    }
-                });
-            }*/
-
+            meas_fixed_width += param.header_body_margin;
 
             var rberet = this.render_body_elements(
                 false, x, elements, 
                 param, music_context, 
-                0, yprof, 
+                yprof, 
                 paper, 0, 
                 0 /*meas_start_x*/, 100 /*meas_end_x*/, // TODO ?
                 m,
@@ -465,8 +569,8 @@ export class MobileRenderer extends Renderer {
                 0,
                 0
             );
-            fixed_width += rberet.fixed_width;
-            num_flexible_rooms += rberet.num_flexible_rooms;
+            meas_fixed_width += rberet.fixed_width;
+            meas_num_flexible_rooms += rberet.num_flexible_rooms;
 
             // Draw footer
             elements.footer.forEach(e => {
@@ -484,13 +588,13 @@ export class MobileRenderer extends Renderer {
                         paper,
                         x,
                         0,
-                        yprof.rs.detected ? param.rs_area_height : param.row_height,
+                        dammy_rs_area_height,
                         param,
                         false
                     );
 
                     e.renderprop = { w: r.width };
-                    fixed_width += r.width;
+                    meas_fixed_width += r.width;
                     // eslint-disable-next-line no-empty
                 } else if (e instanceof common.DaCapo) {
                     // eslint-disable-next-line no-empty
@@ -501,19 +605,23 @@ export class MobileRenderer extends Renderer {
                 } else if (e instanceof common.Fine) {
                 }
             });
+
+            x_width_info.push({meas_fixed_width:meas_fixed_width, meas_num_flexible_rooms:meas_num_flexible_rooms});
+
         }
 
         // Now determine scaling of each measure to fit within width
-        let free_width = total_width - fixed_width;
-        let room_per_elem = free_width / num_flexible_rooms;
+        //let free_width = total_width - fixed_width;
+        //let room_per_elem = free_width / num_flexible_rooms;
 
-        return {room_per_elem:room_per_elem};
+        //return {room_per_elem:room_per_elem};
+        return x_width_info;
     }
 
     render_body_elements(
         draw, x, elements, 
         param, music_context, 
-        room_per_elem, yprof, 
+        yprof, 
         paper, _5lines_intv, 
         meas_start_x, meas_end_x,
         m,
@@ -529,7 +637,7 @@ export class MobileRenderer extends Renderer {
 
         if (elements.body.length == 0) {
             if(draw)
-                x += (1 * param.base_font_size + room_per_elem);
+                x += (1 * param.base_font_size + m.renderprop.room_per_elem);
             else{
                 fixed_width += (1 * param.base_font_size);
                 num_flexible_rooms++;
@@ -640,13 +748,13 @@ export class MobileRenderer extends Renderer {
                 if(draw){
                     let room_for_fist_elem =0;
                     if(element_group.renderprop.based_on_rs_elem){
-                        room_for_rs_per_elem = room_per_elem;
-                        room_for_fist_elem = room_per_elem * element_group.elems.length;
+                        room_for_rs_per_elem = m.renderprop.room_per_elem;
+                        room_for_fist_elem = m.renderprop.room_per_elem * element_group.elems.length;
                     }else{
-                        let room_for_rs = (element_group.renderprop.w + room_per_elem) 
+                        let room_for_rs = (element_group.renderprop.w + m.renderprop.room_per_elem) 
                             - element_group.renderprop.rs_area_width; 
                         room_for_rs_per_elem = room_for_rs / element_group.elems.length;
-                        room_for_fist_elem = room_per_elem;
+                        room_for_fist_elem = m.renderprop.room_per_elem;
                     }
 
                     let g = this.render_rs_area(
@@ -675,7 +783,7 @@ export class MobileRenderer extends Renderer {
                     // Only try to esimate using non-flag-balken drawer
                     element_group.elems.forEach(e=>{
                         let balken_element = this.generate_balken_element(
-                            e, rs_x, yprof.rs.y, yprof.rs.height, music_context);
+                            e, rs_x, yprof.rs.height, music_context);
                         let r = this.draw_rs_area_without_flag_balken(
                             draw, paper, e, balken_element, rs_x, yprof.rs.y, yprof.rs.height);
                         e.renderprop.balken_element = balken_element;
@@ -730,7 +838,7 @@ export class MobileRenderer extends Renderer {
                         }
 
                         if(draw)
-                            x += ( e.renderprop.w + room_per_elem);
+                            x += ( e.renderprop.w + m.renderprop.room_per_elem);
                         else{
                             e.renderprop.w = cr.width;
                             fixed_width += e.renderprop.w;
@@ -749,7 +857,7 @@ export class MobileRenderer extends Renderer {
                             param
                         );
                         if(draw)
-                            x += (e.renderprop.w +room_per_elem); 
+                            x += (e.renderprop.w +m.renderprop.room_per_elem); 
                         else{
                             e.renderprop.w = cr.bounding_box.w;
                             fixed_width += e.renderprop.w;
@@ -767,7 +875,7 @@ export class MobileRenderer extends Renderer {
                             "l"
                         );
                         if(draw)
-                            x += (e.renderprop.w +room_per_elem); 
+                            x += (e.renderprop.w + m.renderprop.room_per_elem); 
                         else{
                             e.renderprop.w = cr.width;
                             fixed_width += e.renderprop.w;
@@ -775,7 +883,7 @@ export class MobileRenderer extends Renderer {
                         }
                     } else if (e instanceof common.Space) {
                         if(draw)
-                            x += (e.renderprop.w +room_per_elem); 
+                            x += (e.renderprop.w + m.renderprop.room_per_elem); 
                         else{
                             e.renderprop.w = 1 * param.base_font_size;
                             fixed_width += e.renderprop.w;
@@ -899,6 +1007,7 @@ export class MobileRenderer extends Renderer {
 
         // Screening music contexts and determine grouping in body elements
         // For each measure in this row
+        /*
         for (let ml = 0; ml < row_elements_list.length; ++ml) {
             // measure object
             let m = row_elements_list[ml];
@@ -926,6 +1035,7 @@ export class MobileRenderer extends Renderer {
         );
 
         var room_per_elem = sxaret.room_per_elem;
+        */
 
         // Reharsal mark if any
         if(first_block_first_row && !inner_reharsal_mark){
@@ -1086,7 +1196,7 @@ export class MobileRenderer extends Renderer {
             let rberet = this.render_body_elements(
                 true, x, elements, 
                 param, music_context, 
-                room_per_elem, yprof, 
+                yprof, 
                 paper, _5lines_intv, 
                 meas_start_x, meas_end_x,
                 m,

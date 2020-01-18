@@ -334,7 +334,7 @@ export class Renderer {
         return { x: x };
     }
 
-    generate_balken_element(e, x, rs_y_base, row_height, music_context)
+    generate_balken_element(e, x, row_height, music_context)
     {
        // no duration information
         if (e.note_group_list === null) {
@@ -346,7 +346,6 @@ export class Renderer {
         var chord_length = 10000000;
 
         var rhythm_only = e.note_group_list[0].note_profiles === null;
-        var group_y = [];
         var pos_on_5lines = []; // For notes only. bottom line is 0, second bottom line is 2, ... top line is 8
         var has_tie = false;
         var sharp_flats = [];
@@ -364,7 +363,6 @@ export class Renderer {
             has_tie = ng.lengthIndicator.has_tie; //ng.has_tie;
             if (note_profiles === null) {
                 // slash or rest
-                group_y.push(parseInt(rs_y_base + _5lines_intv * 2)); // center
                 pos_on_5lines.push(4); // Not used, but put center line for now.
             } else {
                 // notes
@@ -383,9 +381,7 @@ export class Renderer {
                         NLIST[note_profiles[nri].note.name] +
                         7 * (note_profiles[nri].note.octave - 3); // C3 is 0
                     var yoffset = pos_idx * dy; // C3 offset = 0
-                    var ypos = rs_y_base + dy * 10 - yoffset; // rs_y_base corresopnds to the center of rs region and is corresponding to A3 when the notes are drawn with "top".
                     var pos_on_5line = Math.round(yoffset / dy) - 2;
-                    group_y.push(ypos);
                     pos_on_5lines.push(pos_on_5line);
                     if (
                         music_context.accidental_info[pos_idx] ==
@@ -409,7 +405,7 @@ export class Renderer {
                     : "notes",
             numdot: numdot,
             chord_length: chord_length,
-            notes_coord: [[], group_y], // x coordinates are filled out later
+            notes_coord: [[], null], // x, y coordinates are filled out later in stage 2
             note_value: d,
             has_tie: has_tie,
             pos_on_5lines: pos_on_5lines, // for notes only
@@ -429,6 +425,8 @@ export class Renderer {
         var deltax_acc = 10;  
 
         var ys = balken_element.notes_coord[1];
+        // Stage 1 (draw=false), no y position information available then null, in that case put dammy value
+        if(!ys){ ys = [0]; }
         var d = balken_element.note_value;
         var pos_on_5lines = balken_element.pos_on_5lines;
         var sharp_flats = balken_element.sharp_flats;
@@ -611,6 +609,46 @@ export class Renderer {
         let draw = true;
 
         let _5lines_intv = row_height / 4;
+
+        // 0. make notes_coord for y axis
+
+        for (let gbi = 0; gbi < balken.groups.length; ++gbi) {
+            //let ys = balken.groups[gbi].balken_element.notes_coord[1]; // This is relative value to rs_y_base
+            let e = balken.groups[gbi].e;
+            let group_y = [];
+            for (var ngi = 0; ngi < e.note_group_list.length; ++ngi) {
+                var ng = e.note_group_list[ngi];
+                var note_profiles = ng.note_profiles;
+                if (note_profiles === null) {
+                    // slash or rest
+                    group_y.push(parseInt(rs_y_base + _5lines_intv * 2)); // center
+                    //pos_on_5lines.push(4); // Not used, but put center line for now.
+                } else {
+                    // notes
+                    for (var nri = 0; nri < note_profiles.length; ++nri) {
+                        let dy = _5lines_intv / 2; // 1/2 of interval of 5 lines
+                        var NLIST = {
+                            C: 0,
+                            D: 1,
+                            E: 2,
+                            F: 3,
+                            G: 4,
+                            A: 5,
+                            B: 6
+                        };
+                        var pos_idx =
+                            NLIST[note_profiles[nri].note.name] +
+                            7 * (note_profiles[nri].note.octave - 3); // C3 is 0
+                        var yoffset = pos_idx * dy; // C3 offset = 0
+                        var ypos = rs_y_base + dy * 10 - yoffset; // rs_y_base corresopnds to the center of rs region and is corresponding to A3 when the notes are drawn with "top".
+                        //var pos_on_5line = Math.round(yoffset / dy) - 2;
+                        group_y.push(ypos);
+                        //pos_on_5lines.push(pos_on_5line);
+                    }
+                }
+            }
+            balken.groups[gbi].balken_element.notes_coord[1] = group_y;
+        }
 
         // 1. determine the flag direction here
         var center_y = 0.0;

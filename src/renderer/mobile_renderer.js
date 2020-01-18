@@ -1019,7 +1019,8 @@ export class MobileRenderer extends Renderer {
                 }
             } // Header loop
 
-            var meas_start_x = x;
+            let meas_start_x = x;
+            let meas_start_x_actual_boundary = x;
 
             // Draw header
             var header_rs_area_width = 0;
@@ -1045,6 +1046,7 @@ export class MobileRenderer extends Renderer {
                     m.renderprop.sx = x;
                     m.renderprop.paper = paper;
                     x += e.renderprop.w;
+                    meas_start_x_actual_boundary = r.actual_boundary;
                 } else if (e instanceof common.Time) {
                     let height = yprof.rs.detected ?param.rs_area_height : param.row_height;
                     graphic.CanvasText(
@@ -1213,7 +1215,7 @@ export class MobileRenderer extends Renderer {
                 if (e instanceof common.LoopIndicator) {
                     var oy = 10;
                     var ly = yprof.body.y - 2 - oy;
-                    var sx = meas_start_x;
+                    var sx = meas_start_x_actual_boundary;
                     var fx = meas_start_x + (meas_end_x - meas_start_x) * 0.7;
                     graphic.CanvasLine(paper, sx, ly, sx, ly + oy);
                     graphic.CanvasLine(paper, sx, ly, fx, ly);
@@ -1975,14 +1977,13 @@ export class MobileRenderer extends Renderer {
         var draw_type = null; // "s, d, lb, le, lb, f"
 
         var w = 0; // width of boundary
-
-        var bx = x; // Actual boundary of measure. Depends on final drawn boundary type.
+        let actual_boundary = 0; // Actual boundary when having more than 1 pixel width. 
 
         if (side == "end") {
             var thisIsLastMeasureInLine = e1 === null || hasNewLine;
 
             // If this is not the last measure in this line, then does not draw the boundary. Draw in the "begin" side of next measure.
-            if (!thisIsLastMeasureInLine) return { width: 0 };
+            if (!thisIsLastMeasureInLine) return { width: 0, actual_boundary : 0 };
         }
 
         if (hasNewLine === null || hasNewLine == false) {
@@ -2011,10 +2012,12 @@ export class MobileRenderer extends Renderer {
                             y_body_base + row_height
                         );
                 }
+                actual_boundary = x + (nline-1) * barintv;
                 break;
             case "b":
                 // begin only
                 w = 8;
+                actual_boundary = x;
                 if (draw)
                     graphic.CanvasLine(
                         canvas,
@@ -2050,6 +2053,7 @@ export class MobileRenderer extends Renderer {
             case "e":
                 // begin and end
                 w = 8;
+                actual_boundary = x + w;
                 xshift = side == "end" ? 0 : 0;
                 if (draw)
                     graphic.CanvasCircle(
@@ -2094,11 +2098,11 @@ export class MobileRenderer extends Renderer {
                             "rt"
                         );
                 }
-                bx = x;
                 break;
             case "B":
                 // begin only
                 w = 15;
+                actual_boundary = x + w/2;
                 if (draw)
                     graphic.CanvasCircle(
                         canvas,
@@ -2170,6 +2174,7 @@ export class MobileRenderer extends Renderer {
                 // begin and end (normally, end)
                 w = 5;
                 xshift = side == "end" ? 0 : 0;
+                actual_boundary = x + w;
                 if (draw)
                     graphic.CanvasLine(
                         canvas,
@@ -2201,11 +2206,12 @@ export class MobileRenderer extends Renderer {
                 );
                 x += width;
                 w = width;
+                actual_boundary = x + w/2;
                 break;
             default:
                 throw "Internal error";
         }
-        return { width: w };
+        return { width: w, actual_boundary: actual_boundary };
     }
 
 

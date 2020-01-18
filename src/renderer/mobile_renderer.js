@@ -42,7 +42,7 @@ var SR_RENDER_PARAM = {
     balken_width: 3,
     note_bar_length: 24/4*3.5, // 3.5 times of interval is the conventional length
     note_flag_interval: 5,
-    optimize_type: 0 // 0 : No optimization. 1: X-axis optimiation
+    optimize_type: 1 // 0 : No optimization. 1: X-axis optimiation
 };
 
 // Simple renderer offsets
@@ -159,12 +159,12 @@ export class MobileRenderer extends Renderer {
                 for(rowdash=0; rowdash<same_nmeas_row_group.length; ++rowdash){
                     let dammy_max_widths = common.deepcopy(max_widths);
                     for(let mi=0; mi < num_meas; ++mi){
-                        let meas_fixed_width_dash = same_nmeas_row_group[rowdash][1].meas_fixed_width[mi];
+                        let meas_fixed_width_dash = same_nmeas_row_group[rowdash][1][mi].meas_fixed_width;
                         dammy_max_widths[mi] = Math.max(meas_fixed_width_dash, max_widths[mi]);
                     }
                     let dammy_max_fixed_width = dammy_max_widths.reduce((acc,e)=>acc+e);
-                    if(dammy_max_widths > total_width) break;
-                    else max_widths = dammy_max_fixed_width; // fix
+                    if(dammy_max_fixed_width > total_width) break;
+                    else max_widths = dammy_max_widths; // fix
                 }
 
                 // Here rowdash means number of actually grouped rows
@@ -181,8 +181,8 @@ export class MobileRenderer extends Renderer {
                 // Then, at last, calculate the rooms for each row and measure
                 for(rowdash=0; rowdash<act_num_grouped_rows; ++rowdash){
                     for(let mi=0; mi < num_meas; ++mi){
-                        let meas_fixed_width_dash = same_nmeas_row_group[rowdash][1].meas_fixed_width[mi];
-                        let num_flexible_rooms_dash = same_nmeas_row_group[rowdash][1].meas_num_flexible_rooms[mi];
+                        let meas_fixed_width_dash = same_nmeas_row_group[rowdash][1][mi].meas_fixed_width;
+                        let num_flexible_rooms_dash = same_nmeas_row_group[rowdash][1][mi].meas_num_flexible_rooms;
                         let m = same_nmeas_row_group[rowdash][0][mi];
                         m.renderprop.room_per_elem = (measure_widths[mi] - meas_fixed_width_dash)/num_flexible_rooms_dash;
                     }

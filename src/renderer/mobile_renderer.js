@@ -154,37 +154,50 @@ export class MobileRenderer extends Renderer {
                 }
 
                 // Take maximum of each column, and check if total width wider than paper width
-                let max_widths = new Array(num_meas).fill(0);
+                let max_fixed_widths = new Array(num_meas).fill(0);
+                let max_measure_widths = new Array(num_meas).fill(0);
 
                 for(rowdash=0; rowdash<same_nmeas_row_group.length; ++rowdash){
-                    let dammy_max_widths = common.deepcopy(max_widths);
+                    let dammy_max_fixed_widths = common.deepcopy(max_fixed_widths);
+                    let dammy_max_measure_widths = common.deepcopy(max_measure_widths);
+                    
+                    let fixed_width_dash = field_sum(same_nmeas_row_group[rowdash][1], "meas_fixed_width");
+                    let num_flexible_rooms_dash = field_sum(same_nmeas_row_group[rowdash][1], "meas_num_flexible_rooms");
+                    let room_per_elem = (total_width - fixed_width_dash)/num_flexible_rooms_dash;
+
                     for(let mi=0; mi < num_meas; ++mi){
                         let meas_fixed_width_dash = same_nmeas_row_group[rowdash][1][mi].meas_fixed_width;
-                        dammy_max_widths[mi] = Math.max(meas_fixed_width_dash, max_widths[mi]);
+                        let meas_num_flexible_rooms_dash = same_nmeas_row_group[rowdash][1][mi].meas_num_flexible_rooms;
+                        let meas_width_dash = meas_fixed_width_dash + room_per_elem * meas_num_flexible_rooms_dash;
+                        dammy_max_fixed_widths[mi] = Math.max(meas_fixed_width_dash, max_fixed_widths[mi]);
+                        dammy_max_measure_widths[mi] = Math.max(meas_width_dash, max_measure_widths[mi]);
                     }
-                    let dammy_max_fixed_width = dammy_max_widths.reduce((acc,e)=>acc+e);
+                    let dammy_max_fixed_width = dammy_max_fixed_widths.reduce((acc,e)=>acc+e);
                     if(dammy_max_fixed_width > total_width) break;
-                    else max_widths = dammy_max_widths; // fix
+                    else{
+                        max_fixed_widths = dammy_max_fixed_widths; // fix
+                        max_measure_widths = dammy_max_measure_widths; // fix
+                    }
                 }
 
                 // Here rowdash means number of actually grouped rows
                 let act_num_grouped_rows = rowdash;
 
-                // Width of each measure
-                let measure_widths = [];
-                let total_fixed_width = max_widths.reduce((acc,e)=>acc+e);
-                for(let mi=0; mi < num_meas; ++mi){
-                    // so that sum of measure becomes total width
-                    measure_widths.push( max_widths[mi]* (total_width/total_fixed_width));                 
-                }
+                // Normalize max_measure_widths so that sum of it fits to paper width
+                let total = max_measure_widths.reduce((acc,e)=>acc+e);
+                max_measure_widths.forEach((e,i)=>{ max_measure_widths[i] *= (total_width/total);});
 
                 // Then, at last, calculate the rooms for each row and measure
                 for(rowdash=0; rowdash<act_num_grouped_rows; ++rowdash){
+
                     for(let mi=0; mi < num_meas; ++mi){
                         let meas_fixed_width_dash = same_nmeas_row_group[rowdash][1][mi].meas_fixed_width;
                         let num_flexible_rooms_dash = same_nmeas_row_group[rowdash][1][mi].meas_num_flexible_rooms;
+
+                        let adjusted_room_per_elem = (max_measure_widths[mi] - meas_fixed_width_dash)/num_flexible_rooms_dash;
+                        
                         let m = same_nmeas_row_group[rowdash][0][mi];
-                        m.renderprop.room_per_elem = (measure_widths[mi] - meas_fixed_width_dash)/num_flexible_rooms_dash;
+                        m.renderprop.room_per_elem = adjusted_room_per_elem;
                     }
                 }
 

@@ -287,6 +287,7 @@ export class MobileRenderer extends Renderer {
         for (var i = 0; i < track.reharsal_groups.length; ++i) {
             var rg_macros = getMacros(global_macros, track.reharsal_groups[i]);
             let rg = track.reharsal_groups[i];
+            console.log(rg);
             for (var bi = 0; bi < rg.blocks.length; ++bi) {
                 var block_measures = rg.blocks[bi];
                 var row_max_height = 0;
@@ -303,6 +304,7 @@ export class MobileRenderer extends Renderer {
                             nm: m,
                             pm: pm,
                             rg: track.reharsal_groups[i],
+                            rg_id : i,
                             macros: rg_macros,
                             block_id: bi,
                             row_id_in_block: row_id_in_block
@@ -322,6 +324,7 @@ export class MobileRenderer extends Renderer {
                         nm: null,
                         pm: pm,
                         rg: track.reharsal_groups[i],
+                        rg_id : i,
                         macros: rg_macros,
                         block_id: bi,
                         row_id_in_block: row_id_in_block
@@ -333,11 +336,18 @@ export class MobileRenderer extends Renderer {
         let yse = y_stacks;
 
         let dammy_music_context = common.deepcopy(music_context); // Maybe not required ?
+
+        let current_rg_block = [0, 0];
         let reharsal_x_width_info = [];
 
         for (let pei = 0; pei < yse.length; ++pei) {
             // Loop each y_stacks
             let x = param.x_offset;
+
+            if(yse[pei].rg_id != current_rg_block[0] || yse[pei].block_id != current_rg_block[1]){
+                current_rg_block = [yse[pei].rg_id,yse[pei].block_id];
+                reharsal_x_width_info = [];
+            }
             
             // eslint-disable-next-line no-empty
             if (yse[pei].type == "titles") {
@@ -380,9 +390,11 @@ export class MobileRenderer extends Renderer {
                 );
                 reharsal_x_width_info.push([row_elements_list, x_width_info]);
             }
+
+            // Per block optimization
+            this.determine_rooms(param, reharsal_x_width_info);
         }
 
-        this.determine_rooms(param, reharsal_x_width_info);
 
         // Stage 2 : Rendering
         let canvaslist = [canvas];

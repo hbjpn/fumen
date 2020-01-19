@@ -344,55 +344,58 @@ export class MobileRenderer extends Renderer {
             // Loop each y_stacks
             let x = param.x_offset;
 
+            if (yse[pei].type == "titles") continue;
+
             if(yse[pei].rg_id != current_rg_block[0] || yse[pei].block_id != current_rg_block[1]){
+
+                // Per block optimization
+                this.determine_rooms(param, reharsal_x_width_info);
+                
                 current_rg_block = [yse[pei].rg_id,yse[pei].block_id];
                 reharsal_x_width_info = [];
             }
             
-            // eslint-disable-next-line no-empty
-            if (yse[pei].type == "titles") {
+            var row_elements_list = yse[pei].cont;
 
-            } else if (yse[pei].type == "meas") {
-                var row_elements_list = yse[pei].cont;
-
-                let macros = yse[pei].macros;
-        
-                // Screening music contexts and determine grouping in body elements
-                // For each measure in this row
-                for (let ml = 0; ml < row_elements_list.length; ++ml) {
-                    // measure object
-                    let m = row_elements_list[ml];
-        
-                    let elements = this.classifyElements(m); // Too much call of calssify elements.
-        
-                    // Grouping body elements which share the same balken
-                    let geret = this.grouping_body_elemnts_enh(elements.body);
-        
-                    m.renderprop.body_grouping_info = geret;
-                }
-
-                // y-screening is done in stage 2 as well : TODO : Make it once
-                var yprof = this.screening_y_areas(row_elements_list, y_base, param, macros.staff, 
-                    yse[pei].block_id == 0 && yse[pei].row_id_in_block == 0, 
-                    yse[pei].macros.reharsal_mark_position == "Inner");
-        
-                // Screening x elements and determine the rendering policy for x-axis.
-                var x_width_info = this.screening_x_areas(
-                    x,
-                    canvas,
-                    macros,
-                    row_elements_list,
-                    yse[pei].pm,
-                    yse[pei].nm,
-                    yprof,
-                    param,
-                    dammy_music_context
-                );
-                reharsal_x_width_info.push([row_elements_list, x_width_info]);
+            let macros = yse[pei].macros;
+    
+            // Screening music contexts and determine grouping in body elements
+            // For each measure in this row
+            for (let ml = 0; ml < row_elements_list.length; ++ml) {
+                // measure object
+                let m = row_elements_list[ml];
+    
+                let elements = this.classifyElements(m); // Too much call of calssify elements.
+    
+                // Grouping body elements which share the same balken
+                let geret = this.grouping_body_elemnts_enh(elements.body);
+    
+                m.renderprop.body_grouping_info = geret;
             }
 
-            // Per block optimization
-            this.determine_rooms(param, reharsal_x_width_info);
+            // y-screening is done in stage 2 as well : TODO : Make it once
+            var yprof = this.screening_y_areas(row_elements_list, y_base, param, macros.staff, 
+                yse[pei].block_id == 0 && yse[pei].row_id_in_block == 0, 
+                yse[pei].macros.reharsal_mark_position == "Inner");
+    
+            // Screening x elements and determine the rendering policy for x-axis.
+            var x_width_info = this.screening_x_areas(
+                x,
+                canvas,
+                macros,
+                row_elements_list,
+                yse[pei].pm,
+                yse[pei].nm,
+                yprof,
+                param,
+                dammy_music_context
+            );
+            reharsal_x_width_info.push([row_elements_list, x_width_info]);
+
+            if(pei == yse.length - 1){
+                // Per block optimization
+                this.determine_rooms(param, reharsal_x_width_info);
+            }
         }
 
 

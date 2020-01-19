@@ -356,7 +356,7 @@ export class MobileRenderer extends Renderer {
                     let elements = this.classifyElements(m); // Too much call of calssify elements.
         
                     // Grouping body elements which share the same balken
-                    let geret = this.grouping_body_elemnts_enh(elements.body, music_context);
+                    let geret = this.grouping_body_elemnts_enh(elements.body);
         
                     m.renderprop.body_grouping_info = geret;
                 }
@@ -533,14 +533,20 @@ export class MobileRenderer extends Renderer {
 
         var total_width = param.paper_width - 2 * param.x_offset;
 
-        music_context.pos_in_a_measure = 0; // reset
-
         let dammy_rs_area_height = 24; // any value is ok
 
         // Determine the width of each measure
         var x_width_info = []; // for number of measures
 
         for (let ml = 0; ml < row_elements_list.length; ++ml) {
+
+            // Reset music context
+            music_context.pos_in_a_measure = 0; // reset
+            // TODO : consider key infomration
+            // TODO : consider tie
+            // C3 -> 0x3C as 0 C-2 as index 0, G8 as 127(0x7F)
+            music_context.accidental_info = new Array(128).fill(0);
+
             // measure object
             let m = row_elements_list[ml];
             let meas_fixed_width = 0;
@@ -868,7 +874,7 @@ export class MobileRenderer extends Renderer {
         return {x:x, fixed_width:fixed_width, num_flexible_rooms:num_flexible_rooms};
     }
     
-    grouping_body_elemnts_enh(body_elements, music_context){
+    grouping_body_elemnts_enh(body_elements){
         // First, guess chord duration here.
         // In current version, each chord in the measure is assumed to have the same duration.
         // TODO : Improve based on number of spaces or duration indication mark.
@@ -883,12 +889,6 @@ export class MobileRenderer extends Renderer {
                 sum_length += e.note_group_list[0].lengthIndicator.length;
             rest_or_long_rests_detected |= e instanceof common.Rest;
         });
-
-        // Reset music context
-        // TODO : consider key infomration
-        // TODO : consider tie
-        // C3 -> 0x3C as 0 C-2 as index 0, G8 as 127(0x7F)
-        music_context.accidental_info = new Array(128).fill(0);
 
         var tmpl = { elems: [], groupedChordsLen: 0, renderprop:{} };
         var groupedBodyElems = [];
@@ -1000,8 +1000,12 @@ export class MobileRenderer extends Renderer {
 
             var meas_base_x = x;
 
-            // reset pos inside a measure
-            music_context.pos_in_a_measure = 0;
+            // Reset music context
+            music_context.pos_in_a_measure = 0; // reset
+            // TODO : consider key infomration
+            // TODO : consider tie
+            // C3 -> 0x3C as 0 C-2 as index 0, G8 as 127(0x7F)
+            music_context.accidental_info = new Array(128).fill(0);
 
             // balken context inside a measure
             let balken = {

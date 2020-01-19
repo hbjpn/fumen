@@ -626,11 +626,6 @@ export class MobileRenderer extends Renderer {
 
         }
 
-        // Now determine scaling of each measure to fit within width
-        //let free_width = total_width - fixed_width;
-        //let room_per_elem = free_width / num_flexible_rooms;
-
-        //return {room_per_elem:room_per_elem};
         return x_width_info;
     }
 
@@ -716,46 +711,6 @@ export class MobileRenderer extends Renderer {
                     cr = {width:0};
                     
                 }
-
-                
-
-                /*
-                let scaling_for_rs = 1;
-                if(draw){
-                    scaling_for_rs = (element_group.renderprop.w + room_per_elem)/element_group.renderprop.rs_area_width;
-                }
-
-                var g = this.render_rs_area(
-                    x,
-                    element_group.elems,
-                    paper,
-                    yprof.rs.y,
-                    yprof.rs.height,
-                    meas_start_x,
-                    meas_end_x,
-                    draw,
-                    0,
-                    scaling_for_rs,
-                    x_global_scale,
-                    music_context,
-                    m,
-                    param
-                );
-
-                //if (g.group) rs_area_svg_groups.push(g.group);
-
-                var rs_area_width = g.x - x;
-
-                if(draw){
-                    let first_symbol_width = ( element_group.renderprop.w + room_per_elem);
-                    x += Math.max(rs_area_width, first_symbol_width);
-                }else{
-                    element_group.renderprop.w = Math.max(rs_area_width, cr.width);
-                    element_group.renderprop.rs_area_width = rs_area_width;
-                    fixed_width += element_group.renderprop.w;
-                    num_flexible_rooms++;
-                }
-                */
 
                 let rs_area_bounding_box = new common.BoundingBox();
                 let rs_x = x;
@@ -1021,38 +976,6 @@ export class MobileRenderer extends Renderer {
             return null;
         }
 
-        // Screening music contexts and determine grouping in body elements
-        // For each measure in this row
-        /*
-        for (let ml = 0; ml < row_elements_list.length; ++ml) {
-            // measure object
-            let m = row_elements_list[ml];
-
-            let elements = this.classifyElements(m); // Too much call of calssify elements.
-
-            // Grouping body elements which share the same balken
-            let geret = this.grouping_body_elemnts_enh(elements.body, music_context);
-
-            m.renderprop.body_grouping_info = geret;
-        }
-
-        // Screening x elements and determine the rendering policy for x-axis.
-        let dammy_music_context = common.deepcopy(music_context); // Maybe not required ?
-        var sxaret = this.screening_x_areas(
-            x,
-            paper,
-            macros,
-            row_elements_list,
-            prev_measure,
-            next_measure,
-            param,
-            yprof,
-            dammy_music_context
-        );
-
-        var room_per_elem = sxaret.room_per_elem;
-        */
-
         // Reharsal mark if any
         if(first_block_first_row && !inner_reharsal_mark){
             let r = graphic.CanvasTextWithBox(
@@ -1260,9 +1183,6 @@ export class MobileRenderer extends Renderer {
                         "rb"
                     );
                     if (yprof.rs.detected) x += 15 * 4;
-                    //text = raphaelText(paper, x, y_body_or_rs_base - 8 /* + row_height + 8*/, e.toString(), 15, lr+"c").attr(param.repeat_mark_font);
-                    //if(rs_area_detected) x += text.getBBox().width;
-                    //rs_area_svg_groups.push(text);
                 } else if (e instanceof common.DalSegno) {
                     graphic.CanvasText(
                         paper,
@@ -1272,10 +1192,6 @@ export class MobileRenderer extends Renderer {
                         param.base_font_size / 2,
                         "rb"
                     );
-                    //if (yprof.rs.detected) x += 15 * 4;
-                    //text = raphaelText(paper, x, y_body_or_rs_base - 8 /* + row_height + 8*/, e.toString(), 15, lr+"c").attr(param.repeat_mark_font);
-                    //if(rs_area_detected) x += text.getBBox().width;
-                    //rs_area_svg_groups.push(text);
                 } else if (e instanceof common.ToCoda) {
                     if (yprof.rs.detected) {
                         /*
@@ -1697,18 +1613,6 @@ export class MobileRenderer extends Renderer {
             var y = y_body_base;
             x += (h + i) * r;
             if (draw) {
-                /*var path = graphic.svgPath(
-                    [
-                        [x, y + _5lines_intv * 3],
-                        [x + h, y + _5lines_intv * 3],
-                        [x + h + H, y + _5lines_intv * 1],
-                        [x + H, y + _5lines_intv]
-                    ],
-                    true
-                );
-                var path2d = new Path2D(path);
-                var obj = paper.getContext("2d").fill(path2d); //path(path).attr({'fill':'#000000'});
-                */
                 var points = [
                    [x, y + _5lines_intv * 3],
                    [x + h, y + _5lines_intv * 3],

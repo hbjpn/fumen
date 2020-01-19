@@ -744,12 +744,6 @@ export class Renderer {
                             [psm.renderprop.meas_end_x + 20, pss[1][ci] + dy]
                         ];
 
-                        /*
-                        graphic.CanvasPath(paper, graphic.svgArcBezie(brace_points), false,
-                            {"clip-rect":[pss[0]+sdx, (pss[1][ci] - 50), 
-                                (psm.renderprop.meas_end_x - (pss[0] + sdx) + 5), 100]});
-                        */
-
                         graphic.CanvasbBzierCurve(paper, brace_points, false, false, 
                             {"clip-rect":[pss[0][ci][2]+sdx, (pss[1][ci] - 50), 
                                 (psm.renderprop.meas_end_x - (pss[0][ci][2] + sdx) + 5), 100]});
@@ -761,12 +755,6 @@ export class Renderer {
                             [xs[ci][0] + edx, y + dy]
                         ];
 
-                        /*
-                        graphic.CanvasPath(paper, graphic.svgArcBezie(brace_points), false,
-                            {"clip-rect":[meas_start_x - 5, (y - 50), 
-                                (x - (meas_start_x - 5)), 100]});
-                        */
-
                         graphic.CanvasbBzierCurve(paper, brace_points, false, false,
                             {"clip-rect":[meas_start_x - 5, (y - 50), 
                                 (x - (meas_start_x - 5)), 100]});
@@ -777,9 +765,6 @@ export class Renderer {
                             [xs[ci][0] + edx, y - round + dy],
                             [xs[ci][0] + edx, y + dy]
                         ];
-
-
-                        /*graphic.CanvasPath(paper, graphic.svgArcBezie(brace_points), false);*/
 
                         graphic.CanvasbBzierCurve(paper, brace_points, false, false);
                     }
@@ -824,10 +809,6 @@ export class Renderer {
         var intercept =
             (upper_flag ? min_y - param.note_bar_length : max_y + param.note_bar_length) -
             slope * (upper_flag ? x_at_min_y : x_at_max_y);
-
-        // if flag is upper, then the balken is shifted +deltax, then intercept is updated.
-        //var deltax = upper_flag ? 8 : 0;
-        //intercept = intercept - slope * deltax;
 
         // 4. Draw bars, flags
         for (var gbi = 0; gbi < balken.groups.length; ++gbi) {
@@ -962,7 +943,6 @@ export class Renderer {
                             var rno = 10;
                             var rnh = 4;
 
-                            // var path1 = graphic.svgPath(
                             var points1 =
                                 [
                                     [
@@ -983,10 +963,8 @@ export class Renderer {
                                             intercept +
                                             (upper_flag ? -rno : rno)
                                     ]
-                                ]; //,
-                            //    false
-                            //);
-                            //var path2 = graphic.svgPath(
+                                ]; 
+                            
                             var points2 = 
                                 [
                                     [
@@ -1007,11 +985,8 @@ export class Renderer {
                                             intercept +
                                             (upper_flag ? -rnh : rnh)
                                     ]
-                                ]; //,
-                            //    false
-                            //);
-                            //graphic.CanvasPath(paper, path1);
-                            //graphic.CanvasPath(paper, path2);
+                                ]; 
+
                             graphic.CanvasPolygon(paper, points1, false, false);
                             graphic.CanvasPolygon(paper, points2, false, false);
 
@@ -1064,15 +1039,7 @@ export class Renderer {
         var rsh = 4;
 
         if(draw){
-            /*var path = graphic.svgPath(
-                [
-                    [x, y + rsgh / 2 - rsh],
-                    [x + rsgw, y - rsgh / 2],
-                    [x + rsgw, y - rsgh / 2 + rsh],
-                    [x, y + rsgh / 2]
-                ],
-                true
-            );*/
+
             var points = [
                 [x, y + rsgh / 2 - rsh],
                 [x + rsgw, y - rsgh / 2],
@@ -1082,22 +1049,13 @@ export class Renderer {
 
             //var obj = null;
             if (d == "1" || d == "2") {
-                //obj = paper.path(path).attr({ "stroke-width": "1px" });
-                //graphic.CanvasPath(paper, path, false, {"lineWidth":1});
                 graphic.CanvasPolygon(paper, points, true, false);
             } else {
                 // '0' and other
-                //obj = paper.path(path).attr({ fill: "#000000" });
-                //graphic.CanvasPath(paper, path, true, {"lineWidth":1, "fillStyle":"#000"});
                 graphic.CanvasPolygon(paper, points, true, true);
             }
             //group.push(obj);
             for (var i = 0; i < numdot; ++i) {
-                /*group.push(
-                    paper
-                        .circle(x + rsgw + 5    + i * 5, y - _5lines_intv / 2, 1)
-                        .attr({ fill: "black" })
-                );*/
                 graphic.CanvasCircle(paper, x + rsgw + 5 + i * 5, y - _5lines_intv / 2, 1);
             }
         }

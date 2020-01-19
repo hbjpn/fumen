@@ -740,13 +740,17 @@ export class Parser {
             }
 
             // If same reharsal mark appears, preceeding one is applied
-            var rgmap = {};
-            for (var i = 0; i < track.reharsal_groups.length; ++i) {
-                var rg = track.reharsal_groups[i];
-                if (rg.name in rgmap) {
-                    track.reharsal_groups[i] = common.deepcopy(rgmap[rg.name]); // Deep Copy
-                } else {
-                    rgmap[rg.name] = rg;
+            // NOET : This is abandoned in fumen2 as it does not provide a benefit but cause confusion.
+            // eslint-disable-next-line no-constant-condition
+            if(false){
+                var rgmap = {};
+                for (var i = 0; i < track.reharsal_groups.length; ++i) {
+                    var rg = track.reharsal_groups[i];
+                    if (rg.name in rgmap) {
+                        track.reharsal_groups[i] = common.deepcopy(rgmap[rg.name]); // Deep Copy
+                    } else {
+                        rgmap[rg.name] = rg;
+                    }
                 }
             }
 

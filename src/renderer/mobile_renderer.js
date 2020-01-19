@@ -287,7 +287,6 @@ export class MobileRenderer extends Renderer {
         for (var i = 0; i < track.reharsal_groups.length; ++i) {
             var rg_macros = getMacros(global_macros, track.reharsal_groups[i]);
             let rg = track.reharsal_groups[i];
-            console.log(rg);
             for (var bi = 0; bi < rg.blocks.length; ++bi) {
                 var block_measures = rg.blocks[bi];
                 var row_max_height = 0;
@@ -677,11 +676,6 @@ export class MobileRenderer extends Renderer {
         }
 
         let body_grouping_info = m.renderprop.body_grouping_info;
-
-        // DEBUG
-        if(draw){
-            console.log(m.renderprop.body_grouping_info);
-        }
 
         body_grouping_info.groupedBodyElems.forEach( (element_group, gbei) => {
             // Draw Rythm Slashes, first

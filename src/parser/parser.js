@@ -34,12 +34,13 @@ var TOKEN_MB_FIN = 25; // "||."
 var TOKEN_MB_DBL_SIMILE = 26; // ".//."
 var TOKEN_COMMA = 30;
 var TOKEN_SLASH = 31; // "\/"
-var TOKEN_NL = 32; // \n"
-var TOKEN_PERCENT = 33;
-var TOKEN_EQUAL = 34;
-var TOKEN_STRING = 35; // String with double quote
-var TOKEN_STRING_SQ = 36; // String with single quote
-var TOKEN_STRING_GRAVE_ACCENT = 37; // String with grave accent '
+var TOKEN_BACK_SLASH = 32; // "\""
+var TOKEN_NL = 33; // \n"
+var TOKEN_PERCENT = 34;
+var TOKEN_EQUAL = 35;
+var TOKEN_STRING = 36; // String with double quote
+var TOKEN_STRING_SQ = 37; // String with single quote
+var TOKEN_STRING_GRAVE_ACCENT = 38; // String with grave accent '
 var TOKEN_ATMARK = 40; // @
 var TOKEN_COLON = 41; // :
 var TOKEN_PERIOD = 42; // .
@@ -142,7 +143,7 @@ export class Parser {
             };
         }
 
-        r = charIsIn(s[0], "[]<>(){},\n/%=@:.");
+        r = charIsIn(s[0], "[]<>(){},\n/\\%=@:.");
         if (r != null) {
             return {
                 token: s[0],
@@ -160,6 +161,7 @@ export class Parser {
                     TOKEN_COMMA,
                     TOKEN_NL,
                     TOKEN_SLASH,
+                    TOKEN_BACK_SLASH,
                     TOKEN_PERCENT,
                     TOKEN_EQUAL,
                     TOKEN_ATMARK,
@@ -597,6 +599,9 @@ export class Parser {
                         case TOKEN_END:
                             loop_flg = false;
                             break;
+                        case TOKEN_BACK_SLASH:
+                            loop_flg = false;
+                            break;
                         default:
                             // Measure definition is continuing
                             trig_token_obj = r;
@@ -664,6 +669,12 @@ export class Parser {
                 if (r.type == TOKEN_NL) {
                     this.context.line += 1;
                     this.context.contiguous_line_break += 1;
+                } else if(r.type == TOKEN_BACK_SLASH){
+                    // Expect TOKEN_NL 
+                    r = this.nextToken(r.s);
+                    if(r.type != TOKEN_NL) throw "INVALID CODE DETECTED AFTER BACK SLASH";
+                    this.context.line += 1;
+                    // Does not count as line break
                 } else {
                     if (r.type == TOKEN_BRACKET_LS) {
                         r = this.parseReharsalMark(r.token, r.s);
@@ -691,7 +702,7 @@ export class Parser {
                         } else {
                             if (this.context.contiguous_line_break >= 2) {
                                 currentReharsalGroup.blocks.push(new Array());
-                            } else {
+                            } else if (this.context.contiguous_line_break == 1){
                                 // When new line in the fumen code in the middle of a block
                                 r.measures[0].raw_new_line = true;
                             }

@@ -937,7 +937,7 @@ export class Renderer {
                                 (upper_flag ? -ro : ro),
                             same_sds[0].balken_element.lengthIndicator.renpu + "",
                             12,
-                            "cc");
+                            "cm");
 
                         if (same_sds[0].balken_element.note_value < 8) {
                             var rno = 10;

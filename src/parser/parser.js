@@ -457,6 +457,10 @@ export class Parser {
         while (loop_flg) {
             var r = this.nextToken(s);
             switch (r.type) {
+                case TOKEN_COMMA:
+                    measure.elements.push(new common.Space(1));
+                    s = r.s;
+                    break;
                 case TOKEN_STRING:
                     measure.elements.push(new common.Chord(r.token));
                     s = r.s;

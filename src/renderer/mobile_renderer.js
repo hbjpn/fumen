@@ -871,7 +871,9 @@ export class MobileRenderer extends Renderer {
                         if(draw)
                             x += (e.renderprop.w + m.renderprop.room_per_elem); 
                         else{
-                            e.renderprop.w = 1 * param.base_font_size;
+                            let r = graphic.CanvasText(paper, 0, 0, "M", 
+                                param.base_font_size, "lt", 0.5*param.base_font_size, true, null); // width parameter needs to be aligned with chord rendering
+                            e.renderprop.w = e.length * r.width;
                             fixed_width += e.renderprop.w;
                             num_flexible_rooms++;
                         }
@@ -893,6 +895,7 @@ export class MobileRenderer extends Renderer {
         let rest_or_long_rests_detected = false;
 
         body_elements.forEach(function(e) {
+            if(e instanceof common.Space) return;
             all_has_length &= e.note_group_list !== null;
             if (all_has_length)
                 sum_length += e.note_group_list[0].lengthIndicator.length;
@@ -916,7 +919,7 @@ export class MobileRenderer extends Renderer {
             if(e instanceof common.Chord){
                 this_chord_str = e.chord_name_str;
             }else{
-                this_chord_str = ""; // Rests, Simile(in body) etc are regarded as empty chord
+                this_chord_str = ""; // Rests, Simile(in body) and Space are regarded as empty chord
             }
             if(chord_name_str === null) chord_name_str = this_chord_str;
             

@@ -643,6 +643,13 @@ export class LoopIndicator {
     }
 }
 
+export class Space{
+    constructor(length=1){
+        this.length = length;
+        this.renderprop = {};
+    }
+}
+
 export class LongRestIndicator {
     constructor(longrestlen) {
         this.longrestlen = longrestlen;
@@ -801,6 +808,12 @@ export class BoundingBox{
         this.x[1] = Math.max(rect.x+rect.w, this.x[1]);
         this.y[0] = Math.min(rect.y, this.y[0]);
         this.y[1] = Math.max(rect.y+rect.h, this.y[1]);
+    }
+    expand(x0, x1, y0, y1){
+        this.x[0] -= x0;
+        this.x[1] += x1;
+        this.y[0] -= y0;
+        this.y[1] += y1;
     }
     get(){
         return {x:this.x[0],y:this.y[0],w:this.x[1]-this.x[0], h:this.y[1]-this.y[0]};

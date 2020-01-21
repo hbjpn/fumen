@@ -139,6 +139,8 @@ export class Renderer {
                     header_elements.push(e);
                 } else if (e instanceof common.Lyric) {
                     header_elements.push(e);
+                } else if (e instanceof common.Space) {
+                    body_elements.push(e);
                 } else{
 					throw "Unkown component found";
 				}
@@ -345,71 +347,78 @@ export class Renderer {
 
         var chord_length = 10000000;
 
-        var rhythm_only = e.note_group_list[0].note_profiles === null;
         var pos_on_5lines = []; // For notes only. bottom line is 0, second bottom line is 2, ... top line is 8
         var has_tie = false;
         var sharp_flats = [];
 
         // Currently only one note_group at a time is assumed
-        for (var ngi = 0; ngi < e.note_group_list.length; ++ngi) {
-            var ng = e.note_group_list[ngi];
-            var note_profiles = ng.note_profiles;
-            var d = ng.lengthIndicator.base; //ng.length_s.match(/[0-9]+/)[0];
-            var numdot = ng.lengthIndicator.numdot; //ng.length_s.substr(d.length);
-            chord_length = Math.min(
-                ng.lengthIndicator.length,
-                chord_length
-            ); // Take the note group of min-length. TODO for cater for multi-group notes
-            has_tie = ng.lengthIndicator.has_tie; //ng.has_tie;
-            if (note_profiles === null) {
-                // slash or rest
-                pos_on_5lines.push(4); // Not used, but put center line for now.
-            } else {
-                // notes
-                for (var nri = 0; nri < note_profiles.length; ++nri) {
-                    let dy = _5lines_intv / 2; // 1/2 of interval of 5 lines
-                    var NLIST = {
-                        C: 0,
-                        D: 1,
-                        E: 2,
-                        F: 3,
-                        G: 4,
-                        A: 5,
-                        B: 6
-                    };
-                    var pos_idx =
-                        NLIST[note_profiles[nri].note.name] +
-                        7 * (note_profiles[nri].note.octave - 3); // C3 is 0
-                    var yoffset = pos_idx * dy; // C3 offset = 0
-                    var pos_on_5line = Math.round(yoffset / dy) - 2;
-                    pos_on_5lines.push(pos_on_5line);
-                    if (
-                        music_context.accidental_info[pos_idx] ==
-                        note_profiles[nri].note.accidental
-                    )
-                        sharp_flats.push(null);
-                    // no need of accidental. null is no mark. 0 is natural.
-                    else sharp_flats.push(note_profiles[nri].note.accidental); // 0 is natural. null is no mark.
-                    music_context.accidental_info[pos_idx] =
-                        note_profiles[nri].note.accidental;
+        if(e instanceof common.Chord){
+            for (var ngi = 0; ngi < e.note_group_list.length; ++ngi) {
+                var ng = e.note_group_list[ngi];
+                var note_profiles = ng.note_profiles;
+                var d = ng.lengthIndicator.base; //ng.length_s.match(/[0-9]+/)[0];
+                var numdot = ng.lengthIndicator.numdot; //ng.length_s.substr(d.length);
+                chord_length = Math.min(
+                    ng.lengthIndicator.length,
+                    chord_length
+                ); // Take the note group of min-length. TODO for cater for multi-group notes
+                has_tie = ng.lengthIndicator.has_tie; //ng.has_tie;
+                if (note_profiles === null) {
+                    // slash or rest
+                    pos_on_5lines.push(4); // Not used, but put center line for now.
+                } else {
+                    // notes
+                    for (var nri = 0; nri < note_profiles.length; ++nri) {
+                        let dy = _5lines_intv / 2; // 1/2 of interval of 5 lines
+                        var NLIST = {
+                            C: 0,
+                            D: 1,
+                            E: 2,
+                            F: 3,
+                            G: 4,
+                            A: 5,
+                            B: 6
+                        };
+                        var pos_idx =
+                            NLIST[note_profiles[nri].note.name] +
+                            7 * (note_profiles[nri].note.octave - 3); // C3 is 0
+                        var yoffset = pos_idx * dy; // C3 offset = 0
+                        var pos_on_5line = Math.round(yoffset / dy) - 2;
+                        pos_on_5lines.push(pos_on_5line);
+                        if (
+                            music_context.accidental_info[pos_idx] ==
+                            note_profiles[nri].note.accidental
+                        )
+                            sharp_flats.push(null);
+                        // no need of accidental. null is no mark. 0 is natural.
+                        else sharp_flats.push(note_profiles[nri].note.accidental); // 0 is natural. null is no mark.
+                        music_context.accidental_info[pos_idx] =
+                            note_profiles[nri].note.accidental;
+                    }
                 }
             }
         }
 
+        let type = null;
+        if(e instanceof common.Rest) type = "rest";
+        else if(e instanceof common.Space) type = "space";
+        else if(e instanceof common.Simile) type = "simile";
+        else if(e.note_group_list[0].note_profiles === null) type = "slash";
+        else type = "notes";
+
+        let lengthIndicator = null;
+        if(e instanceof common.Chord) lengthIndicator = e.note_group_list[0].lengthIndicator;
+        else if(e instanceof common.Rest) lengthIndicator = e.note_group_list[0].lengthIndicator;
+
         let balken_element = {
-            type:
-                e instanceof common.Rest
-                    ? "rest"
-                    : rhythm_only
-                    ? "slash"
-                    : "notes",
+            type: type,
             numdot: numdot,
             chord_length: chord_length,
             notes_coord: [[], null], // x, y coordinates are filled out later in stage 2
             note_value: d,
             has_tie: has_tie,
             pos_on_5lines: pos_on_5lines, // for notes only
-            lengthIndicator: e.note_group_list[0].lengthIndicator,
+            lengthIndicator: lengthIndicator,
             sharp_flats: sharp_flats, // for notes only
             renderprop: {} // for internal use
         };
@@ -579,6 +588,10 @@ export class Renderer {
                 balken_element.notes_coord[0]
                     .push([x, x, x + r.bounding_box.w]);
             }
+        }else if(balken_element.type == "space"){
+
+            // Do not use expand here in case only one space is grouped in balken group
+            bounding_box.add(x, rs_y_base, 0.5*this.param.base_font_size, 0);
 
         }else if(balken_element.type == "simile"){
             alert("Impleetaion not ready for siile in RS area");
@@ -616,34 +629,38 @@ export class Renderer {
             //let ys = balken.groups[gbi].balken_element.notes_coord[1]; // This is relative value to rs_y_base
             let e = balken.groups[gbi].e;
             let group_y = [];
-            for (var ngi = 0; ngi < e.note_group_list.length; ++ngi) {
-                var ng = e.note_group_list[ngi];
-                var note_profiles = ng.note_profiles;
-                if (note_profiles === null) {
-                    // slash or rest
-                    group_y.push(parseInt(rs_y_base + _5lines_intv * 2)); // center
-                    //pos_on_5lines.push(4); // Not used, but put center line for now.
-                } else {
-                    // notes
-                    for (var nri = 0; nri < note_profiles.length; ++nri) {
-                        let dy = _5lines_intv / 2; // 1/2 of interval of 5 lines
-                        var NLIST = {
-                            C: 0,
-                            D: 1,
-                            E: 2,
-                            F: 3,
-                            G: 4,
-                            A: 5,
-                            B: 6
-                        };
-                        var pos_idx =
-                            NLIST[note_profiles[nri].note.name] +
-                            7 * (note_profiles[nri].note.octave - 3); // C3 is 0
-                        var yoffset = pos_idx * dy; // C3 offset = 0
-                        var ypos = rs_y_base + dy * 10 - yoffset; // rs_y_base corresopnds to the center of rs region and is corresponding to A3 when the notes are drawn with "top".
-                        //var pos_on_5line = Math.round(yoffset / dy) - 2;
-                        group_y.push(ypos);
-                        //pos_on_5lines.push(pos_on_5line);
+            if(e instanceof common.Space || e instanceof common.Simile){
+                group_y.push(rs_y_base); // just dammy
+            }else{
+                for (var ngi = 0; ngi < e.note_group_list.length; ++ngi) {
+                    var ng = e.note_group_list[ngi];
+                    var note_profiles = ng.note_profiles;
+                    if (note_profiles === null) {
+                        // slash or rest
+                        group_y.push(parseInt(rs_y_base + _5lines_intv * 2)); // center
+                        //pos_on_5lines.push(4); // Not used, but put center line for now.
+                    } else {
+                        // notes
+                        for (var nri = 0; nri < note_profiles.length; ++nri) {
+                            let dy = _5lines_intv / 2; // 1/2 of interval of 5 lines
+                            var NLIST = {
+                                C: 0,
+                                D: 1,
+                                E: 2,
+                                F: 3,
+                                G: 4,
+                                A: 5,
+                                B: 6
+                            };
+                            var pos_idx =
+                                NLIST[note_profiles[nri].note.name] +
+                                7 * (note_profiles[nri].note.octave - 3); // C3 is 0
+                            var yoffset = pos_idx * dy; // C3 offset = 0
+                            var ypos = rs_y_base + dy * 10 - yoffset; // rs_y_base corresopnds to the center of rs region and is corresponding to A3 when the notes are drawn with "top".
+                            //var pos_on_5line = Math.round(yoffset / dy) - 2;
+                            group_y.push(ypos);
+                            //pos_on_5lines.push(pos_on_5line);
+                        }
                     }
                 }
             }
@@ -659,19 +676,26 @@ export class Renderer {
         var cnt_y = 0;
 
         for (let gbi = 0; gbi < balken.groups.length; ++gbi) {
-            let ys = balken.groups[gbi].balken_element.notes_coord[1];
+            let e = balken.groups[gbi].e;
 
-            for (var ci = 0; ci < ys.length; ++ci) {
-                center_y += ys[ci];
-                if (min_y > ys[ci]) {
-                    min_y = ys[ci];
-                    gbi_at_min_y = gbi;
+            if(e instanceof common.Chord || e instanceof common.Rest){
+
+                let ys = balken.groups[gbi].balken_element.notes_coord[1];
+
+                for (var ci = 0; ci < ys.length; ++ci) {
+                    center_y += ys[ci];
+                    if (min_y > ys[ci]) {
+                        min_y = ys[ci];
+                        gbi_at_min_y = gbi;
+                    }
+                    if (max_y < ys[ci]) {
+                        max_y = ys[ci];
+                        gbi_at_max_y = gbi;
+                    }
+                    cnt_y += 1;
                 }
-                if (max_y < ys[ci]) {
-                    max_y = ys[ci];
-                    gbi_at_max_y = gbi;
-                }
-                cnt_y += 1;
+            }else{
+                // Does not affecct flag direction
             }
         }
         center_y = Math.floor(center_y / cnt_y);
@@ -693,88 +717,90 @@ export class Renderer {
 
             let xs = balken_element.notes_coord[0];
 
-            if (music_context.tie_info.rs_prev_has_tie) {
-                // Draw tie line
-                var pss = music_context.tie_info.rs_prev_coord;
-                var psm = music_context.tie_info.rs_prev_meas;
+            if( e instanceof common.Chord){
+                if (music_context.tie_info.rs_prev_has_tie) {
+                    // Draw tie line
+                    var pss = music_context.tie_info.rs_prev_coord;
+                    var psm = music_context.tie_info.rs_prev_meas;
 
-                // Check the consistency.
-                if (pss[1].length != ys.length) {
-                    throw "INVALID TIE NOTATION";
-                }
+                    // Check the consistency.
+                    if (pss[1].length != ys.length) {
+                        throw "INVALID TIE NOTATION";
+                    }
 
-                let dy = 0;
-                let sdx = 0;
-                let edx = 0;
-                let round = 0;
+                    let dy = 0;
+                    let sdx = 0;
+                    let edx = 0;
+                    let round = 0;
 
-                if (balken.groups[gbi].balken_element.type == "slash") {
-                    // slash only has down flag
-                    dy = -3;
-                    sdx = 3;
-                    edx = 0;
-                    round = 6;
-                } else {
-                    // notes
-                    if (upper_flag) {
-                        dy = 3;
-                        sdx = 3;
-                        edx = -3;
-                        round = -6;
-                    } else {
+                    if (balken.groups[gbi].balken_element.type == "slash") {
+                        // slash only has down flag
                         dy = -3;
                         sdx = 3;
-                        edx = -3;
+                        edx = 0;
                         round = 6;
-                    }
-                }
-
-                for (let ci = 0; ci < ys.length; ++ci) {
-                    let y = ys[ci];
-                    if (y != pss[1][ci]) {
-                        // Crossing measure row. Previous RS mark could be on another page.
-                        // Make sure to create curve on the paper on which previous RS is drawn.
-                        var brace_points = [
-                            [pss[0][ci][2] + sdx, pss[1][ci] + dy],
-                            [pss[0][ci][2] + sdx, pss[1][ci] - round + dy],
-                            [
-                                psm.renderprop.meas_end_x + 20,
-                                pss[1][ci] - round + dy
-                            ],
-                            [psm.renderprop.meas_end_x + 20, pss[1][ci] + dy]
-                        ];
-
-                        graphic.CanvasbBzierCurve(paper, brace_points, false, false, 
-                            {"clip-rect":[pss[0][ci][2]+sdx, (pss[1][ci] - 50), 
-                                (psm.renderprop.meas_end_x - (pss[0][ci][2] + sdx) + 5), 100]});
-
-                        brace_points = [
-                            [meas_start_x - 20, y + dy],
-                            [meas_start_x - 20, y - round + dy],
-                            [xs[ci][0] + edx, y - round + dy],
-                            [xs[ci][0] + edx, y + dy]
-                        ];
-
-                        graphic.CanvasbBzierCurve(paper, brace_points, false, false,
-                            {"clip-rect":[meas_start_x - 5, (y - 50), 
-                                (x - (meas_start_x - 5)), 100]});
                     } else {
-                        let brace_points = [
-                            [pss[0][ci][2] + sdx, pss[1][ci] + dy],
-                            [pss[0][ci][2] + sdx, pss[1][ci] - round + dy],
-                            [xs[ci][0] + edx, y - round + dy],
-                            [xs[ci][0] + edx, y + dy]
-                        ];
+                        // notes
+                        if (upper_flag) {
+                            dy = 3;
+                            sdx = 3;
+                            edx = -3;
+                            round = -6;
+                        } else {
+                            dy = -3;
+                            sdx = 3;
+                            edx = -3;
+                            round = 6;
+                        }
+                    }
 
-                        graphic.CanvasbBzierCurve(paper, brace_points, false, false);
+                    for (let ci = 0; ci < ys.length; ++ci) {
+                        let y = ys[ci];
+                        if (y != pss[1][ci]) {
+                            // Crossing measure row. Previous RS mark could be on another page.
+                            // Make sure to create curve on the paper on which previous RS is drawn.
+                            var brace_points = [
+                                [pss[0][ci][2] + sdx, pss[1][ci] + dy],
+                                [pss[0][ci][2] + sdx, pss[1][ci] - round + dy],
+                                [
+                                    psm.renderprop.meas_end_x + 20,
+                                    pss[1][ci] - round + dy
+                                ],
+                                [psm.renderprop.meas_end_x + 20, pss[1][ci] + dy]
+                            ];
+
+                            graphic.CanvasbBzierCurve(paper, brace_points, false, false, 
+                                {"clip-rect":[pss[0][ci][2]+sdx, (pss[1][ci] - 50), 
+                                    (psm.renderprop.meas_end_x - (pss[0][ci][2] + sdx) + 5), 100]});
+
+                            brace_points = [
+                                [meas_start_x - 20, y + dy],
+                                [meas_start_x - 20, y - round + dy],
+                                [xs[ci][0] + edx, y - round + dy],
+                                [xs[ci][0] + edx, y + dy]
+                            ];
+
+                            graphic.CanvasbBzierCurve(paper, brace_points, false, false,
+                                {"clip-rect":[meas_start_x - 5, (y - 50), 
+                                    (x - (meas_start_x - 5)), 100]});
+                        } else {
+                            let brace_points = [
+                                [pss[0][ci][2] + sdx, pss[1][ci] + dy],
+                                [pss[0][ci][2] + sdx, pss[1][ci] - round + dy],
+                                [xs[ci][0] + edx, y - round + dy],
+                                [xs[ci][0] + edx, y + dy]
+                            ];
+
+                            graphic.CanvasbBzierCurve(paper, brace_points, false, false);
+                        }
                     }
                 }
-            }
 
-            music_context.tie_info.rs_prev_has_tie = balken.groups[gbi].balken_element.has_tie;
-            music_context.tie_info.rs_prev_tie_paper = paper;
-            music_context.tie_info.rs_prev_coord = balken_element.notes_coord;
-            music_context.tie_info.rs_prev_meas = meas;
+                music_context.tie_info.rs_prev_has_tie = balken.groups[gbi].balken_element.has_tie;
+                music_context.tie_info.rs_prev_tie_paper = paper;
+                music_context.tie_info.rs_prev_coord = balken_element.notes_coord;
+                music_context.tie_info.rs_prev_meas = meas;
+            }
 
             e.renderprop.x = x;
             balken_element.renderprop.x = x;
@@ -786,7 +812,11 @@ export class Renderer {
 
         // 3. Determine the flag intercept and slope
         
-        // From here other than slash and notes are not reuiqred, hence purged. 
+        // From here other than slash and notes are not reuiqred.
+        if(gbi_at_max_y === null && gbi_at_min_y === null){
+            // In case no chord or rest, no y information defined.
+            return {x:x};
+        } 
 
         var x_at_min_y = balken.groups[gbi_at_min_y].balken_element.notes_coord[0][0][upper_flag?2:1];
         var x_at_max_y = balken.groups[gbi_at_max_y].balken_element.notes_coord[0][0][upper_flag?2:1];

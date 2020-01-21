@@ -438,8 +438,14 @@ export class Renderer {
         var deltax_acc = 10;  
 
         var ys = balken_element.notes_coord[1];
+
         // Stage 1 (draw=false), no y position information available then null, in that case put dammy value
-        if(!ys){ ys = [0]; }
+        if(!ys && balken_element.type == "slash"){
+            ys = [0];
+        }else if(!ys && balken_element.type == "notes"){
+            ys = new Array(e.note_group_list[0].note_profiles.length).fill(0);
+        }
+
         var d = balken_element.note_value;
         var pos_on_5lines = balken_element.pos_on_5lines;
         var sharp_flats = balken_element.sharp_flats;

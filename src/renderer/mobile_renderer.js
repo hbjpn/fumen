@@ -2041,6 +2041,8 @@ export class MobileRenderer extends Renderer {
         //console.log([draw_type, side]);
         let xshift = null;
 
+        let r = null;
+
         switch (draw_type) {
             case "s":
             case "d":
@@ -2240,7 +2242,7 @@ export class MobileRenderer extends Renderer {
                     );
                 break;
             case "r":
-                var width = this.render_simile_mark_plain(
+                r = this.render_simile_mark_plain(
                     draw,
                     canvas,
                     x,
@@ -2250,8 +2252,8 @@ export class MobileRenderer extends Renderer {
                     true,
                     "l"
                 );
-                x += width;
-                w = width;
+                x += r.width;
+                w = r.width;
                 actual_boundary = x + w/2;
                 break;
             default:

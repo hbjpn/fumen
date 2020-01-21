@@ -352,7 +352,7 @@ export class Renderer {
         var sharp_flats = [];
 
         // Currently only one note_group at a time is assumed
-        if(e instanceof common.Chord){
+        if(e instanceof common.Chord || e instanceof common.Rest){
             for (var ngi = 0; ngi < e.note_group_list.length; ++ngi) {
                 var ng = e.note_group_list[ngi];
                 var note_profiles = ng.note_profiles;
@@ -397,6 +397,10 @@ export class Renderer {
                     }
                 }
             }
+        }else if(e instanceof common.Space){
+            chord_length = 0; // Does not affect any music context
+        }else if(e instanceof common.Simile){
+            chord_length = 10000000; // TODO: Think about the treatment of Simile in RS region
         }
 
         let type = null;
@@ -1026,7 +1030,7 @@ export class Renderer {
             }
         } else if (
             balken.groups.length == 1 &&
-            balken.groups[0].balken_element.type != "rest"
+            ( balken.groups[0].balken_element.type == "slash" || balken.groups[0].balken_element.type == "notes")
         ) {
             // Normal drawing of flags
             let bar_x = balken.groups[0].balken_element.notes_coord[0][0][upper_flag?2:1];
@@ -1095,13 +1099,14 @@ export class Renderer {
 
 
     /*
-     * Group objs to the ones which has same values with 'field' ( Neighbor )
+     * Group objs to the ones which has same values with 'field' ( Neighbor ). Skip the null or undefined value.
      */
     to_same_value_group(objs, comp) {
         var ret = [];
         var tmp = [];
         var cur_v = null;
         for (var i = 0; i < objs.length; ++i) {
+            if(comp(objs[i])==null) continue; // null or undefined is skipped.
             if (cur_v != null && cur_v != comp(objs[i])) {
                 ret.push(tmp);
                 tmp = [];

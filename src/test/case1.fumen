@@ -1,0 +1,23 @@
+%TITLE="Test Case 001"
+%ARTIST="Fumen Tester"
+
+[A]
+| A B C D E F G |
+| Ab Bb Cb Db Eb Fb Gb |
+| A# B# C# D# E# F# G# |
+
+[B]
+| AM7 BM7 CM7 DM7 EM7 FM7 GM7 |
+| AbM7 BbM7 CbM7 DbM7 EbM7 FbM7 GbM7 |
+| A#M7 B#M7 C#M7 D#M7 E#M7 F#M7 G#M7 |
+
+[C]
+| Am Bm Cm Dm Em Fm Gm |
+| Abm Bbm Cbm Dbm Ebm Fbm Gbm |
+| A#m B#m C#m D#m E#m F#m G#m |
+
+[D]
+| AM9 AM11 | A7 A9 A13 A11 | 
+| Aadd9 Aadd2 | Asus Asus4 Asus2 |
+| A7-5 A9 A13 A11 | A7-5,b9 A7+5,b9,#13,#11 |
+| Am9 Am11 AmM7 Am13 | Am7-5 Adim |

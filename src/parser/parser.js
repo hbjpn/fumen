@@ -184,7 +184,7 @@ export class Parser {
             };
         }
 
-        throw "INVALID_TOKEN_DETECTED";
+        this.onParseError("INVALID_TOKEN_DETECTED");
     }
 
     parseGroup(profile, s, errmsg) {
@@ -230,7 +230,7 @@ export class Parser {
                         s = r.s;
                         break;
                     default:
-                        throw "ASSERTION ERROR";
+                        this.onParseError("ASSERTION ERROR");
                 }
             }
             tokens.push(l);
@@ -248,7 +248,7 @@ export class Parser {
             if (r.type == TOKEN_BRACKET_RS)
                 return { reharsalMarkName: reharsalMarkName, s: r.s };
         }
-        throw "Invalid reharsal mark";
+        this.onParseError("Invalid reharsal mark");
     }
 
     parseLoopIndicator(trig_token_type, s) {
@@ -488,7 +488,7 @@ export class Parser {
                 case TOKEN_ATMARK:
                     var a_chord = measure.elements[measure.elements.length - 1];
                     if (!(a_chord instanceof common.Chord))
-                        throw "ATMARK_NOT_AFTER_CHORD_SYMBOL";
+                        this.onParseError("ATMARK_NOT_AFTER_CHORD_SYMBOL");
                     associated_chord = a_chord;
                     atmark_detected = true;
                     s = r.s;
@@ -676,7 +676,7 @@ export class Parser {
                 } else if(r.type == TOKEN_BACK_SLASH){
                     // Expect TOKEN_NL 
                     r = this.nextToken(r.s);
-                    if(r.type != TOKEN_NL) throw "INVALID CODE DETECTED AFTER BACK SLASH";
+                    if(r.type != TOKEN_NL) this.onParseError("INVALID CODE DETECTED AFTER BACK SLASH");
                     this.context.line += 1;
                     // Does not count as line break
                 } else {

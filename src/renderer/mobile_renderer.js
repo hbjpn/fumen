@@ -284,6 +284,7 @@ export class MobileRenderer extends Renderer {
         };
 
         var y_stacks = [{ type: "titles", height: param.y_first_page_offset }];
+        /*
         for (var i = 0; i < track.reharsal_groups.length; ++i) {
             var rg_macros = getMacros(global_macros, track.reharsal_groups[i]);
             let rg = track.reharsal_groups[i];
@@ -337,13 +338,107 @@ export class MobileRenderer extends Renderer {
                     });
                 }
             }
+        }*/
+
+        let meas_row_list = [];
+        // Firstly, just split with new lines
+        let accum_block_id = 0;
+        let meas_row = [];
+        let meas_row_rg_ids = [];
+        let meas_row_block_ids = [];
+        for (let i = 0; i < track.reharsal_groups.length; ++i) {
+            let rg = track.reharsal_groups[i];
+            for (var bi = 0; bi < rg.blocks.length; ++bi) {
+                var block_measures = rg.blocks[bi];
+                for (var ml = 0; ml < block_measures.length; ++ml) {
+                    var m = block_measures[ml];
+                    if(m.raw_new_line){
+                        meas_row_list.push({
+                            meas_row: meas_row,
+                            meas_row_rg_ids: meas_row_rg_ids,
+                            meas_row_block_ids: meas_row_block_ids
+                        });
+                        meas_row = [];
+                        meas_row_rg_ids = [];
+                        meas_row_block_ids = [];
+                    }
+                    meas_row.push(m);
+                    meas_row_rg_ids.push(i);
+                    meas_row_block_ids.push(accum_block_id);
+                }
+                if(meas_row.length > 0){
+                    meas_row_list.push({
+                        meas_row: meas_row,
+                        meas_row_rg_ids: meas_row_rg_ids,
+                        meas_row_block_ids: meas_row_block_ids
+                    }); 
+                    meas_row = [];
+                    meas_row_rg_ids = [];
+                    meas_row_block_ids = [];
+                }
+                accum_block_id++;
+                
+            }
         }
+        // If there is inline reharsal group, then combine the last row of the 
+        // last reharsal group  and first row of the reharsal group
+        // tmp variable : shallow copy of meas_row_list
+        let meas_row_list_inv = meas_row_list.slice().reverse();
+        for (let i = 0; i < track.reharsal_groups.length; ++i) {
+            let rg = track.reharsal_groups[i];
+            if(rg.inline){
+                let dst_idx = meas_row_list_inv.findIndex(e=>{return e.meas_row_rg_ids.includes(i-1);});
+                dst_idx = meas_row_list.length - 1 - dst_idx; // Convert to index for non-inversed array
+                let src_idx = meas_row_list.findIndex(e=>{return e.meas_row_rg_ids.includes(i);});
+                let dst = meas_row_list[dst_idx];
+                let src = meas_row_list[src_idx];
+                dst.meas_row = dst.meas_row.concat(src.meas_row);
+                dst.meas_row_rg_ids = dst.meas_row_rg_ids.concat(src.meas_row_rg_ids);
+                dst.meas_row_block_ids = dst.meas_row_block_ids.concat(src.meas_row_block_ids);
+                meas_row_list.splice(src_idx, 1); // Delete the first row
+                meas_row_list_inv = meas_row_list.slice().reverse();
+            }
+        }
+
+        // Make y-strack elements, and mark the reharsal mark position
+        let next_reharsal_group_index = 0;
+        meas_row_list.forEach((e,i)=>{
+            // eslint-disable-next-line no-constant-condition
+            while(true){
+                let meas_index = e.meas_row_rg_ids.findIndex(e=>e==next_reharsal_group_index);
+                if(meas_index < 0) break;
+                e.meas_row[meas_index].renderprop.rg_from_here = track.reharsal_groups[next_reharsal_group_index];
+                ++next_reharsal_group_index;
+            }
+
+            let prev_measures = i > 0 ? meas_row_list[i-1].meas_row : null;
+            let prev_measure = prev_measures ? prev_measures[prev_measures.legnth-1] : null;
+
+            let next_measures = i < meas_row_list.length-1 ? meas_row_list[i+1].meas_row : null;
+            let next_measure = next_measures ? next_measures[0] : null;
+            
+            y_stacks.push({
+                type: "meas",
+                height: 0,
+                cont: e.meas_row,
+                rg_ids : e.meas_row_rg_ids,
+                block_ids : e.meas_row_block_ids,
+                nm: next_measure,
+                pm: prev_measure,
+                //rg: track.reharsal_groups[i],
+                //rg_id : i,
+                macros: global_macros, // TODO : Macros for each row...?
+                //block_id: bi,
+                //row_id_in_block: row_id_in_block-1 // Already incremented then row id is minus 1
+            });
+        });
 
         // Stage 1 : Screening
         let yse = y_stacks;
 
         let dammy_music_context = common.deepcopy(music_context); // Maybe not required ?
 
+        /*
         let current_rg_block = [0, 0];
         let reharsal_x_width_info = [];
 
@@ -404,7 +499,65 @@ export class MobileRenderer extends Renderer {
                 this.determine_rooms(param, reharsal_x_width_info);
             }
         }
+        */
 
+       let current_accum_block_id = 0;
+       let reharsal_x_width_info = [];
+
+       for (let pei = 0; pei < yse.length; ++pei) {
+            // Loop each y_stacks
+            let x = param.x_offset;
+
+            if (yse[pei].type == "titles") continue;
+
+            //if(yse[pei].rg_id != current_rg_block[0] || yse[pei].block_id != current_rg_block[1]){
+            if(!yse[pei].block_ids.includes(current_accum_block_id)){
+               // Per block optimization
+               this.determine_rooms(param, reharsal_x_width_info);
+               
+               current_accum_block_id = yse[pei].block_ids[0]; // First block ID is the reference block id
+               reharsal_x_width_info = [];
+           }
+           
+           var row_elements_list = yse[pei].cont;
+   
+           // Screening music contexts and determine grouping in body elements
+           // For each measure in this row
+           for (let ml = 0; ml < row_elements_list.length; ++ml) {
+               // measure object
+               let m = row_elements_list[ml];
+   
+               let elements = this.classifyElements(m); // Too much call of calssify elements.
+   
+               // Grouping body elements which share the same balken
+               let geret = this.grouping_body_elemnts_enh(elements.body);
+   
+               m.renderprop.body_grouping_info = geret;
+           }
+
+           // y-screening is done in stage 2 as well : TODO : Make it once
+           var yprof = this.screening_y_areas(row_elements_list, y_base, param, yse[pei].macros.staff, 
+               yse[pei].macros.reharsal_mark_position == "Inner");
+   
+           // Screening x elements and determine the rendering policy for x-axis.
+           var x_width_info = this.screening_x_areas(
+               x,
+               canvas,
+               yse[pei].macros,
+               row_elements_list,
+               yse[pei].pm,
+               yse[pei].nm,
+               yprof,
+               param,
+               dammy_music_context
+           );
+           reharsal_x_width_info.push([row_elements_list, x_width_info]);
+
+           if(pei == yse.length - 1){
+               // Per block optimization
+               this.determine_rooms(param, reharsal_x_width_info);
+           }
+       }
 
         // Stage 2 : Rendering
         let canvaslist = [canvas];
@@ -421,13 +574,11 @@ export class MobileRenderer extends Renderer {
                     canvas,
                     yse[pei].macros,
                     row_elements_list,
-                    yse[pei].rg,
                     yse[pei].pm,
                     yse[pei].nm,
                     y_base,
                     param,
                     true,
-                    yse[pei].block_id == 0 && yse[pei].row_id_in_block == 0,
                     yse[pei].macros.reharsal_mark_position == "Inner",
                     this.param.canvas_provider != null
                         ? score_height - param.y_offset
@@ -457,7 +608,6 @@ export class MobileRenderer extends Renderer {
     }
 
     screening_y_areas(row_elements_list, y_base, param, staff, 
-        first_block_first_row,
         inner_reharsal_mark){
 
         var ycomps = ["rm", "mu","body","rs","ml","irm","end"];
@@ -479,8 +629,11 @@ export class MobileRenderer extends Renderer {
         }
 
         // Screening of y-axis areas
+        let rg_mark_detected = false;
         for (let ml = 0; ml < row_elements_list.length; ++ml) {
             var m = row_elements_list[ml];
+            if(m.renderprop && m.renderprop.rg_from_here) rg_mark_detected = true;
+
             for (let ei = 0; ei < m.elements.length; ++ei) {
                 var e = m.elements[ei];
                 if (
@@ -513,7 +666,7 @@ export class MobileRenderer extends Renderer {
             yprof.rs.detected = false;
         }
 
-        if(first_block_first_row){
+        if(rg_mark_detected){
             if(inner_reharsal_mark){
                 yprof.mu.detected = true; // In MU area
             }else{
@@ -958,13 +1111,11 @@ export class MobileRenderer extends Renderer {
         paper,
         macros,
         row_elements_list,
-        reharsal_group,
         prev_measure,
         next_measure,
         y_base,
         param,
         draw,
-        first_block_first_row,
         inner_reharsal_mark,
         ylimit,
         music_context
@@ -985,7 +1136,7 @@ export class MobileRenderer extends Renderer {
         var _5lines_intv = param.rs_area_height / (5 - 1);
 
         var yprof = this.screening_y_areas(row_elements_list, y_base, param, staff, 
-            first_block_first_row, inner_reharsal_mark);
+            inner_reharsal_mark);
 
         var y_next_base = yprof.end.y;
 
@@ -997,7 +1148,7 @@ export class MobileRenderer extends Renderer {
         }
 
         // Reharsal mark if any
-        if(first_block_first_row && !inner_reharsal_mark){
+        /*if(first_block_first_row && !inner_reharsal_mark){
             let r = graphic.CanvasTextWithBox(
                 paper,
                 param.x_offset,
@@ -1007,7 +1158,7 @@ export class MobileRenderer extends Renderer {
                 2, 
                 graphic.GetCharProfile(param.reharsal_mark_font_size).height
             );
-        }
+        }*/
 
         // For each measure in this row
         for (let ml = 0; ml < row_elements_list.length; ++ml) {
@@ -1033,19 +1184,21 @@ export class MobileRenderer extends Renderer {
             };
 
             // Inner reharsal mark in MU area
-            if(first_block_first_row && inner_reharsal_mark && ml==0){
+            if(m.renderprop && m.renderprop.rg_from_here){
+
+                let reharsal_group = m.renderprop.rg_from_here;
 
                 let r = graphic.CanvasTextWithBox(
                     paper,
-                    param.x_offset,
-                    yprof.mu.y,
+                    meas_base_x,
+                    inner_reharsal_mark ? yprof.mu.y : yprof.rm.y,
                     reharsal_group.name,
                     param.reharsal_mark_font_size,
                     2, 
                     graphic.GetCharProfile(param.reharsal_mark_font_size).height
                 );
 
-                mh_offset += (r.width+2);
+                if(inner_reharsal_mark) mh_offset += (r.width+2);
             }
 
             for (var ei = 0; ei < elements.header.length; ++ei) {
@@ -2047,8 +2200,12 @@ export class MobileRenderer extends Renderer {
         }*/
 
         if (is_row_edge === null || is_row_edge == false) {
+            // 1. 2 boundaries in  differnt rows in the code will be rendered as an adjacent measure, or
+            // 2. The adjacent measures in the codes are measured as is
             draw_type = this.boundary_type_without_line_break(e0, e1);
         } else {
+            // 1. The adjacnet measures in the codes are measured in differnt rows
+            // 2. 2 boundraies in differnt rows in the code will be rendered as is (i.e. for differnt rows)
             draw_type = this.boundary_type_with_line_break(e0, e1, side);
         }
 

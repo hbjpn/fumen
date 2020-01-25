@@ -76,7 +76,14 @@ export class Renderer {
             eb: "eb",
             bb: "sb",
             BB: "eb",
-            rr: "rr"
+            rr: "rr",
+            ns: "ns", // This case happen when side=begin
+            nd: "nd", // This case happen when side=begin
+            nb: "nb", // This case happen when side=begin
+            sn: "sn", // This case happen when side=end
+            dn: "dn", // This case happen when side=end
+            en: "en", // This case happen when side=end
+            fn: "fn", // This case happen when side=end
         };
         var key = this.get_boundary_sign(b0) + this.get_boundary_sign(b1);
         if (key in profile) {

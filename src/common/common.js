@@ -217,8 +217,9 @@ export class Track {
 }
 
 export class ReharsalGroup {
-    constructor() {
-        this.name = null;
+    constructor(name, inline=false) {
+        this.name = name;
+        this.inline = inline;
         //	this.measures = new Array();
         this.blocks = new Array(); // Blocks in the reharsal groups
         this.macros = {};

@@ -295,27 +295,34 @@ export class MobileRenderer extends Renderer {
                 var row_id_in_block = 0;
                 for (var ml = 0; ml < block_measures.length; ++ml) {
                     var m = block_measures[ml];
-                    if (m.raw_new_line) {
-                        y_stacks.push({
-                            type: "meas",
-                            height: row_max_height,
-                            cont: meas_row,
-                            nm: m,
-                            pm: pm,
-                            rg: track.reharsal_groups[i],
-                            rg_id : i,
-                            macros: rg_macros,
-                            block_id: bi,
-                            row_id_in_block: row_id_in_block
-                        });
-                        row_max_height = 0;
-                        meas_row = [];
-                        pm = ml > 0 ? block_measures[ml - 1] : null;
-                        row_id_in_block += 1;
+                    if(m.raw_new_line) ++row_id_in_block;
+                    let in_prev_row = rg.inline == true && bi == 0 && row_id_in_block == 0;
+                    if(in_prev_row){
+                        // In this case, first row is added to the previous row
+                        let prev_row = y_stacks[y_stacks.length-1];
+                        prev_row.cont.push(m);
+                    }else{
+                        if (m.raw_new_line && meas_row.length>0) {
+                            y_stacks.push({
+                                type: "meas",
+                                height: row_max_height,
+                                cont: meas_row,
+                                nm: m,
+                                pm: pm,
+                                rg: track.reharsal_groups[i],
+                                rg_id : i,
+                                macros: rg_macros,
+                                block_id: bi,
+                                row_id_in_block: row_id_in_block-1 // Already incremented then row id is minus 1
+                            });
+                            row_max_height = 0;
+                            meas_row = [];
+                            pm = ml > 0 ? block_measures[ml - 1] : null;
+                        }
+                        meas_row.push(m);
                     }
-                    meas_row.push(m);
                 }
-                if (meas_row.length > 0)
+                if (meas_row.length > 0){
                     y_stacks.push({
                         type: "meas",
                         height: row_max_height,
@@ -328,6 +335,7 @@ export class MobileRenderer extends Renderer {
                         block_id: bi,
                         row_id_in_block: row_id_in_block
                     });
+                }
             }
         }
 
@@ -574,7 +582,7 @@ export class MobileRenderer extends Renderer {
                         "begin",
                         ne,
                         e,
-                        m.raw_new_line,
+                        ml==0, //m.raw_new_line,
                         paper,
                         x,
                         0,
@@ -620,7 +628,7 @@ export class MobileRenderer extends Renderer {
                         "end",
                         e,
                         ne,
-                        nm ? nm.raw_new_line : false,
+                        ml == row_elements_list.length-1, //nm ? nm.raw_new_line : false,
                         paper,
                         x,
                         0,
@@ -1099,7 +1107,7 @@ export class MobileRenderer extends Renderer {
                         "begin",
                         ne,
                         e,
-                        m.raw_new_line,
+                        ml == 0, //m.raw_new_line,
                         paper,
                         x,
                         y_body_or_rs_base,
@@ -1178,7 +1186,7 @@ export class MobileRenderer extends Renderer {
                         "end",
                         e,
                         ne,
-                        nm ? nm.raw_new_line : false,
+                        ml == row_elements_list.length-1, //nm ? nm.raw_new_line : false,
                         paper,
                         x,
                         y_body_or_rs_base,
@@ -1993,13 +2001,15 @@ export class MobileRenderer extends Renderer {
     /**
      * Draw boundary
      * @param side : 'begin' or 'end' of boundary for current measure
-     * @param ec : Boundary element of current measure( <side> side )
-     * @param en : Boundary element of neighbor measure.
-     *             <en> must be 'begin' boundary of the next measure when <side> is 'end'
-     *             <en> must be 'end' boundary of the previous measure when <side> is 'begin'
-     *             <en> can be null if there is no next measure when <side> is 'end'.
-     *             <en> can be null if there is no previous measure when <side> is 'begin'.
-     * @param hasNewLine : Whether there is "new line" at the place of the target boundary.
+     * @param e0 : Boundary element: 0
+     *             - 'end' boundary if the previous measure when <side> is 'begin'
+     *             - 'end' boundary of current measure when <side> is 'end' 
+     *             - can be null if there is no previous measure when <side> is 'begin'.
+     * @param e1 : Boundary element: 1
+     *             - 'begin' boundary of current measure when <side> is 'begin'
+     *             - 'begin' boundary of next measure when <side> is 'end'
+     *             - can be null if there is no next measure when <side> is 'end'.
+     * @param is_row_edge : Whether this boundary is at the edge of row( left edge if <side> is 'begin', or right edge if <side> is 'end')
      * @param paper : Paper object
      * @param x : Current x position
      * @param darw : Whether to draw or just estimating sizes
@@ -2011,7 +2021,7 @@ export class MobileRenderer extends Renderer {
         side,
         e0,
         e1,
-        hasNewLine,
+        is_row_edge,
         canvas,
         x,
         y_body_base,
@@ -2025,14 +2035,18 @@ export class MobileRenderer extends Renderer {
         var w = 0; // width of boundary
         let actual_boundary = 0; // Actual boundary when having more than 1 pixel width. 
 
-        if (side == "end") {
-            var thisIsLastMeasureInLine = e1 === null || hasNewLine;
+        if (side == "end" && !is_row_edge) {
+            // If this is not the last measure in this line, then does not draw the boundary. Draw in the "begin" side of next measure.
+            return { width: 0, actual_boundary : 0 };
+        }
+        /*
+            var thisIsLastMeasureInLine = e1 === null || is_row_edge;
 
             // If this is not the last measure in this line, then does not draw the boundary. Draw in the "begin" side of next measure.
             if (!thisIsLastMeasureInLine) return { width: 0, actual_boundary : 0 };
-        }
+        }*/
 
-        if (hasNewLine === null || hasNewLine == false) {
+        if (is_row_edge === null || is_row_edge == false) {
             draw_type = this.boundary_type_without_line_break(e0, e1);
         } else {
             draw_type = this.boundary_type_with_line_break(e0, e1, side);

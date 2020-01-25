@@ -685,8 +685,10 @@ export class Parser {
                         //console.log("Reharsal Mark:"+r.reharsalMarkName);
                         if (currentReharsalGroup != null)
                             track.reharsal_groups.push(currentReharsalGroup);
-                        currentReharsalGroup = new common.ReharsalGroup();
-                        currentReharsalGroup.name = r.reharsalMarkName;
+                        currentReharsalGroup = new common.ReharsalGroup(
+                            r.reharsalMarkName,
+                            this.context.contiguous_line_break<=1);
+                        console.log(currentReharsalGroup);
                     } else if (
                         [
                             TOKEN_MB,

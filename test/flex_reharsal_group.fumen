@@ -1,0 +1,20 @@
+%TITLE="Flex Reharsal Group"
+%ARTIST="Fumen Tester"
+
+[A] 
+| A B | C D | 
+[B] 
+||: E F | G A | 
+| C D | [1.] E F :|| [2.] G A |
+[C]
+| A |
+[D]
+| A |
+| B |
+[E]
+| F | A Gm C7 |
+| F | Am  Bm|
+| G | C7 |
+
+[F]
+| A | C |

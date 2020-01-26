@@ -1,8 +1,32 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
+const PNG = require('pngjs').PNG;
+const pixelmatch = require('pixelmatch');
+const execSync = require('child_process').execSync;
 
-let main = (async(addr, fumenfile) => {
+let getHeadCommit = () => {
+    let command="git log  --pretty=format:\"%h %cd\" -1 --date=iso";
+    let result =  execSync(command).toString();
+    let firstSpaceIdx = result.indexOf(" ");
+    let headCommit = result.substring(0, firstSpaceIdx);
+    let commitTimeStr = result.substring(firstSpaceIdx+1); // ISO
+    var commitTime = new Date(commitTimeStr);
+    return {commit:headCommit, time:commitTime};
+};
+
+let takediff = (img1path, img2path, diffpath) => {
+    const img1 = PNG.sync.read(fs.readFileSync(img1path));
+    const img2 = PNG.sync.read(fs.readFileSync(img2path));
+    const {width, height} = img1;
+    const diff = new PNG({width, height});
+
+    pixelmatch(img1.data, img2.data, diff.data, width, height, {threshold: 0.1});
+
+    fs.writeFileSync(diffpath, PNG.sync.write(diff));
+};
+
+let main = (async(addr, fumenfile, headInfo) => {
 	let tcname = path.parse(fumenfile).name;
 	let code = fs.readFileSync(fumenfile,"utf-8");
 	console.log(code);
@@ -33,16 +57,26 @@ let main = (async(addr, fumenfile) => {
     for(let i = 0; i < clips.length; ++i){
         console.log(clips[i]);
         let outpath = path.join(path.dirname(fumenfile),"screenshot");
-        outpath = path.join(outpath,`${tcname}.${i}.png`);
+        let datems = headInfo.time.getTime();
+        outpath = path.join(outpath,`${tcname}.${i}.${datems}.${headInfo.commit}.png`);
         console.log("Capturing to "+outpath);
         await page.screenshot({ clip: clips[i], path: outpath});
-        await page.waitFor(1000);
     }
 	//await page.screenshot({path: "screenshot.png", fullPage:true});
 	await browser.close();
 });
 
+
+let gitpull = execSync("git pull").toString();
+console.log(gitpull);
+let build = execSync("npm run build").toString();
+console.log(build);
+let headInfo = getHeadCommit();
+
+if(false){
 const addr = process.argv[2];
 console.log(addr);
-main(addr, "case1.fumen");
-
+main(addr, "case1.fumen", headInfo);
+main(addr,"case2.fumen", headInfo);
+main(addr,"flex_reharsal_group.fumen", headInfo);
+}

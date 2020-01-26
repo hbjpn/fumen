@@ -15,6 +15,22 @@ let getHeadCommit = () => {
     return {commit:headCommit, time:commitTime};
 };
 
+let listScreenShortsForCommit = (dir, tcname)=>{
+    var fileList = [];
+    var files = fs.readdirSync(dir);
+    let re = new RegExp("("+tcname+")\\.(\\d+)\\.(.*)\\.png");
+
+    for(var i = 0; i < files.length; ++i){
+        var file = files[i];
+        let fullpath = path.join(dir, file);
+        let m = file.match(re);
+        if(fs.statSync(fullpath).isFile() && m){
+            fileList.push({file:file,time:parseInt(m[2]),commit:m[3]});
+        }
+    }
+    return fileList;
+};
+
 let takediff = (img1path, img2path, diffpath) => {
     const img1 = PNG.sync.read(fs.readFileSync(img1path));
     const img2 = PNG.sync.read(fs.readFileSync(img2path));
@@ -26,20 +42,27 @@ let takediff = (img1path, img2path, diffpath) => {
     fs.writeFileSync(diffpath, PNG.sync.write(diff));
 };
 
-let main = (async(addr, fumenfile, headInfo) => {
+
+let capture = (async(addr, fumenfile, headInfo) => {
 	let tcname = path.parse(fumenfile).name;
 	let code = fs.readFileSync(fumenfile,"utf-8");
-	console.log(code);
+    //console.log(code);
+    let param = {
+        "paper_width":400,
+        "paper_height":600
+    };
+
 	const browser = await puppeteer.launch();
-	const page = await browser.newPage();
-	await page.goto(addr); //"http://192.168.11.5:5000");
+    const page = await browser.newPage();
+
+    let finalurl = addr+"/view.html?code="+encodeURIComponent(code)+"&param="+encodeURIComponent(JSON.stringify(param));
+    console.log("Full URL:"+finalurl);
+	await page.goto(finalurl); //"http://192.168.11.5:5000");
 	await page.setViewport({
         width: 1440,
         height: 10000 // set whatever you want
 	});
-	await page.evaluate( () => document.getElementById("code").value = "");
-	await page.type("#code",code); // Emulating key press rather than DOM manupilation
-	await page.click("button");
+
 	await page.waitFor(1000);
 	const clips = await page.evaluate(s => {
         const els = document.querySelectorAll(s);
@@ -49,22 +72,51 @@ let main = (async(addr, fumenfile, headInfo) => {
             cliprects.push({ width, height, x, y });
         });
         return cliprects;
-    }, "canvas");
+    }, "#scores_area");
 
     console.log(clips);
     console.log(clips.length);
     await page.waitFor(1000);
-    for(let i = 0; i < clips.length; ++i){
-        console.log(clips[i]);
-        let outpath = path.join(path.dirname(fumenfile),"screenshot");
-        let datems = headInfo.time.getTime();
-        outpath = path.join(outpath,`${tcname}.${i}.${datems}.${headInfo.commit}.png`);
-        console.log("Capturing to "+outpath);
-        await page.screenshot({ clip: clips[i], path: outpath});
+     
+    // Take diff from the previous image
+    
+    let scs = listScreenShortsForCommit("screenshot",tcname);
+    let prev_sc_file = null;
+    if(scs.length >= 1){
+        prev_sc_file = scs[scs.length-1];
     }
-	//await page.screenshot({path: "screenshot.png", fullPage:true});
+
+    let datems = headInfo.time.getTime();
+    let pngname = `${tcname}.${datems}.${headInfo.commit}.png`;
+
+    if(prev_sc_file && prev_sc_file.file == pngname){
+        // No update
+    }else{
+        console.log(clips[0]);
+        let scdir = path.join(path.dirname(fumenfile),"screenshot");
+        //outpath = path.join(outpath,`${tcname}.${i}.${datems}.${headInfo.commit}.png`);
+        let full_path = path.join(scdir,pngname);
+        console.log("Capturing to "+full_path);
+        await page.screenshot({ clip: clips[0], path: full_path});
+
+        let prev_full_path = path.join(scdir, prev_sc_file);
+        let diff_full_path = path.join(scdir, `${tcname}.diff.${headInfo.commit}-${prev_sc_file.commit}.png`);
+        takediff(full_path, prev_full_path, diff_full_path);
+        //}
+        //await page.screenshot({path: outpath, fullPage:true});
+    }
+
+
 	await browser.close();
 });
+
+let dotest = async (headInfo)=>{
+    const addr = process.argv[2];
+    console.log(addr);
+    await capture(addr, "case1.fumen", headInfo);
+    await capture(addr,"case2.fumen", headInfo);
+    await capture(addr,"flex_reharsal_group.fumen", headInfo);
+};
 
 
 let gitpull = execSync("git pull").toString();
@@ -73,10 +125,4 @@ let build = execSync("npm run build").toString();
 console.log(build);
 let headInfo = getHeadCommit();
 
-if(false){
-const addr = process.argv[2];
-console.log(addr);
-main(addr, "case1.fumen", headInfo);
-main(addr,"case2.fumen", headInfo);
-main(addr,"flex_reharsal_group.fumen", headInfo);
-}
+dotest(headInfo);

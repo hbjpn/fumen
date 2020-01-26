@@ -52,6 +52,10 @@ module.exports = {
           from: "src/index.html",
           to: "index.html",
         },  
+        {
+          from: "src/view.html",
+          to: "view.html",
+        },  
       ],
     ),
   ]

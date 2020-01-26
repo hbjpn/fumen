@@ -99,7 +99,7 @@ let capture = (async(addr, fumenfile, headInfo) => {
         console.log("Capturing to "+full_path);
         await page.screenshot({ clip: clips[0], path: full_path});
 
-        let prev_full_path = path.join(scdir, prev_sc_file);
+        let prev_full_path = path.join(scdir, prev_sc_file.file);
         let diff_full_path = path.join(scdir, `${tcname}.diff.${headInfo.commit}-${prev_sc_file.commit}.png`);
         takediff(full_path, prev_full_path, diff_full_path);
         //}

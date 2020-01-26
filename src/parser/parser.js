@@ -630,11 +630,20 @@ export class Parser {
         r = this.nextToken(s);
         if (r.type != TOKEN_EQUAL) this.onParseError("ERROR_WHILE_PARSE_MACRO");
         s = r.s;
-        r = this.nextToken(s);
-        if (r.type != TOKEN_STRING)
-            this.onParseError("ERROR_WHILE_PARSE_MACRO");
-        s = r.s;
-        value = r.token;
+        // Parse as JSON decodables : String, Numbers, objects, arrays.
+        var v_s = "";
+        for(var j=0; j<s.length&&s[j]!="\n"; ++j) v_s += s[j];
+        try{
+            value = JSON.parse(v_s);
+        }catch(e){
+            this.onParseError("ERROR_WHILE_PARSE_MACRO_VALUE");
+        }
+        s = s.substr(v_s.length);
+        //r = this.nextToken(s);
+        //if (r.type != TOKEN_STRING)
+        //    this.onParseError("ERROR_WHILE_PARSE_MACRO");
+        //s = r.s;
+        //value = r.token;
         return { key: key, value: value, s: s };
     }
 

@@ -89,8 +89,7 @@ let capture = (async(addr, fumenfile, headInfo) => {
     let datems = headInfo.time.getTime();
     let pngname = `${tcname}.${datems}.${headInfo.commit}.png`;
 
-    if((!prev_sc_file) ||
-       (prev_sc_file && prev_sc_file.file == pngname)){
+    if(prev_sc_file && prev_sc_file.file == pngname){
         // No update
     }else{
         console.log(clips[0]);
@@ -100,11 +99,12 @@ let capture = (async(addr, fumenfile, headInfo) => {
         console.log("Capturing to "+full_path);
         await page.screenshot({ clip: clips[0], path: full_path});
 
-        let prev_full_path = path.join(scdir, prev_sc_file.file);
-        let diff_full_path = path.join(scdir, `${tcname}.diff.${headInfo.commit}-${prev_sc_file.commit}.png`);
-        takediff(full_path, prev_full_path, diff_full_path);
-        //}
-        //await page.screenshot({path: outpath, fullPage:true});
+        // Generate diff file if prev file is identified
+        if(prev_sc_file){
+            let prev_full_path = path.join(scdir, prev_sc_file.file);
+         let diff_full_path = path.join(scdir, `${tcname}.diff.${headInfo.commit}-${prev_sc_file.commit}.png`);
+         takediff(full_path, prev_full_path, diff_full_path);
+        }
     }
 
 

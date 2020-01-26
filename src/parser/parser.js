@@ -687,7 +687,7 @@ export class Parser {
                             track.reharsal_groups.push(currentReharsalGroup);
                         currentReharsalGroup = new common.ReharsalGroup(
                             r.reharsalMarkName,
-                            this.context.contiguous_line_break<=1);
+                            this.context.contiguous_line_break<=1 && track.reharsal_groups.length > 0); // 1st RG is always non-inline
                         console.log(currentReharsalGroup);
                     } else if (
                         [

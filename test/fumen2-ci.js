@@ -89,7 +89,8 @@ let capture = (async(addr, fumenfile, headInfo) => {
     let datems = headInfo.time.getTime();
     let pngname = `${tcname}.${datems}.${headInfo.commit}.png`;
 
-    if(prev_sc_file && prev_sc_file.file == pngname){
+    if((!prev_sc_file) ||
+       (prev_sc_file && prev_sc_file.file == pngname)){
         // No update
     }else{
         console.log(clips[0]);
@@ -116,6 +117,7 @@ let dotest = async (headInfo)=>{
     await capture(addr, "case1.fumen", headInfo);
     await capture(addr,"case2.fumen", headInfo);
     await capture(addr,"flex_reharsal_group.fumen", headInfo);
+    await capture(addr,"generic1.fumen", headInfo);
 };
 
 

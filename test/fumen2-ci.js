@@ -118,6 +118,7 @@ let dotest = async (headInfo)=>{
     await capture(addr,"case2.fumen", headInfo);
     await capture(addr,"flex_reharsal_group.fumen", headInfo);
     await capture(addr,"generic1.fumen", headInfo);
+    await capture(addr,"per_row_config.fumen", headInfo);
 };
 
 

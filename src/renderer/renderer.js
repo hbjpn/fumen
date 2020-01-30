@@ -432,7 +432,7 @@ export class Renderer {
         return balken_element;
     }
 
-    draw_rs_area_without_flag_balken(draw, paper, e, balken_element, x, rs_y_base, row_height){
+    draw_rs_area_without_flag_balken(draw, paper, param, e, balken_element, x, rs_y_base, row_height){
 
         let bounding_box = new common.BoundingBox();
 
@@ -591,7 +591,7 @@ export class Renderer {
                 rs_y_base,
                 0,
                 row_height,
-                this.param
+                param
             );
 
             bounding_box.add_rect(r.bounding_box);
@@ -603,7 +603,7 @@ export class Renderer {
         }else if(balken_element.type == "space"){
 
             // Do not use expand here in case only one space is grouped in balken group
-            bounding_box.add(x, rs_y_base, 0.5*this.param.base_font_size, 0);
+            bounding_box.add(x, rs_y_base, 0.5*param.base_font_size, 0);
 
         }else if(balken_element.type == "simile"){
             alert("Impleetaion not ready for siile in RS area");
@@ -724,7 +724,7 @@ export class Renderer {
 
             var d = balken_element.note_value;
 
-            let wo_flags = this.draw_rs_area_without_flag_balken(draw, paper, e,
+            let wo_flags = this.draw_rs_area_without_flag_balken(draw, paper, param, e,
                 balken_element, x, rs_y_base, row_height);
 
             let xs = balken_element.notes_coord[0];

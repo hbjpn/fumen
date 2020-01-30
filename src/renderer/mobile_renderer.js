@@ -209,6 +209,16 @@ export class MobileRenderer extends Renderer {
         }
     }
 
+    merge_param(param, additional_param, takemax=false){
+        for(const [param_key, param_value] of Object.entries(additional_param)){
+            if(param_key.includes("margin") && takemax){
+                param[param_key] = Math.max(param[param_key], param_value);
+            }else{
+                param[param_key] = param_value;
+            }
+        }
+    }
+
     async render_impl(track, param) {
         var origin = param.origin; //{x:0,y:0};
 
@@ -224,6 +234,9 @@ export class MobileRenderer extends Renderer {
         var songname = "";
 
         var global_macros = getGlobalMacros(track);
+        if("PARAM" in global_macros){
+            this.merge_param(this.param, global_macros["PARAM"], false); // Merge to defaul param
+        }
 
         let canvas = this.canvas;
         if (canvas == null) {
@@ -416,6 +429,30 @@ export class MobileRenderer extends Renderer {
 
             let next_measures = i < meas_row_list.length-1 ? meas_row_list[i+1].meas_row : null;
             let next_measure = next_measures ? next_measures[0] : null;
+
+            // Determine params to be applied for this. 
+            // As of now, 
+            //var rg_macros = getMacros(global_macros, track.reharsal_groups[i]);
+            let row_macros = common.deepcopy(global_macros);
+            var param_for_row = this.param; 
+            let param_for_row_alt = false;
+            e.meas_row.forEach(m=>{
+                if(!m.macros) return;
+                for(const [key, value] of Object.entries(m.macros)){
+                    if(key == "PARAM"){
+                        if(!param_for_row_alt){
+                            param_for_row = common.deepcopy(this.param); // Make copy
+                            this.merge_param(param_for_row, value, false); // Overwrite 
+                            param_for_row_alt = true;
+                        }else{
+                            this.merge_param(param_for_row, value, true); // Update 
+                        }
+                        
+                    }else{
+                        row_macros[key] = value;
+                    }
+                }
+            });
             
             y_stacks.push({
                 type: "meas",
@@ -428,6 +465,7 @@ export class MobileRenderer extends Renderer {
                 //rg: track.reharsal_groups[i],
                 //rg_id : i,
                 macros: global_macros, // TODO : Macros for each row...?
+                param: param_for_row,
                 //block_id: bi,
                 //row_id_in_block: row_id_in_block-1 // Already incremented then row id is minus 1
             });
@@ -506,14 +544,15 @@ export class MobileRenderer extends Renderer {
 
        for (let pei = 0; pei < yse.length; ++pei) {
             // Loop each y_stacks
-            let x = param.x_offset;
 
             if (yse[pei].type == "titles") continue;
+
+            let x = yse[pei].param.x_offset;
 
             //if(yse[pei].rg_id != current_rg_block[0] || yse[pei].block_id != current_rg_block[1]){
             if(!yse[pei].block_ids.includes(current_accum_block_id)){
                // Per block optimization
-               this.determine_rooms(param, reharsal_x_width_info);
+               this.determine_rooms(yse[pei].param, reharsal_x_width_info);
                
                current_accum_block_id = yse[pei].block_ids[0]; // First block ID is the reference block id
                reharsal_x_width_info = [];
@@ -536,7 +575,8 @@ export class MobileRenderer extends Renderer {
            }
 
            // y-screening is done in stage 2 as well : TODO : Make it once
-           var yprof = this.screening_y_areas(row_elements_list, y_base, param, yse[pei].macros.staff, 
+           var yprof = this.screening_y_areas(
+               row_elements_list, y_base, yse[pei].param, yse[pei].macros.staff, 
                yse[pei].macros.reharsal_mark_position == "Inner");
    
            // Screening x elements and determine the rendering policy for x-axis.
@@ -548,14 +588,14 @@ export class MobileRenderer extends Renderer {
                yse[pei].pm,
                yse[pei].nm,
                yprof,
-               param,
+               yse[pei].param,
                dammy_music_context
            );
            reharsal_x_width_info.push([row_elements_list, x_width_info]);
 
            if(pei == yse.length - 1){
                // Per block optimization
-               this.determine_rooms(param, reharsal_x_width_info);
+               this.determine_rooms(yse[pei].param, reharsal_x_width_info);
            }
        }
 
@@ -577,11 +617,11 @@ export class MobileRenderer extends Renderer {
                     yse[pei].pm,
                     yse[pei].nm,
                     y_base,
-                    param,
+                    yse[pei].param,
                     true,
                     yse[pei].macros.reharsal_mark_position == "Inner",
                     this.param.canvas_provider != null
-                        ? score_height - param.y_offset
+                        ? score_height - yse[pei].param.y_offset
                         : null,
                     music_context
                 );
@@ -590,10 +630,10 @@ export class MobileRenderer extends Renderer {
                     canvaslist.push(canvas);
                     graphic.SetupHiDPICanvas(
                         canvas,
-                        this.param.paper_width,
-                        this.param.paper_height
+                        yse[pei].param.paper_width,
+                        yse[pei].param.paper_height
                     );
-                    y_base = origin.y + this.param.y_offset;
+                    y_base = origin.y + yse[pei].param.y_offset;
                     // try again next page
                     pei = pei - 1;
                 } else {
@@ -677,12 +717,18 @@ export class MobileRenderer extends Renderer {
         // Calculate yposition  for each area
         for(let i = 0; i < ycomps.length; ++i){
             let name = ycomps[i];
-            yprof[name].y = (i==0 ? y_base : yprof[ycomps[i-1]].y + yprof[ycomps[i-1]].whole_height) + yprof[name].margin[0];
+            let prev = i>0 ? ycomps[i-1] : null;
+            // Here y is the start of body element, not upper edge
+            yprof[name].y = (i==0 ? y_base : 
+                yprof[prev].y - yprof[prev].margin[0]
+                + yprof[prev].whole_height
+                + yprof[name].margin[0]);
             if(!yprof[name].detected){
                 yprof[name].whole_height = 0;
             }else{
                 if(name == "ml"){
-                    yprof[name].whole_height = Math.max(1, lyric_rows) * yprof[name].height; // multiplied by lyric ros
+                    yprof[name].whole_height = Math.max(1, lyric_rows) * yprof[name].height 
+                        + yprof[name].margin[0] + yprof[name].margin[1]; // multiplied by lyric ros
                 }else{
                     yprof[name].whole_height = yprof[name].height + yprof[name].margin[0] + yprof[name].margin[1];
                 }
@@ -932,7 +978,7 @@ export class MobileRenderer extends Renderer {
                         let balken_element = this.generate_balken_element(
                             e, rs_x, yprof.rs.height, music_context);
                         let r = this.draw_rs_area_without_flag_balken(
-                            draw, paper, e, balken_element, rs_x, yprof.rs.y, yprof.rs.height);
+                            draw, paper, param, e, balken_element, rs_x, yprof.rs.y, yprof.rs.height);
                         e.renderprop.balken_element = balken_element;
                         rs_area_bounding_box.add_rect(r.bounding_box);
                         rs_x += r.bounding_box.w + room_for_rs_per_elem;

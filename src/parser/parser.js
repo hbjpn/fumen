@@ -672,6 +672,7 @@ export class Parser {
 
             var currentReharsalGroup = null;
             var currentBlock = null;
+            var latest_macros = {};
 
             // eslint-disable-next-line no-constant-condition
             while (true) {
@@ -690,6 +691,8 @@ export class Parser {
                     // Does not count as line break
                 } else {
                     if (r.type == TOKEN_BRACKET_LS) {
+                        // Reset latest_macros
+                        latest_macros = {};
                         r = this.parseReharsalMark(r.token, r.s);
                         //console.log("Reharsal Mark:"+r.reharsalMarkName);
                         if (currentReharsalGroup != null)
@@ -709,6 +712,9 @@ export class Parser {
                         ].indexOf(r.type) >= 0
                     ) {
                         r = this.parseMeasures(r, r.s);
+                        // Apply par row macros
+                        r.measures[0].macros = common.deepcopy(latest_macros);
+                        
                         if (currentReharsalGroup.blocks.length == 0) {
                             currentReharsalGroup.blocks.push(new Array());
                             currentReharsalGroup.blocks[0] = currentReharsalGroup.blocks[0].concat(
@@ -738,6 +744,7 @@ export class Parser {
                         } else {
                             track.macros[r.key] = r.value;
                         }
+                        latest_macros[r.key] = r.value;
                     } else {
                         console.log(r.token);
                         this.onParseError("ERROR_WHILE_PARSE_MOST_OUTSIDER");
@@ -849,7 +856,10 @@ export function getGlobalMacros(track) {
 				"REHARSAL_MARK=\"Inner\" needs to be specified with STAFF=\"ON\""
 			);
 		}
-	}
+    }
+    
+    if("PARAM" in track.macros)
+        global_macros["PARAM"] = track.macros["PARAM"];
 
 	return global_macros;
 }

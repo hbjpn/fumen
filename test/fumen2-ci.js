@@ -5,6 +5,10 @@ const PNG = require('pngjs').PNG;
 const pixelmatch = require('pixelmatch');
 const execSync = require('child_process').execSync;
 
+const FIRST_SC = -3;
+const SIZE_DIFF = -2;
+const NO_UPDATE = -1;
+
 let getHeadCommit = () => {
     let command="git log  --pretty=format:\"%h %cd\" -1 --date=iso";
     let result =  execSync(command).toString();
@@ -34,12 +38,20 @@ let listScreenShortsForCommit = (dir, tcname)=>{
 let takediff = (img1path, img2path, diffpath) => {
     const img1 = PNG.sync.read(fs.readFileSync(img1path));
     const img2 = PNG.sync.read(fs.readFileSync(img2path));
-    const {width, height} = img1;
-    const diff = new PNG({width, height});
 
-    pixelmatch(img1.data, img2.data, diff.data, width, height, {threshold: 0.1});
+    if(img1.width == img2.width && img1.height == img2.height){
+        const width = img1.width;
+        const height = img1.height;
+        const diff = new PNG({width,height});
 
-    fs.writeFileSync(diffpath, PNG.sync.write(diff));
+        let numDiffPixels = pixelmatch(img1.data, img2.data, diff.data, width, height, {threshold: 0.1});
+
+        fs.writeFileSync(diffpath, PNG.sync.write(diff));
+
+        return numDiffPixels;
+    }else{
+        return SIZE_DIFF;
+    }
 };
 
 
@@ -82,8 +94,8 @@ let capture = (async(addr, fumenfile, headInfo) => {
         return cliprects;
     }, "#scores_area");
 
-    console.log(clips);
-    console.log(clips.length);
+    //console.log(clips);
+    //console.log(clips.length);
     await page.waitFor(1000);
      
     // Take diff from the previous image
@@ -101,8 +113,10 @@ let capture = (async(addr, fumenfile, headInfo) => {
     let datems = headInfo.time.getTime();
     let pngname = `${tcname}.${datems}.${headInfo.commit}.png`;
 
+    let numDiffPixels = 0;
     if(prev_sc_file && prev_sc_file.file == pngname){
         // No update
+        numDiffPixels = NO_UPDATE; 
     }else{
         console.log(clips[0]);
         let scdir = path.join(path.dirname(fumenfile),scdirname);
@@ -114,23 +128,37 @@ let capture = (async(addr, fumenfile, headInfo) => {
         // Generate diff file if prev file is identified
         if(prev_sc_file){
             let prev_full_path = path.join(scdir, prev_sc_file.file);
-         let diff_full_path = path.join(scdir, `${tcname}.diff.${headInfo.commit}-${prev_sc_file.commit}.png`);
-         takediff(full_path, prev_full_path, diff_full_path);
+            let diff_full_path = path.join(scdir, `${tcname}.diff.${headInfo.commit}-${prev_sc_file.commit}.png`);
+            numDiffPixels = takediff(full_path, prev_full_path, diff_full_path);
+        }else{
+            numDiffPixels = FIRST_SC;
         }
     }
 
-
-	await browser.close();
+    await browser.close();
+    
+    return numDiffPixels;
 });
 
 let dotest = async (headInfo)=>{
     const addr = process.argv[2];
     console.log(addr);
-    await capture(addr, "case1.fumen", headInfo);
+    const files = ["case1.fumen","case2.fumen","flex_reharsal_group.fumen","generic1.fumen","per_row_config.fumen"];
+    const results = [];
+    for(let i=0; i<files.length; ++i){
+        let numDiffPixels = await capture(addr,files[i], headInfo);
+        results.push(numDiffPixels);
+    }
+    
+    for(let i=0; i<files.length; ++i){
+        console.log(files[i]+ " : " + results[i]);
+    }
+    
+    /*await capture(addr,"case1.fumen", headInfo);
     await capture(addr,"case2.fumen", headInfo);
     await capture(addr,"flex_reharsal_group.fumen", headInfo);
     await capture(addr,"generic1.fumen", headInfo);
-    await capture(addr,"per_row_config.fumen", headInfo);
+    await capture(addr,"per_row_config.fumen", headInfo);*/
 };
 
 

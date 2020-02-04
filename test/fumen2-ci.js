@@ -52,7 +52,15 @@ let capture = (async(addr, fumenfile, headInfo) => {
         "paper_height":600
     };
 
-	const browser = await puppeteer.launch();
+    let options = {
+        ignoreDefaultArgs: ['--disable-extensions'], 
+        defaultViewport: null,
+        args: ['--no-sandbox'],
+        // executablePath: "./node_modules/puppeteer/.local-chromium/linux-706915/chrome-linux/chrome", // Does not work
+        executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+    };
+
+	const browser = await puppeteer.launch(options);
     const page = await browser.newPage();
 
     let finalurl = addr+"/view.html?code="+encodeURIComponent(code)+"&param="+encodeURIComponent(JSON.stringify(param));

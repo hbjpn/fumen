@@ -297,61 +297,6 @@ export class MobileRenderer extends Renderer {
         };
 
         var y_stacks = [{ type: "titles", height: param.y_first_page_offset }];
-        /*
-        for (var i = 0; i < track.reharsal_groups.length; ++i) {
-            var rg_macros = getMacros(global_macros, track.reharsal_groups[i]);
-            let rg = track.reharsal_groups[i];
-            for (var bi = 0; bi < rg.blocks.length; ++bi) {
-                var block_measures = rg.blocks[bi];
-                var row_max_height = 0;
-                var meas_row = [];
-                var pm = null;
-                var row_id_in_block = 0;
-                for (var ml = 0; ml < block_measures.length; ++ml) {
-                    var m = block_measures[ml];
-                    if(m.raw_new_line) ++row_id_in_block;
-                    let in_prev_row = rg.inline == true && bi == 0 && row_id_in_block == 0;
-                    if(in_prev_row){
-                        // In this case, first row is added to the previous row
-                        let prev_row = y_stacks[y_stacks.length-1];
-                        prev_row.cont.push(m);
-                    }else{
-                        if (m.raw_new_line && meas_row.length>0) {
-                            y_stacks.push({
-                                type: "meas",
-                                height: row_max_height,
-                                cont: meas_row,
-                                nm: m,
-                                pm: pm,
-                                rg: track.reharsal_groups[i],
-                                rg_id : i,
-                                macros: rg_macros,
-                                block_id: bi,
-                                row_id_in_block: row_id_in_block-1 // Already incremented then row id is minus 1
-                            });
-                            row_max_height = 0;
-                            meas_row = [];
-                            pm = ml > 0 ? block_measures[ml - 1] : null;
-                        }
-                        meas_row.push(m);
-                    }
-                }
-                if (meas_row.length > 0){
-                    y_stacks.push({
-                        type: "meas",
-                        height: row_max_height,
-                        cont: meas_row,
-                        nm: null,
-                        pm: pm,
-                        rg: track.reharsal_groups[i],
-                        rg_id : i,
-                        macros: rg_macros,
-                        block_id: bi,
-                        row_id_in_block: row_id_in_block
-                    });
-                }
-            }
-        }*/
 
         let meas_row_list = [];
         // Firstly, just split with new lines
@@ -475,69 +420,6 @@ export class MobileRenderer extends Renderer {
         let yse = y_stacks;
 
         let dammy_music_context = common.deepcopy(music_context); // Maybe not required ?
-
-        /*
-        let current_rg_block = [0, 0];
-        let reharsal_x_width_info = [];
-
-        for (let pei = 0; pei < yse.length; ++pei) {
-            // Loop each y_stacks
-            let x = param.x_offset;
-
-            if (yse[pei].type == "titles") continue;
-
-            if(yse[pei].rg_id != current_rg_block[0] || yse[pei].block_id != current_rg_block[1]){
-
-                // Per block optimization
-                this.determine_rooms(param, reharsal_x_width_info);
-                
-                current_rg_block = [yse[pei].rg_id,yse[pei].block_id];
-                reharsal_x_width_info = [];
-            }
-            
-            var row_elements_list = yse[pei].cont;
-
-            let macros = yse[pei].macros;
-    
-            // Screening music contexts and determine grouping in body elements
-            // For each measure in this row
-            for (let ml = 0; ml < row_elements_list.length; ++ml) {
-                // measure object
-                let m = row_elements_list[ml];
-    
-                let elements = this.classifyElements(m); // Too much call of calssify elements.
-    
-                // Grouping body elements which share the same balken
-                let geret = this.grouping_body_elemnts_enh(elements.body);
-    
-                m.renderprop.body_grouping_info = geret;
-            }
-
-            // y-screening is done in stage 2 as well : TODO : Make it once
-            var yprof = this.screening_y_areas(row_elements_list, y_base, param, macros.staff, 
-                yse[pei].block_id == 0 && yse[pei].row_id_in_block == 0, 
-                yse[pei].macros.reharsal_mark_position == "Inner");
-    
-            // Screening x elements and determine the rendering policy for x-axis.
-            var x_width_info = this.screening_x_areas(
-                x,
-                canvas,
-                macros,
-                row_elements_list,
-                yse[pei].pm,
-                yse[pei].nm,
-                yprof,
-                param,
-                dammy_music_context
-            );
-            reharsal_x_width_info.push([row_elements_list, x_width_info]);
-
-            if(pei == yse.length - 1){
-                // Per block optimization
-                this.determine_rooms(param, reharsal_x_width_info);
-            }
-        }
-        */
 
        let current_accum_block_id = 0;
        let reharsal_x_width_info = [];

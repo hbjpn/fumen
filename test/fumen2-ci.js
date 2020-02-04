@@ -88,7 +88,11 @@ let capture = (async(addr, fumenfile, headInfo) => {
      
     // Take diff from the previous image
     
-    let scs = listScreenShortsForCommit("screenshot",tcname);
+    let scdirname = "screenshot";
+    if (!fs.existsSync(scdirname)){
+        fs.mkdirSync(scdirname);
+    }
+    let scs = listScreenShortsForCommit(scdirname,tcname);
     let prev_sc_file = null;
     if(scs.length >= 1){
         prev_sc_file = scs[scs.length-1];
@@ -101,7 +105,7 @@ let capture = (async(addr, fumenfile, headInfo) => {
         // No update
     }else{
         console.log(clips[0]);
-        let scdir = path.join(path.dirname(fumenfile),"screenshot");
+        let scdir = path.join(path.dirname(fumenfile),scdirname);
         //outpath = path.join(outpath,`${tcname}.${i}.${datems}.${headInfo.commit}.png`);
         let full_path = path.join(scdir,pngname);
         console.log("Capturing to "+full_path);

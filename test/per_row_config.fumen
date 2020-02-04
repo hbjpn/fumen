@@ -12,3 +12,17 @@
 %PARAM={"above_rs_area_margin":10, "below_rs_area_margin":0}
 | A:4 B:4 |
 | D:4 |
+
+[C]
+| A | Gm7 C7 | C | D |
+%PARAM={"row_margin":20}
+| E | F | G | A |
+| A | B | D | F |
+
+[D]
+| A | Gm7 C7 | C | D |
+
+%PARAM={"row_margin":20}
+| E | F | G | A |
+| A | B | D | F |
+

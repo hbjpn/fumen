@@ -674,6 +674,11 @@ export class Parser {
             var currentBlock = null;
             var latest_macros = {};
 
+            this.context = {
+                line: 0,
+                contiguous_line_break: 0,
+            };
+
             // eslint-disable-next-line no-constant-condition
             while (true) {
                 r = this.nextToken(s);
@@ -701,6 +706,7 @@ export class Parser {
                             r.reharsalMarkName,
                             this.context.contiguous_line_break<=1 && track.reharsal_groups.length > 0); // 1st RG is always non-inline
                         console.log(currentReharsalGroup);
+                        this.context.contiguous_line_break = 0;
                     } else if (
                         [
                             TOKEN_MB,
@@ -714,7 +720,7 @@ export class Parser {
                         r = this.parseMeasures(r, r.s);
                         // Apply par row macros
                         r.measures[0].macros = common.deepcopy(latest_macros);
-                        
+
                         if (currentReharsalGroup.blocks.length == 0) {
                             currentReharsalGroup.blocks.push(new Array());
                             currentReharsalGroup.blocks[0] = currentReharsalGroup.blocks[0].concat(
@@ -734,6 +740,7 @@ export class Parser {
                                 r.measures
                             );
                         }
+                        this.context.contiguous_line_break = 0;
                         //currentReharsalGroup.measures =
                         //	currentReharsalGroup.measures.concat(r.measures);
                     } else if (r.type == TOKEN_PERCENT) {
@@ -745,11 +752,11 @@ export class Parser {
                             track.macros[r.key] = r.value;
                         }
                         latest_macros[r.key] = r.value;
+                        this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this macro
                     } else {
                         console.log(r.token);
                         this.onParseError("ERROR_WHILE_PARSE_MOST_OUTSIDER");
                     }
-                    this.context.contiguous_line_break = 0;
                 }
                 s = r.s;
                 loop_cnt++;

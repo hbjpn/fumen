@@ -21,7 +21,7 @@
             var param_json = document.getElementById("param").value;
             var param = JSON.parse(param_json);
 
-            param.canvas_provider = function(){
+            var canvas_provider = function(){
               var score_area = document.getElementById("scores_area");
               var new_canvas = document.createElement("canvas");
               var hr = document.createElement("hr");
@@ -30,7 +30,7 @@
               return new_canvas;
             };
 
-            var renderer = new Fumen.MobileRenderer(null, param);
+            var renderer = new Fumen.MobileRenderer(null, param, canvas_provider);
             renderer.render(track);
       }
       function updated()

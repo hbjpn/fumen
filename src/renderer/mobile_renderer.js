@@ -39,7 +39,6 @@ var SR_RENDER_PARAM = {
     title_font_size: 14,
     sub_title_font_size: 14,
     base_font_size: 28,
-    canvas_provider: null,
     balken_width: 3,
     note_bar_length: 24/4*3.5, // 3.5 times of interval is the conventional length
     note_flag_interval: 5,
@@ -52,16 +51,18 @@ var SR_RENDER_PARAM = {
 
 
 export class MobileRenderer extends Renderer {
-    constructor(canvas, param) {
+    constructor(canvas, param, canvas_provider=null) {
         super();
 
         this.canvas = canvas;
 
-        this.param = SR_RENDER_PARAM; // Default parameters
+        this.param = common.deepcopy(SR_RENDER_PARAM); // Default parameters
         // Overwrite
         for (let key in param) {
-            this.param[key] = param[key];
+            this.param[key] = common.deepcopy(param[key]);
         }
+
+        this.canvas_provider = canvas_provider;
 
         this.track = null;
 
@@ -243,7 +244,7 @@ export class MobileRenderer extends Renderer {
 
         let canvas = this.canvas;
         if (canvas == null) {
-            canvas = await this.param.canvas_provider();
+            canvas = await this.canvas_provider();
         }
         graphic.SetupHiDPICanvas(
             canvas,
@@ -505,13 +506,13 @@ export class MobileRenderer extends Renderer {
                     yse[pei].param,
                     true,
                     yse[pei].macros.reharsal_mark_position == "Inner",
-                    this.param.canvas_provider != null
+                    this.canvas_provider != null
                         ? score_height - yse[pei].param.y_offset
                         : null,
                     music_context
                 );
                 if (!r) {
-                    canvas = await this.param.canvas_provider();
+                    canvas = await this.canvas_provider();
                     canvaslist.push(canvas);
                     graphic.SetupHiDPICanvas(
                         canvas,

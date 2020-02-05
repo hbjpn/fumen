@@ -44,7 +44,7 @@ var SR_RENDER_PARAM = {
     note_bar_length: 24/4*3.5, // 3.5 times of interval is the conventional length
     note_flag_interval: 5,
     optimize_type: 1, // 0 : No optimization. 1: X-axis optimiation
-    on_bass_style: "below", // "below","right"
+    on_bass_style: "right", // right|below
     on_bass_below_y_offset: 0,
 };
 

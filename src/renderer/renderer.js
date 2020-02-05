@@ -591,6 +591,7 @@ export class Renderer {
                 rs_y_base,
                 0,
                 row_height,
+                row_height,
                 param
             );
 

@@ -14,6 +14,7 @@ var SR_RENDER_PARAM = {
     y_footer_offset: 10,
     min_measure_width: 100,
     row_height: 28, // Basic height of the measure when no rs, mu and ml area is drawn
+    base_body_height: 28, // Height in body area (not applicable for RS area) used for simile and rest rendering. Recommended to keep this value irrespective of row_height.
     row_margin: 4, // Margin between next y_base and lower edge of Measure Lower Area
     rs_area_height: 24, // Rhythm Slashes Area // 
     rm_area_height: 15, // Reharsal Mark Area
@@ -44,7 +45,7 @@ var SR_RENDER_PARAM = {
     note_flag_interval: 5,
     optimize_type: 1, // 0 : No optimization. 1: X-axis optimiation
     on_bass_style: "below", // "below","right"
-    on_bass_below_y_offset: 0
+    on_bass_below_y_offset: 0,
 };
 
 // Simple renderer offsets
@@ -670,6 +671,7 @@ export class MobileRenderer extends Renderer {
                         x,
                         0,
                         dammy_rs_area_height, // any value is OK
+                        dammy_rs_area_height,
                         param,
                         false
                     );
@@ -715,6 +717,7 @@ export class MobileRenderer extends Renderer {
                         paper,
                         x,
                         0,
+                        dammy_rs_area_height,
                         dammy_rs_area_height,
                         param,
                         false
@@ -931,6 +934,7 @@ export class MobileRenderer extends Renderer {
                             y_body_or_rs_base,
                             C7_width,
                             yprof.rs.detected ? param.rs_area_height : param.row_height,
+                            yprof.rs.detected ? param.rs_area_height : param.base_body_height,
                             param
                         );
                         if(draw)
@@ -947,6 +951,7 @@ export class MobileRenderer extends Renderer {
                             x,
                             y_body_or_rs_base,
                             yprof.rs.detected ? param.rs_area_height : param.row_height,
+                            yprof.rs.detected ? param.rs_area_height : param.base_body_height,
                             e.numslash,
                             false,
                             "l"
@@ -1195,6 +1200,7 @@ export class MobileRenderer extends Renderer {
                         x,
                         y_body_or_rs_base,
                         yprof.rs.detected ? param.rs_area_height : param.row_height,
+                        yprof.rs.detected ? param.rs_area_height : param.base_body_height,
                         param,
                         true
                     );
@@ -1274,6 +1280,7 @@ export class MobileRenderer extends Renderer {
                         x,
                         y_body_or_rs_base,
                         yprof.rs.detected ? param.rs_area_height : param.row_height,
+                        yprof.rs.detected ? param.rs_area_height : param.base_body_height,
                         param,
                         true
                     );
@@ -1452,7 +1459,8 @@ export class MobileRenderer extends Renderer {
                         paper,
                         (sx + fx) / 2,
                         y_body_or_rs_base,
-                        param.rs_area_height,
+                        yprof.rs.detected ? param.rs_area_height : param.row_height,
+                        yprof.rs.detected ? param.rs_area_height : param.base_body_height,
                         e.numslash,
                         false,
                         "c"
@@ -1599,9 +1607,10 @@ export class MobileRenderer extends Renderer {
         y_body_or_rs_base,
         C7_width,
         row_height,
+        base_body_height,
         param
     ) {
-        let _5i = row_height / 4; 
+        let _5i = base_body_height / 4; 
         var yoffsets = {
             1: -_5i,
             2: (-_5i / 6) * 4,
@@ -1693,6 +1702,7 @@ export class MobileRenderer extends Renderer {
         x,
         y_body_base,
         row_height,
+        base_body_height, // In RS area, row_height == base_body_height is asuumed
         numslash,
         put_boundary,
         align
@@ -1702,7 +1712,7 @@ export class MobileRenderer extends Renderer {
         var i = 4;
         var cm = 2;
         var cr = 1.2;
-        var _5lines_intv = row_height / 4;
+        var _5lines_intv = base_body_height / 4;
         var width = (h + i) * (numslash - 1) + h + H;
 
         if (align == "c") x -= width / 2;
@@ -1713,18 +1723,18 @@ export class MobileRenderer extends Renderer {
             graphic.CanvasCircle(
                 paper,
                 x + cm,
-                y_body_base + _5lines_intv * 1.5,
+                y_body_base + row_height/2 - _5lines_intv * 0.5,
                 cr
             );
         for (let r = 0; r < numslash; ++r) {
-            var y = y_body_base;
+            var y = y_body_base + row_height/2;
             x += (h + i) * r;
             if (draw) {
                 var points = [
-                   [x, y + _5lines_intv * 3],
-                   [x + h, y + _5lines_intv * 3],
-                    [x + h + H, y + _5lines_intv * 1],
-                    [x + H, y + _5lines_intv]
+                   [x, y + _5lines_intv * 1],
+                   [x + h, y + _5lines_intv * 1],
+                    [x + h + H, y - _5lines_intv * 1],
+                    [x + H, y - _5lines_intv * 1]
                 ];
                 graphic.CanvasPolygon(paper, points, true, true);     
             }
@@ -1733,7 +1743,7 @@ export class MobileRenderer extends Renderer {
             graphic.CanvasCircle(
                 paper,
                 x + h + H - cm,
-                y_body_base + (row_height / 4) * 2.5,
+                y_body_base + row_height/2 + _5lines_intv * 0.5,
                 cr
             );
         if (put_boundary) {
@@ -2190,6 +2200,7 @@ export class MobileRenderer extends Renderer {
         x,
         y_body_base,
         row_height,
+        base_body_height,
         param,
         draw
     ) {
@@ -2430,6 +2441,7 @@ export class MobileRenderer extends Renderer {
                     x,
                     y_body_base,
                     row_height,
+                    base_body_height,
                     2,
                     true,
                     "l"

@@ -1,0 +1,16 @@
+%TITLE="Bass Test"
+%ARTIST="Fumen Tester"
+
+[I]
+%PARAM={"on_bass_style":"below", "row_height":50}
+| AbM7:4 Bbm7/Ab:4 | Bbm7/Ab:2 AbM7/Ab:4 Db/Eb:4 | 
+| AbM7 Bbm7/Ab | Bbm7/Ab AbM7/Ab Db/Eb |
+[I2]
+%PARAM={"on_bass_style":"right", "row_height":30}
+| AbM7:4 Bbm7/Ab:4~ :2 :8 :8 :8 :8| 
+|Bbm7/Ab:2 AbM7/Ab:4 Db/Eb:4 | AbM7:2 Bbm7/Ab:2 | Bbm7/Ab:2 AbM7/Ab:4 Db/Eb:4 |
+
+[I3]
+%PARAM={"on_bass_style":"below", "row_height":40,"on_bass_below_y_offset":-5}
+| A/Bb | B | C  r:4 | ./. r:8 ./|/. N.C. | ./. |
+| A:4 ./. r:4 r:8 ./|/. | 

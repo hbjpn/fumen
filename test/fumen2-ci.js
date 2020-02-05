@@ -143,7 +143,13 @@ let capture = (async(addr, fumenfile, headInfo) => {
 let dotest = async (headInfo)=>{
     const addr = process.argv[2];
     console.log(addr);
-    const files = ["case1.fumen","case2.fumen","flex_reharsal_group.fumen","generic1.fumen","per_row_config.fumen"];
+    const files = [
+        "case1.fumen",
+        "case2.fumen",
+        "flex_reharsal_group.fumen",
+        "generic1.fumen",
+        "per_row_config.fumen",
+        "on_bass.fumen"];
     const results = [];
     for(let i=0; i<files.length; ++i){
         let numDiffPixels = await capture(addr,files[i], headInfo);
@@ -153,12 +159,6 @@ let dotest = async (headInfo)=>{
     for(let i=0; i<files.length; ++i){
         console.log(files[i]+ " : " + results[i]);
     }
-    
-    /*await capture(addr,"case1.fumen", headInfo);
-    await capture(addr,"case2.fumen", headInfo);
-    await capture(addr,"flex_reharsal_group.fumen", headInfo);
-    await capture(addr,"generic1.fumen", headInfo);
-    await capture(addr,"per_row_config.fumen", headInfo);*/
 };
 
 

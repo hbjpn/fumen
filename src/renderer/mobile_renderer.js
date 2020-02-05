@@ -42,7 +42,9 @@ var SR_RENDER_PARAM = {
     balken_width: 3,
     note_bar_length: 24/4*3.5, // 3.5 times of interval is the conventional length
     note_flag_interval: 5,
-    optimize_type: 1 // 0 : No optimization. 1: X-axis optimiation
+    optimize_type: 1, // 0 : No optimization. 1: X-axis optimiation
+    on_bass_style: "below", // "below","right"
+    on_bass_below_y_offset: 0
 };
 
 // Simple renderer offsets
@@ -573,7 +575,7 @@ export class MobileRenderer extends Renderer {
                         (e.times != null && (e.ntimes || e.times != 2));
                 } else if (e instanceof common.Chord) {
                     var bases = e.getChordStrBase(0, "flat");
-                    yprof.ml.detected = yprof.ml.detected || bases[1] != null;
+                    //yprof.ml.detected = yprof.ml.detected || bases[1] != null;
                     yprof.rs.detected |= e.note_group_list !== null;
                 } else if (e instanceof common.Lyric) {
                     yprof.ml.detected = true;
@@ -944,7 +946,7 @@ export class MobileRenderer extends Renderer {
                             paper,
                             x,
                             y_body_or_rs_base,
-                            param.rs_area_height,
+                            yprof.rs.detected ? param.rs_area_height : param.row_height,
                             e.numslash,
                             false,
                             "l"
@@ -1797,13 +1799,19 @@ export class MobileRenderer extends Renderer {
         var root = bases[0];
         var onbass = bases[1];
 
+
+        let chord_offset_on_bass = 0;
+        if(onbass != null && param.on_bass_style == "below")
+            chord_offset_on_bass = param.on_bass_below_y_offset;
+
+
         var coeff1 = 0.5;
 
         if (root) {
             graphic.CanvasText(
                 canvas,
                 x,
-                y + param.row_height/2,
+                y + param.row_height/2 + chord_offset_on_bass,
                 root[0],
                 B,
                 "lm",
@@ -1820,7 +1828,7 @@ export class MobileRenderer extends Renderer {
                             .drawImage(
                                 graphic.G_imgmap["assets/img/flat.svg"],
                                 x + upper_width,
-                                y + param.row_height/2 - rootCharHeight/2,
+                                y + param.row_height/2 - rootCharHeight/2 + chord_offset_on_bass,
                                 B * 0.2,
                                 rootCharHeight / 2.0
                             );
@@ -1832,7 +1840,7 @@ export class MobileRenderer extends Renderer {
                             .drawImage(
                                 graphic.G_imgmap["assets/img/sharp.svg"],
                                 x + upper_width,
-                                y + param.row_height/2 - rootCharHeight/2,
+                                y + param.row_height/2 - rootCharHeight/2 + chord_offset_on_bass,
                                 B * 0.2,
                                 rootCharHeight / 2.0
                             );
@@ -1843,7 +1851,8 @@ export class MobileRenderer extends Renderer {
             // No root but only bass
         }
 
-        if (onbass != null) {
+        /*
+        if (onbass != null && param.on_bass_style == "bottom") {
             let r = graphic.CanvasText(
                 canvas,
                 x,
@@ -1883,13 +1892,14 @@ export class MobileRenderer extends Renderer {
                 }
             }
         }
+        */
 
         _3rdelem.forEach(e => {
             if (e.type == "M" && _6791113suselem.length > 0) {
                 let r = graphic.CanvasText(
                     canvas,
                     x + lower_width,
-                    y + param.row_height/2 + rootCharHeight/2,
+                    y + param.row_height/2 + rootCharHeight/2 + chord_offset_on_bass,
                     String.fromCharCode(0x0394),
                     B * 0.5,
                     "lb",
@@ -1901,7 +1911,7 @@ export class MobileRenderer extends Renderer {
                 let r = graphic.CanvasText(
                     canvas,
                     x + lower_width,
-                    y + param.row_height/2 + rootCharHeight/2,
+                    y + param.row_height/2 + rootCharHeight/2 + chord_offset_on_bass,
                     String.fromCharCode(0x2013),
                     B * 0.5,
                     "lb",
@@ -1918,7 +1928,7 @@ export class MobileRenderer extends Renderer {
                 let r = graphic.CanvasText(
                     canvas,
                     x + lower_width,
-                    y + param.row_height/2 + rootCharHeight/2,
+                    y + param.row_height/2 + rootCharHeight/2 + chord_offset_on_bass,
                     e.param,
                     B * 0.5,
                     "lb",
@@ -1930,7 +1940,7 @@ export class MobileRenderer extends Renderer {
                 let r = graphic.CanvasText(
                     canvas,
                     x + lower_width,
-                    y + param.row_height/2 + rootCharHeight/2,
+                    y + param.row_height/2 + rootCharHeight/2 + chord_offset_on_bass,
                     e.type + (e.param ? e.param : ""),
                     B * 0.5,
                     "lb",
@@ -1942,7 +1952,7 @@ export class MobileRenderer extends Renderer {
                 let r = graphic.CanvasText(
                     canvas,
                     x + lower_width,
-                    y + param.row_height/2 + rootCharHeight/2,
+                    y + param.row_height/2 + rootCharHeight/2 + chord_offset_on_bass,
                     String.fromCharCode(0x004f) + (e.param ? e.param : ""),
                     B * 0.5,
                     "lb",
@@ -1954,7 +1964,7 @@ export class MobileRenderer extends Renderer {
                 let r = graphic.CanvasText(
                     canvas,
                     x + lower_width,
-                    y + param.row_height/2 + rootCharHeight/2,
+                    y + param.row_height/2 + rootCharHeight/2 + chord_offset_on_bass,
                     String.fromCharCode(0x0394) + (e.param ? e.param : ""),
                     B * 0.5,
                     "lb",
@@ -1969,7 +1979,7 @@ export class MobileRenderer extends Renderer {
                 let r = graphic.CanvasText(
                     canvas,
                     x + upper_width,
-                    y + param.row_height/2 - rootCharHeight/2,
+                    y + param.row_height/2 - rootCharHeight/2 + chord_offset_on_bass,
                     "-5",
                     B * 0.5,
                     "lt",
@@ -1981,7 +1991,7 @@ export class MobileRenderer extends Renderer {
                 let r = graphic.CanvasText(
                     canvas,
                     x + upper_width,
-                    y + param.row_height/2 - rootCharHeight/2,
+                    y + param.row_height/2 - rootCharHeight/2 + chord_offset_on_bass,
                     "+5",
                     B * 0.5,
                     "lt",
@@ -1993,11 +2003,11 @@ export class MobileRenderer extends Renderer {
         });
 
         if (_alteredelem.length > 0) {
-            var tensions_pos = Math.max(upper_width, lower_width, onbass_width);
+            var tensions_pos = Math.max(upper_width, lower_width); // Assume onbass below does not exceed lower_width
             let r = graphic.CanvasText(
                 canvas,
                 x + tensions_pos,
-                y + param.row_height/2 - rootCharHeight/2,
+                y + param.row_height/2 - rootCharHeight/2 + chord_offset_on_bass,
                 "(",
                 B * 0.5,
                 "lt",
@@ -2014,7 +2024,7 @@ export class MobileRenderer extends Renderer {
                             .drawImage(
                                 graphic.G_imgmap["assets/img/flat.svg"],
                                 x + tensions_pos + tensions_width,
-                                y + param.row_height/2 - rootCharHeight/2,
+                                y + param.row_height/2 - rootCharHeight/2 + chord_offset_on_bass,
                                 B * 0.2,
                                 h
                             );
@@ -2026,7 +2036,7 @@ export class MobileRenderer extends Renderer {
                             .drawImage(
                                 graphic.G_imgmap["assets/img/sharp.svg"],
                                 x + tensions_pos + tensions_width,
-                                y + param.row_height/2 - rootCharHeight/2,
+                                y + param.row_height/2 - rootCharHeight/2 + chord_offset_on_bass,
                                 B * 0.2,
                                 h
                             );
@@ -2035,7 +2045,7 @@ export class MobileRenderer extends Renderer {
                 let r = graphic.CanvasText(
                     canvas,
                     x + tensions_pos + tensions_width,
-                    y + param.row_height/2 - rootCharHeight/2,
+                    y + param.row_height/2 - rootCharHeight/2 + chord_offset_on_bass,
                     e.param,
                     B * 0.5,
                     "lt",
@@ -2047,7 +2057,7 @@ export class MobileRenderer extends Renderer {
                     let r = graphic.CanvasText(
                         canvas,
                         x + tensions_pos + tensions_width,
-                        y + param.row_height/2 - rootCharHeight/2,
+                        y + param.row_height/2 - rootCharHeight/2 + chord_offset_on_bass,
                         ", ",
                         B * 0.5,
                         "lt",
@@ -2060,7 +2070,7 @@ export class MobileRenderer extends Renderer {
             r = graphic.CanvasText(
                 canvas,
                 x + tensions_pos + tensions_width,
-                y + param.row_height/2 - rootCharHeight/2,
+                y + param.row_height/2 - rootCharHeight/2 + chord_offset_on_bass,
                 ")",
                 B * 0.5,
                 "lt",
@@ -2070,8 +2080,81 @@ export class MobileRenderer extends Renderer {
             tensions_width += r.width;
         }
 
-        var width =
-            Math.max(upper_width, lower_width, onbass_width) + tensions_width;
+        if (onbass != null) {
+
+            var onbass_pos =
+                param.on_bass_style == "below" ?
+                x :
+                x + Math.max(upper_width, lower_width) + tensions_width;
+                
+
+            let r = graphic.CanvasText(
+                canvas,
+                onbass_pos,
+                y + param.row_height/2 + rootCharHeight/2 + chord_offset_on_bass,
+                "/" + onbass[0],
+                B * 0.45,
+                param.on_bass_style == "below"  ? "lt" : "lb",
+                B * 0.5,
+                !draw
+            );
+            onbass_width += r.width;
+            if (onbass.length == 2) {
+                if (onbass[1] == "b") {
+                    if (draw)
+                        /*canvas
+                            .getContext("2d")
+                            .drawImage(
+                                graphic.G_imgmap["assets/img/flat.svg"],
+                                onbass_pos + onbass_width,
+                                y + param.row_height/2 + rootCharHeight/2,
+                                B * 0.2,
+                                r.height
+                            );
+                        */
+                        graphic.CanvasImage(canvas, 
+                            graphic.G_imgmap["assets/img/flat.svg"], 
+                            onbass_pos + onbass_width, 
+                            y + param.row_height/2 + rootCharHeight/2 + chord_offset_on_bass, 
+                            B*0.2, 
+                            r.height, 
+                            param.on_bass_style == "below"  ? "lt" : "lb", 
+                            true);
+                        
+                    onbass_width += B * 0.2;
+                } else {
+                    if (draw)
+                    /*
+                        canvas
+                            .getContext("2d")
+                            .drawImage(
+                                graphic.G_imgmap["assets/img/sharp.svg"],
+                                onbass_pos + onbass_width,
+                                y + param.row_height/2 + rootCharHeight/2,
+                                B * 0.2,
+                                r.height
+                            );*/
+                        graphic.CanvasImage(canvas, 
+                            graphic.G_imgmap["assets/img/sharp.svg"], 
+                            onbass_pos + onbass_width, 
+                            y + param.row_height/2 + rootCharHeight/2 + chord_offset_on_bass, 
+                            B*0.2, 
+                            r.height, 
+                            param.on_bass_style == "below"  ? "lt" : "lb", 
+                            true);
+
+                    onbass_width += B * 0.2;
+                }
+            }
+        }
+
+
+        var width = 0;
+        if(param.on_bass_style == "below" )
+            width = Math.max(upper_width, lower_width, onbass_width) + tensions_width;
+        else{
+            width = Math.max(upper_width, lower_width) + tensions_width + onbass_width;
+        }
 
         // Quantize with 0.25*B unit : Not so beneficial ?
         // width = Math.ceil(width / (B/4.0)) * (B/4.0);

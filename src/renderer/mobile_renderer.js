@@ -1143,8 +1143,8 @@ export class MobileRenderer extends Renderer {
                     let r = this.draw_coda_plain(
                         paper,
                         meas_base_x + mh_offset,
-                        yprof.mu.y,
-                        "lt",
+                        yprof.mu.y + yprof.mu.height,
+                        "lb",
                         e,
                         param.base_font_size
                     );
@@ -1153,7 +1153,7 @@ export class MobileRenderer extends Renderer {
                     let r = this.draw_segno_plain(
                         paper,
                         meas_base_x + mh_offset,
-                        yprof.mu.y,
+                        yprof.mu.y + yprof.mu.height,
                         e,
                         param.base_font_size
                     );
@@ -1334,7 +1334,7 @@ export class MobileRenderer extends Renderer {
                         let r = this.draw_coda_plain(
                             paper,
                             x,
-                            y_body_or_rs_base,
+                            yprof.mu.y + yprof.mu.height,
                             "rb",
                             e,
                             param.base_font_size
@@ -1343,7 +1343,7 @@ export class MobileRenderer extends Renderer {
                         graphic.CanvasText(
                             paper,
                             x - r.width,
-                            y_body_or_rs_base,
+                            yprof.mu.y + yprof.mu.height,
                             "To",
                             param.base_font_size / 2,
                             "rb"
@@ -1497,6 +1497,7 @@ export class MobileRenderer extends Renderer {
         var lx = x;
         var img_width = B/3;
         var img_height = B/2;
+        var text_size = B/2;
         /*paper
             .getContext("2d")
             .drawImage(graphic.G_imgmap["assets/img/segno.svg"], lx, y, B / 3, B / 2);
@@ -1507,16 +1508,16 @@ export class MobileRenderer extends Renderer {
             y, 
             img_width, 
             img_height,
-            "lt",
+            "lb",
             true);
         lx += img_width;
         if (segno.number !== null) {
             let r = graphic.CanvasText(
                 paper,
                 lx,
-                y + 15,
+                y,
                 segno.number,
-                B / 2,
+                text_size,
                 "lb"
             );
             lx += r.width;
@@ -1525,9 +1526,9 @@ export class MobileRenderer extends Renderer {
             let r = graphic.CanvasText(
                 paper,
                 lx,
-                y + 15,
+                y,
                 "(" + segno.opt + ")",
-                B / 2,
+                text_size,
                 "lb"
             );
             lx += r.width;
@@ -1541,21 +1542,22 @@ export class MobileRenderer extends Renderer {
         var ys = 0;
         var img_width = B/2;
         var img_height = B/2;
+        var text_size = B/2;
         if (align[1] == "b") {
             ys = - img_height;
         } else if (align[1] == "m") {
             ys = - img_height/2;
         }
-        var img_y = y + ys;
+        // var img_y = y; // + ys;
 
         if (align[0] == "r") {
             if (coda.number !== null) {
                 let r = graphic.CanvasText(
                     paper,
                     x,
-                    img_y + img_height,
+                    y, //img_y + img_height,
                     coda.number,
-                    img_width,
+                    text_size,
                     "rb"
                 );
                 width += r.width;
@@ -1571,11 +1573,11 @@ export class MobileRenderer extends Renderer {
                 );*/
             graphic.CanvasImage(paper, 
                 graphic.G_imgmap["assets/img/coda.svg"], 
-                x - width - img_width, 
-                img_y, 
+                x - width, 
+                y, 
                 img_width, 
                 img_height,
-                "lt",
+                "rb",
                 true);
             width += img_width;
         } else if (align[0] == "l") {
@@ -1591,19 +1593,19 @@ export class MobileRenderer extends Renderer {
             graphic.CanvasImage(paper, 
                 graphic.G_imgmap["assets/img/coda.svg"], 
                 x , 
-                img_y, 
+                y, 
                 img_width, 
                 img_height,
-                "lt",
+                "lb",
                 true);
             width += img_width;
             if (coda.number !== null) {
                 let r = graphic.CanvasText(
                     paper,
                     x + width,
-                    img_y + img_height,
+                    y, //img_y + img_height,
                     coda.number,
-                    img_width,
+                    text_size,
                     "lb"
                 );
                 width += r.width;

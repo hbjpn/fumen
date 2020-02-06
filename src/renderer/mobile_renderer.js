@@ -1495,10 +1495,21 @@ export class MobileRenderer extends Renderer {
 
     draw_segno_plain(paper, x, y, segno, B) {
         var lx = x;
-        paper
+        var img_width = B/3;
+        var img_height = B/2;
+        /*paper
             .getContext("2d")
             .drawImage(graphic.G_imgmap["assets/img/segno.svg"], lx, y, B / 3, B / 2);
-        lx += B / 3;
+        */
+        graphic.CanvasImage(paper, 
+            graphic.G_imgmap["assets/img/segno.svg"], 
+            lx, 
+            y, 
+            img_width, 
+            img_height,
+            "lt",
+            true);
+        lx += img_width;
         if (segno.number !== null) {
             let r = graphic.CanvasText(
                 paper,
@@ -1528,10 +1539,12 @@ export class MobileRenderer extends Renderer {
     draw_coda_plain(paper, x, y, align, coda, B) {
         var width = 0;
         var ys = 0;
+        var img_width = B/2;
+        var img_height = B/2;
         if (align[1] == "b") {
-            ys = -B / 2;
+            ys = - img_height;
         } else if (align[1] == "m") {
-            ys = -B / 2 / 2;
+            ys = - img_height/2;
         }
         var img_y = y + ys;
 
@@ -1540,14 +1553,14 @@ export class MobileRenderer extends Renderer {
                 let r = graphic.CanvasText(
                     paper,
                     x,
-                    img_y + B / 2,
+                    img_y + img_height,
                     coda.number,
-                    B / 2,
+                    img_width,
                     "rb"
                 );
                 width += r.width;
             }
-            paper
+            /*paper
                 .getContext("2d")
                 .drawImage(
                     graphic.G_imgmap["assets/img/coda.svg"],
@@ -1555,26 +1568,42 @@ export class MobileRenderer extends Renderer {
                     img_y,
                     B / 2,
                     B / 2
-                );
-            width += B / 2;
+                );*/
+            graphic.CanvasImage(paper, 
+                graphic.G_imgmap["assets/img/coda.svg"], 
+                x - width - img_width, 
+                img_y, 
+                img_width, 
+                img_height,
+                "lt",
+                true);
+            width += img_width;
         } else if (align[0] == "l") {
-            paper
+            /*paper
                 .getContext("2d")
                 .drawImage(
                     graphic.G_imgmap["assets/img/coda.svg"],
                     x,
                     img_y,
-                    B / 2,
-                    B / 2
-                );
-            width += B / 2;
+                    img_width,
+                    img_height
+                );*/
+            graphic.CanvasImage(paper, 
+                graphic.G_imgmap["assets/img/coda.svg"], 
+                x , 
+                img_y, 
+                img_width, 
+                img_height,
+                "lt",
+                true);
+            width += img_width;
             if (coda.number !== null) {
                 let r = graphic.CanvasText(
                     paper,
                     x + width,
-                    img_y + B / 2,
+                    img_y + img_height,
                     coda.number,
-                    B / 2,
+                    img_width,
                     "lb"
                 );
                 width += r.width;

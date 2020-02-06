@@ -187,7 +187,9 @@ export class Renderer {
 
         if (elems) {
             var _6exists = false,
-                _9exists = false;
+                _9exists = false,
+                _7exists = false,
+                _minus5exists = false;
             for (var i = 0; i < elems.length; ++i) {
                 var e = elems[i];
                 switch (e.type) {
@@ -208,11 +210,13 @@ export class Renderer {
                         _6791113suselem.push(e);
                         _6exists |= e.param == "6";
                         _9exists |= e.param == "9";
+                        _7exists |= e.param == "7";
                         break;
                     case "b":
                     case "#":
                         if (e.param == "5") _5thelem.push(e);
                         else _alteredelem.push(e);
+                        _minus5exists |= (e.type=="b" && e.param=="5");
                         break;
                     case "dim":
                         _6791113suselem.push(e);
@@ -230,7 +234,8 @@ export class Renderer {
             _5thelem: _5thelem,
             _6791113suselem: _6791113suselem,
             _alteredelem: _alteredelem,
-            _6_and_9_exists: _6exists && _9exists
+            _6_and_9_exists: _6exists && _9exists,
+            _halfdim_exists: _7exists && _minus5exists
 		};
     }
     

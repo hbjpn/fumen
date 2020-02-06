@@ -1862,48 +1862,25 @@ export class MobileRenderer extends Renderer {
             // No root but only bass
         }
 
-        /*
-        if (onbass != null && param.on_bass_style == "bottom") {
+        // Half diminish is firstly rendered
+        if(ce._halfdim_exists){
+            // Remove m7 and -5
+            _3rdelem = _3rdelem.filter((e)=>e.type!="m");
+            _6791113suselem = _6791113suselem.filter((e)=>!(e.type=="dig"&&e.param=="7"));
+            _5thelem = _5thelem.filter((e)=>e.type!="b");
+
             let r = graphic.CanvasText(
                 canvas,
-                x,
-                y + param.row_height/2 + rootCharHeight/2,
-                "/" + onbass[0],
-                B * 0.45,
-                "lt",
+                x + lower_width,
+                y + param.row_height/2 + rootCharHeight/2 + chord_offset_on_bass,
+                String.fromCharCode(0x00d8),
+                B * 0.5,
+                "lb",
                 B * 0.5,
                 !draw
             );
-            onbass_width += r.width;
-            if (onbass.length == 2) {
-                if (onbass[1] == "b") {
-                    if (draw)
-                        canvas
-                            .getContext("2d")
-                            .drawImage(
-                                graphic.G_imgmap["assets/img/flat.svg"],
-                                x + onbass_width,
-                                y + param.row_height/2 + rootCharHeight/2,
-                                B * 0.2,
-                                r.height
-                            );
-                    onbass_width += B * 0.2;
-                } else {
-                    if (draw)
-                        canvas
-                            .getContext("2d")
-                            .drawImage(
-                                graphic.G_imgmap["assets/img/sharp.svg"],
-                                x + onbass_width,
-                                y + param.row_height/2 + rootCharHeight/2,
-                                B * 0.2,
-                                r.height
-                            );
-                    onbass_width += B * 0.2;
-                }
-            }
+            lower_width += r.width;
         }
-        */
 
         _3rdelem.forEach(e => {
             if (e.type == "M" && _6791113suselem.length > 0) {

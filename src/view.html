@@ -22,14 +22,14 @@
 
             var score_area = document.getElementById("scores_area");
 
-            param.canvas_provider = function(){
+            var canvas_provider = function(){
               var score_area = document.getElementById("scores_area");
               var new_canvas = document.createElement("canvas");
               score_area.appendChild(new_canvas);
               return new_canvas;
             };
 
-            var renderer = new Fumen.MobileRenderer(null, param);
+            var renderer = new Fumen.MobileRenderer(null, param, canvas_provider);
             renderer.render(track);
         }
         window.onload = render;

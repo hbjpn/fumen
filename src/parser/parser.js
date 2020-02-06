@@ -663,8 +663,8 @@ export class Parser {
 
     parse(s) {
         try{
-            s.replace(/\r\n/g, "\n");
-            s.replace(/\r/g, "\n");
+            s = s.replace(/\r\n/g, "\n");
+            s = s.replace(/\r/g, "\n");
             var r = null;
             var loop_cnt = 0;
 

@@ -2093,6 +2093,8 @@ export class MobileRenderer extends Renderer {
 
         if (onbass != null) {
 
+            let on_bass_below_a_margin = param.on_bass_style == "below" ? 1 : 0;
+
             var onbass_pos =
                 param.on_bass_style == "below" ?
                 x :
@@ -2102,7 +2104,9 @@ export class MobileRenderer extends Renderer {
             let r = graphic.CanvasText(
                 canvas,
                 onbass_pos,
-                y + param.row_height/2 + rootCharHeight/2 + chord_offset_on_bass,
+                y + param.row_height/2 + rootCharHeight/2
+                 + chord_offset_on_bass
+                 + on_bass_below_a_margin,
                 "/" + onbass[0],
                 B * 0.45,
                 param.on_bass_style == "below"  ? "lt" : "lb",
@@ -2113,20 +2117,12 @@ export class MobileRenderer extends Renderer {
             if (onbass.length == 2) {
                 if (onbass[1] == "b") {
                     if (draw)
-                        /*canvas
-                            .getContext("2d")
-                            .drawImage(
-                                graphic.G_imgmap["assets/img/flat.svg"],
-                                onbass_pos + onbass_width,
-                                y + param.row_height/2 + rootCharHeight/2,
-                                B * 0.2,
-                                r.height
-                            );
-                        */
                         graphic.CanvasImage(canvas, 
                             graphic.G_imgmap["assets/img/flat.svg"], 
                             onbass_pos + onbass_width, 
-                            y + param.row_height/2 + rootCharHeight/2 + chord_offset_on_bass, 
+                            y + param.row_height/2 + rootCharHeight/2
+                             + chord_offset_on_bass
+                             + on_bass_below_a_margin,
                             B*0.2, 
                             r.height, 
                             param.on_bass_style == "below"  ? "lt" : "lb", 
@@ -2135,20 +2131,12 @@ export class MobileRenderer extends Renderer {
                     onbass_width += B * 0.2;
                 } else {
                     if (draw)
-                    /*
-                        canvas
-                            .getContext("2d")
-                            .drawImage(
-                                graphic.G_imgmap["assets/img/sharp.svg"],
-                                onbass_pos + onbass_width,
-                                y + param.row_height/2 + rootCharHeight/2,
-                                B * 0.2,
-                                r.height
-                            );*/
                         graphic.CanvasImage(canvas, 
                             graphic.G_imgmap["assets/img/sharp.svg"], 
                             onbass_pos + onbass_width, 
-                            y + param.row_height/2 + rootCharHeight/2 + chord_offset_on_bass, 
+                            y + param.row_height/2 + rootCharHeight/2 
+                                + chord_offset_on_bass
+                                + on_bass_below_a_margin, 
                             B*0.2, 
                             r.height, 
                             param.on_bass_style == "below"  ? "lt" : "lb", 

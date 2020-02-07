@@ -3,11 +3,18 @@ import "@babel/polyfill";
 var G_memCanvas = null;
 var G_pixelRatio = null;
 
-export function CanvasRect(canvas, x, y, w, h) {
+export function CanvasRect(canvas, x, y, w, h, fill=null) {
     var context = canvas.getContext("2d");
-    context.beginPath();
-    context.rect(x, y, w, h);
-    context.stroke();
+    context.save();
+    if(fill){
+        context.fillStyle=fill;
+        context.fillRect(x, y, w, h);
+    }else{
+        context.beginPath();
+        context.rect(x, y, w, h);
+        context.stroke();
+    }
+    context.restore();
 }
 
 export function CanvasCircle(canvas, x, y, r, draw=true) {

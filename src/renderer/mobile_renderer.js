@@ -45,6 +45,7 @@ var SR_RENDER_PARAM = {
     optimize_type: 1, // 0 : No optimization. 1: X-axis optimiation
     on_bass_style: "right", // right|below
     on_bass_below_y_offset: 0,
+    background_color: "white" // null will be transparent
 };
 
 // Simple renderer offsets
@@ -251,6 +252,11 @@ export class MobileRenderer extends Renderer {
             this.param.paper_width,
             this.param.paper_height
         );
+
+        if(param.background_color)
+            graphic.CanvasRect(canvas, 0, 0, 
+                this.param.paper_width, this.param.paper_height, 
+                param.background_color);
 
         // Title
         var ri = graphic.CanvasText(
@@ -519,6 +525,12 @@ export class MobileRenderer extends Renderer {
                         yse[pei].param.paper_width,
                         yse[pei].param.paper_height
                     );
+                    
+                    if(param.background_color)
+                        graphic.CanvasRect(canvas, 0, 0, 
+                            this.param.paper_width, this.param.paper_height, 
+                            param.background_color);
+
                     y_base = origin.y + yse[pei].param.y_offset;
                     // try again next page
                     pei = pei - 1;

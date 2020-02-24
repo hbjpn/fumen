@@ -2,6 +2,7 @@ import "@babel/polyfill";
 
 var G_memCanvas = null;
 var G_pixelRatio = null;
+var G_zoom = 4.0;
 
 export function CanvasRect(canvas, x, y, w, h, fill=null) {
     var context = canvas.getContext("2d");
@@ -156,7 +157,7 @@ export function GetCharProfile(fsize) {
     else {
         if (!G_memCanvas) {
             G_memCanvas = document.createElement("canvas");
-            G_pixelRatio = GetPixelRatio(G_memCanvas);
+            //G_pixelRatio = GetPixelRatio(G_memCanvas);
             SetupHiDPICanvas(G_memCanvas, 200, 200, G_pixelRatio);
             console.log("Pixel ratio = " + G_pixelRatio);
         }
@@ -172,12 +173,14 @@ export function CanvasText(canvas, x, y, text, fsize, align, xwidth, notdraw, op
     var ta = {
         l: "left",
         c: "center",
-        r: "right"
+        r: "right",
+        d: "left" // default
     };
     var tb = {
         t: "top",
         m: "middle",
-        b: "bottom"
+        b: "bottom",
+        d: "top" // default
     };
     var orgfont = context.font;
     let bold = ""; //"bold ";
@@ -190,8 +193,10 @@ export function CanvasText(canvas, x, y, text, fsize, align, xwidth, notdraw, op
         yadjust = -yroom.top_room;
     } else if (align[1] == "m") {
         yadjust = -(yroom.top_room + yroom.height / 2.0); // This is just a huristic guess
-    } else {
+    } else if (align[1] == "b"){
         yadjust = -(yroom.top_room + yroom.height);
+    } else{
+        // default
     }
 
     //console.log("yoffset/yadjust/key = " + JSON.stringify(yroom) + "/" + yadjust);
@@ -348,15 +353,16 @@ export function GetPixelRatio(canvas) {
 
 export function SetupHiDPICanvas(canvas, w, h, ratio) {
     if (!ratio) ratio = GetPixelRatio(canvas);
+    G_pixelRatio = ratio;
 
     //console.log(ratio + "/" + w + "," + h);
 
     var ctx = canvas.getContext("2d");
-    canvas.width = w * ratio;
-    canvas.height = h * ratio;
-    canvas.style.width = w + "px";
-    canvas.style.height = h + "px";
-    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    canvas.width = w * ratio * G_zoom;
+    canvas.height = h * ratio * G_zoom;
+    canvas.style.width = w * G_zoom + "px";
+    canvas.style.height = h * G_zoom + "px";
+    ctx.setTransform(ratio * G_zoom, 0, 0, ratio * G_zoom, 0, 0);
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -366,7 +372,7 @@ export function SetupHiDPICanvas(canvas, w, h, ratio) {
 function JudgeTextYPosOffset(canvas, bold, fontfamily, fontsize) {
     var context = canvas.getContext("2d");
 
-    var bs = fontsize * G_pixelRatio;
+    var bs = 1000; //fontsize * G_pixelRatio;
 
     context.clearRect(0, 0, bs, bs);
     context.font = bold + fontsize + "px '" + fontfamily + "'";
@@ -417,9 +423,10 @@ function JudgeTextYPosOffset(canvas, bold, fontfamily, fontsize) {
         else ++M_height;
     }
 
+    // here the raw pixel data resolution is G_pixelRatio * G_zoom times. (Same value as setTransform in SetupHIDPICanvas) 
     return {
-        top_room: top_room / G_pixelRatio,
-        height: M_height / G_pixelRatio
+        top_room: top_room / G_pixelRatio / G_zoom,
+        height: M_height / G_pixelRatio / G_zoom
     };
 
 }

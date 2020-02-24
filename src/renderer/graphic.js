@@ -2,7 +2,7 @@ import "@babel/polyfill";
 
 var G_memCanvas = null;
 var G_pixelRatio = null;
-var G_zoom = 4.0;
+var G_zoom = null;
 
 export function CanvasRect(canvas, x, y, w, h, fill=null) {
     var context = canvas.getContext("2d");
@@ -157,8 +157,7 @@ export function GetCharProfile(fsize) {
     else {
         if (!G_memCanvas) {
             G_memCanvas = document.createElement("canvas");
-            //G_pixelRatio = GetPixelRatio(G_memCanvas);
-            SetupHiDPICanvas(G_memCanvas, 200, 200, G_pixelRatio);
+            SetupHiDPICanvas(G_memCanvas, 200, 200, G_pixelRatio, G_zoom);
             console.log("Pixel ratio = " + G_pixelRatio);
         }
         yroom = JudgeTextYPosOffset(G_memCanvas, bold, fontfamily, fsize);
@@ -351,9 +350,13 @@ export function GetPixelRatio(canvas) {
     return dpr / bsr;
 }
 
-export function SetupHiDPICanvas(canvas, w, h, ratio) {
+export function SetupHiDPICanvas(canvas, w, h, ratio, zoom) {
     if (!ratio) ratio = GetPixelRatio(canvas);
+    if (!zoom) zoom = 1.0;
+
+    // This is not a good manner, though...
     G_pixelRatio = ratio;
+    G_zoom = zoom;
 
     //console.log(ratio + "/" + w + "," + h);
 

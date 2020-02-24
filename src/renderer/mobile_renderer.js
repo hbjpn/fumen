@@ -26,8 +26,9 @@ var SR_RENDER_PARAM = {
     above_ml_area_margin: 0, // Margin between (chord/rythm slash) and measure lower(lyrics etc) rea
     header_body_margin: 2, // Margin between header and body (x-direction)
     max_scaling: 1.2,
-    paper_width: (96 * 210) / 25.4, // 96dpi * A4_width[mm] / 25.4[mm/inche]
-    paper_height: (96 * 297) / 25.4, // 96dpi * A4_height[mm] / 25.4[mm/inche]
+    paper_width: (96 * 210) / 25.4, // 96dpi * A4_width[mm] / 25.4[mm/inche], total canvas width = paper_width * zoom
+    paper_height: (96 * 297) / 25.4, // 96dpi * A4_height[mm] / 25.4[mm/inche], total canvas height = paper_height * zoom
+    zoom: 1.0, // total canvas size will be [paper_width * zoom, paper_height*zoom]
     ncol: 1, // Number of columns of score inside the paper
     nrow: 1, // Number of rows of score inside the paper
     repeat_mark_font: {
@@ -250,7 +251,9 @@ export class MobileRenderer extends Renderer {
         graphic.SetupHiDPICanvas(
             canvas,
             this.param.paper_width,
-            this.param.paper_height
+            this.param.paper_height,
+            null,
+            this.param.zoom
         );
 
         if(param.background_color)
@@ -523,7 +526,9 @@ export class MobileRenderer extends Renderer {
                     graphic.SetupHiDPICanvas(
                         canvas,
                         yse[pei].param.paper_width,
-                        yse[pei].param.paper_height
+                        yse[pei].param.paper_height,
+                        null,
+                        this.param.zoom
                     );
                     
                     if(param.background_color)

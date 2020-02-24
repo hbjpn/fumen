@@ -28,7 +28,7 @@ var SR_RENDER_PARAM = {
     max_scaling: 1.2,
     paper_width: (96 * 210) / 25.4, // 96dpi * A4_width[mm] / 25.4[mm/inche], total canvas width = paper_width * zoom
     paper_height: (96 * 297) / 25.4, // 96dpi * A4_height[mm] / 25.4[mm/inche], total canvas height = paper_height * zoom
-    zoom: 1.0, // total canvas size will be [paper_width * zoom, paper_height*zoom]
+    zoom: 1.0, // total canvas size will be [paper_width * zoom, paper_height*zoom]. NOTE that even the canvas size is scaled with zoom, any coordinate unit/size infomation inside the renderer stays the same and no need to be conscious about zoom value.
     ncol: 1, // Number of columns of score inside the paper
     nrow: 1, // Number of rows of score inside the paper
     repeat_mark_font: {

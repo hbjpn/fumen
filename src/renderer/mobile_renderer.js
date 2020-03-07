@@ -147,6 +147,14 @@ export class MobileRenderer extends Renderer {
             if(room_per_elem < 0 || param.optimize_type == 0){
                 row_elements_list.forEach(e=>{e.renderprop.room_per_elem=room_per_elem;});
                 row++;
+            }else if(param.optimize_type == 2){
+                // Equal division
+                row_elements_list.forEach((e,colidx)=>{
+                    e.renderprop.room_per_elem = 
+                        (total_width/num_meas-x_width_info[colidx].meas_fixed_width)
+                            / x_width_info[colidx].meas_num_flexible_rooms;
+                });
+                row++;          
             }else{
                 // Group the rows with the same number of measures from #row
                 let same_nmeas_row_group = [];

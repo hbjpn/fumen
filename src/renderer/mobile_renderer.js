@@ -142,17 +142,20 @@ export class MobileRenderer extends Renderer {
             let num_flexible_rooms = field_sum(x_width_info,"meas_num_flexible_rooms");
             let num_meas = row_elements_list.length;
 
-            let room_per_elem = (total_width - fixed_width) / num_flexible_rooms;
+            let room_per_elem_constant = (total_width - fixed_width) / num_flexible_rooms; // Constant room for all room
+            let room_per_elem_even_meas = []; // room per eleme for each meas in case even division of width for each measure
+            for(let mi=0; mi < num_meas; ++mi){
+                room_per_elem_even_meas.push( (total_width/num_meas-x_width_info[mi].meas_fixed_width)
+                            / x_width_info[mi].meas_num_flexible_rooms );
+            }
 
-            if(room_per_elem < 0 || param.optimize_type == 0){
-                row_elements_list.forEach(e=>{e.renderprop.room_per_elem=room_per_elem;});
+            if(room_per_elem_constant < 0 || param.optimize_type == 0){
+                row_elements_list.forEach(e=>{e.renderprop.room_per_elem=room_per_elem_constant;});
                 row++;
             }else if(param.optimize_type == 2){
                 // Equal division
-                row_elements_list.forEach((e,colidx)=>{
-                    e.renderprop.room_per_elem = 
-                        (total_width/num_meas-x_width_info[colidx].meas_fixed_width)
-                            / x_width_info[colidx].meas_num_flexible_rooms;
+                row_elements_list.forEach((e,mi)=>{
+                    e.renderprop.room_per_elem = room_per_elem_even_meas[mi];
                 });
                 row++;          
             }else{

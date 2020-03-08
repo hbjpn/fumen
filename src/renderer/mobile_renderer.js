@@ -44,6 +44,7 @@ var SR_RENDER_PARAM = {
     note_bar_length: 24/4*3.5, // 3.5 times of interval is the conventional length
     note_flag_interval: 5,
     optimize_type: 1, // 0 : No optimization. 1: X-axis optimiation
+    min_room: 10, // Minimum room for flexile elements
     on_bass_style: "right", // right|below
     on_bass_below_y_offset: 0,
     background_color: "white" // null will be transparent
@@ -130,31 +131,39 @@ export class MobileRenderer extends Renderer {
 
         // Optimize width of each measure
         let row = 0;
+
+        // Minimum room for flexible elements. It is treated as part of fixed width, 
+        // hence it is just systematically added when "meas_fixed_width" is reffered.
+        // And finallly min_room is added for room_per_elem.
+        let min_room = param.min_room; 
+
         while (row < reharsal_x_width_info.length){
             let row_elements_list = reharsal_x_width_info[row][0];
 
             let x_width_info = reharsal_x_width_info[row][1]; // For number of measures
-
-            //let fixed_width = x_width_info.reduce((acc,e)=> {
-             //   return {meas_fixed_width:acc.meas_fixed_width+e.meas_fixed_width};).meas_fixed_width;
-            //let num_flexible_rooms = x_width_info.reduce((acc,e) => acc+e.meas_num_flexible_rooms);
-            let fixed_width = field_sum(x_width_info,"meas_fixed_width");
+            
             let num_flexible_rooms = field_sum(x_width_info,"meas_num_flexible_rooms");
+            let fixed_width = field_sum(x_width_info,"meas_fixed_width") + min_room * num_flexible_rooms;
             let num_meas = row_elements_list.length;
 
             let room_per_elem_constant = (total_width - fixed_width) / num_flexible_rooms; // Constant room for all room
             let room_per_meas_even_meas = []; // room per measure for each meas in case even division of width for each measure
             for(let mi=0; mi < num_meas; ++mi){
-                room_per_meas_even_meas.push(total_width/num_meas-x_width_info[mi].meas_fixed_width);
+                room_per_meas_even_meas.push(
+                    total_width/num_meas - 
+                    x_width_info[mi].meas_fixed_width - 
+                    min_room*x_width_info[mi].meas_num_flexible_rooms);
             }
 
             if(room_per_elem_constant < 0 || param.optimize_type == 0){
-                row_elements_list.forEach(e=>{e.renderprop.room_per_elem=room_per_elem_constant;});
+                row_elements_list.forEach(e=>{e.renderprop.room_per_elem=room_per_elem_constant+min_room;});
                 row++;
             }else if(param.optimize_type == 2){
                 // Equal division
                 row_elements_list.forEach((e,mi)=>{
-                    e.renderprop.room_per_elem = room_per_meas_even_meas[mi] / x_width_info[mi].meas_num_flexible_rooms;
+                    e.renderprop.room_per_elem = 
+                        room_per_meas_even_meas[mi] / x_width_info[mi].meas_num_flexible_rooms +
+                        min_room;
                 });
                 row++;          
             }else if(param.optimize_type == 3){
@@ -173,7 +182,9 @@ export class MobileRenderer extends Renderer {
                 row_elements_list.forEach((e,mi)=>{
                     let R0 = room_per_elem_constant * x_width_info[mi].meas_num_flexible_rooms;
                     let R2 = room_per_meas_even_meas[mi];
-                    e.renderprop.room_per_elem =  ( alpha * R0 + (1 - alpha) * R2 ) / x_width_info[mi].meas_num_flexible_rooms;
+                    e.renderprop.room_per_elem = 
+                        ( alpha * R0 + (1 - alpha) * R2 ) / x_width_info[mi].meas_num_flexible_rooms +
+                        min_room;
                 });
                 console.log("alpha = " + alpha);
                 row++; 
@@ -190,6 +201,12 @@ export class MobileRenderer extends Renderer {
                 }
 
                 // Take maximum of each column, and check if total width wider than paper width
+                // Make virtual combined row having : 
+                //    Fixed width = max( fixed width of all rows in correspoding column )
+                //    Number of elements = max ( number of elements of all rows in corresponding column)
+                //    NOTE : Sometimes one element has wider fixed width than sum of fixed with of multiple elements. 
+                //           Even if so, "number of elements" of virtual combined row will be just a maximum of number of elements, 
+                //           rather than number of elments of measure with maximum fixed width.
                 let max_fixed_widths = new Array(num_meas).fill(0);
                 let max_num_flexile_rooms = new Array(num_meas).fill(0);
 
@@ -198,8 +215,8 @@ export class MobileRenderer extends Renderer {
                     let dammy_max_num_flexile_rooms = new Array(num_meas).fill(0);
 
                     for(let mi=0; mi < num_meas; ++mi){
-                        let meas_fixed_width_dash = same_nmeas_row_group[rowdash][1][mi].meas_fixed_width;
                         let meas_num_flexible_rooms_dash = same_nmeas_row_group[rowdash][1][mi].meas_num_flexible_rooms;
+                        let meas_fixed_width_dash = same_nmeas_row_group[rowdash][1][mi].meas_fixed_width + min_room * meas_num_flexible_rooms_dash;
                         dammy_max_fixed_widths[mi] = Math.max(meas_fixed_width_dash, max_fixed_widths[mi]);
                         dammy_max_num_flexile_rooms[mi] = Math.max(meas_num_flexible_rooms_dash, max_num_flexile_rooms[mi]);
                     }
@@ -214,6 +231,10 @@ export class MobileRenderer extends Renderer {
                 // Here rowdash means number of actually grouped rows
                 let act_num_grouped_rows = rowdash;
 
+                console.log("max_fixed_widths :");
+                console.log(max_fixed_widths);
+                console.log("max_num_flexile_rooms :");
+                console.log(max_num_flexile_rooms);
                
                 //let max_measure_widths = new Array(num_meas).fill(0);
                 // room per froom with maximum fixed with only
@@ -230,13 +251,14 @@ export class MobileRenderer extends Renderer {
                 for(rowdash=0; rowdash<act_num_grouped_rows; ++rowdash){
 
                     for(let mi=0; mi < num_meas; ++mi){
-                        let meas_fixed_width_dash = same_nmeas_row_group[rowdash][1][mi].meas_fixed_width;
                         let num_flexible_rooms_dash = same_nmeas_row_group[rowdash][1][mi].meas_num_flexible_rooms;
+                        let meas_fixed_width_dash = same_nmeas_row_group[rowdash][1][mi].meas_fixed_width + 
+                            min_room * num_flexible_rooms_dash;
 
                         let adjusted_room_per_elem = (max_measure_widths[mi] - meas_fixed_width_dash)/num_flexible_rooms_dash;
                         
                         let m = same_nmeas_row_group[rowdash][0][mi];
-                        m.renderprop.room_per_elem = adjusted_room_per_elem;
+                        m.renderprop.room_per_elem = adjusted_room_per_elem + min_room;
                     }
                 }
 

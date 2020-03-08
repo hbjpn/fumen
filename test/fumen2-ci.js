@@ -115,24 +115,24 @@ let capture = (async(addr, fumenfile, headInfo) => {
 
     let numDiffPixels = 0;
     if(prev_sc_file && prev_sc_file.file == pngname){
-        // No update
-        numDiffPixels = NO_UPDATE; 
-    }else{
-        console.log(clips[0]);
-        let scdir = path.join(path.dirname(fumenfile),scdirname);
-        //outpath = path.join(outpath,`${tcname}.${i}.${datems}.${headInfo.commit}.png`);
-        let full_path = path.join(scdir,pngname);
-        console.log("Capturing to "+full_path);
-        await page.screenshot({ clip: clips[0], path: full_path});
+        // Not yet comitted. In that case, the image is generated with the name indicating it is workingcopy
+        pngname = `${tcname}.workingcopy.${headInfo.commit}.png`;
+    }
 
-        // Generate diff file if prev file is identified
-        if(prev_sc_file){
-            let prev_full_path = path.join(scdir, prev_sc_file.file);
-            let diff_full_path = path.join(scdir, `${tcname}.diff.${headInfo.commit}-${prev_sc_file.commit}.png`);
-            numDiffPixels = takediff(full_path, prev_full_path, diff_full_path);
-        }else{
-            numDiffPixels = FIRST_SC;
-        }
+    console.log(clips[0]);
+    let scdir = path.join(path.dirname(fumenfile),scdirname);
+    //outpath = path.join(outpath,`${tcname}.${i}.${datems}.${headInfo.commit}.png`);
+    let full_path = path.join(scdir,pngname);
+    console.log("Capturing to "+full_path);
+    await page.screenshot({ clip: clips[0], path: full_path});
+
+    // Generate diff file if prev file is identified
+    if(prev_sc_file){
+        let prev_full_path = path.join(scdir, prev_sc_file.file);
+        let diff_full_path = path.join(scdir, `${tcname}.diff.${headInfo.commit}-${prev_sc_file.commit}.png`);
+        numDiffPixels = takediff(full_path, prev_full_path, diff_full_path);
+    }else{
+        numDiffPixels = FIRST_SC;
     }
 
     await browser.close();

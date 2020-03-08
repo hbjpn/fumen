@@ -143,10 +143,9 @@ export class MobileRenderer extends Renderer {
             let num_meas = row_elements_list.length;
 
             let room_per_elem_constant = (total_width - fixed_width) / num_flexible_rooms; // Constant room for all room
-            let room_per_elem_even_meas = []; // room per eleme for each meas in case even division of width for each measure
+            let room_per_meas_even_meas = []; // room per measure for each meas in case even division of width for each measure
             for(let mi=0; mi < num_meas; ++mi){
-                room_per_elem_even_meas.push( (total_width/num_meas-x_width_info[mi].meas_fixed_width)
-                            / x_width_info[mi].meas_num_flexible_rooms );
+                room_per_meas_even_meas.push(total_width/num_meas-x_width_info[mi].meas_fixed_width);
             }
 
             if(room_per_elem_constant < 0 || param.optimize_type == 0){
@@ -155,9 +154,29 @@ export class MobileRenderer extends Renderer {
             }else if(param.optimize_type == 2){
                 // Equal division
                 row_elements_list.forEach((e,mi)=>{
-                    e.renderprop.room_per_elem = room_per_elem_even_meas[mi];
+                    e.renderprop.room_per_elem = room_per_meas_even_meas[mi] / x_width_info[mi].meas_num_flexible_rooms;
                 });
                 row++;          
+            }else if(param.optimize_type == 3){
+                // https://docs.google.com/document/d/1oPmUvAF6-KTsQrEovYJgMZSDqlztp4pL-XVs8uee7A4/edit?usp=sharing
+                // Here alpha=1 case is filtered at the first IF statement, then we only consider the case
+                // where room when optimize_type = 0 is positive.
+                let alpha = 0.0;
+                for(let mi=0; mi < num_meas; ++mi){
+                    if(room_per_meas_even_meas[mi] < 0){
+                        let R0 = room_per_elem_constant * x_width_info[mi].meas_num_flexible_rooms;
+                        let R2 = room_per_meas_even_meas[mi];
+                        let alpha_dash = R2/(R2 - R0); // should be a positive value less than 1
+                        alpha = Math.max(alpha, alpha_dash);
+                    }
+                }
+                row_elements_list.forEach((e,mi)=>{
+                    let R0 = room_per_elem_constant * x_width_info[mi].meas_num_flexible_rooms;
+                    let R2 = room_per_meas_even_meas[mi];
+                    e.renderprop.room_per_elem =  ( alpha * R0 + (1 - alpha) * R2 ) / x_width_info[mi].meas_num_flexible_rooms;
+                });
+                console.log("alpha = " + alpha);
+                row++; 
             }else{
                 // Group the rows with the same number of measures from #row
                 let same_nmeas_row_group = [];

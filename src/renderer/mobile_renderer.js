@@ -172,14 +172,14 @@ export class MobileRenderer extends Renderer {
                 let max_num_flexile_rooms = new Array(num_meas).fill(0);
 
                 for(rowdash=0; rowdash<same_nmeas_row_group.length; ++rowdash){
-                    let dammy_max_fixed_widths = common.deepcopy(max_fixed_widths);
-                    let dammy_max_num_flexile_rooms = common.deepcopy(max_num_flexile_rooms);
+                    let dammy_max_fixed_widths = new Array(num_meas).fill(0);
+                    let dammy_max_num_flexile_rooms = new Array(num_meas).fill(0);
 
                     for(let mi=0; mi < num_meas; ++mi){
                         let meas_fixed_width_dash = same_nmeas_row_group[rowdash][1][mi].meas_fixed_width;
                         let meas_num_flexible_rooms_dash = same_nmeas_row_group[rowdash][1][mi].meas_num_flexible_rooms;
                         dammy_max_fixed_widths[mi] = Math.max(meas_fixed_width_dash, max_fixed_widths[mi]);
-                        dammy_max_num_flexile_rooms[mi] = Math.max(meas_num_flexible_rooms_dash, dammy_max_num_flexile_rooms[mi]);
+                        dammy_max_num_flexile_rooms[mi] = Math.max(meas_num_flexible_rooms_dash, max_num_flexile_rooms[mi]);
                     }
                     let dammy_max_fixed_width = dammy_max_fixed_widths.reduce((acc,e)=>acc+e);
                     if(dammy_max_fixed_width > total_width) break;

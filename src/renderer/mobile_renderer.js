@@ -146,11 +146,26 @@ export class MobileRenderer extends Renderer {
             let fixed_width = field_sum(x_width_info,"meas_fixed_width") + min_room * num_flexible_rooms;
             let num_meas = row_elements_list.length;
 
+            let num_meas_to_consider = num_meas;  // for type #2 and #3
+
+            // In case right align is enabled, then add dammy measures
+            let right_align = row_elements_list[0].right_align ? true : false; 
+            let right_align_valid = right_align && row > 0 && reharsal_x_width_info[row-1][0].length > num_meas;
+            if(right_align_valid){
+                //let dammy_add_num = reharsal_x_width_info[row-1][0].length - num_meas;
+                num_meas_to_consider = reharsal_x_width_info[row-1][0].length;
+                /*for(let di=0; di < dammy_add_num; ++di){
+                    let dammy_measure = new common.Measure();
+                   row_elements_list.splice(0, 0, dammy_measure);
+                   x_width_info.splice(0, 0, {"meas_fixed_width":0, "meas_num_flexible_rooms":0});
+                }*/
+            }
+
             let room_per_elem_constant = (total_width - fixed_width) / num_flexible_rooms; // Constant room for all room
             let room_per_meas_even_meas = []; // room per measure for each meas in case even division of width for each measure
             for(let mi=0; mi < num_meas; ++mi){
                 room_per_meas_even_meas.push(
-                    total_width/num_meas - 
+                    total_width/num_meas_to_consider - 
                     x_width_info[mi].meas_fixed_width - 
                     min_room*x_width_info[mi].meas_num_flexible_rooms);
             }
@@ -164,6 +179,9 @@ export class MobileRenderer extends Renderer {
                     e.renderprop.room_per_elem = 
                         room_per_meas_even_meas[mi] / x_width_info[mi].meas_num_flexible_rooms +
                         min_room;
+                    if(right_align_valid && mi==0)
+                        e.renderprop.left_margin = total_width / 
+                            num_meas_to_consider * (num_meas_to_consider - num_meas);
                 });
                 row++;          
             }else if(param.optimize_type == 3){
@@ -179,13 +197,18 @@ export class MobileRenderer extends Renderer {
                         alpha = Math.max(alpha, alpha_dash);
                     }
                 }
+                let row_total_width = 0;
                 row_elements_list.forEach((e,mi)=>{
                     let R0 = room_per_elem_constant * x_width_info[mi].meas_num_flexible_rooms;
                     let R2 = room_per_meas_even_meas[mi];
                     e.renderprop.room_per_elem = 
                         ( alpha * R0 + (1 - alpha) * R2 ) / x_width_info[mi].meas_num_flexible_rooms +
                         min_room;
+                    row_total_width += e.renderprop.room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
+                    row_total_width += x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
                 });
+                if(right_align_valid)
+                    row_elements_list[0].renderprop.left_margin = total_width - row_total_width;
                 console.log("alpha = " + alpha);
                 row++; 
             }else{
@@ -1153,6 +1176,10 @@ export class MobileRenderer extends Renderer {
         // if ylimit is specified, and drawing region surpass that limit, do not render
         if (ylimit !== null && y_next_base > ylimit) {
             return null;
+        }
+
+        if(row_elements_list[0].renderprop.left_margin != null){
+            x += row_elements_list[0].renderprop.left_margin;
         }
 
         // Reharsal mark if any

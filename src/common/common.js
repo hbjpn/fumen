@@ -242,6 +242,7 @@ export class Measure {
         this.body_scaling = 1.0;
         this.raw_new_line = false; // Raw "new line" mark. Maked when this is a second or later measure inside a reharsal group after one ore more new lines in the fumen code
         this.new_line = false; // THis is used in renderer
+        this.right_align = false;
 
         this.renderprop = {}; // Rendering information storage
     }

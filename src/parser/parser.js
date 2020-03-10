@@ -574,7 +574,7 @@ export class Parser {
         return { measure: measure, s: s };
     }
 
-    parseMeasures(trig_token_obj, s, double_line_break) {
+    parseMeasures(trig_token_obj, s) {
         // prerequisite :
         //   trig_token_obj == "|" or "||" or "||:" with params
         // After calling this method, context will be out of measure context, that is,
@@ -671,8 +671,8 @@ export class Parser {
             var track = new common.Track();
 
             var currentReharsalGroup = null;
-            var currentBlock = null;
             var latest_macros = {};
+            var right_align_enabled = false;
 
             this.context = {
                 line: 0,
@@ -688,12 +688,16 @@ export class Parser {
                 if (r.type == TOKEN_NL) {
                     this.context.line += 1;
                     this.context.contiguous_line_break += 1;
+                    right_align_enabled = false;
                 } else if(r.type == TOKEN_BACK_SLASH){
                     // Expect TOKEN_NL 
                     r = this.nextToken(r.s);
                     if(r.type != TOKEN_NL) this.onParseError("INVALID CODE DETECTED AFTER BACK SLASH");
                     this.context.line += 1;
                     // Does not count as line break
+                }else if(r.type == TOKEN_BRACKET_RA){
+                    // Right aligh indicoator > which is outside measure
+                    right_align_enabled = true;
                 } else {
                     if (r.type == TOKEN_BRACKET_LS) {
                         // Reset latest_macros
@@ -732,6 +736,9 @@ export class Parser {
                             } else if (this.context.contiguous_line_break == 1){
                                 // When new line in the fumen code in the middle of a block
                                 r.measures[0].raw_new_line = true;
+                            }
+                            if(right_align_enabled){
+                                r.measures[0].right_align = true;
                             }
                             var blocklen = currentReharsalGroup.blocks.length;
                             currentReharsalGroup.blocks[

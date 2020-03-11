@@ -150,20 +150,26 @@ export class MobileRenderer extends Renderer {
 
             let num_meas_to_consider = num_meas;  // for type #2 and #3
 
-            // In case right align is enabled, then add dammy measures
-            let reduced_meas_valid = 
-                (row_elements_list[0].align != "expand") && 
-                row > 0 && 
-                reharsal_x_width_info[row-1][0].length > num_meas;
+            // In case right or left align is specified
+            let reduced_meas_valid = false;
+            if(row_elements_list[0].align != "expand" && row > 0){
+                // find the last measure for which expand is applied, or fallback to #0.
+                let rowdash;
+                for(rowdash=row-1; rowdash>=0; --rowdash){
+                    if(reharsal_x_width_info[rowdash][0].align == "expand") break;
+                }
+                if(rowdash<0) rowdash=0; // Fallback to #0 even it has right|left align
+                reduced_meas_valid = (reharsal_x_width_info[rowdash][0].length > num_meas);
             
-            if(reduced_meas_valid){
-                //let dammy_add_num = reharsal_x_width_info[row-1][0].length - num_meas;
-                num_meas_to_consider = reharsal_x_width_info[row-1][0].length;
-                /*for(let di=0; di < dammy_add_num; ++di){
-                    let dammy_measure = new common.Measure();
-                   row_elements_list.splice(0, 0, dammy_measure);
-                   x_width_info.splice(0, 0, {"meas_fixed_width":0, "meas_num_flexible_rooms":0});
-                }*/
+                if(reduced_meas_valid){
+                    //let dammy_add_num = reharsal_x_width_info[row-1][0].length - num_meas;
+                    num_meas_to_consider = reharsal_x_width_info[rowdash][0].length;
+                    /*for(let di=0; di < dammy_add_num; ++di){
+                        let dammy_measure = new common.Measure();
+                    row_elements_list.splice(0, 0, dammy_measure);
+                    x_width_info.splice(0, 0, {"meas_fixed_width":0, "meas_num_flexible_rooms":0});
+                    }*/
+                }
             }
 
             let room_per_elem_constant = (total_width - fixed_width) / num_flexible_rooms; // Constant room for all room

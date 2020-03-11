@@ -672,7 +672,7 @@ export class Parser {
 
             var currentReharsalGroup = null;
             var latest_macros = {};
-            var right_align_enabled = false;
+            var current_align = "expand";
 
             this.context = {
                 line: 0,
@@ -688,7 +688,7 @@ export class Parser {
                 if (r.type == TOKEN_NL) {
                     this.context.line += 1;
                     this.context.contiguous_line_break += 1;
-                    right_align_enabled = false;
+                    current_align = "expand"; // default is expand
                 } else if(r.type == TOKEN_BACK_SLASH){
                     // Expect TOKEN_NL 
                     r = this.nextToken(r.s);
@@ -697,7 +697,10 @@ export class Parser {
                     // Does not count as line break
                 }else if(r.type == TOKEN_BRACKET_RA){
                     // Right aligh indicoator > which is outside measure
-                    right_align_enabled = true;
+                    current_align = "right";
+                }else if(r.type == TOKEN_BRACKET_LA){
+                    // Right aligh indicoator > which is outside measure
+                    current_align = "left";
                 } else {
                     if (r.type == TOKEN_BRACKET_LS) {
                         // Reset latest_macros
@@ -737,9 +740,8 @@ export class Parser {
                                 // When new line in the fumen code in the middle of a block
                                 r.measures[0].raw_new_line = true;
                             }
-                            if(right_align_enabled){
-                                r.measures[0].right_align = true;
-                            }
+                            r.measures[0].align = current_align;
+
                             var blocklen = currentReharsalGroup.blocks.length;
                             currentReharsalGroup.blocks[
                                 blocklen - 1

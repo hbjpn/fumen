@@ -151,10 +151,12 @@ export class MobileRenderer extends Renderer {
             let num_meas_to_consider = num_meas;  // for type #2 and #3
 
             // In case right align is enabled, then add dammy measures
-            let right_align = row_elements_list[0].right_align ? true : false; 
-            let right_align_valid = right_align && row > 0 && reharsal_x_width_info[row-1][0].length > num_meas;
+            let reduced_meas_valid = 
+                (row_elements_list[0].align != "expand") && 
+                row > 0 && 
+                reharsal_x_width_info[row-1][0].length > num_meas;
             
-            if(right_align_valid){
+            if(reduced_meas_valid){
                 //let dammy_add_num = reharsal_x_width_info[row-1][0].length - num_meas;
                 num_meas_to_consider = reharsal_x_width_info[row-1][0].length;
                 /*for(let di=0; di < dammy_add_num; ++di){
@@ -189,11 +191,11 @@ export class MobileRenderer extends Renderer {
                     
                     x_width_info[mi].measure_width = e.renderprop.room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
                     x_width_info[mi].measure_width += x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
-    
-                    if(right_align_valid && mi==0)
-                        e.renderprop.left_margin = total_width / 
-                            num_meas_to_consider * (num_meas_to_consider - num_meas);
                 });
+                    
+                if(reduced_meas_valid && row_elements_list[0].align == "right")
+                    row_elements_list[0].renderprop.left_margin = total_width / 
+                        num_meas_to_consider * (num_meas_to_consider - num_meas);
                 row++;          
             }else if(param.optimize_type == 3){
                 // https://docs.google.com/document/d/1oPmUvAF6-KTsQrEovYJgMZSDqlztp4pL-XVs8uee7A4/edit?usp=sharing
@@ -221,7 +223,7 @@ export class MobileRenderer extends Renderer {
 
                     row_total_width += x_width_info[mi].measure_width; 
                 });
-                if(right_align_valid)
+                if(reduced_meas_valid && row_elements_list[0].align == "right")
                     row_elements_list[0].renderprop.left_margin = total_width - row_total_width;
                 console.log("alpha = " + alpha);
                 row++; 
@@ -246,7 +248,7 @@ export class MobileRenderer extends Renderer {
                     if(reharsal_x_width_info[rowdash][0].length == num_meas){
                         same_nmeas_row_group.push(reharsal_x_width_info[rowdash]);
                     }else if(rowdash > 0 && 
-                             reharsal_x_width_info[rowdash][0][0].right_align && 
+                             (reharsal_x_width_info[rowdash][0][0].align != "expand") && 
                              reharsal_x_width_info[rowdash][0].length < num_meas){
                         same_nmeas_row_group.push(reharsal_x_width_info[rowdash]);
                     }else{
@@ -261,6 +263,29 @@ export class MobileRenderer extends Renderer {
                 //    Fixed width = max( fixed width of all rows in correspoding column )
                 let max_measure_widths = new Array(num_meas).fill(0); 
 
+                // In case the row with less measures than other rows exists,
+                // mapping of measure index is not a simple 1:1 relation.
+                // This function is to map the global measure index to local measure index
+                let getMeasRefIndex = function(globalmi, row_elements_list, base_num_meas){
+                    let mi_ref = globalmi;
+                    if(row_elements_list.length < base_num_meas){
+                        if(row_elements_list[0].align == "right"){
+                            if(globalmi >= (base_num_meas - row_elements_list.length) )
+                                mi_ref = globalmi - (base_num_meas - row_elements_list.length);
+                            else
+                                mi_ref = null; // Not corresponding meas exist
+                        }else if(row_elements_list[0].align == "left"){
+                            if(globalmi < row_elements_list.length)
+                                mi_ref = globalmi;
+                            else
+                                mi_ref = null; // Not corresponding meas exist
+                        }
+                    }else if(row_elements_list.length > base_num_meas){
+                        throw "Vertical align process error"; // Should be bug
+                    }
+                    return mi_ref;
+                };
+
                 // TODO : More clean code ...
                 for(rowdash=0; rowdash<same_nmeas_row_group.length; ++rowdash){
                     let dammy_max_measure_widths = new Array(num_meas).fill(0);
@@ -268,16 +293,11 @@ export class MobileRenderer extends Renderer {
                     let x_width_info = same_nmeas_row_group[rowdash][1];
                     let row_elements_list = same_nmeas_row_group[rowdash][0];
                     for(let mi=0; mi < num_meas; ++mi){
-                        let mi_ref = mi;
-                        if(row_elements_list.length < num_meas){
-                            if(mi >= (num_meas - row_elements_list.length) ){
-                                // right align case 
-                                mi_ref = mi - (num_meas - row_elements_list.length);
-                            }else{
-                                // right align case and measure does not exist : inherit current max value
-                                dammy_max_measure_widths[mi] = max_measure_widths[mi];
-                                continue;
-                            }
+                        let mi_ref = getMeasRefIndex(mi, row_elements_list, num_meas);
+                        if(mi_ref == null){
+                            // corresponding measure does not exist : inherit current max value
+                            dammy_max_measure_widths[mi] = max_measure_widths[mi];
+                            continue;
                         }
                         dammy_max_measure_widths[mi] = Math.max(x_width_info[mi_ref].measure_width, max_measure_widths[mi]);
                     }
@@ -295,20 +315,13 @@ export class MobileRenderer extends Renderer {
                     // If there is at least one measure which does not meet alternate threshold, then do not include rowdash
                     let all_meets_thread = true;
                     if(rowdash == 0){
-                        // Single row is always fixed.
+                        // First row is always fixed.
                     }else{
                         // For the case of 2 and more rows. Judge if combined rows meets the criteria.
                         for(let rowdash2 = 0; rowdash2 <= rowdash; ++rowdash2){
                             for(let mi=0; mi < num_meas; ++mi){
-                                let mi_ref = mi;
-                                if(same_nmeas_row_group[rowdash2][0].length < num_meas){ 
-                                    if(mi >= (num_meas - same_nmeas_row_group[rowdash2][0].length) ){
-                                        // right align case 
-                                        mi_ref = mi - (num_meas - same_nmeas_row_group[rowdash2][0].length);
-                                    }else{
-                                        continue;
-                                    }
-                                }
+                                let mi_ref = getMeasRefIndex(mi, same_nmeas_row_group[rowdash2][0], num_meas);
+                                if(mi_ref == null) continue;
                                 // Calculate alter ratio for this measure
                                 // If 
                                 //   1. Room per elem is bigger than min_room
@@ -355,17 +368,9 @@ export class MobileRenderer extends Renderer {
                     let x_width_info = same_nmeas_row_group[rowdash][1];
                     let row_elements_list = same_nmeas_row_group[rowdash][0];
                     for(let mi=0; mi < num_meas; ++mi){
-                        let mi_ref = mi;
-                        if(row_elements_list.length < num_meas){
-                            if( mi >= (num_meas - row_elements_list.length) ){
-                                // right align case 
-                                mi_ref = mi - (num_meas - row_elements_list.length);
-                            }else{
-                                continue;
-                            }
-                        }
+                        let mi_ref = getMeasRefIndex(mi, row_elements_list, num_meas);
+                        if(mi_ref == null) continue;
                         let m = row_elements_list[mi_ref];
-
                         // No need to separtely consider min_room here. Just simply distribute rooms for each elements
                         m.renderprop.room_per_elem = (max_measure_widths[mi] - x_width_info[mi_ref].meas_fixed_width) /
                             x_width_info[mi_ref].meas_num_flexible_rooms; 
@@ -380,11 +385,10 @@ export class MobileRenderer extends Renderer {
                         row_total_width += max_measure_widths[mi + (max_measure_widths.length-row_elements_list.length)];
                     }
                     let m = row_elements_list[0];
-                    if(m.renderprop.left_margin){
+                    if(m.align == "right"){
                         m.renderprop.left_margin =  total_width - row_total_width;
                     }
-                }                
-
+                }
 
                 row += act_num_grouped_rows;
                 console.log("row updated : " + row + " / " + act_num_grouped_rows);

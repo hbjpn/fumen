@@ -231,12 +231,6 @@ export class MobileRenderer extends Renderer {
         
         if(param.vertical_align){
             let row = 0;
-            //let row_elements_list = reharsal_x_width_info[row][0];
-
-            //let x_width_info = reharsal_x_width_info[row][1]; // For number of measures
-            
-            //let num_flexible_rooms = field_sum(x_width_info,"meas_num_flexible_rooms");
-            //let fixed_width = field_sum(x_width_info,"meas_fixed_width") + min_room * num_flexible_rooms;
             
             while (row < reharsal_x_width_info.length){
                 console.log("row :" + row);
@@ -265,10 +259,6 @@ export class MobileRenderer extends Renderer {
                 // Take maximum of each column, and check if total width wider than paper width
                 // Make virtual combined row having : 
                 //    Fixed width = max( fixed width of all rows in correspoding column )
-                //    Number of elements = max ( number of elements of all rows in corresponding column)
-                //    NOTE : Sometimes one element has wider fixed width than sum of fixed with of multiple elements. 
-                //           Even if so, "number of elements" of virtual combined row will be just a maximum of number of elements, 
-                //           rather than number of elments of measure with maximum fixed width.
                 let max_measure_widths = new Array(num_meas).fill(0); 
 
                 // TODO : More clean code ...
@@ -357,12 +347,11 @@ export class MobileRenderer extends Renderer {
                             }
                         }
                         let m = row_elements_list[mi_ref];
-                        let room_alter = 
-                            (max_measure_widths[mi] - x_width_info[mi_ref].meas_fixed_width) /
-                            (x_width_info[mi_ref].measure_width - x_width_info[mi_ref].meas_fixed_width);
-                        m.renderprop.room_per_elem *= room_alter;
 
-                        console.log("rowdash="+rowdash+",mi="+mi+",room_alter="+room_alter);
+                        // No need to separtely consider min_room here. Just simply distribute rooms for each elements
+                        m.renderprop.room_per_elem = (max_measure_widths[mi] - x_width_info[mi_ref].meas_fixed_width) /
+                            x_width_info[mi_ref].meas_num_flexible_rooms; 
+
                     }
                 }
                 // Set left margin in case it is needed.

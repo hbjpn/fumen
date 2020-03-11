@@ -45,6 +45,7 @@ var SR_RENDER_PARAM = {
     note_flag_interval: 5,
     optimize_type: 3, // 0 : Constant room for each flexible element. 1: Not defined, 2: Evenly division of measures(force), 3: Evenly division of measures as much as possible
     vertical_align: 1, // 1: Enable, 0: Disable
+    vertical_align_intensity: 0.9, // Vertical align intensity 0:No align, 1:Always align
     min_room: 10, // Minimum room for flexile elements
     on_bass_style: "right", // right|below
     on_bass_below_y_offset: 0,
@@ -254,7 +255,6 @@ export class MobileRenderer extends Renderer {
                 }
 
                 // Withing the group above, search for the groups for which alternation extension condition is met
-                let alter_thresh = 0.1; // 1.0 +/-  // 0.0 means no vertical alignment apply +inf means always aligned
 
                 // Take maximum of each column, and check if total width wider than paper width
                 // Make virtual combined row having : 
@@ -294,28 +294,46 @@ export class MobileRenderer extends Renderer {
 
                     // If there is at least one measure which does not meet alternate threshold, then do not include rowdash
                     let all_meets_thread = true;
-                    for(let rowdash2 = 0; rowdash2 <= rowdash; ++rowdash2){
-                        for(let mi=0; mi < num_meas; ++mi){
-                            let mi_ref = mi;
-                            if(same_nmeas_row_group[rowdash2][0].length < num_meas){ 
-                                if(mi >= (num_meas - same_nmeas_row_group[rowdash2][0].length) ){
-                                    // right align case 
-                                    mi_ref = mi - (num_meas - same_nmeas_row_group[rowdash2][0].length);
-                                }else{
-                                    continue;
+                    if(rowdash == 0){
+                        // Single row is always fixed.
+                    }else{
+                        // For the case of 2 and more rows. Judge if combined rows meets the criteria.
+                        for(let rowdash2 = 0; rowdash2 <= rowdash; ++rowdash2){
+                            for(let mi=0; mi < num_meas; ++mi){
+                                let mi_ref = mi;
+                                if(same_nmeas_row_group[rowdash2][0].length < num_meas){ 
+                                    if(mi >= (num_meas - same_nmeas_row_group[rowdash2][0].length) ){
+                                        // right align case 
+                                        mi_ref = mi - (num_meas - same_nmeas_row_group[rowdash2][0].length);
+                                    }else{
+                                        continue;
+                                    }
                                 }
+                                // Calculate alter ratio for this measure
+                                // If 
+                                //   1. Room per elem is bigger than min_room
+                                let alter_ratio = same_nmeas_row_group[rowdash2][1][mi_ref].measure_width / 
+                                    dammy_max_measure_widths[mi];
+                                //if(Math.abs(1.0 - alter_ratio) > alter_thresh){
+                                if(alter_ratio < (1-param.vertical_align_intensity)){ // only check how much the width is narrowed. Expanding case is not checked.
+                                    all_meets_thread = false;
+                                    break;
+                                }
+                                /*
+                                let dammy_room_per_elem = (dammy_max_measure_widths[mi] 
+                                    - same_nmeas_row_group[rowdash2][1][mi_ref].meas_fixed_width)/
+                                    same_nmeas_row_group[rowdash2][1][mi_ref].meas_num_flexible_rooms;
+
+                                let m = same_nmeas_row_group[rowdash2][0][mi_ref];
+
+                                m.renderprop.room_per_elem;
+                                */
                             }
-                            // Calculate alter ratio for this measure
-                            let alter_ratio = same_nmeas_row_group[rowdash2][1][mi_ref].measure_width / 
-                                dammy_max_measure_widths[mi];
-                            if(Math.abs(1.0 - alter_ratio) > alter_thresh){
-                                all_meets_thread = false;
+                            if(all_meets_thread == false)
                                 break;
-                            }
                         }
-                        if(all_meets_thread == false)
-                            break;
                     }
+
                     if(all_meets_thread){
                         max_measure_widths = dammy_max_measure_widths;
                     } else{

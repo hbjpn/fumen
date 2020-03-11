@@ -2077,30 +2077,31 @@ export class MobileRenderer extends Renderer {
             upper_width = B * coeff1;
             lower_width = B * coeff1;
             if (root.length == 2) {
+                let acc_height = rootCharHeight/2.0+rootCharHeight/8.0;
+                let acc_width = B * 0.25;
+                let acc_y_offset = -(acc_height - rootCharHeight/2.0); //-rootCharHeight/4;
                 if (root[1] == "b") {
-                    if (draw)
-                        canvas
-                            .getContext("2d")
-                            .drawImage(
-                                graphic.G_imgmap["assets/img/flat.svg"],
-                                x + upper_width,
-                                y + param.row_height/2 - rootCharHeight/2 + chord_offset_on_bass,
-                                B * 0.2,
-                                rootCharHeight / 2.0
-                            );
-                    upper_width += B * 0.2;
+                    if (draw){
+                        graphic.CanvasImage(
+                            canvas,
+                            graphic.G_imgmap["assets/img/flat.svg"],
+                            x + upper_width,
+                            y + param.row_height/2 - rootCharHeight/2 + chord_offset_on_bass + acc_y_offset,
+                            acc_width,
+                            acc_height);
+                    }
+                    upper_width += acc_width;
                 } else {
-                    if (draw)
-                        canvas
-                            .getContext("2d")
-                            .drawImage(
-                                graphic.G_imgmap["assets/img/sharp.svg"],
-                                x + upper_width,
-                                y + param.row_height/2 - rootCharHeight/2 + chord_offset_on_bass,
-                                B * 0.2,
-                                rootCharHeight / 2.0
-                            );
-                    upper_width += B * 0.2;
+                    if (draw){
+                        graphic.CanvasImage(
+                            canvas,
+                            graphic.G_imgmap["assets/img/sharp.svg"],
+                            x + upper_width,
+                            y + param.row_height/2 - rootCharHeight/2 + chord_offset_on_bass + acc_y_offset,
+                            acc_width,
+                            acc_height);
+                    }
+                    upper_width += acc_width;
                 }
             }
         } else {

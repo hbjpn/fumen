@@ -43,7 +43,8 @@ var SR_RENDER_PARAM = {
     balken_width: 3,
     note_bar_length: 24/4*3.5, // 3.5 times of interval is the conventional length
     note_flag_interval: 5,
-    optimize_type: 1, // 0 : No optimization. 1: X-axis optimiation
+    optimize_type: 3, // 0 : Constant room for each flexible element. 1: Not defined, 2: Evenly division of measures(force), 3: Evenly division of measures as much as possible
+    vertical_align: 1, // 1: Enable, 0: Disable
     min_room: 10, // Minimum room for flexile elements
     on_bass_style: "right", // right|below
     on_bass_below_y_offset: 0,
@@ -151,6 +152,7 @@ export class MobileRenderer extends Renderer {
             // In case right align is enabled, then add dammy measures
             let right_align = row_elements_list[0].right_align ? true : false; 
             let right_align_valid = right_align && row > 0 && reharsal_x_width_info[row-1][0].length > num_meas;
+            
             if(right_align_valid){
                 //let dammy_add_num = reharsal_x_width_info[row-1][0].length - num_meas;
                 num_meas_to_consider = reharsal_x_width_info[row-1][0].length;
@@ -171,7 +173,11 @@ export class MobileRenderer extends Renderer {
             }
 
             if(room_per_elem_constant < 0 || param.optimize_type == 0){
-                row_elements_list.forEach(e=>{e.renderprop.room_per_elem=room_per_elem_constant+min_room;});
+                row_elements_list.forEach((e,mi)=>{
+                    e.renderprop.room_per_elem=room_per_elem_constant+min_room;
+                    x_width_info[mi].measure_width = e.renderprop.room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
+                    x_width_info[mi].measure_width += x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
+                });
                 row++;
             }else if(param.optimize_type == 2){
                 // Equal division
@@ -179,6 +185,10 @@ export class MobileRenderer extends Renderer {
                     e.renderprop.room_per_elem = 
                         room_per_meas_even_meas[mi] / x_width_info[mi].meas_num_flexible_rooms +
                         min_room;
+                    
+                    x_width_info[mi].measure_width = e.renderprop.room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
+                    x_width_info[mi].measure_width += x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
+    
                     if(right_align_valid && mi==0)
                         e.renderprop.left_margin = total_width / 
                             num_meas_to_consider * (num_meas_to_consider - num_meas);
@@ -204,24 +214,53 @@ export class MobileRenderer extends Renderer {
                     e.renderprop.room_per_elem = 
                         ( alpha * R0 + (1 - alpha) * R2 ) / x_width_info[mi].meas_num_flexible_rooms +
                         min_room;
-                    row_total_width += e.renderprop.room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
-                    row_total_width += x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
+                    
+                    x_width_info[mi].measure_width = e.renderprop.room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
+                    x_width_info[mi].measure_width += x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
+
+                    row_total_width += x_width_info[mi].measure_width; 
                 });
                 if(right_align_valid)
                     row_elements_list[0].renderprop.left_margin = total_width - row_total_width;
                 console.log("alpha = " + alpha);
                 row++; 
             }else{
-                // Group the rows with the same number of measures from #row
+                throw ("Invalid optimize type");
+            }
+        }
+        
+        if(param.vertical_align){
+            let row = 0;
+            //let row_elements_list = reharsal_x_width_info[row][0];
+
+            //let x_width_info = reharsal_x_width_info[row][1]; // For number of measures
+            
+            //let num_flexible_rooms = field_sum(x_width_info,"meas_num_flexible_rooms");
+            //let fixed_width = field_sum(x_width_info,"meas_fixed_width") + min_room * num_flexible_rooms;
+            
+            while (row < reharsal_x_width_info.length){
+                console.log("row :" + row);
+                let num_meas = reharsal_x_width_info[row][0].length;
+
+                // Group the rows with :
+                //     1. the same number of measures from #row
+                //     2. Having right align mark and having less than 1st row
                 let same_nmeas_row_group = [];
                 let rowdash;
                 for(rowdash = row; rowdash < reharsal_x_width_info.length; ++rowdash){
                     if(reharsal_x_width_info[rowdash][0].length == num_meas){
                         same_nmeas_row_group.push(reharsal_x_width_info[rowdash]);
+                    }else if(rowdash > 0 && 
+                             reharsal_x_width_info[rowdash][0][0].right_align && 
+                             reharsal_x_width_info[rowdash][0].length < num_meas){
+                        same_nmeas_row_group.push(reharsal_x_width_info[rowdash]);
                     }else{
                         break; // only group the continuous rows with same number of measures
                     }
                 }
+
+                // Withing the group above, search for the groups for which alternation extension condition is met
+                let alter_thresh = 0.1; // 1.0 +/-  // 0.0 means no vertical alignment apply +inf means always aligned
 
                 // Take maximum of each column, and check if total width wider than paper width
                 // Make virtual combined row having : 
@@ -230,24 +269,67 @@ export class MobileRenderer extends Renderer {
                 //    NOTE : Sometimes one element has wider fixed width than sum of fixed with of multiple elements. 
                 //           Even if so, "number of elements" of virtual combined row will be just a maximum of number of elements, 
                 //           rather than number of elments of measure with maximum fixed width.
-                let max_fixed_widths = new Array(num_meas).fill(0);
-                let max_num_flexile_rooms = new Array(num_meas).fill(0);
+                let max_measure_widths = new Array(num_meas).fill(0); 
 
+                // TODO : More clean code ...
                 for(rowdash=0; rowdash<same_nmeas_row_group.length; ++rowdash){
-                    let dammy_max_fixed_widths = new Array(num_meas).fill(0);
-                    let dammy_max_num_flexile_rooms = new Array(num_meas).fill(0);
+                    let dammy_max_measure_widths = new Array(num_meas).fill(0);
 
+                    let x_width_info = same_nmeas_row_group[rowdash][1];
+                    let row_elements_list = same_nmeas_row_group[rowdash][0];
                     for(let mi=0; mi < num_meas; ++mi){
-                        let meas_num_flexible_rooms_dash = same_nmeas_row_group[rowdash][1][mi].meas_num_flexible_rooms;
-                        let meas_fixed_width_dash = same_nmeas_row_group[rowdash][1][mi].meas_fixed_width + min_room * meas_num_flexible_rooms_dash;
-                        dammy_max_fixed_widths[mi] = Math.max(meas_fixed_width_dash, max_fixed_widths[mi]);
-                        dammy_max_num_flexile_rooms[mi] = Math.max(meas_num_flexible_rooms_dash, max_num_flexile_rooms[mi]);
+                        let mi_ref = mi;
+                        if(row_elements_list.length < num_meas){
+                            if(mi >= (num_meas - row_elements_list.length) ){
+                                // right align case 
+                                mi_ref = mi - (num_meas - row_elements_list.length);
+                            }else{
+                                // right align case and measure does not exist : inherit current max value
+                                dammy_max_measure_widths[mi] = max_measure_widths[mi];
+                                continue;
+                            }
+                        }
+                        dammy_max_measure_widths[mi] = Math.max(x_width_info[mi_ref].measure_width, max_measure_widths[mi]);
                     }
-                    let dammy_max_fixed_width = dammy_max_fixed_widths.reduce((acc,e)=>acc+e);
-                    if(dammy_max_fixed_width > total_width) break;
-                    else{
-                        max_fixed_widths = dammy_max_fixed_widths; // fix
-                        max_num_flexile_rooms = dammy_max_num_flexile_rooms; // fix
+
+                    let dammy_total_max_measure_width = dammy_max_measure_widths.reduce((acc,e)=>acc+e); // This is always >= total_width except reduced measure with left/right align is under analysis.
+                    
+                    // Nomralize so that total width does not surpass total_width.
+                    // In case only reduced measure row is under analysis and dammy_total_max_measure_width is less than total_width,
+                    // do nothiing.  
+                    for(let mi=0; mi < num_meas; ++mi)
+                        dammy_max_measure_widths[mi] = dammy_max_measure_widths[mi] / 
+                            dammy_total_max_measure_width * 
+                            Math.min(total_width, dammy_total_max_measure_width);
+
+                    // If there is at least one measure which does not meet alternate threshold, then do not include rowdash
+                    let all_meets_thread = true;
+                    for(let rowdash2 = 0; rowdash2 <= rowdash; ++rowdash2){
+                        for(let mi=0; mi < num_meas; ++mi){
+                            let mi_ref = mi;
+                            if(same_nmeas_row_group[rowdash2][0].length < num_meas){ 
+                                if(mi >= (num_meas - same_nmeas_row_group[rowdash2][0].length) ){
+                                    // right align case 
+                                    mi_ref = mi - (num_meas - same_nmeas_row_group[rowdash2][0].length);
+                                }else{
+                                    continue;
+                                }
+                            }
+                            // Calculate alter ratio for this measure
+                            let alter_ratio = same_nmeas_row_group[rowdash2][1][mi_ref].measure_width / 
+                                dammy_max_measure_widths[mi];
+                            if(Math.abs(1.0 - alter_ratio) > alter_thresh){
+                                all_meets_thread = false;
+                                break;
+                            }
+                        }
+                        if(all_meets_thread == false)
+                            break;
+                    }
+                    if(all_meets_thread){
+                        max_measure_widths = dammy_max_measure_widths;
+                    } else{
+                        break;
                     }
                 }
 
@@ -255,37 +337,53 @@ export class MobileRenderer extends Renderer {
                 let act_num_grouped_rows = rowdash;
 
                 console.log("max_fixed_widths :");
-                console.log(max_fixed_widths);
-                console.log("max_num_flexile_rooms :");
-                console.log(max_num_flexile_rooms);
+                console.log(max_measure_widths);
                
                 //let max_measure_widths = new Array(num_meas).fill(0);
                 // room per froom with maximum fixed with only
-                let max_measure_widths = new Array(num_meas).fill(0);
-                let total_fixed_max = 
-                    max_fixed_widths.reduce((acc,e)=>acc+e);
-                let room_per_elem_with_max = 
-                    (total_width - total_fixed_max) / max_num_flexile_rooms.reduce((acc,e)=>acc+e);
-                max_measure_widths.forEach((e,i)=>{
-                    max_measure_widths[i]=max_fixed_widths[i]+max_num_flexile_rooms[i]*room_per_elem_with_max;
-                });
 
                 // Then, at last, calculate the rooms for each row and measure
                 for(rowdash=0; rowdash<act_num_grouped_rows; ++rowdash){
-
+                    let x_width_info = same_nmeas_row_group[rowdash][1];
+                    let row_elements_list = same_nmeas_row_group[rowdash][0];
                     for(let mi=0; mi < num_meas; ++mi){
-                        let num_flexible_rooms_dash = same_nmeas_row_group[rowdash][1][mi].meas_num_flexible_rooms;
-                        let meas_fixed_width_dash = same_nmeas_row_group[rowdash][1][mi].meas_fixed_width + 
-                            min_room * num_flexible_rooms_dash;
+                        let mi_ref = mi;
+                        if(row_elements_list.length < num_meas){
+                            if( mi >= (num_meas - row_elements_list.length) ){
+                                // right align case 
+                                mi_ref = mi - (num_meas - row_elements_list.length);
+                            }else{
+                                continue;
+                            }
+                        }
+                        let m = row_elements_list[mi_ref];
+                        let room_alter = 
+                            (max_measure_widths[mi] - x_width_info[mi_ref].meas_fixed_width) /
+                            (x_width_info[mi_ref].measure_width - x_width_info[mi_ref].meas_fixed_width);
+                        m.renderprop.room_per_elem *= room_alter;
 
-                        let adjusted_room_per_elem = (max_measure_widths[mi] - meas_fixed_width_dash)/num_flexible_rooms_dash;
-                        
-                        let m = same_nmeas_row_group[rowdash][0][mi];
-                        m.renderprop.room_per_elem = adjusted_room_per_elem + min_room;
+                        console.log("rowdash="+rowdash+",mi="+mi+",room_alter="+room_alter);
                     }
                 }
+                // Set left margin in case it is needed.
+                for(rowdash=0; rowdash<act_num_grouped_rows; ++rowdash){
+                    let row_elements_list = same_nmeas_row_group[rowdash][0];
+                    let row_total_width = 0;
+                    for(let mi=0; mi < row_elements_list.length; ++mi){
+                        row_total_width += max_measure_widths[mi + (max_measure_widths.length-row_elements_list.length)];
+                    }
+                    let m = row_elements_list[0];
+                    if(m.renderprop.left_margin){
+                        m.renderprop.left_margin =  total_width - row_total_width;
+                    }
+                }                
+
 
                 row += act_num_grouped_rows;
+                console.log("row updated : " + row + " / " + act_num_grouped_rows);
+                if(act_num_grouped_rows <= 0){
+                    throw "Something wrong with the code";
+                }
             }
         }
     }

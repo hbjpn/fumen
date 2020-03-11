@@ -150,7 +150,8 @@ let dotest = async (headInfo)=>{
         "generic1.fumen",
         "per_row_config.fumen",
         "on_bass.fumen",
-        "zoom.fumen"];
+        "zoom.fumen",
+        "align.fumen"];
     const results = [];
     for(let i=0; i<files.length; ++i){
         let numDiffPixels = await capture(addr,files[i], headInfo);

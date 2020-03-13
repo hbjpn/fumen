@@ -1006,7 +1006,7 @@ export class MobileRenderer extends Renderer {
                         graphic.CanvasText(
                             paper,
                             x,
-                            yprof.body.y,
+                            yprof.mu.y + yprof.mu.height,
                             e0.exceptinal_comment.comment,
                             param.base_font_size / 2,
                             "lb"
@@ -1108,7 +1108,7 @@ export class MobileRenderer extends Renderer {
                             graphic.CanvasText(
                                 paper,
                                 x,
-                                yprof.body.y,
+                                yprof.mu.y + yprof.mu.height,
                                 e.exceptinal_comment.comment,
                                 param.base_font_size / 2,
                                 "lb"
@@ -1378,7 +1378,7 @@ export class MobileRenderer extends Renderer {
                         let r = graphic.CanvasText(
                             paper,
                             meas_base_x + mh_offset,
-                            yprof.body.y,
+                            yprof.mu.y + yprof.mu.height,
                             e.comment,
                             param.base_font_size / 2,
                             "lb"
@@ -1506,7 +1506,7 @@ export class MobileRenderer extends Renderer {
                     graphic.CanvasText(
                         paper,
                         x,
-                        y_body_or_rs_base,
+                        yprof.mu.y + yprof.mu.height,
                         e.toString(),
                         param.base_font_size / 2,
                         "rb"
@@ -1516,7 +1516,7 @@ export class MobileRenderer extends Renderer {
                     graphic.CanvasText(
                         paper,
                         x,
-                        y_body_or_rs_base,
+                        yprof.mu.y + yprof.mu.height,
                         e.toString(),
                         param.base_font_size / 2,
                         "rb"

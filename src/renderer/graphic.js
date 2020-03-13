@@ -147,21 +147,23 @@ export function CanvasPath(canvas, svgpathdata, fill=false, opt) {
     */
 }
 
-export function GetCharProfile(fsize) {
-    let bold = ""; //"bold ";
-    let fontfamily = "Arial";
-    var key = bold + fsize + fontfamily;
+export function fontDesc(fsize,fontfamily) {
+    return  fsize + "px '" + (fontfamily?fontfamily:"Arial") + "'";
+}
+
+export function GetCharProfile(fsize,fontfamily) {
+    let font = fontDesc(fsize,fontfamily);
 
     let yroom = null;
-    if (key in G_y_char_offsets) yroom = G_y_char_offsets[key];
+    if (font in G_y_char_offsets) yroom = G_y_char_offsets[font];
     else {
         if (!G_memCanvas) {
             G_memCanvas = document.createElement("canvas");
             SetupHiDPICanvas(G_memCanvas, 200, 200, G_pixelRatio, G_zoom);
             console.log("Pixel ratio = " + G_pixelRatio);
         }
-        yroom = JudgeTextYPosOffset(G_memCanvas, bold, fontfamily, fsize);
-        G_y_char_offsets[key] = yroom;
+        yroom = JudgeTextYPosOffset(G_memCanvas, font); //bold, fontfamily, fsize);
+        G_y_char_offsets[font] = yroom;
     }
 
     return yroom;
@@ -182,10 +184,9 @@ export function CanvasText(canvas, x, y, text, fsize, align, xwidth, notdraw, op
         d: "top" // default
     };
     var orgfont = context.font;
-    let bold = ""; //"bold ";
-    let fontfamily = "Arial";
+    let font = fontDesc(fsize, opt?opt.fontfamily:null);
 
-    var yroom = GetCharProfile(fsize);
+    var yroom = GetCharProfile(fsize, opt?opt.fontfamily:null);
 
     let yadjust = 0;
     if (align[1] == "t") {
@@ -200,7 +201,7 @@ export function CanvasText(canvas, x, y, text, fsize, align, xwidth, notdraw, op
 
     //console.log("yoffset/yadjust/key = " + JSON.stringify(yroom) + "/" + yadjust);
 
-    context.font = bold + fsize + "px '" + fontfamily + "'";
+    context.font = font; //bold + fsize + "px '" + fontfamily + "'";
     context.textAlign = ta[align[0]];
     context.textBaseline = "top"; //tb[align[1]];
 
@@ -372,13 +373,14 @@ export function SetupHiDPICanvas(canvas, w, h, ratio, zoom) {
     return { ratio: ratio };
 }
 
-function JudgeTextYPosOffset(canvas, bold, fontfamily, fontsize) {
+function JudgeTextYPosOffset(canvas, font)/*bold, fontfamily, fontsize) */{
     var context = canvas.getContext("2d");
 
     var bs = 1000; //fontsize * G_pixelRatio;
 
     context.clearRect(0, 0, bs, bs);
-    context.font = bold + fontsize + "px '" + fontfamily + "'";
+    //context.font = bold + fontsize + "px '" + fontfamily + "'";
+    context.font = font;
     context.textAlign = "left";
     context.textBaseline = "top";
     context.fillText("M", 0, 0);

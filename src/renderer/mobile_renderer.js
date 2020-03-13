@@ -24,6 +24,8 @@ var SR_RENDER_PARAM = {
     above_rs_area_margin: 0, // Margin between chord and rythm slash
     below_rs_area_margin: 10, // Margin below chord and rhthm slash
     above_ml_area_margin: 0, // Margin between (chord/rythm slash) and measure lower(lyrics etc) rea
+    repeat_mark_y_margin: 2, // RS are upper/bootom and Repeat Marks( DalSegno, DaCapo, Fine, xX ) y margin in case RS are is shown.
+    xtimes_mark_y_margin: 2, // Margin between body/RS are and "(x times)" mark.
     header_body_margin: 2, // Margin between header and body (x-direction)
     max_scaling: 1.2,
     paper_width: (96 * 210) / 25.4, // 96dpi * A4_width[mm] / 25.4[mm/inche], total canvas width = paper_width, internal paper width is paper_width/zoom
@@ -1287,6 +1289,10 @@ export class MobileRenderer extends Renderer {
         var y_next_base = yprof.end.y;
 
         var y_body_or_rs_base = yprof.rs.detected ? yprof.rs.y : yprof.body.y;
+        var repeat_mark_y_base = yprof.rs.detected ? 
+            yprof.rs.y - param.repeat_mark_y_margin :
+            yprof.mu.y + yprof.mu.height;
+            
 
         // if ylimit is specified, and drawing region surpass that limit, do not render
         if (ylimit !== null && y_next_base > ylimit) {
@@ -1506,17 +1512,17 @@ export class MobileRenderer extends Renderer {
                     graphic.CanvasText(
                         paper,
                         x,
-                        yprof.mu.y + yprof.mu.height,
+                        repeat_mark_y_base,
                         e.toString(),
                         param.base_font_size / 2,
                         "rb"
                     );
-                    if (yprof.rs.detected) x += 15 * 4;
+                    //if (yprof.rs.detected) x += 15 * 4;
                 } else if (e instanceof common.DalSegno) {
                     graphic.CanvasText(
                         paper,
                         x,
-                        yprof.mu.y + yprof.mu.height,
+                        repeat_mark_y_base,
                         e.toString(),
                         param.base_font_size / 2,
                         "rb"
@@ -1567,7 +1573,7 @@ export class MobileRenderer extends Renderer {
                     graphic.CanvasText(
                         paper,
                         x,
-                        y_body_or_rs_base,
+                        repeat_mark_y_base,
                         e.toString(),
                         param.base_font_size / 2,
                         "rb"
@@ -2558,7 +2564,7 @@ export class MobileRenderer extends Renderer {
                         graphic.CanvasText(
                             canvas,
                             x + xshift + w,
-                            y_body_base + row_height,
+                            y_body_base + row_height + param.xtimes_mark_y_margin,
                             "(" + stimes + " times)",
                             param.base_font_size / 2,
                             "rt"

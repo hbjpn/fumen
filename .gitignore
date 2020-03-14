@@ -1,4 +1,5 @@
 node_modules/
 dist/
+materials/
 .DS_Sotre
 test/screenshot

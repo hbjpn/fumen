@@ -31,6 +31,7 @@ var SR_RENDER_PARAM = {
     paper_width: (96 * 210) / 25.4, // 96dpi * A4_width[mm] / 25.4[mm/inche], total canvas width = paper_width, internal paper width is paper_width/zoom
     paper_height: (96 * 297) / 25.4, // 96dpi * A4_height[mm] / 25.4[mm/inche], total canvas height = paper_height. internal paper height is paper_height/zoom
     zoom: 1.0, // total canvas size will be [paper_width * zoom, paper_height*zoom]. NOTE that even the canvas size is scaled with zoom, any coordinate unit/size infomation inside the renderer stays the same and no need to be conscious about zoom value.
+    pixel_ratio: 2, // integer. null : use system default, this is not configurable in source as it is memoried in global variable.
     ncol: 1, // Number of columns of score inside the paper
     nrow: 1, // Number of rows of score inside the paper
     repeat_mark_font: {
@@ -77,6 +78,12 @@ export class MobileRenderer extends Renderer {
             paper: null,
             region_id: 0
         };
+
+        this.buravura = graphic.getBravuraInstance(
+            "./assets/fonts/BravuraText.woff",
+            "./assets/fonts/bravura_metadata.json",
+            "./assets/fonts/glyphnames.json"
+        );
     }
 
     render(track, async_mode, progress_cb) {
@@ -103,7 +110,9 @@ export class MobileRenderer extends Renderer {
         ];
         var param = this.param;
         return graphic.PreloadImages(urls).then( () => {
-            return this.render_impl(track, param);
+            this.buravura.ready().then(()=>{
+                return this.render_impl(track, param);
+            });
         });
     }
 
@@ -445,7 +454,7 @@ export class MobileRenderer extends Renderer {
             canvas,
             this.param.paper_width / this.param.zoom,
             this.param.paper_height / this.param.zoom,
-            null,
+            this.param.pixel_ratio,
             this.param.zoom
         );
 
@@ -721,7 +730,7 @@ export class MobileRenderer extends Renderer {
                         canvas,
                         yse[pei].param.paper_width / this.param.zoom,
                         yse[pei].param.paper_height / this.param.zoom,
-                        null,
+                        this.param.pixel_ratio,
                         this.param.zoom
                     );
                     
@@ -1431,26 +1440,56 @@ export class MobileRenderer extends Renderer {
                     x += e.renderprop.w;
                     meas_start_x_actual_boundary = r.actual_boundary;
                 } else if (e instanceof common.Time) {
-                    let height = yprof.rs.detected ?param.rs_area_height : param.row_height;
-                    graphic.CanvasText(
+                    let chord_str_height = graphic.GetCharProfile(param.base_font_size).height;
+                    let row_height = yprof.rs.detected ?param.rs_area_height : param.row_height;
+                    let cont_height = yprof.rs.detected ?param.rs_area_height : chord_str_height;
+                    //var lineThickNessShift = 0.064; // Line tickness
+                    //let fontSize = graphic.getFontSizeFromHeight(cont_height + lineThickNessShift*cont_height/4, 
+                    //    "Bravura Text", String.fromCodePoint(0xE014)); // 5 line is baseline
+                    //console.log("fontSize="+fontSize);
+                    /*graphic.CanvasText(
                         paper,
                         x + e.renderprop.w / 2,
-                        y_body_or_rs_base + height / 2,
-                        e.numer,
-                        param.base_font_size / 2,
-                        "cb",
-                        e.renderprop.w
-                    );
-                    graphic.CanvasText(
+                        y_body_or_rs_base + row_height/2  - cont_height/2,
+                        //e.numer,
+                        String.fromCodePoint(0xE014),
+                        fontSize,
+                        "lt",
+                        e.renderprop.w,
+                        false,
+                        {"fontfamily":"Bravura Text", "raw":true}
+                    );*/
+                    /*graphic.CanvasText(
                         paper,
                         x + e.renderprop.w / 2,
-                        y_body_or_rs_base + height / 2,
-                        e.denom,
-                        param.base_font_size / 2,
-                        "ct",
-                        e.renderprop.w
-                    );
-                    var ly = yprof.body.y + height / 2;
+                        y_body_or_rs_base + row_height/2 - cont_height/2 - cont_height/4*3,
+                        //e.numer,
+                        String.fromCodePoint(0xE080+parseInt(e.numer)),
+                        fontSize,
+                        "lt",
+                        e.renderprop.w,
+                        false,
+                        {"fontfamily":"Bravura Text", "raw":true}
+                    );*/
+                    this.buravura.put(paper, 0xE080+parseInt(e.numer), cont_height/4, 
+                        x, y_body_or_rs_base + row_height/2 - cont_height/2 - cont_height/4*3);
+                    
+                    /*graphic.CanvasText(
+                        paper,
+                        x + e.renderprop.w / 2,
+                        y_body_or_rs_base + row_height/2 - cont_height/2 - cont_height/4*1,
+                        //e.denom,
+                        String.fromCodePoint(0xE080+parseInt(e.denom)),
+                        fontSize,
+                        "rt",
+                        e.renderprop.w,
+                        false,
+                        {"fontfamily":"Bravura Text", "raw":true}
+                    );*/
+                    this.buravura.put(paper, 0xE080+parseInt(e.denom), cont_height/4, 
+                        x, y_body_or_rs_base + row_height/2 - cont_height/2 - cont_height/4*1);
+
+                    /*var ly = yprof.body.y + row_height / 2;
                     if (draw && !yprof.rs.detected)
                         graphic.CanvasLine(
                             paper,
@@ -1458,7 +1497,7 @@ export class MobileRenderer extends Renderer {
                             ly,
                             x + e.renderprop.w,
                             ly
-                        );
+                        );*/
                     x += e.renderprop.w;
                 }
             });

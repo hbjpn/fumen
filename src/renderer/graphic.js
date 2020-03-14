@@ -1,6 +1,7 @@
 import "@babel/polyfill";
 
 var G_memCanvas = null;
+var G_mem_Canvas_size = [600, 600];
 var G_pixelRatio = null;
 var G_zoom = null;
 
@@ -159,7 +160,7 @@ export function GetCharProfile(fsize,fontfamily) {
     else {
         if (!G_memCanvas) {
             G_memCanvas = document.createElement("canvas");
-            SetupHiDPICanvas(G_memCanvas, 200, 200, G_pixelRatio, G_zoom);
+            SetupHiDPICanvas(G_memCanvas, G_mem_Canvas_size[0], G_mem_Canvas_size[1], G_pixelRatio, G_zoom);
             console.log("Pixel ratio = " + G_pixelRatio);
         }
         yroom = JudgeTextYPosOffset(G_memCanvas, font); //bold, fontfamily, fsize);
@@ -186,24 +187,35 @@ export function CanvasText(canvas, x, y, text, fsize, align, xwidth, notdraw, op
     var orgfont = context.font;
     let font = fontDesc(fsize, opt?opt.fontfamily:null);
 
-    var yroom = GetCharProfile(fsize, opt?opt.fontfamily:null);
-
     let yadjust = 0;
-    if (align[1] == "t") {
-        yadjust = -yroom.top_room;
-    } else if (align[1] == "m") {
-        yadjust = -(yroom.top_room + yroom.height / 2.0); // This is just a huristic guess
-    } else if (align[1] == "b"){
-        yadjust = -(yroom.top_room + yroom.height);
-    } else{
-        // default
-    }
-
-    //console.log("yoffset/yadjust/key = " + JSON.stringify(yroom) + "/" + yadjust);
+    let yroom = null;
 
     context.font = font; //bold + fsize + "px '" + fontfamily + "'";
     context.textAlign = ta[align[0]];
-    context.textBaseline = "top"; //tb[align[1]];
+    
+    if(opt&&opt.raw){
+        // DO othing
+        context.textBaseline = tb[align[1]]; //tb[align[1]];
+    
+    }else{
+        yroom = GetCharProfile(fsize, opt?opt.fontfamily:null);
+
+
+        if (align[1] == "t") {
+            yadjust = -yroom.top_room;
+        } else if (align[1] == "m") {
+            yadjust = -(yroom.top_room + yroom.height / 2.0); // This is just a huristic guess
+        } else if (align[1] == "b"){
+            yadjust = -(yroom.top_room + yroom.height);
+        } else{
+            // default
+        }
+
+        context.textBaseline = "top"; //tb[align[1]];
+    
+    }
+
+
 
     let orgValues = {};
     if (opt != null) {
@@ -373,34 +385,44 @@ export function SetupHiDPICanvas(canvas, w, h, ratio, zoom) {
     return { ratio: ratio };
 }
 
-function JudgeTextYPosOffset(canvas, font)/*bold, fontfamily, fontsize) */{
+function JudgeTextYPosOffset(canvas, font, code)/*bold, fontfamily, fontsize) */{
     var context = canvas.getContext("2d");
+    if(!code) code = "D";
 
-    var bs = 1000; //fontsize * G_pixelRatio;
+    var bs = 300; //fontsize * G_pixelRatio;
 
     context.clearRect(0, 0, bs, bs);
+    context.fillStyle = "rgba(255,255,255,1)";
+    context.fillRect(0, 0, bs, bs);
     //context.font = bold + fontsize + "px '" + fontfamily + "'";
+    context.fillStyle = "rgba(0,0,0,1)";
     context.font = font;
     context.textAlign = "left";
     context.textBaseline = "top";
-    context.fillText("M", 0, 0);
+    context.fillText(code, 0, 0);
     var imageData = context.getImageData(0, 0, bs, bs); // Always inside fontsize*fontsize box
     var data = imageData.data;
     var top_room = 0;
+    var bottom_room = 0;
+
+    console.log(imageData.width, imageData.height, data.length);
+
     var found_nonwhite = false;
     //console.log(imageData);
     var row;
     var col;
+    
     for (row = 0; row < imageData.height; ++row) {
         for (col = 0; col < imageData.width; ++col) {
             var R = data[col * 4 + 0 + row * imageData.width * 4];
             var G = data[col * 4 + 1 + row * imageData.width * 4];
             var B = data[col * 4 + 2 + row * imageData.width * 4];
             var A = data[col * 4 + 3 + row * imageData.width * 4];
-            //console.log([row, col, R,G,B,A]);
             var nonwhite = A > 0 && (R < 255 || G < 255 || B < 255);
+            //console.log([row, col, R,G,B,A]);
             if (nonwhite) {
                 found_nonwhite = true;
+                
                 break;
             }
         }
@@ -409,6 +431,7 @@ function JudgeTextYPosOffset(canvas, font)/*bold, fontfamily, fontsize) */{
     }
 
     // Judge hight of char
+    /*
     var found_white = false;
     var M_height = 0;
     for (; row < imageData.height; ++row) {
@@ -426,14 +449,73 @@ function JudgeTextYPosOffset(canvas, font)/*bold, fontfamily, fontsize) */{
         //}
         if (found_white) break;
         else ++M_height;
+    }*/
+
+    found_nonwhite = false;
+    for (row = imageData.height-1; row >= 0; --row) {
+        for (col = 0; col < imageData.width; ++col) {
+            let R = data[col * 4 + 0 + row * imageData.width * 4];
+            let G = data[col * 4 + 1 + row * imageData.width * 4];
+            let B = data[col * 4 + 2 + row * imageData.width * 4];
+            let A = data[col * 4 + 3 + row * imageData.width * 4];
+            //console.log([row, col, R,G,B,A]);
+            let nonwhite = A > 0 && (R < 255 || G < 255 || B < 255);
+            if (nonwhite) {
+                found_nonwhite = true;
+                break;
+            }
+        }
+        if (found_nonwhite) break;
+        else ++bottom_room;
     }
 
     // here the raw pixel data resolution is G_pixelRatio * G_zoom times. (Same value as setTransform in SetupHIDPICanvas) 
     return {
         top_room: top_room / G_pixelRatio / G_zoom,
-        height: M_height / G_pixelRatio / G_zoom
+        height: (imageData.height - top_room - bottom_room) / G_pixelRatio / G_zoom,
+        bottom_room: bottom_room / G_pixelRatio / G_zoom,
+        imgheight: imageData.height / G_pixelRatio / G_zoom
     };
 
+}
+
+export function getFontSizeFromHeight(height, fontfamily, code, tol, opt){
+    // Determine the font size of which height is same as specified value.
+    // TODO : Binary search
+    let canvas_to_use = opt?opt.canvas:null;
+
+    if (!G_memCanvas) {
+        G_memCanvas = document.createElement("canvas");
+        SetupHiDPICanvas(G_memCanvas, G_mem_Canvas_size[0], G_mem_Canvas_size[1], G_pixelRatio, G_zoom);
+        console.log("Pixel ratio = " + G_pixelRatio);
+    }
+
+    if(!canvas_to_use)
+        canvas_to_use = G_memCanvas;
+    
+    let maxLoop = 100;
+    var curLow = 1;
+    var curHigh = 500;
+    var px = (curLow+curHigh)/2;
+    var loop = 0;
+    if(!tol) tol=0.5;
+    while(loop < maxLoop){
+        var ret = JudgeTextYPosOffset(canvas_to_use, px + "px '"+fontfamily+"'", code);
+        console.log("px="+px+", target height="+height);
+        console.log(ret);
+        //var tol = 0.4;
+        if(ret.height > height+tol){
+            curHigh = px;
+            px = (curLow + curHigh)/2;
+        }else if(ret.height < height-tol){
+            curLow = px;
+            px = (curLow + curHigh)/2;
+        }else{
+            return px;
+        }
+        ++loop;
+    }
+    return px;
 }
 
 export var G_imgmap = {};
@@ -461,4 +543,81 @@ export function PreloadImages(imageurls) {
         }
         return result;
     });
+}
+
+let theBravura = null;
+
+export function getBravuraInstance(woff_url, meta_json_url, glyphnames_json){
+    if(theBravura) return theBravura;
+    theBravura = new Bravura(woff_url, meta_json_url, glyphnames_json);
+    return theBravura;
+}
+
+export class Bravura{
+    constructor(woff_url, meta_json_url, glyphnames_json){
+        this.intervalToFontSizeMap = {};
+        this.codeToNameMap = {};
+        this.init_promise = this.init(woff_url, meta_json_url, glyphnames_json);
+    }
+
+    getJSON(url) {
+        return new Promise(function(resolve, reject){
+            var req = new XMLHttpRequest();		
+            req.onreadystatechange = function() {			
+                if(req.readyState == 4 && req.status == 200){
+                    var data = JSON.parse(req.responseText);	
+                    resolve(data);
+                }
+            };
+            req.open("GET", url, false);
+            req.send(null);
+        });
+    }
+
+    ready(){
+        return this.init_promise;
+    }
+
+    init(woff_url, meta_json_url, glyphnames_json){
+        var font = new FontFace("Bravura Text", "url("+woff_url+")");
+        
+        var pf = font.load();
+        var pmeta = this.getJSON(meta_json_url);
+        var pg = this.getJSON(glyphnames_json); // From https://raw.githubusercontent.com/w3c/smufl/gh-pages/metadata/glyphnames.json
+        
+        return Promise.all([pf, pmeta, pg]).then((rets)=>{
+            document.fonts.add(font);
+            console.log("Font loaded");
+
+            this.metaData = rets[1];
+            this.glyphnames = rets[2];
+            for(let key in this.glyphnames){
+                var codeInt = parseInt(this.glyphnames[key].codepoint.replace("U+","0x"));
+                this.codeToNameMap[codeInt] = key;
+            }
+        });
+    }
+
+    put(canvas, name_or_code, staff_interval_px, lx, ty){
+        let code = name_or_code;
+        if(name_or_code instanceof String)
+            code = parseInt(this.glyphnames[name].codepoint.replace("U+","0x"));
+        
+        let fontSize = null;
+        if(staff_interval_px in this.intervalToFontSizeMap) fontSize = this.intervalToFontSizeMap[staff_interval_px];
+        else{
+            var lineThickNessShift = 0.064; // Line tickness
+            fontSize = getFontSizeFromHeight(staff_interval_px*4 + lineThickNessShift*staff_interval_px, 
+                "Bravura Text", String.fromCodePoint(0xE014)); // 5 line is baseline
+            this.intervalToFontSizeMap[staff_interval_px] = fontSize;
+        }
+        let ctx = canvas.getContext("2d");
+        ctx.save();
+        ctx.font = fontSize+"px '"+"Bravura Text"+"'";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        ctx.fillText(String.fromCodePoint(code), lx, ty);
+        ctx.restore();
+    }
+
 }

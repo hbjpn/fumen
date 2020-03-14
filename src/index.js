@@ -8,3 +8,4 @@ export { SetupHiDPICanvas } from "./renderer/graphic";
 export { GetCharProfile } from "./renderer/graphic";
 export { CanvasTextWithBox } from "./renderer/graphic";
 export { CanvasText } from "./renderer/graphic";
+export { getFontSizeFromHeight } from "./renderer/graphic";

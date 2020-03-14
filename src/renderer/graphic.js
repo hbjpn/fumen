@@ -547,17 +547,19 @@ export function PreloadImages(imageurls) {
 
 let theBravura = null;
 
-export function getBravuraInstance(woff_url, meta_json_url, glyphnames_json){
+export function getBravuraInstance(fontfamily, woff_url, meta_json_url, glyphnames_json){
     if(theBravura) return theBravura;
-    theBravura = new Bravura(woff_url, meta_json_url, glyphnames_json);
+    theBravura = new Bravura(fontfamily, woff_url, meta_json_url, glyphnames_json);
     return theBravura;
 }
 
 export class Bravura{
-    constructor(woff_url, meta_json_url, glyphnames_json){
+    constructor(fontfamily, woff_url, meta_json_url, glyphnames_json){
+        // fontfamily is "Bravura" or "Bravura Text" depending on the specified woff file.
+        // Currenly only "Bravura Text" works.
         this.intervalToFontSizeMap = {};
         this.codeToNameMap = {};
-        this.init_promise = this.init(woff_url, meta_json_url, glyphnames_json);
+        this.init_promise = this.init(fontfamily, woff_url, meta_json_url, glyphnames_json);
     }
 
     getJSON(url) {
@@ -578,8 +580,10 @@ export class Bravura{
         return this.init_promise;
     }
 
-    init(woff_url, meta_json_url, glyphnames_json){
-        var font = new FontFace("Bravura Text", "url("+woff_url+")");
+    init(fontfamily, woff_url, meta_json_url, glyphnames_json){
+        this.fontfamily = fontfamily;
+
+        var font = new FontFace(this.fontfamily, "url("+woff_url+")");
         
         var pf = font.load();
         var pmeta = this.getJSON(meta_json_url);
@@ -608,12 +612,12 @@ export class Bravura{
         else{
             var lineThickNessShift = 0.064; // Line tickness
             fontSize = getFontSizeFromHeight(staff_interval_px*4 + lineThickNessShift*staff_interval_px, 
-                "Bravura Text", String.fromCodePoint(0xE014)); // 5 line is baseline
+                this.fontfamily, String.fromCodePoint(0xE014)); // 5 line is baseline
             this.intervalToFontSizeMap[staff_interval_px] = fontSize;
         }
         let ctx = canvas.getContext("2d");
         ctx.save();
-        ctx.font = fontSize+"px '"+"Bravura Text"+"'";
+        ctx.font = fontSize+"px '"+this.fontfamily+"'";
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
         ctx.fillText(String.fromCodePoint(code), lx, ty);

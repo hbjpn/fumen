@@ -3,25 +3,8 @@
   <head>
     <meta charset="utf-8">
     <title>test</title>
-    <link rel="preload" href="./assets/fonts/BravuraText-1.271.woff" as="font">
     <script type="text/javascript" src="fumen2.js"></script>
     <style>
-        /*
-        @font-face {
-        font-family: 'Bravura Text';
-        src: url('./assets/fonts/BravuraText-1.271.woff') format('woff');
-        }*/
-        /*
-        @font-face {
-        font-family: 'Bravura';
-        src: url('./assets/fonts/Bravura-1.271.woff') format('woff');
-        }*/
-
-        #sample {
-            /*font-family:'Bravura Text';*/
-            font-family:'Bravura';
-            font-size: 40px;
-        }
 
         .glyphtable td{
             border: 1px solid gray;
@@ -38,38 +21,20 @@
         }
     </style>
     <script type="text/javascript">
-    /*function SetupHiDPICanvas(canvas, w, h, ratio, zoom) {
-        var ctx = canvas.getContext("2d");
-        var G_zoom = zoom;
-        canvas.width = w * ratio * G_zoom;
-        canvas.height = h * ratio * G_zoom;
-        canvas.style.width = w * G_zoom + "px";
-        canvas.style.height = h * G_zoom + "px";
-        ctx.setTransform(ratio * G_zoom, 0, 0, ratio * G_zoom, 0, 0);
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        return { ratio: ratio };
-    }*/
 
     function loadFont(){
-        var font = new FontFace("Bravura Text", "url(./assets/fonts/BravuraText-1.271.woff)");
-
-        // don't wait for the render tree, initiate an immediate fetch!
-        font.load().then(function() {
-            // apply the font (which may re-render text and cause a page reflow)
-            // after the font has finished downloading
-            document.fonts.add(font);
+        var font1 = new FontFace("Bravura Text", "url(./assets/fonts/BravuraText.woff)");
+        font1.load().then(function() {
+            document.fonts.add(font1);
             console.log("Font loaded");
-            //document.body.style.fontFamily = "Awesome Font, serif";
-
-            // OR... by default the content is hidden,
-            // and it's rendered after the font is available
-            //var content = document.getElementById("content");
-            //content.style.visibility = "visible";
-
-            // OR... apply your own render strategy here...
         });
+
+        var font2 = new FontFace("Bravura", "url(./assets/fonts/Bravura.woff)");
+        font2.load().then(function() {
+            document.fonts.add(font2);
+            console.log("Font loaded");
+        });
+
     }
 
     function toHex(v) {
@@ -77,7 +42,7 @@
     }
 
     function view(){
-        var pmeta = getJSON("./assets/fonts/bravura_metadata-1.271.json");
+        var pmeta = getJSON("./assets/fonts/bravura_metadata.json");
 
         // Standard smufl  glyphnames mapping. 
         // Note legatures, alternate glyphs are not in the scope of smufl spec.
@@ -183,27 +148,15 @@
 
     function getJSON(url) {
         return new Promise(function(resolve, reject){
-            var req = new XMLHttpRequest();						// XMLHttpRequest オブジェクトを生成する
-            req.onreadystatechange = function() {				// XMLHttpRequest オブジェクトの状態が変化した際に呼び出されるイベントハンドラ
-                if(req.readyState == 4 && req.status == 200){	// サーバーからのレスポンスが完了し、かつ、通信が正常に終了した場合
-
-                    var data = JSON.parse(req.responseText);	// 取得した JSON ファイルの中身を変数へ格納
-                    /*var len = data.length;						// JSON のデータ数を取得
-
-                    // JSON のデータ数分処理
-                    for(var i=0; i<len; i++) {
-                        console.log("id: " + data[i].id + ", name: " + data[i].name);
-                    }*/
-                    //console.log(data);
-
+            var req = new XMLHttpRequest();	
+            req.onreadystatechange = function() {
+                if(req.readyState == 4 && req.status == 200){
+                    var data = JSON.parse(req.responseText);
                     resolve(data);
-
                 }
             };
-            //req.open("GET", "./assets/fonts/bravura_metadata-1.271.json", false);				// HTTPメソッドとアクセスするサーバーのURLを指定
-            req.open("GET", url, false);				// HTTPメソッドとアクセスするサーバーのURLを指定
-            
-            req.send(null);										// 実際にサーバーへリクエストを送信
+            req.open("GET", url, false);
+            req.send(null);
         });
     }
     </script>
@@ -213,14 +166,6 @@
         <button onclick="SyncStaff(6)">Sync Staff</button>
         <button onclick="loadFont()">LoadFont</button>
     </div>
-    <!--https://w3c.github.io/smufl/gitbook/tables/repeats.html-->
-    <!--<p id="sample">
-        &#xE040; &#xE014; &#xE050; &#xE014; &#xE260; &#xE014; &#xE261; &#xE014; &#xE262; </br>
-        &#xE014;&#xE09F;&#xE085;&#xE09E;&#xE089; </br>
-        &#xF5EC; &#xF5AF; </br>
-        &#xF5BA; &#xF5BB; </br>
-        &#xF5AA;
-    </p>-->
     <canvas id="canvas" style="width:100%; height:600px;"></canvas>
     <canvas id="memcanvas"></canvas>
     <p id="all"></p>

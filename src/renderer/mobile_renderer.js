@@ -80,6 +80,7 @@ export class MobileRenderer extends Renderer {
         };
 
         this.buravura = graphic.getBravuraInstance(
+            "Bravura Text",
             "./assets/fonts/BravuraText.woff",
             "./assets/fonts/bravura_metadata.json",
             "./assets/fonts/glyphnames.json"

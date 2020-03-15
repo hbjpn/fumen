@@ -111,9 +111,9 @@ export class MobileRenderer extends Renderer {
         ];
         var param = this.param;
         return graphic.PreloadImages(urls).then( () => {
-            this.buravura.ready().then(()=>{
-                return this.render_impl(track, param);
-            });
+            return this.buravura.ready();
+        }).then(()=>{
+            return this.render_impl(track, param);
         });
     }
 

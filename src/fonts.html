@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <title>test</title>
     <script type="text/javascript" src="fumen2.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
     <style>
 
         .glyphtable td{
@@ -19,6 +20,13 @@
         .desc {
             font-size: 12px;
         }
+
+
+        @font-face {
+        font-family: 'Bravura Text';
+        src: url('./assets/fonts/BravuraText.woff') format("woff");
+        }
+
     </style>
     <script type="text/javascript">
 
@@ -41,16 +49,52 @@
         return '0x' + (('0000' + v.toString(16).toUpperCase()).substr(-4));
     }
 
+    function waitWebfontLoad(){
+        return new Promise(function(resolve,reject){
+            WebFont.load(
+            {
+                custom:
+                {
+                    families: ['Bravura Text']
+                },
+                loading: function()
+                {
+                    console.log('loading');
+                },
+                active: function()
+                {
+                    console.log('active');
+                    resolve(true);
+                    //var renderer = new Fumen.MobileRenderer(null, param, canvas_provider);
+                    //renderer.render(track);
+                },
+                inactive: function()
+                {
+                    console.log('inactive');
+                    // Try, just in case
+                    //var renderer = new Fumen.MobileRenderer(null, param, canvas_provider);
+                    //renderer.render(track);
+                    resolve(false); // not reject :)
+                }
+             });
+        });
+    }
+
     function view(){
+
+        var pf = waitWebfontLoad();
         var pmeta = getJSON("./assets/fonts/bravura_metadata.json");
 
         // Standard smufl  glyphnames mapping. 
         // Note legatures, alternate glyphs are not in the scope of smufl spec.
         // (Just define the range of codes for these gralypcs but does not specify any specific mapping)
         var p = getJSON("./assets/fonts/glyphnames.json"); // From https://raw.githubusercontent.com/w3c/smufl/gh-pages/metadata/glyphnames.json
-        Promise.all([pmeta, p]).then(function(jsons){
-            var metadata = jsons[0];
-            var glyphnames = jsons[1];
+        Promise.all([pf, pmeta, p]).then(function(rets){
+            console.log(rets);
+            var fontloaded = rets[0];
+            console.log("font loaded : " + fontloaded);
+            var metadata = rets[1];
+            var glyphnames = rets[2];
             console.log(metadata);
             var codeToNameMap = {};
             for(key in glyphnames){
@@ -95,6 +139,7 @@
             for(var i = 0; i < 10; ++i){
                 ctx.moveTo(0, i*10);
                 ctx.lineTo(100, i*10);
+                ctx.strokeStyle = "green";
                 ctx.stroke();
             }
             ctx.fillText(String.fromCodePoint(0xE014), 10, ypos);

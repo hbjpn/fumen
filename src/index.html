@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>test</title>
-    <script type="text/javascript" src="fumen2.js"></script></body>
+    <script type="text/javascript" src="fumen2.js"></script>
     <script type="text/javascript">
       function hoge(){
             var code = document.getElementById("code").value;
@@ -97,12 +97,15 @@ min-height:200px;
     height: 250px;
     padding: 10px;
 }
+
+@font-face {
+   font-family: 'Bravura Text';
+   src: url('./assets/fonts/BravuraText.woff') format("woff");
+}
+
     </style>
 </head>
-<div>
-
-</div>
-  <body>
+<body>
   <div class="header">
     <button onclick="hoge()">Render</button>
   </div>
@@ -201,10 +204,10 @@ min-height:200px;
   
   </textarea>
 </div>
-    </div>
-    <div class="div2"  id="scores_area">
-    </div>
-   </div>
+</div>
+<div class="div2"  id="scores_area">
+</div>
+</div>
 
   </body>
 </html>

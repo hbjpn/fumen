@@ -580,18 +580,53 @@ export class Bravura{
         return this.init_promise;
     }
 
+    checkloaded(){
+        var c1 = document.createElement("canvas");
+        var c2 = c1.cloneNode(false);
+        var ctx1 = c1.getContext("2d");
+        var ctx2 = c2.getContext("2d");
+        ctx1.font = "normal 30px '"+this.fontfamily+"', serif";
+        ctx2.font = "normal 30px serif";
+        var text = String.fromCodePoint(0xE050); //"this is test text.";  // Gclef as a reference
+
+        return new Promise(function(resolve, reject){
+            function loaded(){
+                var tm1 = ctx1.measureText(text);
+                var tm2 = ctx2.measureText(text);
+                console.log("tm1:"+tm1.width+" tm2:"+tm2.width);
+                return tm1.width != tm2.width;
+            }
+
+            var cnt = 0;
+            function checker(){
+                if(loaded()){
+                    resolve(true);
+                }else if(cnt >= 30){
+                    reject("Time out");
+                }else{
+                    setTimeout(checker, 100);
+                    cnt++;
+                }
+            }
+
+            checker();
+        });
+    }
+
     init(fontfamily, woff_url, meta_json_url, glyphnames_json){
         this.fontfamily = fontfamily;
 
-        var font = new FontFace(this.fontfamily, "url("+woff_url+")");
-        
-        var pf = font.load();
+        // THis does not work in MS Edge
+        //var font = new FontFace(this.fontfamily, "url("+woff_url+")");
+        //var pf = font.load();
+        var pf = this.checkloaded(); //new Promise(function(resolve){ resolve(true); }); // Dammy promise
+
         var pmeta = this.getJSON(meta_json_url);
         var pg = this.getJSON(glyphnames_json); // From https://raw.githubusercontent.com/w3c/smufl/gh-pages/metadata/glyphnames.json
-        
+    
         return Promise.all([pf, pmeta, pg]).then((rets)=>{
-            document.fonts.add(font);
-            console.log("Font loaded");
+            //document.fonts.add(font);
+            //console.log("Font loaded");
 
             this.metaData = rets[1];
             this.glyphnames = rets[2];

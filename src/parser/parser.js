@@ -701,71 +701,79 @@ export class Parser {
                 }else if(r.type == TOKEN_BRACKET_LA){
                     // Right aligh indicoator > which is outside measure
                     current_align = "left";
-                } else {
-                    if (r.type == TOKEN_BRACKET_LS) {
-                        // Reset latest_macros
-                        latest_macros = {};
-                        r = this.parseReharsalMark(r.token, r.s);
-                        //console.log("Reharsal Mark:"+r.reharsalMarkName);
-                        if (currentReharsalGroup != null)
-                            track.reharsal_groups.push(currentReharsalGroup);
-                        currentReharsalGroup = new common.ReharsalGroup(
-                            r.reharsalMarkName,
-                            this.context.contiguous_line_break<=1 && track.reharsal_groups.length > 0); // 1st RG is always non-inline
-                        //console.log(currentReharsalGroup);
+                } else if (r.type == TOKEN_BRACKET_LS) {
+                    // Reset latest_macros
+                    latest_macros = {};
+                    r = this.parseReharsalMark(r.token, r.s);
+                    //console.log("Reharsal Mark:"+r.reharsalMarkName);
+                    if (currentReharsalGroup != null)
+                        track.reharsal_groups.push(currentReharsalGroup);
+                        let inline = 
+                            this.context.contiguous_line_break<=1 &&
+                            track.reharsal_groups.length > 0 && // 1st RG is always non-inline
+                            track.reharsal_groups[track.reharsal_groups.length - 1].blocks.length > 0; // previous reharsal group has at least one block(measure)
+                    currentReharsalGroup = new common.ReharsalGroup(
+                        r.reharsalMarkName, inline);
+                    //console.log(currentReharsalGroup);
+                    this.context.contiguous_line_break = 0;
+                } else if (
+                    [
+                        TOKEN_MB,
+                        TOKEN_MB_DBL,
+                        TOKEN_MB_LOOP_BEGIN,
+                        TOKEN_MB_LOOP_BOTH,
+                        TOKEN_MB_FIN,
+                        TOKEN_MB_DBL_SIMILE
+                    ].indexOf(r.type) >= 0
+                ) {
+                    // Exepction : If not reharsal mark is defined and the measure is directly specified, 
+                    // then define default anonymous reharsal mark
+                    if(currentReharsalGroup==null){
+                        currentReharsalGroup = new common.ReharsalGroup("",false);
                         this.context.contiguous_line_break = 0;
-                    } else if (
-                        [
-                            TOKEN_MB,
-                            TOKEN_MB_DBL,
-                            TOKEN_MB_LOOP_BEGIN,
-                            TOKEN_MB_LOOP_BOTH,
-                            TOKEN_MB_FIN,
-                            TOKEN_MB_DBL_SIMILE
-                        ].indexOf(r.type) >= 0
-                    ) {
-                        r = this.parseMeasures(r, r.s);
-                        // Apply par row macros
-                        r.measures[0].macros = common.deepcopy(latest_macros);
+                    } 
 
-                        if (currentReharsalGroup.blocks.length == 0) {
-                            currentReharsalGroup.blocks.push(new Array());
-                            currentReharsalGroup.blocks[0] = currentReharsalGroup.blocks[0].concat(
-                                r.measures
-                            );
-                        } else {
-                            if (this.context.contiguous_line_break >= 2) {
-                                currentReharsalGroup.blocks.push(new Array());
-                            } else if (this.context.contiguous_line_break == 1){
-                                // When new line in the fumen code in the middle of a block
-                                r.measures[0].raw_new_line = true;
-                            }
-                            r.measures[0].align = current_align;
+                    r = this.parseMeasures(r, r.s);
+                    // Apply par row macros
+                    r.measures[0].macros = common.deepcopy(latest_macros);
 
-                            var blocklen = currentReharsalGroup.blocks.length;
-                            currentReharsalGroup.blocks[
-                                blocklen - 1
-                            ] = currentReharsalGroup.blocks[blocklen - 1].concat(
-                                r.measures
-                            );
-                        }
-                        this.context.contiguous_line_break = 0;
-                        //currentReharsalGroup.measures =
-                        //	currentReharsalGroup.measures.concat(r.measures);
-                    } else if (r.type == TOKEN_PERCENT) {
-                        // Expression
-                        r = this.parseMacro(r.s);
-                        if (currentReharsalGroup) {
-                            currentReharsalGroup.macros[r.key] = r.value;
-                        } else {
-                            track.macros[r.key] = r.value;
-                        }
-                        latest_macros[r.key] = r.value;
-                        this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this macro
+                    if (currentReharsalGroup.blocks.length == 0) {
+                        currentReharsalGroup.blocks.push(new Array());
+                        currentReharsalGroup.blocks[0] = currentReharsalGroup.blocks[0].concat(
+                            r.measures
+                        );
                     } else {
-                        console.log(r.token);
-                        this.onParseError("ERROR_WHILE_PARSE_MOST_OUTSIDER");
+                        if (this.context.contiguous_line_break >= 2) {
+                            currentReharsalGroup.blocks.push(new Array());
+                        } else if (this.context.contiguous_line_break == 1){
+                            // When new line in the fumen code in the middle of a block
+                            r.measures[0].raw_new_line = true;
+                        }
+                        r.measures[0].align = current_align;
+
+                        var blocklen = currentReharsalGroup.blocks.length;
+                        currentReharsalGroup.blocks[
+                            blocklen - 1
+                        ] = currentReharsalGroup.blocks[blocklen - 1].concat(
+                            r.measures
+                        );
                     }
+                    this.context.contiguous_line_break = 0;
+                    //currentReharsalGroup.measures =
+                    //	currentReharsalGroup.measures.concat(r.measures);
+                } else if (r.type == TOKEN_PERCENT) {
+                    // Expression
+                    r = this.parseMacro(r.s);
+                    if (currentReharsalGroup) {
+                        currentReharsalGroup.macros[r.key] = r.value;
+                    } else {
+                        track.macros[r.key] = r.value;
+                    }
+                    latest_macros[r.key] = r.value;
+                    this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this macro
+                } else {
+                    console.log(r.token);
+                    this.onParseError("ERROR_WHILE_PARSE_MOST_OUTSIDER");
                 }
                 s = r.s;
                 loop_cnt++;

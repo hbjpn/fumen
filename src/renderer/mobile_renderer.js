@@ -780,7 +780,10 @@ export class MobileRenderer extends Renderer {
         let rg_mark_detected = false;
         for (let ml = 0; ml < row_elements_list.length; ++ml) {
             var m = row_elements_list[ml];
-            if(m.renderprop && m.renderprop.rg_from_here) rg_mark_detected = true;
+            if(m.renderprop && 
+               m.renderprop.rg_from_here &&
+               m.renderprop.rg_from_here.name != "") // Anonymous reharsal group is not rendered
+               rg_mark_detected = true;
 
             for (let ei = 0; ei < m.elements.length; ++ei) {
                 var e = m.elements[ei];
@@ -1349,8 +1352,8 @@ export class MobileRenderer extends Renderer {
                 groups: []
             };
 
-            // Inner reharsal mark in MU area
-            if(m.renderprop && m.renderprop.rg_from_here){
+            // Reharsal group mark, only rendred when it has name
+            if(m.renderprop && m.renderprop.rg_from_here && m.renderprop.rg_from_here.name != ""){
 
                 let reharsal_group = m.renderprop.rg_from_here;
 

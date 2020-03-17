@@ -7,9 +7,10 @@ import * as graphic from "./graphic";
 var SR_RENDER_PARAM = {
     origin: { x: 0, y: 0 },
     y_title_offset: 2,
-    y_author_offset: 20,
-    y_first_page_offset: 30,
-    y_offset: 10,
+    y_subtitle_offset: 16,
+    y_artist_offset: 16,
+    y_first_page_offset: 30, // With header
+    y_offset: 10, // Without header
     x_offset: 10,
     y_footer_offset: 10,
     min_measure_width: 100,
@@ -41,7 +42,8 @@ var SR_RENDER_PARAM = {
     },
     reharsal_mark_font_size: 12,
     title_font_size: 14,
-    sub_title_font_size: 14,
+    subtitle_font_size: 12,
+    artist_font_size: 14,
     base_font_size: 28,
     balken_width: 3,
     note_bar_length: 24/4*3.5, // 3.5 times of interval is the conventional length
@@ -437,7 +439,8 @@ export class MobileRenderer extends Renderer {
         var origin = param.origin; //{x:0,y:0};
 
         var y_title_offset = origin.y + param.y_title_offset;
-        var y_author_offset = origin.y + param.y_author_offset;
+        var y_subtitle_offset = origin.y + param.y_subtitle_offset;
+        var y_artist_offset = origin.y + param.y_artist_offset;
         var x_offset = origin.x + param.x_offset;
         var score_width = param.paper_width / this.param.zoom / param.ncol;
         var score_height = param.paper_height / this.param.zoom / param.nrow;
@@ -462,12 +465,13 @@ export class MobileRenderer extends Renderer {
                 param.background_color);
         
         //
-        var hide_header = global_macros["HIDE_HEADER"] == "YES";
+        var show_header = global_macros["SHOW_HEADER"] == "YES";
+        var show_footer = global_macros["SHOW_FOOTER"] == "YES";
 
         var y_stacks = [];
         var y_base = origin.y;
 
-        if(!hide_header){
+        if(show_header){
             // Title
             var ri = graphic.CanvasText(
                 canvas,
@@ -475,7 +479,8 @@ export class MobileRenderer extends Renderer {
                 y_title_offset,
                 global_macros.TITLE,
                 param.title_font_size,
-                "ct"
+                "ct",
+                null, false, {"bold":true}
             );
 
             // Sub Title
@@ -483,25 +488,28 @@ export class MobileRenderer extends Renderer {
                 graphic.CanvasText(
                     canvas,
                     x_offset + width / 2,
-                    y_title_offset + ri.height,
+                    y_subtitle_offset,
                     global_macros.SUB_TITLE,
-                    param.sub_title_font_size,
-                    "ct"
+                    param.subtitle_font_size,
+                    "ct",
+                    null, false, {"bold":false}
                 );
 
             // Artist
             graphic.CanvasText(
                 canvas,
                 x_offset + width,
-                y_author_offset,
+                y_artist_offset,
                 global_macros.ARTIST,
-                param.sub_title_font_size,
-                "rt"
+                param.artist_font_size,
+                "rt",
+                null, false, {"bold":true}
             );
 
             y_stacks.push({ type: "titles", height: param.y_first_page_offset });
-
             y_base += param.y_first_page_offset;
+        }else{
+            y_base += param.y_offset;
         }
 
         // Music context
@@ -754,7 +762,8 @@ export class MobileRenderer extends Renderer {
             }
         }
 
-        this.render_footer(canvaslist, global_macros.TITLE + "/" + global_macros.ARTIST);
+        if(show_footer)
+            this.render_footer(canvaslist, global_macros.TITLE + "/" + global_macros.ARTIST);
 
         return { y: y_base };
     }

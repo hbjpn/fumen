@@ -148,12 +148,12 @@ export function CanvasPath(canvas, svgpathdata, fill=false, opt) {
     */
 }
 
-export function fontDesc(fsize,fontfamily) {
-    return  fsize + "px '" + (fontfamily?fontfamily:"Arial") + "'";
+export function fontDesc(fsize,fontfamily,bold) {
+    return  (bold?"bold ":"")+fsize + "px '" + (fontfamily?fontfamily:"Arial") + "'";
 }
 
-export function GetCharProfile(fsize,fontfamily) {
-    let font = fontDesc(fsize,fontfamily);
+export function GetCharProfile(fsize,fontfamily,bold) {
+    let font = fontDesc(fsize,fontfamily,bold);
 
     let yroom = null;
     if (font in G_y_char_offsets) yroom = G_y_char_offsets[font];
@@ -185,7 +185,7 @@ export function CanvasText(canvas, x, y, text, fsize, align, xwidth, notdraw, op
         d: "top" // default
     };
     var orgfont = context.font;
-    let font = fontDesc(fsize, opt?opt.fontfamily:null);
+    let font = fontDesc(fsize, opt?opt.fontfamily:null,opt?opt.bold:null);
 
     let yadjust = 0;
     let yroom = null;
@@ -198,7 +198,7 @@ export function CanvasText(canvas, x, y, text, fsize, align, xwidth, notdraw, op
         context.textBaseline = tb[align[1]]; //tb[align[1]];
     
     }else{
-        yroom = GetCharProfile(fsize, opt?opt.fontfamily:null);
+        yroom = GetCharProfile(fsize, opt?opt.fontfamily:null,opt?opt.bold:null);
 
 
         if (align[1] == "t") {

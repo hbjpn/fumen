@@ -1,5 +1,17 @@
 import "@babel/polyfill";
 
+// Default values for macros
+
+let MACRO_DEFAULT = {
+    "TITLE" : "NO TITLE",
+    "SUB_TITLE": "",
+    "ARTIST" : "NO ARTIST",
+    "HIDE_HEADER": "NO",
+    "STAFF": "AUTO",
+    "TRANSPOSE" : 0,
+    "HALF_TYPE" : "GUESS",
+};
+
 export function shallowcopy(obj) {
     return Object.assign({}, obj);
 }
@@ -211,7 +223,7 @@ export var WHOLE_NOTE_LENGTH = 2 * 3 * 5 * 7 * 9 * 11 * 13 * 64;
 export class Track {
     constructor() {
         this.reharsal_groups = new Array();
-        this.macros = {};
+        this.macros = deepcopy(MACRO_DEFAULT);
         this.pre_render_info = {};
 	}
 }
@@ -222,7 +234,7 @@ export class ReharsalGroup {
         this.inline = inline;
         //	this.measures = new Array();
         this.blocks = new Array(); // Blocks in the reharsal groups
-        this.macros = {};
+        this.macros = deepcopy(MACRO_DEFAULT);
     }
 }
 
@@ -245,6 +257,7 @@ export class Measure {
         this.align = "expand"; // expand, left, right
 
         this.renderprop = {}; // Rendering information storage
+        this.macros = deepcopy(MACRO_DEFAULT);
     }
 }
 

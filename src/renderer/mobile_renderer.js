@@ -2,7 +2,7 @@ import "@babel/polyfill";
 import { Renderer } from "./renderer";
 import * as common from "../common/common";
 import * as graphic from "./graphic";
-import { getGlobalMacros, getMacros } from "../parser/parser";
+//import { getGlobalMacros, getMacros } from "../parser/parser";
 
 var SR_RENDER_PARAM = {
     origin: { x: 0, y: 0 },
@@ -428,7 +428,7 @@ export class MobileRenderer extends Renderer {
     }
 
     async render_impl(track, param) {
-        var global_macros = getGlobalMacros(track);
+        var global_macros = track.macros; //getGlobalMacros(track);
 
         if("PARAM" in global_macros){
             this.merge_param(this.param, global_macros["PARAM"], false); // Merge to defaul param
@@ -442,10 +442,6 @@ export class MobileRenderer extends Renderer {
         var score_width = param.paper_width / this.param.zoom / param.ncol;
         var score_height = param.paper_height / this.param.zoom / param.nrow;
         var width = param.paper_width / this.param.zoom / param.ncol - param.x_offset * 2;
-
-        var y_base = origin.y + param.y_first_page_offset;
-
-        var songname = "";
 
         let canvas = this.canvas;
         if (canvas == null) {
@@ -464,39 +460,49 @@ export class MobileRenderer extends Renderer {
                 this.param.paper_width / this.param.zoom, 
                 this.param.paper_height / this.param.zoom, 
                 param.background_color);
+        
+        //
+        var hide_header = global_macros["HIDE_HEADER"] == "YES";
 
-        // Title
-        var ri = graphic.CanvasText(
-            canvas,
-            x_offset + width / 2,
-            y_title_offset,
-            global_macros.title,
-            param.title_font_size,
-            "ct"
-        );
-        songname = global_macros.title;
+        var y_stacks = [];
+        var y_base = origin.y;
 
-        // Sub Title
-        if (global_macros.sub_title != "")
-            graphic.CanvasText(
+        if(!hide_header){
+            // Title
+            var ri = graphic.CanvasText(
                 canvas,
                 x_offset + width / 2,
-                y_title_offset + ri.height,
-                global_macros.sub_title,
-                param.sub_title_font_size,
+                y_title_offset,
+                global_macros.TITLE,
+                param.title_font_size,
                 "ct"
             );
 
-        // Artist
-        graphic.CanvasText(
-            canvas,
-            x_offset + width,
-            y_author_offset,
-            global_macros.artist,
-            param.sub_title_font_size,
-            "rt"
-        );
-        songname += "/" + global_macros.artist;
+            // Sub Title
+            if (global_macros.SUB_TITLE != "")
+                graphic.CanvasText(
+                    canvas,
+                    x_offset + width / 2,
+                    y_title_offset + ri.height,
+                    global_macros.SUB_TITLE,
+                    param.sub_title_font_size,
+                    "ct"
+                );
+
+            // Artist
+            graphic.CanvasText(
+                canvas,
+                x_offset + width,
+                y_author_offset,
+                global_macros.ARTIST,
+                param.sub_title_font_size,
+                "rt"
+            );
+
+            y_stacks.push({ type: "titles", height: param.y_first_page_offset });
+
+            y_base += param.y_first_page_offset;
+        }
 
         // Music context
         var music_context = {
@@ -512,8 +518,6 @@ export class MobileRenderer extends Renderer {
             },
             pos_in_a_measure: 0
         };
-
-        var y_stacks = [{ type: "titles", height: param.y_first_page_offset }];
 
         let meas_row_list = [];
         // Firstly, just split with new lines
@@ -675,8 +679,8 @@ export class MobileRenderer extends Renderer {
 
            // y-screening is done in stage 2 as well : TODO : Make it once
            var yprof = this.screening_y_areas(
-               row_elements_list, y_base, yse[pei].param, yse[pei].macros.staff, 
-               yse[pei].macros.reharsal_mark_position == "Inner");
+               row_elements_list, y_base, yse[pei].param, yse[pei].macros.STAFF, 
+               yse[pei].macros.REHARSAL_MARK_POSITION == "Inner");
    
            // Screening x elements and determine the rendering policy for x-axis.
            var x_width_info = this.screening_x_areas(
@@ -718,7 +722,7 @@ export class MobileRenderer extends Renderer {
                     y_base,
                     yse[pei].param,
                     true,
-                    yse[pei].macros.reharsal_mark_position == "Inner",
+                    yse[pei].macros.REHARSAL_MARK_POSITION == "Inner",
                     this.canvas_provider != null
                         ? score_height - yse[pei].param.y_offset
                         : null,
@@ -750,7 +754,7 @@ export class MobileRenderer extends Renderer {
             }
         }
 
-        this.render_footer(canvaslist, songname);
+        this.render_footer(canvaslist, global_macros.TITLE + "/" + global_macros.ARTIST);
 
         return { y: y_base };
     }
@@ -860,8 +864,8 @@ export class MobileRenderer extends Renderer {
         param,
         music_context
     ){
-        var transpose = macros.transpose;
-        var half_type = macros.half_type;
+        var transpose = macros.TRANSPOSE;
+        var half_type = macros.HALF_TYPE;
 
         var total_width = param.paper_width / param.zoom - 2 * param.x_offset;
 
@@ -1281,11 +1285,10 @@ export class MobileRenderer extends Renderer {
         ylimit,
         music_context
     ) {
-        var x_global_scale = macros.x_global_scale;
-        var transpose = macros.transpose;
-        var half_type = macros.half_type;
-        var staff = macros.staff;
-        var theme = macros.theme;
+        var x_global_scale = macros.X_GLOBAL_SCALE;
+        var transpose = macros.TRANSPOSE;
+        var half_type = macros.HALF_TYPE;
+        var staff = macros.STAFF;
 
         /* Reference reserved width for empty measures or chord symbol without base names*/
         var C7_width = 20;

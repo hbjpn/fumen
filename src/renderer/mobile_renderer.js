@@ -503,7 +503,7 @@ export class MobileRenderer extends Renderer {
                 global_macros.ARTIST,
                 param.artist_font_size,
                 "rt",
-                null, false, {"bold":true}
+                null, false, {"bold":false}
             );
 
             y_stacks.push({ type: "titles", height: param.y_first_page_offset });

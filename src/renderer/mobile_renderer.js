@@ -806,7 +806,10 @@ export class MobileRenderer extends Renderer {
             this.render_footer(canvaslist, global_macros.TITLE + "/" + global_macros.ARTIST,
                 this.param.origin.y + score_height - this.param.y_footer_offset);
 
-        return { y: y_base };
+        return {
+            pages: canvaslist.length,
+            height: score_height
+        };
     }
 
     screening_y_areas(row_elements_list, y_base, param, staff, 

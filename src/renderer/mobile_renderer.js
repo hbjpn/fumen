@@ -65,6 +65,7 @@ export class MobileRenderer extends Renderer {
         super();
 
         this.canvas = canvas;
+        this.memCanvas = null; // Canvas on memory used for screening
 
         this.param = common.deepcopy(SR_RENDER_PARAM); // Default parameters
         // Overwrite
@@ -446,72 +447,6 @@ export class MobileRenderer extends Renderer {
         var score_height = param.paper_height / this.param.zoom / param.nrow;
         var width = param.paper_width / this.param.zoom / param.ncol - param.x_offset * 2;
 
-        let canvas = this.canvas;
-        if (canvas == null) {
-            canvas = await this.canvas_provider();
-        }
-        graphic.SetupHiDPICanvas(
-            canvas,
-            this.param.paper_width / this.param.zoom,
-            this.param.paper_height / this.param.zoom,
-            this.param.pixel_ratio,
-            this.param.zoom
-        );
-
-        if(param.background_color)
-            graphic.CanvasRect(canvas, 0, 0, 
-                this.param.paper_width / this.param.zoom, 
-                this.param.paper_height / this.param.zoom, 
-                param.background_color);
-        
-        //
-        var show_header = global_macros["SHOW_HEADER"] == "YES";
-        var show_footer = global_macros["SHOW_FOOTER"] == "YES";
-
-        var y_stacks = [];
-        var y_base = origin.y;
-
-        if(show_header){
-            // Title
-            var ri = graphic.CanvasText(
-                canvas,
-                x_offset + width / 2,
-                y_title_offset,
-                global_macros.TITLE,
-                param.title_font_size,
-                "ct",
-                null, false, {"bold":true}
-            );
-
-            // Sub Title
-            if (global_macros.SUB_TITLE != "")
-                graphic.CanvasText(
-                    canvas,
-                    x_offset + width / 2,
-                    y_subtitle_offset,
-                    global_macros.SUB_TITLE,
-                    param.subtitle_font_size,
-                    "ct",
-                    null, false, {"bold":false}
-                );
-
-            // Artist
-            graphic.CanvasText(
-                canvas,
-                x_offset + width,
-                y_artist_offset,
-                global_macros.ARTIST,
-                param.artist_font_size,
-                "rt",
-                null, false, {"bold":false}
-            );
-
-            y_stacks.push({ type: "titles", height: param.y_first_page_offset });
-            y_base += param.y_first_page_offset;
-        }else{
-            y_base += param.y_offset;
-        }
-
         // Music context
         var music_context = {
             accidental_info: {},
@@ -588,6 +523,8 @@ export class MobileRenderer extends Renderer {
         }
 
         // Make y-strack elements, and mark the reharsal mark position
+        var y_stacks = [];
+
         let next_reharsal_group_index = 0;
         meas_row_list.forEach((e,i)=>{
             // eslint-disable-next-line no-constant-condition
@@ -627,7 +564,7 @@ export class MobileRenderer extends Renderer {
                     }
                 }
             });
-            
+                        
             y_stacks.push({
                 type: "meas",
                 height: 0,
@@ -645,7 +582,20 @@ export class MobileRenderer extends Renderer {
             });
         });
 
+        // ---------------------
         // Stage 1 : Screening
+        // ---------------------
+        if (!this.memCanvas) {
+            this.memCanvas = document.createElement("canvas");
+            graphic.SetupHiDPICanvas(
+                this.memCanvas,
+                this.param.paper_width / this.param.zoom,
+                this.param.paper_height / this.param.zoom,
+                this.param.pixel_ratio,
+                this.param.zoom
+            );
+        }
+
         let yse = y_stacks;
 
         let dammy_music_context = common.deepcopy(music_context); // Maybe not required ?
@@ -693,7 +643,7 @@ export class MobileRenderer extends Renderer {
            // Screening x elements and determine the rendering policy for x-axis.
            var x_width_info = this.screening_x_areas(
                x,
-               canvas,
+               this.memCanvas,
                yse[pei].macros,
                row_elements_list,
                yse[pei].pm,
@@ -710,7 +660,75 @@ export class MobileRenderer extends Renderer {
            }
        }
 
+        // ----------------------
         // Stage 2 : Rendering
+        // ----------------------
+        let canvas = this.canvas;
+        if (canvas == null) {
+            canvas = await this.canvas_provider();
+        }
+        graphic.SetupHiDPICanvas(
+            canvas,
+            this.param.paper_width / this.param.zoom,
+            this.param.paper_height / this.param.zoom,
+            this.param.pixel_ratio,
+            this.param.zoom
+        );
+
+        if(param.background_color)
+            graphic.CanvasRect(canvas, 0, 0, 
+                this.param.paper_width / this.param.zoom, 
+                this.param.paper_height / this.param.zoom, 
+                param.background_color);
+        
+        //
+        var show_header = global_macros["SHOW_HEADER"] == "YES";
+        var show_footer = global_macros["SHOW_FOOTER"] == "YES";
+
+        var y_base = origin.y;
+
+        if(show_header){
+            // Title
+            var ri = graphic.CanvasText(
+                canvas,
+                x_offset + width / 2,
+                y_title_offset,
+                global_macros.TITLE,
+                param.title_font_size,
+                "ct",
+                null, false, {"bold":true}
+            );
+
+            // Sub Title
+            if (global_macros.SUB_TITLE != "")
+                graphic.CanvasText(
+                    canvas,
+                    x_offset + width / 2,
+                    y_subtitle_offset,
+                    global_macros.SUB_TITLE,
+                    param.subtitle_font_size,
+                    "ct",
+                    null, false, {"bold":false}
+                );
+
+            // Artist
+            graphic.CanvasText(
+                canvas,
+                x_offset + width,
+                y_artist_offset,
+                global_macros.ARTIST,
+                param.artist_font_size,
+                "rt",
+                null, false, {"bold":false}
+            );
+
+            y_stacks.push({ type: "titles", height: param.y_first_page_offset });
+            y_base += param.y_first_page_offset;
+        }else{
+            y_base += param.y_offset;
+        }
+
+
         let canvaslist = [canvas];
 
         for (let pei = 0; pei < yse.length; ++pei) {

@@ -6,7 +6,8 @@ Basic fumen mark down source has following components :
 3. Reharsal mark(s) and its(their) contents
 
 Following is the example fumen source having title of "Hello" and artist name "World", and 2 reharsal marks of A and B.
-```fumen
+
+<!-- fumen:start -->
 %TITLE="Hello"
 %ARTIST="World"
 
@@ -15,24 +16,64 @@ Following is the example fumen source having title of "Hello" and artist name "W
 
 [B]
 | E | F | G | A |
-```
+<!-- fumen:end -->
 
-## Reharsal mark
-Strings enclosed with square brackets outside the measures means a reharsal mark name. Following the reharsal mark, one or more of measures are specified as a contents belongs to the reharsal marks.
+## Reharsal Group
+Strings enclosed with square brackets outside the measures means a reharsal group name. Following the reharsal group mark, one or more of measures are specified as a contents belongs to that reharsal group.
 
-## Measures
-Measures are contents of reharsal mark. It consists of multiple measures bounded by measure boundary marks.
+The normal reharal group should have at least one empty row between the end of previous measure. If no empty row is inserted, the reharsal group is tagged with in-line reharsal group.
 
-### Measure boundaries
+If no reharsal group mark is specified before the definition of measures, one default reharsal mark with empty name is generated implicitly.
 
-| Boundary markdown        | Rendering Image (Default Renderer)          | Description  |
+In the default renderer :
+- in-line reharsal mark and its first measure row is rendered in the same row of the last row of previous reharsal group.
+- Reharsal group mark with empty name is not rendered.
+
+## Block
+Set of measures with continuous rows (i.e. seprately by single linebreak) inside a reharsal group are grouped as a "block". Two or more of line breaks between measures means the measure rows above and below line breaks will belong to differnt blocks.
+
+How to render differnt blocks is up to each renderer implementation. In the default renderer, block is treated as a unit to apply the rendering optimization process. For example, the default renderending try to  vertically align the measure boundaries as much as possible for better readability, but only among the measure rows within a single block. Hence, the measures in differnt blocks may have differnt measure boudnary positions.
+
+
+## Measure row
+Set of measures specified in the single line in the mark down code is called as a measure row. Block consists of one or more of measure rows.
+
+Treatment of "measure row" in the rendering is up to renderer implementation. In the default renderer, just simply render a single measure row in the mark down as a single row in the rendered image. One implmentation may ignore the measure row(i.e. ignore single line break in the block) and adopt its own strategy to determine number of measures rendered in the singel row.
+
+### Alignment mark
+A measure row can be specified with "alignement" mark at the begining of the measure row. 
+
+|  Markdown        | Rendering Image (Default Renderer)          | Description  |
 | ------- |:--------:| -----|
-| \|      | TBD      | Single line boundary |
-| \|\|    | TBD      | Double line boundary |
-| \|\|.   | TBD      | Double line boundary with thicker 2nd line |
-| \|\|:   | TBD      | Start of repeat |
-| :\|\|   | TBD      | End of repeat |
-| :\|\|:  | TBD      | End and start of repeat |
+| Not specified (Default) | TBD  | Expand to total width |
+| <      | TBD      | Left align |
+| >    | TBD      | Right align |
+
+This is to indicate the renderer to rendere the measure row by fill out in a total wide, by aligning to leftside or aligning to right side. Details on the outcome of rendering due to these marks are up to renderer implemenation. 
+
+In the default renderer, left align and right align marks are only valid when the number of measures in the nearest upper row without alignment mark have more measures in the measure row. 
+
+## Measure
+Measures are contents of a measur row. It consists of multiple measures bounded by measure boundary marks. 
+
+### Measure boundary
+
+| Boundary markdown       | Description  |
+| ------- | -----|
+| \|      | Single line boundary |
+| \|\|    | Double line boundary |
+| \|\|.   | Double line boundary with thicker 2nd line |
+| \|\|:   | Start of repeat |
+| :\|\|   | End of repeat |
+| :\|\|:  | End and start of repeat |
+
+<!-- fumen:start -->
+%SHOW_HEADER="NO"
+%SHOW_FOOTER="NO"
+
+[A]
+| A || B ||: C :||: D :|| E ||.
+<!-- fumen:end -->
 
 ### Measure contents
 Bounded by measure boundary marks, various type of components can be specified.
@@ -41,35 +82,44 @@ Bounded by measure boundary marks, various type of components can be specified.
 
 Chord symbol indicates the chord names with various 
 
-#### Repeat signs
+#### Repeat sign
 
 In additionion to the measure boundary mark with repeat sign, following repeat signs can be specified within a measure.
 
-| Markdown        | Rendering Image (Default Renderer)           | Description  |
-| ------------- |:-------------:| -----|
-| \<Coda\>      | TBD      | Coda sign.  |
-| \<to Coda\>   | TBD      | "To Coda" sign.  |
-| \<S\>         | TBD      | Segno sign. |
-| \<D.S.\>      | TBD      | Dal segno. |
-| \<D.C.\>      | TBD      | Da Capo. |
-| \<Fine\>      | TBD      | Fine. |
+| Markdown         | Description  |
+| ------------- | -----|
+| \<Coda\>      | Coda sign.  |
+| \<to Coda\>   | "To Coda" sign.  |
+| \<S\>         | Segno sign. |
+| \<D.S.\>      | Dal segno. |
+| \<D.C.\>      | Da Capo. |
+| \<Fine\>      | Fine. |
 
-#### Other signs
-| Markdown        | Rendering Image (Default Renderer)           | Description  |
-| ------------- |:-------------:| -----|
-| (4/4)         | TBD      | Time signature. Any integer for denominator and nominator can be specified. | 
-| [1.]          | TBD      | Indicates the part valid for 1st repeat. Any integer can be specifeid. Normally, used with measure boundary with repeat sign. |
+<!-- fumen:start -->
+%SHOW_HEADER="NO"
+%SHOW_FOOTER="NO"
 
-#### Comments
+[A]
+| A | B | <S> C | D <to Coda> |
+| E <D.S.> | F <D.C.> | <Coda> G | A <Fine> |
+<!-- fumen:end -->
+
+#### Other sign
+| Markdown        | Description  |
+| ------------- | -----|
+| (4/4)          | Time signature. Any integer for denominator and nominator can be specified. | 
+| [1.]           | Indicates the part valid for 1st repeat. Any integer can be specifeid. Normally, used with measure boundary with repeat sign. |
+
+#### Comment
 Several types of comments are defined.
 
-| Markdown        | Rendering Image (Default Renderer)           | Description  |
-| ------------- |:-------------:| -----|
-| "comment"     | TBD      | Strings enclosed with double quotation mark is a comment which will be drawn at the same vertical level of chords. | 
-| 'comment'     | TBD      | Strings enclosed with single quotation mark is a comment which will be drawn above the chords. Comment strings are left aligned within a width of a masure. | 
-| C7@'comment' | TBD | Comment with single quation but specified after the chord followed by at mark, the comment strings are drawn above that chord. |
+| Markdown       | Description  |
+| ------------- | -----|
+| "comment"     | Strings enclosed with double quotation mark is a comment which will be drawn at the same vertical level of chords. | 
+| 'comment'     | Strings enclosed with single quotation mark is a comment which will be drawn above the chords. Comment strings are left aligned within a width of a masure. | 
+| C7@'comment' | Comment with single quation but specified after the chord following the at mark, the comment strings are drawn above that chord. |
 
-## Variables
+## Variable
 
 Variables are specified by the form of "%VariableName=Value".
 

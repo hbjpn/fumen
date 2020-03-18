@@ -120,9 +120,8 @@ export class MobileRenderer extends Renderer {
         });
     }
 
-    render_footer(canvaslist, songname){
+    render_footer(canvaslist, songname, y){
         var score_width = this.param.paper_width / this.param.zoom / this.param.ncol;
-        var score_height = this.param.paper_height / this.param.zoom / this.param.nrow;
         canvaslist.forEach((canvas,pageidx)=>{
             // Page number footer
             let footerstr =
@@ -131,7 +130,7 @@ export class MobileRenderer extends Renderer {
             graphic.CanvasText(
                 canvas,
                 this.param.origin.x + score_width / 2,
-                this.param.origin.y + score_height - this.param.y_footer_offset,
+                y, //this.param.origin.y + score_height - this.param.y_footer_offset,
                 footerstr,
                 12,
                 "ct"
@@ -437,14 +436,15 @@ export class MobileRenderer extends Renderer {
             this.merge_param(this.param, global_macros["PARAM"], false); // Merge to defaul param
         }
 
+        var show_header = global_macros["SHOW_HEADER"] == "YES";
+        var show_footer = global_macros["SHOW_FOOTER"] == "YES";
+
         var origin = param.origin; //{x:0,y:0};
 
         var y_title_offset = origin.y + param.y_title_offset;
         var y_subtitle_offset = origin.y + param.y_subtitle_offset;
         var y_artist_offset = origin.y + param.y_artist_offset;
         var x_offset = origin.x + param.x_offset;
-        var score_width = param.paper_width / this.param.zoom / param.ncol;
-        var score_height = param.paper_height / this.param.zoom / param.nrow;
         var width = param.paper_width / this.param.zoom / param.ncol - param.x_offset * 2;
 
         // Music context
@@ -586,17 +586,26 @@ export class MobileRenderer extends Renderer {
         // Stage 1 : Screening
         // ---------------------
         if (!this.memCanvas) {
+            // Canvas on memory for screening
+            // TODO : Canvas height 400 is enough ?
             this.memCanvas = document.createElement("canvas");
             graphic.SetupHiDPICanvas(
                 this.memCanvas,
                 this.param.paper_width / this.param.zoom,
-                this.param.paper_height / this.param.zoom,
+                400 / this.param.zoom,
                 this.param.pixel_ratio,
                 this.param.zoom
             );
         }
 
         let yse = y_stacks;
+
+        let y_base_screening = origin.y;
+        if(show_header){
+            y_base_screening += param.y_first_page_offset;
+        }else{
+            y_base_screening += param.y_offset;
+        }
 
         let dammy_music_context = common.deepcopy(music_context); // Maybe not required ?
 
@@ -636,10 +645,14 @@ export class MobileRenderer extends Renderer {
            }
 
            // y-screening is done in stage 2 as well : TODO : Make it once
+           // Do it in the dammy position y = 0;
            var yprof = this.screening_y_areas(
-               row_elements_list, y_base, yse[pei].param, yse[pei].macros.STAFF, 
+               row_elements_list, 0, yse[pei].param, yse[pei].macros.STAFF, 
                yse[pei].macros.REHARSAL_MARK_POSITION == "Inner");
-   
+            
+            // yprof.end.y means the row total height
+            y_base_screening += yprof.end.y;
+
            // Screening x elements and determine the rendering policy for x-axis.
            var x_width_info = this.screening_x_areas(
                x,
@@ -659,6 +672,7 @@ export class MobileRenderer extends Renderer {
                this.determine_rooms(yse[pei].param, reharsal_x_width_info);
            }
        }
+       y_base_screening += param.y_offset; // Here y_base_screening means the height of the total score if single page applied.
 
         // ----------------------
         // Stage 2 : Rendering
@@ -670,20 +684,19 @@ export class MobileRenderer extends Renderer {
         graphic.SetupHiDPICanvas(
             canvas,
             this.param.paper_width / this.param.zoom,
-            this.param.paper_height / this.param.zoom,
+            (this.param.paper_height > 0 ? this.param.paper_height : y_base_screening) / this.param.zoom,
             this.param.pixel_ratio,
             this.param.zoom
         );
 
+        var score_height = (this.param.paper_height > 0 ? this.param.paper_height : y_base_screening)
+             / this.param.zoom / param.nrow;
+
         if(param.background_color)
             graphic.CanvasRect(canvas, 0, 0, 
                 this.param.paper_width / this.param.zoom, 
-                this.param.paper_height / this.param.zoom, 
+                (this.param.paper_height > 0 ? this.param.paper_height : y_base_screening) / this.param.zoom, 
                 param.background_color);
-        
-        //
-        var show_header = global_macros["SHOW_HEADER"] == "YES";
-        var show_footer = global_macros["SHOW_FOOTER"] == "YES";
 
         var y_base = origin.y;
 
@@ -738,6 +751,11 @@ export class MobileRenderer extends Renderer {
 
             } else if (yse[pei].type == "meas") {
                 let row_elements_list = yse[pei].cont;
+                
+                let ylimit = this.canvas_provider != null
+                    ? score_height - yse[pei].param.y_offset
+                    : null;
+                
                 let r = this.render_measure_row_simplified(
                     x_offset,
                     canvas,
@@ -749,12 +767,17 @@ export class MobileRenderer extends Renderer {
                     yse[pei].param,
                     true,
                     yse[pei].macros.REHARSAL_MARK_POSITION == "Inner",
-                    this.canvas_provider != null
-                        ? score_height - yse[pei].param.y_offset
-                        : null,
+                    ylimit,
                     music_context
                 );
                 if (!r) {
+                    // Paper height is too low and even single row is not fit in
+                    if(y_base == origin.y + yse[pei].param.y_offset){
+                        throw "Paper height is too short to fit in single row";
+                    }else{
+                        y_base = origin.y + yse[pei].param.y_offset;
+                    }
+
                     canvas = await this.canvas_provider();
                     canvaslist.push(canvas);
                     graphic.SetupHiDPICanvas(
@@ -771,7 +794,6 @@ export class MobileRenderer extends Renderer {
                             this.param.paper_height / this.param.zoom, 
                             param.background_color);
 
-                    y_base = origin.y + yse[pei].param.y_offset;
                     // try again next page
                     pei = pei - 1;
                 } else {
@@ -781,7 +803,8 @@ export class MobileRenderer extends Renderer {
         }
 
         if(show_footer)
-            this.render_footer(canvaslist, global_macros.TITLE + "/" + global_macros.ARTIST);
+            this.render_footer(canvaslist, global_macros.TITLE + "/" + global_macros.ARTIST,
+                this.param.origin.y + score_height - this.param.y_footer_offset);
 
         return { y: y_base };
     }

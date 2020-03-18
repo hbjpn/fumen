@@ -1,9 +1,11 @@
 # Grammer
 ## Structure
 Basic fumen mark down source has following components :
-1. Title
-2. Artist
-3. Reharsal mark(s) and its(their) contents
+1. Header
+  - Title 
+  - Artist
+2. One or more of Reharsal groups and their contents(measures)
+3. Footer
 
 Following is the example fumen source having title of "Hello" and artist name "World", and 2 reharsal marks of A and B.
 
@@ -29,10 +31,40 @@ In the default renderer :
 - in-line reharsal mark and its first measure row is rendered in the same row of the last row of previous reharsal group.
 - Reharsal group mark with empty name is not rendered.
 
+<!-- fumen:start -->
+%SHOW_HEADER="NO"
+%SHOW_FOOTER="NO"
+
+
+| B |
+[A]
+|| C | D |
+[B]
+| E | F |
+| A | C | F | G | A | 
+
+[]
+| A | B | C | D | E |
+<!-- fumen:end -->
+
 ## Block
 Set of measures with continuous rows (i.e. seprately by single linebreak) inside a reharsal group are grouped as a "block". Two or more of line breaks between measures means the measure rows above and below line breaks will belong to differnt blocks.
 
 How to render differnt blocks is up to each renderer implementation. In the default renderer, block is treated as a unit to apply the rendering optimization process. For example, the default renderending try to  vertically align the measure boundaries as much as possible for better readability, but only among the measure rows within a single block. Hence, the measures in differnt blocks may have differnt measure boudnary positions.
+
+<!-- fumen:start -->
+%SHOW_HEADER="NO"
+%SHOW_FOOTER="NO"
+
+[A]
+| A | B | C | D |
+| A B C D E F G| B | C | D |
+
+[B]
+| A | B | C | D |
+
+| A B C D E F G | B | C | D |
+<!-- fumen:end -->
 
 
 ## Measure row
@@ -43,15 +75,26 @@ Treatment of "measure row" in the rendering is up to renderer implementation. In
 ### Alignment mark
 A measure row can be specified with "alignement" mark at the begining of the measure row. 
 
-|  Markdown        | Rendering Image (Default Renderer)          | Description  |
-| ------- |:--------:| -----|
-| Not specified (Default) | TBD  | Expand to total width |
-| <      | TBD      | Left align |
-| >    | TBD      | Right align |
+|  Markdown         | Description  |
+| ------- | -----|
+| Not specified (Default) | Expand to total width |
+| <      | Left align |
+| >     | Right align |
 
 This is to indicate the renderer to rendere the measure row by fill out in a total wide, by aligning to leftside or aligning to right side. Details on the outcome of rendering due to these marks are up to renderer implemenation. 
 
 In the default renderer, left align and right align marks are only valid when the number of measures in the nearest upper row without alignment mark have more measures in the measure row. 
+
+<!-- fumen:start -->
+%SHOW_HEADER="NO"
+%SHOW_FOOTER="NO"
+
+[A]
+||: A | B |[1.] C | D :||
+>|[2.] A | B ||
+<|| A | B | C |
+
+<!-- fumen:end -->
 
 ## Measure
 Measures are contents of a measur row. It consists of multiple measures bounded by measure boundary marks. 
@@ -101,7 +144,11 @@ In additionion to the measure boundary mark with repeat sign, following repeat s
 
 [A]
 | A | B | <S> C | D <to Coda> |
-| E <D.S.> | F <D.C.> | <Coda> G | A <Fine> |
+| E <D.S.> | F <D.C.> | <Coda> G | A |
+
+[B]
+| A | B | <S2> C | D <to Coda2> |
+| E <D.S.2> | F | <Coda2> G | A <Fine> |
 <!-- fumen:end -->
 
 #### Other sign
@@ -109,6 +156,15 @@ In additionion to the measure boundary mark with repeat sign, following repeat s
 | ------------- | -----|
 | (4/4)          | Time signature. Any integer for denominator and nominator can be specified. | 
 | [1.]           | Indicates the part valid for 1st repeat. Any integer can be specifeid. Normally, used with measure boundary with repeat sign. |
+
+<!-- fumen:start -->
+%SHOW_HEADER="NO"
+%SHOW_FOOTER="NO"
+
+[A]
+| (3/4) A ||:  B | C | D | [1.] A :|| [2.] C |
+<!-- fumen:end -->
+
 
 #### Comment
 Several types of comments are defined.

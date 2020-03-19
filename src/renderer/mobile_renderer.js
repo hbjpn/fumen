@@ -684,18 +684,18 @@ export class MobileRenderer extends Renderer {
         graphic.SetupHiDPICanvas(
             canvas,
             this.param.paper_width / this.param.zoom,
-            (this.param.paper_height > 0 ? this.param.paper_height : y_base_screening) / this.param.zoom,
+            (this.param.paper_height > 0 ? this.param.paper_height/this.param.zoom : y_base_screening),
             this.param.pixel_ratio,
             this.param.zoom
         );
 
-        var score_height = (this.param.paper_height > 0 ? this.param.paper_height : y_base_screening)
-             / this.param.zoom / param.nrow;
+        var score_height = (this.param.paper_height > 0 ? this.param.paper_height/this.param.zoom : y_base_screening)
+            / param.nrow;
 
         if(param.background_color)
             graphic.CanvasRect(canvas, 0, 0, 
                 this.param.paper_width / this.param.zoom, 
-                (this.param.paper_height > 0 ? this.param.paper_height : y_base_screening) / this.param.zoom, 
+                (this.param.paper_height > 0 ? this.param.paper_height/this.param.zoom : y_base_screening), 
                 param.background_color);
 
         var y_base = origin.y;

@@ -52,6 +52,7 @@ var SR_RENDER_PARAM = {
     vertical_align: 1, // 1: Enable, 0: Disable
     vertical_align_intensity: 0.9, // Vertical align intensity 0:No align, 1:Always align
     min_room: 10, // Minimum room for flexile elements
+    scale_if_overlap: 1, // 1 or 0
     on_bass_style: "right", // right|below
     on_bass_below_y_offset: 0,
     background_color: "white" // null will be transparent
@@ -200,6 +201,10 @@ export class MobileRenderer extends Renderer {
                     e.renderprop.room_per_elem=room_per_elem_constant+min_room;
                     x_width_info[mi].measure_width = e.renderprop.room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
                     x_width_info[mi].measure_width += x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
+                    e.renderprop.measure_width = x_width_info[mi].measure_width;
+                    e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
+                    e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
+                    e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
                 });
                 row++;
             }else if(param.optimize_type == 2){
@@ -211,6 +216,10 @@ export class MobileRenderer extends Renderer {
                     
                     x_width_info[mi].measure_width = e.renderprop.room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
                     x_width_info[mi].measure_width += x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
+                    e.renderprop.measure_width = x_width_info[mi].measure_width;
+                    e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
+                    e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
+                    e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
                 });
                     
                 if(reduced_meas_valid && row_elements_list[0].align == "right")
@@ -240,6 +249,10 @@ export class MobileRenderer extends Renderer {
                     
                     x_width_info[mi].measure_width = e.renderprop.room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
                     x_width_info[mi].measure_width += x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
+                    e.renderprop.measure_width = x_width_info[mi].measure_width;
+                    e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
+                    e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
+                    e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
 
                     row_total_width += x_width_info[mi].measure_width; 
                 });
@@ -394,7 +407,10 @@ export class MobileRenderer extends Renderer {
                         // No need to separtely consider min_room here. Just simply distribute rooms for each elements
                         m.renderprop.room_per_elem = (max_measure_widths[mi] - x_width_info[mi_ref].meas_fixed_width) /
                             x_width_info[mi_ref].meas_num_flexible_rooms; 
-
+                        m.renderprop.measure_width = max_measure_widths[mi];
+                        m.renderprop.meas_fixed_width = x_width_info[mi_ref].meas_fixed_width; // Actually this is already set
+                        m.renderprop.body_fixed_width = x_width_info[mi_ref].body_fixed_width;
+                        m.renderprop.meas_num_flexible_rooms = x_width_info[mi_ref].meas_num_flexible_rooms;
                     }
                 }
                 // Set left margin in case it is needed.
@@ -1019,7 +1035,10 @@ export class MobileRenderer extends Renderer {
                 }
             });
 
-            x_width_info.push({meas_fixed_width:meas_fixed_width, meas_num_flexible_rooms:meas_num_flexible_rooms});
+            x_width_info.push({
+                meas_fixed_width:meas_fixed_width,
+                body_fixed_width: rberet.fixed_width,
+                meas_num_flexible_rooms:meas_num_flexible_rooms});
 
         }
 
@@ -1043,10 +1062,30 @@ export class MobileRenderer extends Renderer {
         let fixed_width = 0;
         let num_flexible_rooms = 0;
 
+        let draw_scale = 1;
+
+        if(draw){
+            console.log("Scaling : ");
+            console.log(m.renderprop.measure_width);
+            console.log(m.renderprop.meas_fixed_width);
+        }
+
+        if(draw && param.scale_if_overlap && m.renderprop.room_per_elem < 0){
+            let body_width = m.renderprop.body_fixed_width
+                + m.renderprop.room_per_elem * m.renderprop.meas_num_flexible_rooms;
+            draw_scale = body_width / m.renderprop.body_fixed_width;
+            console.log("draw_scale = " + draw_scale);
+            // and then for this case room_per_elem is 0 and scale fixed elemetns while keeping
+            // total width.
+            paper.getContext("2d").scale(draw_scale, 1);
+        }
+
         if (elements.body.length == 0) {
-            if(draw)
+            if(draw && draw_scale < 1){
+                x += (1 * param.base_font_size * draw_scale + 0);
+            }else if(draw){
                 x += (1 * param.base_font_size + m.renderprop.room_per_elem);
-            else{
+            }else{
                 fixed_width += (1 * param.base_font_size);
                 num_flexible_rooms++;
             }
@@ -1068,7 +1107,7 @@ export class MobileRenderer extends Renderer {
                         transpose,
                         half_type,
                         paper,
-                        x,
+                        x / draw_scale,
                         yprof.body.y,
                         param,
                         C7_width
@@ -1077,7 +1116,7 @@ export class MobileRenderer extends Renderer {
                     if (draw && e0.exceptinal_comment !== null) {
                         graphic.CanvasText(
                             paper,
-                            x,
+                            x / draw_scale,
                             yprof.mu.y + yprof.mu.height,
                             e0.exceptinal_comment.comment,
                             param.base_font_size / 2,
@@ -1089,7 +1128,7 @@ export class MobileRenderer extends Renderer {
                         for (var li = 0; li < llist.length; ++li) {
                             graphic.CanvasText(
                                 paper,
-                                x,
+                                x / draw_scale,
                                 yprof.ml.y + li * param.ml_row_height,
                                 llist[li],
                                 param.base_font_size / 3,
@@ -1104,24 +1143,24 @@ export class MobileRenderer extends Renderer {
                     
                 }
 
-                let rs_area_bounding_box = new common.BoundingBox();
-                let rs_x = x;
-
-                let room_for_rs_per_elem = 0;
                 if(draw){
-                    let room_for_fist_elem =0;
+                    let room_for_rs_per_elem = 0;
+                    let element_group_width = 0;
                     if(element_group.renderprop.based_on_rs_elem){
+                        // In case RS area elements has wider fixed width(in total) than that of first element
                         room_for_rs_per_elem = m.renderprop.room_per_elem;
-                        room_for_fist_elem = m.renderprop.room_per_elem * element_group.elems.length;
+                        element_group_width = element_group.renderprop.w + 
+                            m.renderprop.room_per_elem * element_group.elems.length;
                     }else{
+                        // In case the first element has wider fixed width than RS area elements
                         let room_for_rs = (element_group.renderprop.w + m.renderprop.room_per_elem) 
                             - element_group.renderprop.rs_area_width; 
                         room_for_rs_per_elem = room_for_rs / element_group.elems.length;
-                        room_for_fist_elem = m.renderprop.room_per_elem;
+                        element_group_width = element_group.renderprop.w + m.renderprop.room_per_elem;
                     }
 
                     let g = this.render_rs_area(
-                        x,
+                        x/draw_scale,
                         element_group.elems,
                         paper,
                         yprof.rs.y,
@@ -1135,23 +1174,34 @@ export class MobileRenderer extends Renderer {
                         music_context,
                         m,
                         param,
-                        room_for_rs_per_elem,
+                        (draw_scale < 1 ? 0 : room_for_rs_per_elem),
                         balken,
                         (gbei == body_grouping_info.groupedBodyElems.length-1)
                     );
-                    var rs_area_width = g.x - x;
-                    let first_symbol_width = ( element_group.renderprop.w + room_for_fist_elem);
-                    x += Math.max(rs_area_width, first_symbol_width);
+                    var rs_area_width = (g.x - x/draw_scale)*draw_scale;
+
+                    // validation
+                    if(Math.abs(rs_area_width - element_group_width) > 0.0001){
+                        console.log("Whould be the same : " + [rs_area_width,element_group_width]);
+                        //throw "Something wrong with RS area code drawing";
+                    }
+
+                    if(draw_scale < 1){
+                        x += element_group.renderprop.w * draw_scale + 0;
+                    }else{
+                        x += element_group_width;
+                    }
                 }else{
+                    let rs_area_bounding_box = new common.BoundingBox();
                     // Only try to esimate using non-flag-balken drawer
                     element_group.elems.forEach(e=>{
                         let balken_element = this.generate_balken_element(
-                            e, rs_x, yprof.rs.height, music_context);
+                            e, x, yprof.rs.height, music_context);
                         let r = this.draw_rs_area_without_flag_balken(
-                            draw, paper, param, e, balken_element, rs_x, yprof.rs.y, yprof.rs.height);
+                            draw, paper, param, e, balken_element, x, yprof.rs.y, yprof.rs.height);
                         e.renderprop.balken_element = balken_element;
                         rs_area_bounding_box.add_rect(r.bounding_box);
-                        rs_x += r.bounding_box.w + room_for_rs_per_elem;
+                        x += r.bounding_box.w;
                     });
                     let rs_area_width = rs_area_bounding_box.get().w;
                     element_group.renderprop.w = Math.max(rs_area_width, cr.width);
@@ -1170,7 +1220,7 @@ export class MobileRenderer extends Renderer {
                             transpose,
                             half_type,
                             paper,
-                            x,
+                            x / draw_scale,
                             yprof.body.y,
                             param,
                             C7_width
@@ -1179,7 +1229,7 @@ export class MobileRenderer extends Renderer {
                         if (draw && e.exceptinal_comment !== null) {
                             graphic.CanvasText(
                                 paper,
-                                x,
+                                x / draw_scale,
                                 yprof.mu.y + yprof.mu.height,
                                 e.exceptinal_comment.comment,
                                 param.base_font_size / 2,
@@ -1191,7 +1241,7 @@ export class MobileRenderer extends Renderer {
                             for (var li = 0; li < llist.length; ++li) {
                                 graphic.CanvasText(
                                     paper,
-                                    x,
+                                    x / draw_scale,
                                     yprof.ml.y + li * param.ml_row_height,
                                     llist[li],
                                     param.base_font_size / 3,
@@ -1199,8 +1249,9 @@ export class MobileRenderer extends Renderer {
                                 );
                             }
                         }
-
-                        if(draw)
+                        if(draw && draw_scale<1){
+                            x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
+                        }else if(draw)
                             x += ( e.renderprop.w + m.renderprop.room_per_elem);
                         else{
                             e.renderprop.w = cr.width;
@@ -1213,14 +1264,16 @@ export class MobileRenderer extends Renderer {
                             e,
                             paper,
                             draw,
-                            x,
+                            x / draw_scale,
                             y_body_or_rs_base,
                             C7_width,
                             yprof.rs.detected ? param.rs_area_height : param.row_height,
                             yprof.rs.detected ? param.rs_area_height : param.base_body_height,
                             param
                         );
-                        if(draw)
+                        if(draw && draw_scale<1){
+                            x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
+                        }else if(draw)
                             x += (e.renderprop.w +m.renderprop.room_per_elem); 
                         else{
                             e.renderprop.w = cr.bounding_box.w;
@@ -1231,7 +1284,7 @@ export class MobileRenderer extends Renderer {
                         let cr = this.render_simile_mark_plain(
                             draw,
                             paper,
-                            x,
+                            x / draw_scale,
                             y_body_or_rs_base,
                             yprof.rs.detected ? param.rs_area_height : param.row_height,
                             yprof.rs.detected ? param.rs_area_height : param.base_body_height,
@@ -1239,7 +1292,9 @@ export class MobileRenderer extends Renderer {
                             false,
                             "l"
                         );
-                        if(draw)
+                        if(draw && draw_scale<1){
+                            x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
+                        }else if(draw)
                             x += (e.renderprop.w + m.renderprop.room_per_elem); 
                         else{
                             e.renderprop.w = cr.width;
@@ -1247,7 +1302,9 @@ export class MobileRenderer extends Renderer {
                             num_flexible_rooms++;
                         }
                     } else if (e instanceof common.Space) {
-                        if(draw)
+                        if(draw && draw_scale<1){
+                            x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
+                        }else if(draw)
                             x += (e.renderprop.w + m.renderprop.room_per_elem); 
                         else{
                             let r = graphic.CanvasText(paper, 0, 0, "M", 
@@ -1260,6 +1317,10 @@ export class MobileRenderer extends Renderer {
                 });
             }
         });
+
+        if(draw && draw_scale<1){
+            paper.getContext("2d").scale(1/draw_scale, 1);
+        }
 
         return {x:x, fixed_width:fixed_width, num_flexible_rooms:num_flexible_rooms};
     }

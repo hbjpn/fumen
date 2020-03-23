@@ -425,7 +425,7 @@ export class Renderer {
             type: type,
             numdot: numdot,
             chord_length: chord_length,
-            notes_coord: [[], null], // x, y coordinates are filled out later in stage 2
+            notes_coord: {x:[], y:null}, // x, y coordinates are filled out later in stage 2. x and y are array correspoding to each notes.
             note_value: d,
             has_tie: has_tie,
             pos_on_5lines: pos_on_5lines, // for notes only
@@ -444,7 +444,7 @@ export class Renderer {
         let _5lines_intv = row_height / 4;
         var deltax_acc = 10;  
 
-        var ys = balken_element.notes_coord[1];
+        var ys = balken_element.notes_coord.y;
 
         // Stage 1 (draw=false), no y position information available then null, in that case put dammy value
         if(!ys && balken_element.type == "slash"){
@@ -490,7 +490,7 @@ export class Renderer {
             bounding_box.add_rect(ret.bounding_box);
             balken_element.renderprop.note_x_center = x;
             if(draw){
-                balken_element.notes_coord[0]
+                balken_element.notes_coord.x
                     .push([x, x, x + ret.bounding_box.w]);
             }
         } else if(balken_element.type == "notes") {
@@ -534,7 +534,7 @@ export class Renderer {
 
                 bounding_box.add_rect(r.bounding_box);
                 if(draw){
-                    balken_element.notes_coord[0]
+                    balken_element.notes_coord.x
                         .push([x, note_x_center, note_x_center + r.bounding_box.w]);
                 }
                 
@@ -603,7 +603,7 @@ export class Renderer {
             bounding_box.add_rect(r.bounding_box);
 
             if(draw){
-                balken_element.notes_coord[0]
+                balken_element.notes_coord.x
                     .push([x, x, x + r.bounding_box.w]);
             }
         }else if(balken_element.type == "space"){
@@ -682,7 +682,7 @@ export class Renderer {
                     }
                 }
             }
-            balken.groups[gbi].balken_element.notes_coord[1] = group_y;
+            balken.groups[gbi].balken_element.notes_coord.y = group_y;
         }
 
         // 1. determine the flag direction here
@@ -698,7 +698,7 @@ export class Renderer {
 
             if(e instanceof common.Chord || e instanceof common.Rest){
 
-                let ys = balken.groups[gbi].balken_element.notes_coord[1];
+                let ys = balken.groups[gbi].balken_element.notes_coord.y;
 
                 for (var ci = 0; ci < ys.length; ++ci) {
                     center_y += ys[ci];
@@ -726,23 +726,23 @@ export class Renderer {
             //var x = balken.groups[gbi].notes_coord[0];
             let e = balken.groups[gbi].e;
             let balken_element = balken.groups[gbi].balken_element;
-            let ys = balken_element.notes_coord[1];
+            let ys = balken_element.notes_coord.y;
 
             var d = balken_element.note_value;
 
             let wo_flags = this.draw_rs_area_without_flag_balken(draw, paper, param, e,
                 balken_element, x, rs_y_base, row_height);
 
-            let xs = balken_element.notes_coord[0];
+            let xs = balken_element.notes_coord.x;
 
             if( e instanceof common.Chord){
                 if (music_context.tie_info.rs_prev_has_tie) {
                     // Draw tie line
-                    var pss = music_context.tie_info.rs_prev_coord;
+                    var prev_coord = music_context.tie_info.rs_prev_coord;
                     var psm = music_context.tie_info.rs_prev_meas;
 
                     // Check the consistency.
-                    if (pss[1].length != ys.length) {
+                    if (prev_coord.y.length != ys.length) {
                         throw "INVALID TIE NOTATION";
                     }
 
@@ -774,22 +774,29 @@ export class Renderer {
 
                     for (let ci = 0; ci < ys.length; ++ci) {
                         let y = ys[ci];
-                        if (y != pss[1][ci]) {
+                        if (y != prev_coord.y[ci]) {
                             // Crossing measure row. Previous RS mark could be on another page.
                             // Make sure to create curve on the paper on which previous RS is drawn.
                             var brace_points = [
-                                [pss[0][ci][2] + sdx, pss[1][ci] + dy],
-                                [pss[0][ci][2] + sdx, pss[1][ci] - round + dy],
+                                [prev_coord.x[ci][2] + sdx, prev_coord.y[ci] + dy],
+                                [prev_coord.x[ci][2] + sdx, prev_coord.y[ci] - round + dy],
                                 [
                                     psm.renderprop.meas_end_x + 20,
-                                    pss[1][ci] - round + dy
+                                    prev_coord.y[ci] - round + dy
                                 ],
-                                [psm.renderprop.meas_end_x + 20, pss[1][ci] + dy]
+                                [psm.renderprop.meas_end_x + 20, prev_coord.y[ci] + dy]
                             ];
 
+                            let clip_rect = [prev_coord.x[ci][2]+sdx, (prev_coord.y[ci] - 50), 
+                                (psm.renderprop.meas_end_x - (prev_coord.x[ci][2] + sdx) + 5), 100];
+
+                            console.group("Tie");
+                            console.log(brace_points);
+                            console.log(clip_rect);
+                            console.groupEnd();
+
                             graphic.CanvasbBzierCurve(paper, brace_points, false, false, 
-                                {"clip-rect":[pss[0][ci][2]+sdx, (pss[1][ci] - 50), 
-                                    (psm.renderprop.meas_end_x - (pss[0][ci][2] + sdx) + 5), 100]});
+                                {"clip-rect":clip_rect});
 
                             brace_points = [
                                 [meas_start_x - 20, y + dy],
@@ -798,13 +805,15 @@ export class Renderer {
                                 [xs[ci][0] + edx, y + dy]
                             ];
 
+                            clip_rect = [meas_start_x - 5, (y - 50), 
+                                (x - (meas_start_x - 5)), 100];
+
                             graphic.CanvasbBzierCurve(paper, brace_points, false, false,
-                                {"clip-rect":[meas_start_x - 5, (y - 50), 
-                                    (x - (meas_start_x - 5)), 100]});
+                                {"clip-rect":clip_rect});
                         } else {
                             let brace_points = [
-                                [pss[0][ci][2] + sdx, pss[1][ci] + dy],
-                                [pss[0][ci][2] + sdx, pss[1][ci] - round + dy],
+                                [prev_coord.x[ci][2] + sdx, prev_coord.y[ci] + dy],
+                                [prev_coord.x[ci][2] + sdx, prev_coord.y[ci] - round + dy],
                                 [xs[ci][0] + edx, y - round + dy],
                                 [xs[ci][0] + edx, y + dy]
                             ];
@@ -836,13 +845,13 @@ export class Renderer {
             return {x:x};
         } 
 
-        var x_at_min_y = balken.groups[gbi_at_min_y].balken_element.notes_coord[0][0][upper_flag?2:1];
-        var x_at_max_y = balken.groups[gbi_at_max_y].balken_element.notes_coord[0][0][upper_flag?2:1];
-        var ps_y = balken.groups[0].balken_element.notes_coord[1];
-        var ps_bar_x = balken.groups[0].balken_element.notes_coord[0][0][upper_flag?2:1];
-        var pe_y = balken.groups[balken.groups.length - 1].balken_element.notes_coord[1];
+        var x_at_min_y = balken.groups[gbi_at_min_y].balken_element.notes_coord.x[0][upper_flag?2:1];
+        var x_at_max_y = balken.groups[gbi_at_max_y].balken_element.notes_coord.x[0][upper_flag?2:1];
+        var ps_y = balken.groups[0].balken_element.notes_coord.y;
+        var ps_bar_x = balken.groups[0].balken_element.notes_coord.x[0][upper_flag?2:1];
+        var pe_y = balken.groups[balken.groups.length - 1].balken_element.notes_coord.y;
         var pe_bar_x =
-            balken.groups[balken.groups.length - 1].balken_element.notes_coord[0][0][upper_flag?2:1];
+            balken.groups[balken.groups.length - 1].balken_element.notes_coord.x[0][upper_flag?2:1];
 
         let slope = 0;
         if (balken.groups.length >= 2) {
@@ -861,8 +870,8 @@ export class Renderer {
         // 4. Draw bars, flags
         for (var gbi = 0; gbi < balken.groups.length; ++gbi) {
 
-            let ys = balken.groups[gbi].balken_element.notes_coord[1];
-            let xs = balken.groups[gbi].balken_element.notes_coord[0];
+            let ys = balken.groups[gbi].balken_element.notes_coord.y;
+            let xs = balken.groups[gbi].balken_element.notes_coord.x;
 
             if (balken.groups[gbi].balken_element.type == "slash") {
                 let bar_x = upper_flag ? xs[0][2] : xs[0][1];
@@ -927,7 +936,7 @@ export class Renderer {
                 var numflag = common.myLog2(parseInt(sd)) - 2;
 
                 if (same_sds.length == 1) {
-                    var pssx = same_sds[0].balken_element.notes_coord[0][0][upper_flag?2:1];
+                    var pssx = same_sds[0].balken_element.notes_coord.x[0][upper_flag?2:1];
 
                     // Determine which direction to draw flag. Determined from which neighboring
                     // rhythm is more natural to coupling with.
@@ -935,7 +944,7 @@ export class Renderer {
                     var dir = 1;
                     if (g == gg.length - 1) dir = -1;
                     var neighbor_x =
-                        gg[g + dir][gg[g + dir].length - 1].balken_element.notes_coord[0][0][upper_flag?2:1];
+                        gg[g + dir][gg[g + dir].length - 1].balken_element.notes_coord.x[0][upper_flag?2:1];
                     var blen = Math.abs(neighbor_x - pssx) * 0.3;
 
                     for (var fi = 1; fi < numflag; ++fi) {
@@ -954,9 +963,9 @@ export class Renderer {
                             {width:param.balken_width});
                     }
                 } else if (same_sds.length >= 2) {
-                    let pssx = same_sds[0].balken_element.notes_coord[0][0][upper_flag?2:1];
+                    let pssx = same_sds[0].balken_element.notes_coord.x[0][upper_flag?2:1];
                     var psex =
-                        same_sds[same_sds.length - 1].balken_element.notes_coord[0][0][upper_flag?2:1];
+                        same_sds[same_sds.length - 1].balken_element.notes_coord.x[0][upper_flag?2:1];
                     for (
                         let fi = 1;
                         fi < numflag;
@@ -1047,7 +1056,7 @@ export class Renderer {
             ( balken.groups[0].balken_element.type == "slash" || balken.groups[0].balken_element.type == "notes")
         ) {
             // Normal drawing of flags
-            let bar_x = balken.groups[0].balken_element.notes_coord[0][0][upper_flag?2:1];
+            let bar_x = balken.groups[0].balken_element.notes_coord.x[0][upper_flag?2:1];
             let d = balken.groups[0].balken_element.note_value;
             let numflag = common.myLog2(parseInt(d)) - 2;
             for (let fi = 0; fi < numflag; ++fi) {

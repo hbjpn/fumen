@@ -1,9 +1,10 @@
 import "@babel/polyfill";
 
-var G_memCanvas = null;
+var G_memCanvasStore = {}; // refered by ratio&zoom
+//var G_memCanvas = null;
 var G_mem_Canvas_size = [600, 600];
-var G_pixelRatio = null;
-var G_zoom = null;
+//var G_pixelRatio = null;
+//var G_zoom = null;
 
 export function CanvasRect(canvas, x, y, w, h, fill=null) {
     var context = canvas.getContext("2d");
@@ -152,19 +153,22 @@ export function fontDesc(fsize,fontfamily,bold) {
     return  (bold?"bold ":"")+fsize + "px '" + (fontfamily?fontfamily:"Arial") + "'";
 }
 
-export function GetCharProfile(fsize,fontfamily,bold) {
+export function GetCharProfile(fsize,fontfamily,bold,ratio,zoom) {
     let font = fontDesc(fsize,fontfamily,bold);
+    let refstr = font+"/"+ratio+"/"+zoom;
 
     let yroom = null;
-    if (font in G_y_char_offsets) yroom = G_y_char_offsets[font];
+    if (refstr in G_y_char_offsets) yroom = G_y_char_offsets[refstr];
     else {
-        if (!G_memCanvas) {
-            G_memCanvas = document.createElement("canvas");
-            SetupHiDPICanvas(G_memCanvas, G_mem_Canvas_size[0], G_mem_Canvas_size[1], G_pixelRatio, G_zoom);
-            console.log("Pixel ratio = " + G_pixelRatio);
+        let memkey = ratio+"/"+zoom;
+        if (!(memkey in G_memCanvasStore)) {
+            let memCanvas = document.createElement("canvas");
+            SetupHiDPICanvas(memCanvas, G_mem_Canvas_size[0], G_mem_Canvas_size[1], ratio, zoom);
+            console.log("Pixel ratio = " + ratio + " , zoom = " + zoom);
+            G_memCanvasStore[memkey] = memCanvas;
         }
-        yroom = JudgeTextYPosOffset(G_memCanvas, font); //bold, fontfamily, fsize);
-        G_y_char_offsets[font] = yroom;
+        yroom = JudgeTextYPosOffset(G_memCanvasStore[memkey], font); //bold, fontfamily, fsize);
+        G_y_char_offsets[refstr] = yroom;
     }
 
     return yroom;
@@ -198,7 +202,7 @@ export function CanvasText(canvas, x, y, text, fsize, align, xwidth, notdraw, op
         context.textBaseline = tb[align[1]]; //tb[align[1]];
     
     }else{
-        yroom = GetCharProfile(fsize, opt?opt.fontfamily:null,opt?opt.bold:null);
+        yroom = GetCharProfile(fsize, opt?opt.fontfamily:null,opt?opt.bold:null,canvas.ratio,canvas.zoom);
 
 
         if (align[1] == "t") {
@@ -368,17 +372,19 @@ export function SetupHiDPICanvas(canvas, w, h, ratio, zoom) {
     if (!zoom) zoom = 1.0;
 
     // This is not a good manner, though...
-    G_pixelRatio = ratio;
-    G_zoom = zoom;
+    // = ratio;
+    //G_zoom = zoom;
+    canvas.ratio = ratio;
+    canvas.zoom = zoom;
 
     //console.log(ratio + "/" + w + "," + h);
 
     var ctx = canvas.getContext("2d");
-    canvas.width = w * ratio * G_zoom;
-    canvas.height = h * ratio * G_zoom;
-    canvas.style.width = w * G_zoom + "px";
-    canvas.style.height = h * G_zoom + "px";
-    ctx.setTransform(ratio * G_zoom, 0, 0, ratio * G_zoom, 0, 0);
+    canvas.width = w * ratio * zoom;
+    canvas.height = h * ratio * zoom;
+    canvas.style.width = w * zoom + "px";
+    canvas.style.height = h * zoom + "px";
+    ctx.setTransform(ratio * zoom, 0, 0, ratio * zoom, 0, 0);
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -471,27 +477,29 @@ function JudgeTextYPosOffset(canvas, font, code)/*bold, fontfamily, fontsize) */
 
     // here the raw pixel data resolution is G_pixelRatio * G_zoom times. (Same value as setTransform in SetupHIDPICanvas) 
     return {
-        top_room: top_room / G_pixelRatio / G_zoom,
-        height: (imageData.height - top_room - bottom_room) / G_pixelRatio / G_zoom,
-        bottom_room: bottom_room / G_pixelRatio / G_zoom,
-        imgheight: imageData.height / G_pixelRatio / G_zoom
+        top_room: top_room / canvas.ratio / canvas.zoom,
+        height: (imageData.height - top_room - bottom_room) / canvas.ratio / canvas.zoom,
+        bottom_room: bottom_room / canvas.ratio / canvas.zoom,
+        imgheight: imageData.height / canvas.ratio / canvas.zoom
     };
 
 }
 
-export function getFontSizeFromHeight(height, fontfamily, code, tol, opt){
+export function getFontSizeFromHeight(height, fontfamily, code, tol, opt, ratio, zoom){
     // Determine the font size of which height is same as specified value.
     // TODO : Binary search
     let canvas_to_use = opt?opt.canvas:null;
 
-    if (!G_memCanvas) {
-        G_memCanvas = document.createElement("canvas");
-        SetupHiDPICanvas(G_memCanvas, G_mem_Canvas_size[0], G_mem_Canvas_size[1], G_pixelRatio, G_zoom);
-        console.log("Pixel ratio = " + G_pixelRatio);
+    let memkey = ratio + "/" + zoom;
+    if (!(memkey in G_memCanvasStore)) {
+        let memCanvas = document.createElement("canvas");
+        SetupHiDPICanvas(memCanvas, G_mem_Canvas_size[0], G_mem_Canvas_size[1], ratio, zoom);
+        console.log("Pixel ratio = " + ratio, + " , Zoom = " + zoom);
+        G_memCanvasStore[memkey] = memCanvas;
     }
 
     if(!canvas_to_use)
-        canvas_to_use = G_memCanvas;
+        canvas_to_use = G_memCanvasStore[memkey];
     
     let maxLoop = 100;
     var curLow = 1;
@@ -647,7 +655,9 @@ export class Bravura{
         else{
             var lineThickNessShift = 0.064; // Line tickness
             fontSize = getFontSizeFromHeight(staff_interval_px*4 + lineThickNessShift*staff_interval_px, 
-                this.fontfamily, String.fromCodePoint(0xE014)); // 5 line is baseline
+                this.fontfamily, String.fromCodePoint(0xE014),
+                null, null,
+                canvas.ratio, canvas.zoom); // 5 line is baseline
             this.intervalToFontSizeMap[staff_interval_px] = fontSize;
         }
         let ctx = canvas.getContext("2d");

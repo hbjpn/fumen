@@ -1065,11 +1065,11 @@ export class MobileRenderer extends Renderer {
 
         let draw_scale = 1;
 
-        if(draw){
+        /*if(draw){
             console.log("Scaling : ");
             console.log(m.renderprop.measure_width);
             console.log(m.renderprop.meas_fixed_width);
-        }
+        }*/
 
         if(draw && param.scale_if_overlap && m.renderprop.room_per_elem < 0){
             let body_width = m.renderprop.body_fixed_width
@@ -1482,7 +1482,7 @@ export class MobileRenderer extends Renderer {
                     reharsal_group.name,
                     param.reharsal_mark_font_size,
                     2, 
-                    graphic.GetCharProfile(param.reharsal_mark_font_size).height
+                    graphic.GetCharProfile(param.reharsal_mark_font_size, null, false, paper.ratio, paper.zoom).height
                 );
 
                 if(inner_reharsal_mark) mh_offset += (r.width+2);
@@ -1562,7 +1562,8 @@ export class MobileRenderer extends Renderer {
                     x += e.renderprop.w;
                     meas_start_x_actual_boundary = r.actual_boundary;
                 } else if (e instanceof common.Time) {
-                    let chord_str_height = graphic.GetCharProfile(param.base_font_size).height;
+                    let chord_str_height = graphic.GetCharProfile(
+                        param.base_font_size, null, false, paper.ratio, paper.zoom).height;
                     let row_height = yprof.rs.detected ?param.rs_area_height : param.row_height;
                     let cont_height = yprof.rs.detected ?param.rs_area_height : chord_str_height;
                     //var lineThickNessShift = 0.064; // Line tickness
@@ -2217,7 +2218,7 @@ export class MobileRenderer extends Renderer {
         var tensions_width = 0;
         var onbass_width = 0;
 
-        var rootCharHeight = graphic.GetCharProfile(B).height;
+        var rootCharHeight = graphic.GetCharProfile(B, null, false, canvas.ratio, canvas.zoom).height;
 
 
         // Position parameters
@@ -2422,7 +2423,7 @@ export class MobileRenderer extends Renderer {
                 !draw
             );
             tensions_width += r.width;
-            var h = graphic.GetCharProfile(B * 0.5).height;
+            var h = graphic.GetCharProfile(B * 0.5, null, false, canvas.ratio, canvas.zoom).height;
             _alteredelem.forEach((e, index) => {
                 if (e.type == "b") {
                     if (draw){

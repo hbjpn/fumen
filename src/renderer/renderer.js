@@ -241,12 +241,12 @@ export class Renderer {
     
     render_rs_area(
         x,
+        draw_scale, // note this is used for remember the draw_scale applied for tie rendering. other x axis coordinates given by already scaled.
         elems,
         paper,
         rs_y_base,
         row_height,
         meas_start_x,
-        meas_end_x,
         draw,
         chord_space,
         body_scaling,
@@ -291,13 +291,13 @@ export class Renderer {
                 var dbret = this.draw_rs_area_balkens(
                     //draw, 
                     //x,
+                    draw_scale,
                     paper,
                     group,
                     balken,
                     rs_y_base,
                     row_height,
                     meas_start_x,
-                    meas_end_x,
                     body_scaling,
                     x_global_scale,
                     music_context,
@@ -322,13 +322,13 @@ export class Renderer {
                 let dbret = this.draw_rs_area_balkens(
                     //draw, 
                     //x,
+                    draw_scale,
                     paper,
                     group,
                     balken,
                     rs_y_base,
                     row_height,
                     meas_start_x,
-                    meas_end_x,
                     body_scaling,
                     x_global_scale,
                     music_context,
@@ -621,13 +621,13 @@ export class Renderer {
     draw_rs_area_balkens(
         //draw, 
         //x,
+        draw_scale,
         paper,
         group,
         balken,
         rs_y_base,
         row_height,
         meas_start_x,
-        meas_end_x,
         body_scaling,
         x_global_scale,
         music_context,
@@ -774,52 +774,73 @@ export class Renderer {
 
                     for (let ci = 0; ci < ys.length; ++ci) {
                         let y = ys[ci];
+                        let prev_draw_scale = music_context.tie_info.rs_prev_draw_scale;
+
                         if (y != prev_coord.y[ci]) {
+
                             // Crossing measure row. Previous RS mark could be on another page.
                             // Make sure to create curve on the paper on which previous RS is drawn.
                             var brace_points = [
-                                [prev_coord.x[ci][2] + sdx, prev_coord.y[ci] + dy],
-                                [prev_coord.x[ci][2] + sdx, prev_coord.y[ci] - round + dy],
-                                [
-                                    psm.renderprop.meas_end_x + 20,
-                                    prev_coord.y[ci] - round + dy
-                                ],
+                                [prev_coord.x[ci][2] * prev_draw_scale + sdx, prev_coord.y[ci] + dy],
+                                [prev_coord.x[ci][2] * prev_draw_scale + sdx, prev_coord.y[ci] - round + dy],
+                                [psm.renderprop.meas_end_x + 20, prev_coord.y[ci] - round + dy],
                                 [psm.renderprop.meas_end_x + 20, prev_coord.y[ci] + dy]
                             ];
 
-                            let clip_rect = [prev_coord.x[ci][2]+sdx, (prev_coord.y[ci] - 50), 
-                                (psm.renderprop.meas_end_x - (prev_coord.x[ci][2] + sdx) + 5), 100];
+                            let clip_rect = [
+                                prev_coord.x[ci][2] * prev_draw_scale +sdx, 
+                                (prev_coord.y[ci] - 50), 
+                                (psm.renderprop.meas_end_x - (prev_coord.x[ci][2] * prev_draw_scale + sdx)  + 5),
+                                100];
 
                             console.group("Tie");
                             console.log(brace_points);
                             console.log(clip_rect);
                             console.groupEnd();
+                            
+                            // In case the previous paper is in the same paper, "draw_scale" is currently applied,
+                            // then temporalility deactivate scaling.
+                            // In case of differnt paper, such paper shall be reverted back to scaling=1.   
+                            if(paper == music_context.tie_info.rs_prev_tie_paper)
+                                music_context.tie_info.rs_prev_tie_paper.getContext("2d").scale(1.0/draw_scale, 1.0);
 
                             graphic.CanvasbBzierCurve(music_context.tie_info.rs_prev_tie_paper,
                                 brace_points, false, false, 
                                 {"clip-rect":clip_rect});
 
+                            if(paper == music_context.tie_info.rs_prev_tie_paper)
+                                music_context.tie_info.rs_prev_tie_paper.getContext("2d").scale(draw_scale, 1.0);
+
                             brace_points = [
                                 [meas_start_x - 20, y + dy],
                                 [meas_start_x - 20, y - round + dy],
-                                [xs[ci][0] + edx, y - round + dy],
-                                [xs[ci][0] + edx, y + dy]
+                                [xs[ci][0] * draw_scale + edx, y - round + dy],
+                                [xs[ci][0] * draw_scale + edx, y + dy]
                             ];
 
                             clip_rect = [meas_start_x - 5, (y - 50), 
-                                (x - (meas_start_x - 5)), 100];
+                                (x * draw_scale - (meas_start_x - 5)), 100];
 
+                            paper.getContext("2d").scale(1.0/draw_scale, 1.0);
+                            
                             graphic.CanvasbBzierCurve(paper, brace_points, false, false,
                                 {"clip-rect":clip_rect});
+
+                            paper.getContext("2d").scale(draw_scale, 1.0);
+
                         } else {
                             let brace_points = [
-                                [prev_coord.x[ci][2] + sdx, prev_coord.y[ci] + dy],
-                                [prev_coord.x[ci][2] + sdx, prev_coord.y[ci] - round + dy],
-                                [xs[ci][0] + edx, y - round + dy],
-                                [xs[ci][0] + edx, y + dy]
+                                [prev_coord.x[ci][2] * prev_draw_scale + sdx, prev_coord.y[ci] + dy],
+                                [prev_coord.x[ci][2] * prev_draw_scale + sdx, prev_coord.y[ci] - round + dy],
+                                [xs[ci][0] * draw_scale + edx, y - round + dy],
+                                [xs[ci][0] * draw_scale + edx, y + dy]
                             ];
 
+                            paper.getContext("2d").scale(1.0/draw_scale, 1.0);
+                            
                             graphic.CanvasbBzierCurve(paper, brace_points, false, false);
+                            
+                            paper.getContext("2d").scale(draw_scale, 1.0);
                         }
                     }
                 }
@@ -827,6 +848,7 @@ export class Renderer {
                 music_context.tie_info.rs_prev_has_tie = balken.groups[gbi].balken_element.has_tie;
                 music_context.tie_info.rs_prev_tie_paper = paper;
                 music_context.tie_info.rs_prev_coord = balken_element.notes_coord;
+                music_context.tie_info.rs_prev_draw_scale = draw_scale;
                 music_context.tie_info.rs_prev_meas = meas;
             }
 

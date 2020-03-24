@@ -470,6 +470,7 @@ export class MobileRenderer extends Renderer {
             time_info: {},
             tie_info: {
                 rs_prev_coord: null,
+                rs_prev_draw_scale: 1.0,
                 rs_prev_meas: null,
                 rs_prev_has_tie: false,
                 rs_prev_tie_paper: null,
@@ -989,7 +990,7 @@ export class MobileRenderer extends Renderer {
                 param, music_context, 
                 yprof, 
                 paper, 0, 
-                0 /*meas_start_x*/, 100 /*meas_end_x*/, // TODO ?
+                0 /*meas_start_x*/, 
                 m,
                 1,
                 transpose,
@@ -1050,7 +1051,7 @@ export class MobileRenderer extends Renderer {
         param, music_context, 
         yprof, 
         paper, _5lines_intv, 
-        meas_start_x, meas_end_x,
+        meas_start_x,
         m,
         x_global_scale,
         transpose,
@@ -1160,13 +1161,13 @@ export class MobileRenderer extends Renderer {
                     }
 
                     let g = this.render_rs_area(
-                        x/draw_scale,
+                        x / draw_scale,
+                        draw_scale,
                         element_group.elems,
                         paper,
                         yprof.rs.y,
                         yprof.rs.height,
-                        meas_start_x,
-                        meas_end_x,
+                        meas_start_x / draw_scale,
                         draw,
                         0,
                         1.0,
@@ -1631,7 +1632,7 @@ export class MobileRenderer extends Renderer {
                 param, music_context, 
                 yprof, 
                 paper, _5lines_intv, 
-                meas_start_x, meas_end_x,
+                meas_start_x,
                 m,
                 x_global_scale,
                 transpose,

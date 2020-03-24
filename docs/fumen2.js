@@ -14396,6 +14396,8 @@ var SR_RENDER_PARAM = {
   // Vertical align intensity 0:No align, 1:Always align
   min_room: 10,
   // Minimum room for flexile elements
+  scale_if_overlap: 1,
+  // 1 or 0
   on_bass_style: "right",
   // right|below
   on_bass_below_y_offset: 0,
@@ -14534,6 +14536,11 @@ function (_Renderer) {
             e.renderprop.room_per_elem = room_per_elem_constant + min_room;
             x_width_info[mi].measure_width = e.renderprop.room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
             x_width_info[mi].measure_width += x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
+
+            e.renderprop.measure_width = x_width_info[mi].measure_width;
+            e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
+            e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
+            e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
           });
           row++;
         } else if (param.optimize_type == 2) {
@@ -14542,6 +14549,11 @@ function (_Renderer) {
             e.renderprop.room_per_elem = room_per_meas_even_meas[mi] / x_width_info[mi].meas_num_flexible_rooms + min_room;
             x_width_info[mi].measure_width = e.renderprop.room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
             x_width_info[mi].measure_width += x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
+
+            e.renderprop.measure_width = x_width_info[mi].measure_width;
+            e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
+            e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
+            e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
           });
           if (reduced_meas_valid && row_elements_list[0].align == "right") row_elements_list[0].renderprop.left_margin = total_width / num_meas_to_consider * (num_meas_to_consider - num_meas);
           row++;
@@ -14569,6 +14581,10 @@ function (_Renderer) {
             x_width_info[mi].measure_width = e.renderprop.room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
             x_width_info[mi].measure_width += x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
 
+            e.renderprop.measure_width = x_width_info[mi].measure_width;
+            e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
+            e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
+            e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
             _row_total_width += x_width_info[mi].measure_width;
           });
           if (reduced_meas_valid && row_elements_list[0].align == "right") row_elements_list[0].renderprop.left_margin = total_width - _row_total_width;
@@ -14718,6 +14734,11 @@ function (_Renderer) {
               var m = _row_elements_list[_mi_ref2]; // No need to separtely consider min_room here. Just simply distribute rooms for each elements
 
               m.renderprop.room_per_elem = (max_measure_widths[_mi3] - _x_width_info[_mi_ref2].meas_fixed_width) / _x_width_info[_mi_ref2].meas_num_flexible_rooms;
+              m.renderprop.measure_width = max_measure_widths[_mi3];
+              m.renderprop.meas_fixed_width = _x_width_info[_mi_ref2].meas_fixed_width; // Actually this is already set
+
+              m.renderprop.body_fixed_width = _x_width_info[_mi_ref2].body_fixed_width;
+              m.renderprop.meas_num_flexible_rooms = _x_width_info[_mi_ref2].meas_num_flexible_rooms;
             }
           } // Set left margin in case it is needed.
 
@@ -14799,6 +14820,7 @@ function (_Renderer) {
                   time_info: {},
                   tie_info: {
                     rs_prev_coord: null,
+                    rs_prev_draw_scale: 1.0,
                     rs_prev_meas: null,
                     rs_prev_has_tie: false,
                     rs_prev_tie_paper: null,
@@ -15052,9 +15074,9 @@ function (_Renderer) {
                 canvas = _context.sent;
 
               case 52:
-                _graphic__WEBPACK_IMPORTED_MODULE_3__["SetupHiDPICanvas"](canvas, this.param.paper_width / this.param.zoom, (this.param.paper_height > 0 ? this.param.paper_height : y_base_screening) / this.param.zoom, this.param.pixel_ratio, this.param.zoom);
-                score_height = (this.param.paper_height > 0 ? this.param.paper_height : y_base_screening) / this.param.zoom / param.nrow;
-                if (param.background_color) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasRect"](canvas, 0, 0, this.param.paper_width / this.param.zoom, (this.param.paper_height > 0 ? this.param.paper_height : y_base_screening) / this.param.zoom, param.background_color);
+                _graphic__WEBPACK_IMPORTED_MODULE_3__["SetupHiDPICanvas"](canvas, this.param.paper_width / this.param.zoom, this.param.paper_height > 0 ? this.param.paper_height / this.param.zoom : y_base_screening, this.param.pixel_ratio, this.param.zoom);
+                score_height = (this.param.paper_height > 0 ? this.param.paper_height / this.param.zoom : y_base_screening) / param.nrow;
+                if (param.background_color) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasRect"](canvas, 0, 0, this.param.paper_width / this.param.zoom, this.param.paper_height > 0 ? this.param.paper_height / this.param.zoom : y_base_screening, param.background_color);
                 y_base = origin.y;
 
                 if (show_header) {
@@ -15146,8 +15168,8 @@ function (_Renderer) {
               case 86:
                 if (show_footer) this.render_footer(canvaslist, global_macros.TITLE + "/" + global_macros.ARTIST, this.param.origin.y + score_height - this.param.y_footer_offset);
                 return _context.abrupt("return", {
-                  height: score_height,
-                  y: y_base
+                  pages: canvaslist.length,
+                  height: score_height
                 });
 
               case 88:
@@ -15321,10 +15343,7 @@ function (_Renderer) {
         meas_fixed_width += param.header_body_margin;
         rberet = _this5.render_body_elements(false, x, elements, param, music_context, yprof, paper, 0, 0
         /*meas_start_x*/
-        , 100
-        /*meas_end_x*/
-        , // TODO ?
-        m, 1, transpose, half_type, 0, 0);
+        , m, 1, transpose, half_type, 0, 0);
         meas_fixed_width += rberet.fixed_width;
         meas_num_flexible_rooms += rberet.num_flexible_rooms; // Draw footer
 
@@ -15347,6 +15366,7 @@ function (_Renderer) {
         });
         x_width_info.push({
           meas_fixed_width: meas_fixed_width,
+          body_fixed_width: rberet.fixed_width,
           meas_num_flexible_rooms: meas_num_flexible_rooms
         });
       };
@@ -15363,14 +15383,34 @@ function (_Renderer) {
     }
   }, {
     key: "render_body_elements",
-    value: function render_body_elements(draw, x, elements, param, music_context, yprof, paper, _5lines_intv, meas_start_x, meas_end_x, m, x_global_scale, transpose, half_type, C7_width, y_body_or_rs_base, balken) {
+    value: function render_body_elements(draw, x, elements, param, music_context, yprof, paper, _5lines_intv, meas_start_x, m, x_global_scale, transpose, half_type, C7_width, y_body_or_rs_base, balken) {
       var _this6 = this;
 
       var fixed_width = 0;
       var num_flexible_rooms = 0;
+      var draw_scale = 1;
+
+      if (draw) {
+        console.log("Scaling : ");
+        console.log(m.renderprop.measure_width);
+        console.log(m.renderprop.meas_fixed_width);
+      }
+
+      if (draw && param.scale_if_overlap && m.renderprop.room_per_elem < 0) {
+        var body_width = m.renderprop.body_fixed_width + m.renderprop.room_per_elem * m.renderprop.meas_num_flexible_rooms;
+        draw_scale = body_width / m.renderprop.body_fixed_width;
+        console.log("draw_scale = " + draw_scale); // and then for this case room_per_elem is 0 and scale fixed elemetns while keeping
+        // total width.
+
+        paper.getContext("2d").scale(draw_scale, 1);
+      }
 
       if (elements.body.length == 0) {
-        if (draw) x += 1 * param.base_font_size + m.renderprop.room_per_elem;else {
+        if (draw && draw_scale < 1) {
+          x += 1 * param.base_font_size * draw_scale + 0;
+        } else if (draw) {
+          x += 1 * param.base_font_size + m.renderprop.room_per_elem;
+        } else {
           fixed_width += 1 * param.base_font_size;
           num_flexible_rooms++;
         }
@@ -15384,17 +15424,17 @@ function (_Renderer) {
           var cr = null;
 
           if (e0 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Chord"]) {
-            cr = _this6.render_chord_simplified(draw, e0, transpose, half_type, paper, x, yprof.body.y, param, C7_width);
+            cr = _this6.render_chord_simplified(draw, e0, transpose, half_type, paper, x / draw_scale, yprof.body.y, param, C7_width);
 
             if (draw && e0.exceptinal_comment !== null) {
-              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, yprof.mu.y + yprof.mu.height, e0.exceptinal_comment.comment, param.base_font_size / 2, "lb");
+              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / draw_scale, yprof.mu.y + yprof.mu.height, e0.exceptinal_comment.comment, param.base_font_size / 2, "lb");
             }
 
             if (draw && e0.lyric !== null) {
               var llist = e0.lyric.lyric.split("/");
 
               for (var li = 0; li < llist.length; ++li) {
-                _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, yprof.ml.y + li * param.ml_row_height, llist[li], param.base_font_size / 3, "lt");
+                _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / draw_scale, yprof.ml.y + li * param.ml_row_height, llist[li], param.base_font_size / 3, "lt");
               }
             }
           } else {
@@ -15405,37 +15445,46 @@ function (_Renderer) {
             };
           }
 
-          var rs_area_bounding_box = new _common_common__WEBPACK_IMPORTED_MODULE_2__["BoundingBox"]();
-          var rs_x = x;
-          var room_for_rs_per_elem = 0;
-
           if (draw) {
-            var room_for_fist_elem = 0;
+            var room_for_rs_per_elem = 0;
+            var element_group_width = 0;
 
             if (element_group.renderprop.based_on_rs_elem) {
+              // In case RS area elements has wider fixed width(in total) than that of first element
               room_for_rs_per_elem = m.renderprop.room_per_elem;
-              room_for_fist_elem = m.renderprop.room_per_elem * element_group.elems.length;
+              element_group_width = element_group.renderprop.w + m.renderprop.room_per_elem * element_group.elems.length;
             } else {
+              // In case the first element has wider fixed width than RS area elements
               var room_for_rs = element_group.renderprop.w + m.renderprop.room_per_elem - element_group.renderprop.rs_area_width;
               room_for_rs_per_elem = room_for_rs / element_group.elems.length;
-              room_for_fist_elem = m.renderprop.room_per_elem;
+              element_group_width = element_group.renderprop.w + m.renderprop.room_per_elem;
             }
 
-            var g = _this6.render_rs_area(x, element_group.elems, paper, yprof.rs.y, yprof.rs.height, meas_start_x, meas_end_x, draw, 0, 1.0, x_global_scale, music_context, m, param, room_for_rs_per_elem, balken, gbei == body_grouping_info.groupedBodyElems.length - 1);
+            var g = _this6.render_rs_area(x / draw_scale, draw_scale, element_group.elems, paper, yprof.rs.y, yprof.rs.height, meas_start_x, // NOTE : meas_start_x sould be irrespective of draw_scale.
+            draw, 0, 1.0, x_global_scale, music_context, m, param, draw_scale < 1 ? 0 : room_for_rs_per_elem, balken, gbei == body_grouping_info.groupedBodyElems.length - 1);
 
-            var rs_area_width = g.x - x;
-            var first_symbol_width = element_group.renderprop.w + room_for_fist_elem;
-            x += Math.max(rs_area_width, first_symbol_width);
+            var rs_area_width = (g.x - x / draw_scale) * draw_scale; // validation
+
+            if (Math.abs(rs_area_width - element_group_width) > 0.0001) {
+              console.log("Whould be the same : " + [rs_area_width, element_group_width]); //throw "Something wrong with RS area code drawing";
+            }
+
+            if (draw_scale < 1) {
+              x += element_group.renderprop.w * draw_scale + 0;
+            } else {
+              x += element_group_width;
+            }
           } else {
-            // Only try to esimate using non-flag-balken drawer
-            element_group.elems.forEach(function (e) {
-              var balken_element = _this6.generate_balken_element(e, rs_x, yprof.rs.height, music_context);
+            var rs_area_bounding_box = new _common_common__WEBPACK_IMPORTED_MODULE_2__["BoundingBox"](); // Only try to esimate using non-flag-balken drawer
 
-              var r = _this6.draw_rs_area_without_flag_balken(draw, paper, param, e, balken_element, rs_x, yprof.rs.y, yprof.rs.height);
+            element_group.elems.forEach(function (e) {
+              var balken_element = _this6.generate_balken_element(e, x, yprof.rs.height, music_context);
+
+              var r = _this6.draw_rs_area_without_flag_balken(draw, paper, param, e, balken_element, x, yprof.rs.y, yprof.rs.height);
 
               e.renderprop.balken_element = balken_element;
               rs_area_bounding_box.add_rect(r.bounding_box);
-              rs_x += r.bounding_box.w + room_for_rs_per_elem;
+              x += r.bounding_box.w;
             });
             var _rs_area_width = rs_area_bounding_box.get().w;
             element_group.renderprop.w = Math.max(_rs_area_width, cr.width);
@@ -15447,43 +15496,51 @@ function (_Renderer) {
         } else {
           element_group.elems.forEach(function (e) {
             if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Chord"]) {
-              var _cr = _this6.render_chord_simplified(draw, e, transpose, half_type, paper, x, yprof.body.y, param, C7_width);
+              var _cr = _this6.render_chord_simplified(draw, e, transpose, half_type, paper, x / draw_scale, yprof.body.y, param, C7_width);
 
               if (draw && e.exceptinal_comment !== null) {
-                _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, yprof.mu.y + yprof.mu.height, e.exceptinal_comment.comment, param.base_font_size / 2, "lb");
+                _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / draw_scale, yprof.mu.y + yprof.mu.height, e.exceptinal_comment.comment, param.base_font_size / 2, "lb");
               }
 
               if (draw && e.lyric !== null) {
                 var llist = e.lyric.lyric.split("/");
 
                 for (var li = 0; li < llist.length; ++li) {
-                  _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, yprof.ml.y + li * param.ml_row_height, llist[li], param.base_font_size / 3, "lt");
+                  _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / draw_scale, yprof.ml.y + li * param.ml_row_height, llist[li], param.base_font_size / 3, "lt");
                 }
               }
 
-              if (draw) x += e.renderprop.w + m.renderprop.room_per_elem;else {
+              if (draw && draw_scale < 1) {
+                x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
+              } else if (draw) x += e.renderprop.w + m.renderprop.room_per_elem;else {
                 e.renderprop.w = _cr.width;
                 fixed_width += e.renderprop.w;
                 num_flexible_rooms++;
               }
             } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Rest"]) {
-              var _cr2 = _this6.render_rest_plain(e, paper, draw, x, y_body_or_rs_base, C7_width, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, param);
+              var _cr2 = _this6.render_rest_plain(e, paper, draw, x / draw_scale, y_body_or_rs_base, C7_width, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, param);
 
-              if (draw) x += e.renderprop.w + m.renderprop.room_per_elem;else {
+              if (draw && draw_scale < 1) {
+                x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
+              } else if (draw) x += e.renderprop.w + m.renderprop.room_per_elem;else {
                 e.renderprop.w = _cr2.bounding_box.w;
                 fixed_width += e.renderprop.w;
                 num_flexible_rooms++;
               }
             } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Simile"]) {
-              var _cr3 = _this6.render_simile_mark_plain(draw, paper, x, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, e.numslash, false, "l");
+              var _cr3 = _this6.render_simile_mark_plain(draw, paper, x / draw_scale, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, e.numslash, false, "l");
 
-              if (draw) x += e.renderprop.w + m.renderprop.room_per_elem;else {
+              if (draw && draw_scale < 1) {
+                x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
+              } else if (draw) x += e.renderprop.w + m.renderprop.room_per_elem;else {
                 e.renderprop.w = _cr3.width;
                 fixed_width += e.renderprop.w;
                 num_flexible_rooms++;
               }
             } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Space"]) {
-              if (draw) x += e.renderprop.w + m.renderprop.room_per_elem;else {
+              if (draw && draw_scale < 1) {
+                x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
+              } else if (draw) x += e.renderprop.w + m.renderprop.room_per_elem;else {
                 var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, 0, 0, "M", param.base_font_size, "lt", 0.5 * param.base_font_size, true, null); // width parameter needs to be aligned with chord rendering
 
                 e.renderprop.w = e.length * r.width;
@@ -15494,6 +15551,11 @@ function (_Renderer) {
           });
         }
       });
+
+      if (draw && draw_scale < 1) {
+        paper.getContext("2d").scale(1 / draw_scale, 1);
+      }
+
       return {
         x: x,
         fixed_width: fixed_width,
@@ -15742,7 +15804,7 @@ function (_Renderer) {
         });
         x += param.header_body_margin; // Draw body
 
-        var rberet = _this7.render_body_elements(true, x, elements, param, music_context, yprof, paper, _5lines_intv, meas_start_x, meas_end_x, m, x_global_scale, transpose, half_type, C7_width, y_body_or_rs_base, balken);
+        var rberet = _this7.render_body_elements(true, x, elements, param, music_context, yprof, paper, _5lines_intv, meas_start_x, m, x_global_scale, transpose, half_type, C7_width, y_body_or_rs_base, balken);
 
         x = rberet.x; // Draw footer
 
@@ -16763,7 +16825,8 @@ function () {
     }
   }, {
     key: "render_rs_area",
-    value: function render_rs_area(x, elems, paper, rs_y_base, row_height, meas_start_x, meas_end_x, draw, chord_space, body_scaling, x_global_scale, music_context, meas, param, room_for_rs_per_element, balken, is_last_body_elem_group_in_a_measure) {
+    value: function render_rs_area(x, draw_scale, // note this is used for remember the draw_scale applied for tie rendering. other x axis coordinates given by already scaled.
+    elems, paper, rs_y_base, row_height, meas_start_x, draw, chord_space, body_scaling, x_global_scale, music_context, meas, param, room_for_rs_per_element, balken, is_last_body_elem_group_in_a_measure) {
       // chords is list of chords for each chord object has .renderprop.x property
       // All elements shall have length indicators
       // var balken_width = "3px";
@@ -16788,7 +16851,7 @@ function () {
         if ((balken_element.chord_length >= _common_common__WEBPACK_IMPORTED_MODULE_1__["WHOLE_NOTE_LENGTH"] / 4 || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Rest"]) && balken.groups.length > 0) {
           var dbret = this.draw_rs_area_balkens( //draw, 
           //x,
-          paper, group, balken, rs_y_base, row_height, meas_start_x, meas_end_x, body_scaling, x_global_scale, music_context, meas, param);
+          draw_scale, paper, group, balken, rs_y_base, row_height, meas_start_x, body_scaling, x_global_scale, music_context, meas, param);
           balken.groups = [];
           x = dbret.x;
         }
@@ -16804,7 +16867,7 @@ function () {
         if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Rest"] || balken_element.chord_length >= _common_common__WEBPACK_IMPORTED_MODULE_1__["WHOLE_NOTE_LENGTH"] / 4 || music_context.pos_in_a_measure % (_common_common__WEBPACK_IMPORTED_MODULE_1__["WHOLE_NOTE_LENGTH"] / 4) == 0 || ei == elems.length - 1 && is_last_body_elem_group_in_a_measure) {
           var _dbret = this.draw_rs_area_balkens( //draw, 
           //x,
-          paper, group, balken, rs_y_base, row_height, meas_start_x, meas_end_x, body_scaling, x_global_scale, music_context, meas, param);
+          draw_scale, paper, group, balken, rs_y_base, row_height, meas_start_x, body_scaling, x_global_scale, music_context, meas, param);
 
           x = _dbret.x;
           balken.groups = [];
@@ -16887,8 +16950,11 @@ function () {
         type: type,
         numdot: numdot,
         chord_length: chord_length,
-        notes_coord: [[], null],
-        // x, y coordinates are filled out later in stage 2
+        notes_coord: {
+          x: [],
+          y: null
+        },
+        // x, y coordinates are filled out later in stage 2. x and y are array correspoding to each notes.
         note_value: d,
         has_tie: has_tie,
         pos_on_5lines: pos_on_5lines,
@@ -16909,7 +16975,7 @@ function () {
       var _5lines_intv = row_height / 4;
 
       var deltax_acc = 10;
-      var ys = balken_element.notes_coord[1]; // Stage 1 (draw=false), no y position information available then null, in that case put dammy value
+      var ys = balken_element.notes_coord.y; // Stage 1 (draw=false), no y position information available then null, in that case put dammy value
 
       if (!ys && balken_element.type == "slash") {
         ys = [0];
@@ -16936,7 +17002,7 @@ function () {
         balken_element.renderprop.note_x_center = x;
 
         if (draw) {
-          balken_element.notes_coord[0].push([x, x, x + ret.bounding_box.w]);
+          balken_element.notes_coord.x.push([x, x, x + ret.bounding_box.w]);
         }
       } else if (balken_element.type == "notes") {
         var xs = [];
@@ -16966,7 +17032,7 @@ function () {
           bounding_box.add_rect(r.bounding_box);
 
           if (draw) {
-            balken_element.notes_coord[0].push([x, note_x_center, note_x_center + r.bounding_box.w]);
+            balken_element.notes_coord.x.push([x, note_x_center, note_x_center + r.bounding_box.w]);
           } // draw sharp, flat and natrual
           // http://finale-hossy.sakura.ne.jp/finale/2011/11/post-18.html
 
@@ -17023,7 +17089,7 @@ function () {
         bounding_box.add_rect(_r.bounding_box);
 
         if (draw) {
-          balken_element.notes_coord[0].push([x, x, x + _r.bounding_box.w]);
+          balken_element.notes_coord.x.push([x, x, x + _r.bounding_box.w]);
         }
       } else if (balken_element.type == "space") {
         // Do not use expand here in case only one space is grouped in balken group
@@ -17040,7 +17106,7 @@ function () {
     key: "draw_rs_area_balkens",
     value: function draw_rs_area_balkens( //draw, 
     //x,
-    paper, group, balken, rs_y_base, row_height, meas_start_x, meas_end_x, body_scaling, x_global_scale, music_context, meas, param) {
+    draw_scale, paper, group, balken, rs_y_base, row_height, meas_start_x, body_scaling, x_global_scale, music_context, meas, param) {
       // Evaluate the flag direction(up or down) by the center of the y-axis position of all the notes/slashes
       // Not called with draw=false
       var draw = true;
@@ -17091,7 +17157,7 @@ function () {
           }
         }
 
-        balken.groups[_gbi].balken_element.notes_coord[1] = group_y;
+        balken.groups[_gbi].balken_element.notes_coord.y = group_y;
       } // 1. determine the flag direction here
 
 
@@ -17106,7 +17172,7 @@ function () {
         var _e = balken.groups[_gbi2].e;
 
         if (_e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Chord"] || _e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Rest"]) {
-          var ys = balken.groups[_gbi2].balken_element.notes_coord[1];
+          var ys = balken.groups[_gbi2].balken_element.notes_coord.y;
 
           for (var ci = 0; ci < ys.length; ++ci) {
             center_y += ys[ci];
@@ -17135,18 +17201,18 @@ function () {
         //var x = balken.groups[gbi].notes_coord[0];
         var _e2 = balken.groups[_gbi3].e;
         var balken_element = balken.groups[_gbi3].balken_element;
-        var _ys = balken_element.notes_coord[1];
+        var _ys = balken_element.notes_coord.y;
         var d = balken_element.note_value;
         var wo_flags = this.draw_rs_area_without_flag_balken(draw, paper, param, _e2, balken_element, x, rs_y_base, row_height);
-        var xs = balken_element.notes_coord[0];
+        var xs = balken_element.notes_coord.x;
 
         if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Chord"]) {
           if (music_context.tie_info.rs_prev_has_tie) {
             // Draw tie line
-            var pss = music_context.tie_info.rs_prev_coord;
+            var prev_coord = music_context.tie_info.rs_prev_coord;
             var psm = music_context.tie_info.rs_prev_meas; // Check the consistency.
 
-            if (pss[1].length != _ys.length) {
+            if (prev_coord.y.length != _ys.length) {
               throw "INVALID TIE NOTATION";
             }
 
@@ -17178,21 +17244,38 @@ function () {
 
             for (var _ci = 0; _ci < _ys.length; ++_ci) {
               var y = _ys[_ci];
+              var prev_draw_scale = music_context.tie_info.rs_prev_draw_scale;
 
-              if (y != pss[1][_ci]) {
+              if (y != prev_coord.y[_ci]) {
                 // Crossing measure row. Previous RS mark could be on another page.
                 // Make sure to create curve on the paper on which previous RS is drawn.
-                var brace_points = [[pss[0][_ci][2] + sdx, pss[1][_ci] + _dy2], [pss[0][_ci][2] + sdx, pss[1][_ci] - round + _dy2], [psm.renderprop.meas_end_x + 20, pss[1][_ci] - round + _dy2], [psm.renderprop.meas_end_x + 20, pss[1][_ci] + _dy2]];
-                _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasbBzierCurve"](paper, brace_points, false, false, {
-                  "clip-rect": [pss[0][_ci][2] + sdx, pss[1][_ci] - 50, psm.renderprop.meas_end_x - (pss[0][_ci][2] + sdx) + 5, 100]
+                var brace_points = [[prev_coord.x[_ci][2] * prev_draw_scale + sdx, prev_coord.y[_ci] + _dy2], [prev_coord.x[_ci][2] * prev_draw_scale + sdx, prev_coord.y[_ci] - round + _dy2], [psm.renderprop.meas_end_x + 20, prev_coord.y[_ci] - round + _dy2], [psm.renderprop.meas_end_x + 20, prev_coord.y[_ci] + _dy2]];
+                var clip_rect = [prev_coord.x[_ci][2] * prev_draw_scale + sdx, prev_coord.y[_ci] - 50, psm.renderprop.meas_end_x - (prev_coord.x[_ci][2] * prev_draw_scale + sdx) + 5, 100];
+                console.group("Tie");
+                console.log(brace_points);
+                console.log(clip_rect);
+                console.groupEnd(); // In case the previous paper is in the same paper, "draw_scale" is currently applied,
+                // then temporaryly deactivate scaling.
+                // In case of differnt paper, such paper shall already be reverted back to scaling=1, 
+                // no need to do anything.
+
+                if (paper == music_context.tie_info.rs_prev_tie_paper) music_context.tie_info.rs_prev_tie_paper.getContext("2d").scale(1.0 / draw_scale, 1.0);
+                _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasbBzierCurve"](music_context.tie_info.rs_prev_tie_paper, brace_points, false, false, {
+                  "clip-rect": clip_rect
                 });
-                brace_points = [[meas_start_x - 20, y + _dy2], [meas_start_x - 20, y - round + _dy2], [xs[_ci][0] + edx, y - round + _dy2], [xs[_ci][0] + edx, y + _dy2]];
+                if (paper == music_context.tie_info.rs_prev_tie_paper) music_context.tie_info.rs_prev_tie_paper.getContext("2d").scale(draw_scale, 1.0);
+                brace_points = [[meas_start_x - 20, y + _dy2], [meas_start_x - 20, y - round + _dy2], [xs[_ci][0] * draw_scale + edx, y - round + _dy2], [xs[_ci][0] * draw_scale + edx, y + _dy2]];
+                clip_rect = [meas_start_x - 5, y - 50, x * draw_scale - (meas_start_x - 5), 100];
+                paper.getContext("2d").scale(1.0 / draw_scale, 1.0);
                 _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasbBzierCurve"](paper, brace_points, false, false, {
-                  "clip-rect": [meas_start_x - 5, y - 50, x - (meas_start_x - 5), 100]
+                  "clip-rect": clip_rect
                 });
+                paper.getContext("2d").scale(draw_scale, 1.0);
               } else {
-                var _brace_points = [[pss[0][_ci][2] + sdx, pss[1][_ci] + _dy2], [pss[0][_ci][2] + sdx, pss[1][_ci] - round + _dy2], [xs[_ci][0] + edx, y - round + _dy2], [xs[_ci][0] + edx, y + _dy2]];
+                var _brace_points = [[prev_coord.x[_ci][2] * prev_draw_scale + sdx, prev_coord.y[_ci] + _dy2], [prev_coord.x[_ci][2] * prev_draw_scale + sdx, prev_coord.y[_ci] - round + _dy2], [xs[_ci][0] * draw_scale + edx, y - round + _dy2], [xs[_ci][0] * draw_scale + edx, y + _dy2]];
+                paper.getContext("2d").scale(1.0 / draw_scale, 1.0);
                 _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasbBzierCurve"](paper, _brace_points, false, false);
+                paper.getContext("2d").scale(draw_scale, 1.0);
               }
             }
           }
@@ -17200,6 +17283,7 @@ function () {
           music_context.tie_info.rs_prev_has_tie = balken.groups[_gbi3].balken_element.has_tie;
           music_context.tie_info.rs_prev_tie_paper = paper;
           music_context.tie_info.rs_prev_coord = balken_element.notes_coord;
+          music_context.tie_info.rs_prev_draw_scale = draw_scale;
           music_context.tie_info.rs_prev_meas = meas;
         }
 
@@ -17218,12 +17302,12 @@ function () {
         };
       }
 
-      var x_at_min_y = balken.groups[gbi_at_min_y].balken_element.notes_coord[0][0][upper_flag ? 2 : 1];
-      var x_at_max_y = balken.groups[gbi_at_max_y].balken_element.notes_coord[0][0][upper_flag ? 2 : 1];
-      var ps_y = balken.groups[0].balken_element.notes_coord[1];
-      var ps_bar_x = balken.groups[0].balken_element.notes_coord[0][0][upper_flag ? 2 : 1];
-      var pe_y = balken.groups[balken.groups.length - 1].balken_element.notes_coord[1];
-      var pe_bar_x = balken.groups[balken.groups.length - 1].balken_element.notes_coord[0][0][upper_flag ? 2 : 1];
+      var x_at_min_y = balken.groups[gbi_at_min_y].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
+      var x_at_max_y = balken.groups[gbi_at_max_y].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
+      var ps_y = balken.groups[0].balken_element.notes_coord.y;
+      var ps_bar_x = balken.groups[0].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
+      var pe_y = balken.groups[balken.groups.length - 1].balken_element.notes_coord.y;
+      var pe_bar_x = balken.groups[balken.groups.length - 1].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
       var slope = 0;
 
       if (balken.groups.length >= 2) {
@@ -17236,8 +17320,8 @@ function () {
       var intercept = (upper_flag ? min_y - param.note_bar_length : max_y + param.note_bar_length) - slope * (upper_flag ? x_at_min_y : x_at_max_y); // 4. Draw bars, flags
 
       for (var gbi = 0; gbi < balken.groups.length; ++gbi) {
-        var _ys2 = balken.groups[gbi].balken_element.notes_coord[1];
-        var _xs = balken.groups[gbi].balken_element.notes_coord[0];
+        var _ys2 = balken.groups[gbi].balken_element.notes_coord.y;
+        var _xs = balken.groups[gbi].balken_element.notes_coord.x;
 
         if (balken.groups[gbi].balken_element.type == "slash") {
           var bar_x = upper_flag ? _xs[0][2] : _xs[0][1]; // eslint-disable-next-line no-empty
@@ -17285,13 +17369,13 @@ function () {
           var numflag = _common_common__WEBPACK_IMPORTED_MODULE_1__["myLog2"](parseInt(sd)) - 2;
 
           if (same_sds.length == 1) {
-            var pssx = same_sds[0].balken_element.notes_coord[0][0][upper_flag ? 2 : 1]; // Determine which direction to draw flag. Determined from which neighboring
+            var pssx = same_sds[0].balken_element.notes_coord.x[0][upper_flag ? 2 : 1]; // Determine which direction to draw flag. Determined from which neighboring
             // rhythm is more natural to coupling with.
             // Currently, simple strategy is adopted for now.
 
             var dir = 1;
             if (g == gg.length - 1) dir = -1;
-            var neighbor_x = gg[g + dir][gg[g + dir].length - 1].balken_element.notes_coord[0][0][upper_flag ? 2 : 1];
+            var neighbor_x = gg[g + dir][gg[g + dir].length - 1].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
             var blen = Math.abs(neighbor_x - pssx) * 0.3;
 
             for (var fi = 1; fi < numflag; ++fi) {
@@ -17302,8 +17386,8 @@ function () {
               });
             }
           } else if (same_sds.length >= 2) {
-            var _pssx = same_sds[0].balken_element.notes_coord[0][0][upper_flag ? 2 : 1];
-            var psex = same_sds[same_sds.length - 1].balken_element.notes_coord[0][0][upper_flag ? 2 : 1];
+            var _pssx = same_sds[0].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
+            var psex = same_sds[same_sds.length - 1].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
 
             for (var _fi = 1; _fi < numflag; ++_fi // fi=0 is alread drawn by common balken
             ) {
@@ -17330,7 +17414,7 @@ function () {
         }
       } else if (balken.groups.length == 1 && (balken.groups[0].balken_element.type == "slash" || balken.groups[0].balken_element.type == "notes")) {
         // Normal drawing of flags
-        var _bar_x2 = balken.groups[0].balken_element.notes_coord[0][0][upper_flag ? 2 : 1];
+        var _bar_x2 = balken.groups[0].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
         var _d = balken.groups[0].balken_element.note_value;
 
         var _numflag = _common_common__WEBPACK_IMPORTED_MODULE_1__["myLog2"](parseInt(_d)) - 2;

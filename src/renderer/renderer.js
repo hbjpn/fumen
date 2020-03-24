@@ -795,7 +795,8 @@ export class Renderer {
                             console.log(clip_rect);
                             console.groupEnd();
 
-                            graphic.CanvasbBzierCurve(paper, brace_points, false, false, 
+                            graphic.CanvasbBzierCurve(music_context.tie_info.rs_prev_tie_paper,
+                                brace_points, false, false, 
                                 {"clip-rect":clip_rect});
 
                             brace_points = [

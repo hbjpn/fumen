@@ -799,8 +799,9 @@ export class Renderer {
                             console.groupEnd();
                             
                             // In case the previous paper is in the same paper, "draw_scale" is currently applied,
-                            // then temporalility deactivate scaling.
-                            // In case of differnt paper, such paper shall be reverted back to scaling=1.   
+                            // then temporaryly deactivate scaling.
+                            // In case of differnt paper, such paper shall already be reverted back to scaling=1, 
+                            // no need to do anything.
                             if(paper == music_context.tie_info.rs_prev_tie_paper)
                                 music_context.tie_info.rs_prev_tie_paper.getContext("2d").scale(1.0/draw_scale, 1.0);
 

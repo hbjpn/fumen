@@ -1167,7 +1167,7 @@ export class MobileRenderer extends Renderer {
                         paper,
                         yprof.rs.y,
                         yprof.rs.height,
-                        meas_start_x / draw_scale,
+                        meas_start_x, // NOTE : meas_start_x sould be irrespective of draw_scale.
                         draw,
                         0,
                         1.0,

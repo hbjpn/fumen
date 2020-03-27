@@ -875,8 +875,6 @@ export class MobileRenderer extends Renderer {
                     yprof.ml.detected ||
                         (e.times != null && (e.ntimes || e.times != 2));
                 } else if (e instanceof common.Chord) {
-                    var bases = e.getChordStrBase(0, "flat");
-                    //yprof.ml.detected = yprof.ml.detected || bases[1] != null;
                     yprof.rs.detected |= e.note_group_list !== null;
                 } else if (e instanceof common.Lyric) {
                     yprof.ml.detected = true;
@@ -936,6 +934,7 @@ export class MobileRenderer extends Renderer {
     ){
         var transpose = macros.TRANSPOSE;
         var half_type = macros.HALF_TYPE;
+        var key = macros.KEY;
 
         var total_width = param.paper_width / param.zoom - 2 * param.x_offset;
 
@@ -995,6 +994,7 @@ export class MobileRenderer extends Renderer {
                 1,
                 transpose,
                 half_type,
+                key,
                 0,
                 0
             );
@@ -1056,6 +1056,7 @@ export class MobileRenderer extends Renderer {
         x_global_scale,
         transpose,
         half_type,
+        key,
         C7_width,
         y_body_or_rs_base,
         balken
@@ -1107,6 +1108,7 @@ export class MobileRenderer extends Renderer {
                         e0,
                         transpose,
                         half_type,
+                        key,
                         paper,
                         x / draw_scale,
                         yprof.body.y,
@@ -1220,6 +1222,7 @@ export class MobileRenderer extends Renderer {
                             e,
                             transpose,
                             half_type,
+                            key,
                             paper,
                             x / draw_scale,
                             yprof.body.y,
@@ -1403,6 +1406,7 @@ export class MobileRenderer extends Renderer {
         var x_global_scale = macros.X_GLOBAL_SCALE;
         var transpose = macros.TRANSPOSE;
         var half_type = macros.HALF_TYPE;
+        var key = macros.KEY;
         var staff = macros.STAFF;
 
         /* Reference reserved width for empty measures or chord symbol without base names*/
@@ -1638,6 +1642,7 @@ export class MobileRenderer extends Renderer {
                 x_global_scale,
                 transpose,
                 half_type,
+                key,
                 C7_width,
                 y_body_or_rs_base,
                 balken);
@@ -2179,6 +2184,7 @@ export class MobileRenderer extends Renderer {
         chord,
         transpose,
         half_type,
+        key,
         canvas,
         x,
         y_body_base,
@@ -2196,7 +2202,7 @@ export class MobileRenderer extends Renderer {
             );
         }
 
-        var ce = this.chord_elem_classify(chord, transpose, half_type);
+        var ce = this.chord_elem_classify(chord, transpose, half_type, key);
         var bases = ce.bases;
         var elems = ce.mid_elem_objs;
 

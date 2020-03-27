@@ -170,8 +170,8 @@ export class Renderer {
         };
     }
 	
-	chord_elem_classify(chord, transpose, half_type) {
-        var bases = chord.getChordStrBase(transpose, half_type);
+	chord_elem_classify(chord, transpose, half_type, key) {
+        var bases = chord.getChordStrBase(transpose, half_type, key);
         var elems = chord.mid_elem_objs;
 
         // if bases are null, elems are null, then it is just a duration information

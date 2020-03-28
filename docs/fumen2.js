@@ -11656,7 +11656,8 @@ var MACRO_DEFAULT = {
   "SHOW_FOOTER": "YES",
   "STAFF": "AUTO",
   "TRANSPOSE": 0,
-  "HALF_TYPE": "GUESS"
+  "KEY": "C",
+  "KEY_TYPE": "AUTO"
 };
 function shallowcopy(obj) {
   return Object.assign({}, obj);
@@ -12258,58 +12259,158 @@ function () {
     }
   }, {
     key: "getTranpsoedNote",
-    value: function getTranpsoedNote(transpose, half_type, note_base, sharp_flat) {
-      var seq = [["A"], ["A#", "Bb"], ["B", "Cb"], ["C"], ["C#", "Db"], ["D"], ["D#", "Eb"], ["E", "Fb"], ["F"], ["F#", "Gb"], ["G"], ["G#", "Ab"]];
+    value: function getTranpsoedNote(transpose, half_type, key, note_base, sharp_flat) {
+      // https://music.stackexchange.com/questions/40041/algorithm-for-transposing-chords-between-keys
+      var min_maj_map = {
+        "B#m": "D#",
+        "Cm": "Eb",
+        "C#m": "E",
+        "Dbm": "Fb",
+        "Dm": "F",
+        "D#m": "F#",
+        "Ebm": "Gb",
+        "Em": "G",
+        //"Fbm" : "Abb",
+        "E#m": "G#",
+        "Fm": "Ab",
+        "F#m": "A",
+        //"Gbm" : "Bbb",
+        "Gm": "Bb",
+        "G#m": "B",
+        "Abm": "Cb",
+        "Am": "C",
+        "A#m": "C#",
+        "Bbm": "Db",
+        "Bm": "D" //"Cbm" : "Ebb"
+
+      };
+      var note_values_1 = [["C", null, "B#"], [null, "Db", "C#"], ["D", null, null], [null, "Eb", "D#"], ["E", "Fb", null], ["F", null, "E#"], [null, "Gb", "F#"], ["G", null, null], [null, "Ab", "G#"], ["A", null, null], [null, "Bb", "A#"], ["B", "Cb", null]];
+      var note_values_2 = {
+        "B#": 0,
+        "C": 0,
+        "C#": 1,
+        "Db": 1,
+        "D": 2,
+        "D#": 3,
+        "Eb": 3,
+        "E": 4,
+        "Fb": 4,
+        "E#": 5,
+        "F": 5,
+        "F#": 6,
+        "Gb": 6,
+        "G": 7,
+        "G#": 8,
+        "Ab": 8,
+        "A": 9,
+        "A#": 10,
+        "Bb": 10,
+        "B": 11,
+        "Cb": 11
+      };
+      var keyclass = {
+        "B#": "#",
+        "C": "b",
+        "C#": "#",
+        "Db": "b",
+        "D": "#",
+        "D#": "#",
+        "Eb": "b",
+        "E": "b",
+        "Fb": "b",
+        "E#": "#",
+        "F": "b",
+        "F#": "#",
+        "Gb": "b",
+        "G": "#",
+        "G#": "#",
+        "Ab": "b",
+        "A": "#",
+        "A#": "#",
+        "Bb": "b",
+        "B": "#",
+        "Cb": "b"
+      };
+      var letters = ["A", "B", "C", "D", "E", "F", "G"]; /////
+
       var note = note_base;
       if (sharp_flat !== undefined) note += sharp_flat;
-      if (transpose == 0) return note;
-      var i = 0;
+      var org_maj_key = key;
+      if (key in min_maj_map) org_maj_key = min_maj_map[key]; // minor is converted to maj key
 
-      for (i = 0; i < seq.length; ++i) {
-        if (seq[i].indexOf(note) >= 0) break;
-      }
+      var target_key = null; // given from external. Temprory implementation.
 
-      var k = i + transpose;
+      if (Number.isInteger(transpose)) {
+        var base_value = note_values_2[org_maj_key];
+        var tgt_value = (base_value + transpose + 12) % 12;
+        var half_to_apply = null;
+        if (half_type.toUpperCase() == "AUTO") half_to_apply = keyclass[org_maj_key]; // Use the similar key class as original key
+        else if (half_type.toUpperCase() == "SHARP") half_to_apply = "#";else if (half_type.toUpperCase() == "FLAT") half_to_apply = "b";else half_to_apply = half_type; // "#" or "b" directly is OK.
 
-      while (k < 0) {
-        k += 12;
-      }
-
-      var s = seq[k % 12];
-
-      if (s.length == 1) {
-        return s[0];
+        var tgt_key_cand = note_values_1[tgt_value];
+        if (tgt_key_cand[0]) target_key = tgt_key_cand[0];else target_key = tgt_key_cand[half_to_apply == "b" ? 1 : 2];
       } else {
-        switch (half_type) {
-          case "GUESS":
-            // TODO : More intelligent transposing based on key of the track.
-            if (sharp_flat) {
-              if (sharp_flat == "#") return s[0];else return s[1];
-            } else {
-              return s[1]; // Sharp based
-            }
+        // Key is specified directly
+        target_key = transpose;
+        if (target_key in min_maj_map) target_key = min_maj_map[target_key]; // minor is converted to maj key
 
-          case "SHARP":
-            return s[0];
+        transpose = (note_values_2[target_key] - note_values_2[org_maj_key] + 12) % 12;
+      }
 
-          case "FLAT":
-            return s[1];
+      console.log("Orignal key = " + org_maj_key + " Target key = " + target_key);
+      var letter_diff = letters.indexOf(target_key[0]) - letters.indexOf(org_maj_key[0]);
+      var letter_index = letters.indexOf(note_base);
+      var new_letter_index = (letter_index + letter_diff + 7) % 7;
+      var newletter = letters[new_letter_index];
+      var nvalue = note_values_2[note];
+      var new_nvalue = (nvalue + transpose + 12) % 12;
+      var acc = ""; // eslint-disable-next-line no-constant-condition
+
+      while (true) {
+        // Take circular diff
+        var offset = 6 - note_values_2[newletter];
+        var fs = (new_nvalue + offset + 12) % 12 - 6; // >0 means #, <0 means flat, 0 means no accidental
+
+        if (fs == 0) {
+          acc = "";
+          break;
+        } else if (fs == 1) {
+          acc = "#";
+          break;
+        } else if (fs == -1) {
+          acc = "b";
+          break;
+        } else if (fs >= 2) {
+          // ## can happen.
+          // 2 can happen e.g. E# in key=C = III#. Key=D goes to F##. Convert it to G.
+          // 3 can happen e.g. G# in key=Gb = I##. Key=C# goes to C###. Convert it to D#.
+          // Next letter
+          new_letter_index = (new_letter_index + 1) % 7;
+          newletter = letters[new_letter_index];
+        } else if (fs <= -2) {
+          // Previous letter
+          // -2 can happen e.g. Fb in key=C = IVb. Key=Eb goes to Abb. Convert it to G.
+          // -3 can happen e.g. Gb in key=B = VIbb = G#bb. Key=Db goes to Bbbb. Convert it to Ab.
+          new_letter_index = (new_letter_index - 1 + 7) % 7;
+          newletter = letters[new_letter_index];
+        } else {
+          throw "Unexpected situation on transpose";
         }
       }
 
-      return null;
+      return newletter + acc;
     }
   }, {
     key: "getChordStrBase",
-    value: function getChordStrBase(tranpose, half_type) {
+    value: function getChordStrBase(tranpose, half_type, key) {
       if (!this.is_valid_chord) return [false, this.chord_str]; // Not chord or invalid chord notation
 
       var tranposed_note = null;
-      if (this.note_base !== undefined) tranposed_note = this.getTranpsoedNote(tranpose, half_type, this.note_base, this.sharp_flat);
+      if (this.note_base !== undefined) tranposed_note = this.getTranpsoedNote(tranpose, half_type, key, this.note_base, this.sharp_flat);
       var transposed_base_note = null;
 
       if (this.base_note_base !== undefined) {
-        transposed_base_note = this.getTranpsoedNote(tranpose, half_type, this.base_note_base, this.base_sharp_flat);
+        transposed_base_note = this.getTranpsoedNote(tranpose, half_type, key, this.base_note_base, this.base_sharp_flat);
       }
 
       return [tranposed_note, transposed_base_note];
@@ -13592,10 +13693,12 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 
-var G_memCanvas = null;
-var G_mem_Canvas_size = [600, 600];
-var G_pixelRatio = null;
-var G_zoom = null;
+var G_memCanvasStore = {}; // refered by ratio&zoom
+//var G_memCanvas = null;
+
+var G_mem_Canvas_size = [600, 600]; //var G_pixelRatio = null;
+//var G_zoom = null;
+
 function CanvasRect(canvas, x, y, w, h) {
   var fill = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : null;
   var context = canvas.getContext("2d");
@@ -13764,19 +13867,23 @@ function CanvasPath(canvas, svgpathdata) {
 function fontDesc(fsize, fontfamily, bold) {
   return (bold ? "bold " : "") + fsize + "px '" + (fontfamily ? fontfamily : "Arial") + "'";
 }
-function GetCharProfile(fsize, fontfamily, bold) {
+function GetCharProfile(fsize, fontfamily, bold, ratio, zoom) {
   var font = fontDesc(fsize, fontfamily, bold);
+  var refstr = font + "/" + ratio + "/" + zoom;
   var yroom = null;
-  if (font in G_y_char_offsets) yroom = G_y_char_offsets[font];else {
-    if (!G_memCanvas) {
-      G_memCanvas = document.createElement("canvas");
-      SetupHiDPICanvas(G_memCanvas, G_mem_Canvas_size[0], G_mem_Canvas_size[1], G_pixelRatio, G_zoom);
-      console.log("Pixel ratio = " + G_pixelRatio);
+  if (refstr in G_y_char_offsets) yroom = G_y_char_offsets[refstr];else {
+    var memkey = ratio + "/" + zoom;
+
+    if (!(memkey in G_memCanvasStore)) {
+      var memCanvas = document.createElement("canvas");
+      SetupHiDPICanvas(memCanvas, G_mem_Canvas_size[0], G_mem_Canvas_size[1], ratio, zoom);
+      console.log("Pixel ratio = " + ratio + " , zoom = " + zoom);
+      G_memCanvasStore[memkey] = memCanvas;
     }
 
-    yroom = JudgeTextYPosOffset(G_memCanvas, font); //bold, fontfamily, fsize);
+    yroom = JudgeTextYPosOffset(G_memCanvasStore[memkey], font); //bold, fontfamily, fsize);
 
-    G_y_char_offsets[font] = yroom;
+    G_y_char_offsets[refstr] = yroom;
   }
   return yroom;
 }
@@ -13808,7 +13915,7 @@ function CanvasText(canvas, x, y, text, fsize, align, xwidth, notdraw, opt) {
     // DO othing
     context.textBaseline = tb[align[1]]; //tb[align[1]];
   } else {
-    yroom = GetCharProfile(fsize, opt ? opt.fontfamily : null, opt ? opt.bold : null);
+    yroom = GetCharProfile(fsize, opt ? opt.fontfamily : null, opt ? opt.bold : null, canvas.ratio, canvas.zoom);
 
     if (align[1] == "t") {
       yadjust = -yroom.top_room;
@@ -13959,16 +14066,18 @@ function GetPixelRatio(canvas) {
 function SetupHiDPICanvas(canvas, w, h, ratio, zoom) {
   if (!ratio) ratio = GetPixelRatio(canvas);
   if (!zoom) zoom = 1.0; // This is not a good manner, though...
+  // = ratio;
+  //G_zoom = zoom;
 
-  G_pixelRatio = ratio;
-  G_zoom = zoom; //console.log(ratio + "/" + w + "," + h);
+  canvas.ratio = ratio;
+  canvas.zoom = zoom; //console.log(ratio + "/" + w + "," + h);
 
   var ctx = canvas.getContext("2d");
-  canvas.width = w * ratio * G_zoom;
-  canvas.height = h * ratio * G_zoom;
-  canvas.style.width = w * G_zoom + "px";
-  canvas.style.height = h * G_zoom + "px";
-  ctx.setTransform(ratio * G_zoom, 0, 0, ratio * G_zoom, 0, 0);
+  canvas.width = w * ratio * zoom;
+  canvas.height = h * ratio * zoom;
+  canvas.style.width = w * zoom + "px";
+  canvas.style.height = h * zoom + "px";
+  ctx.setTransform(ratio * zoom, 0, 0, ratio * zoom, 0, 0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   return {
     ratio: ratio
@@ -14062,25 +14171,27 @@ function JudgeTextYPosOffset(canvas, font, code)
 
 
   return {
-    top_room: top_room / G_pixelRatio / G_zoom,
-    height: (imageData.height - top_room - bottom_room) / G_pixelRatio / G_zoom,
-    bottom_room: bottom_room / G_pixelRatio / G_zoom,
-    imgheight: imageData.height / G_pixelRatio / G_zoom
+    top_room: top_room / canvas.ratio / canvas.zoom,
+    height: (imageData.height - top_room - bottom_room) / canvas.ratio / canvas.zoom,
+    bottom_room: bottom_room / canvas.ratio / canvas.zoom,
+    imgheight: imageData.height / canvas.ratio / canvas.zoom
   };
 }
 
-function getFontSizeFromHeight(height, fontfamily, code, tol, opt) {
+function getFontSizeFromHeight(height, fontfamily, code, tol, opt, ratio, zoom) {
   // Determine the font size of which height is same as specified value.
   // TODO : Binary search
   var canvas_to_use = opt ? opt.canvas : null;
+  var memkey = ratio + "/" + zoom;
 
-  if (!G_memCanvas) {
-    G_memCanvas = document.createElement("canvas");
-    SetupHiDPICanvas(G_memCanvas, G_mem_Canvas_size[0], G_mem_Canvas_size[1], G_pixelRatio, G_zoom);
-    console.log("Pixel ratio = " + G_pixelRatio);
+  if (!(memkey in G_memCanvasStore)) {
+    var memCanvas = document.createElement("canvas");
+    SetupHiDPICanvas(memCanvas, G_mem_Canvas_size[0], G_mem_Canvas_size[1], ratio, zoom);
+    console.log("Pixel ratio = " + ratio, +" , Zoom = " + zoom);
+    G_memCanvasStore[memkey] = memCanvas;
   }
 
-  if (!canvas_to_use) canvas_to_use = G_memCanvas;
+  if (!canvas_to_use) canvas_to_use = G_memCanvasStore[memkey];
   var maxLoop = 100;
   var curLow = 1;
   var curHigh = 500;
@@ -14249,7 +14360,7 @@ function () {
       if (staff_interval_px in this.intervalToFontSizeMap) fontSize = this.intervalToFontSizeMap[staff_interval_px];else {
         var lineThickNessShift = 0.064; // Line tickness
 
-        fontSize = getFontSizeFromHeight(staff_interval_px * 4 + lineThickNessShift * staff_interval_px, this.fontfamily, String.fromCodePoint(0xE014)); // 5 line is baseline
+        fontSize = getFontSizeFromHeight(staff_interval_px * 4 + lineThickNessShift * staff_interval_px, this.fontfamily, String.fromCodePoint(0xE014), null, null, canvas.ratio, canvas.zoom); // 5 line is baseline
 
         this.intervalToFontSizeMap[staff_interval_px] = fontSize;
       }
@@ -15252,8 +15363,6 @@ function (_Renderer) {
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["MeasureBoundary"]) {
             yprof.ml.detected = yprof.ml.detected || e.times != null && (e.ntimes || e.times != 2);
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Chord"]) {
-            var bases = e.getChordStrBase(0, "flat"); //yprof.ml.detected = yprof.ml.detected || bases[1] != null;
-
             yprof.rs.detected |= e.note_group_list !== null;
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Lyric"]) {
             yprof.ml.detected = true;
@@ -15300,7 +15409,8 @@ function (_Renderer) {
       var _this5 = this;
 
       var transpose = macros.TRANSPOSE;
-      var half_type = macros.HALF_TYPE;
+      var half_type = macros.KEY_TYPE;
+      var key = macros.KEY;
       var total_width = param.paper_width / param.zoom - 2 * param.x_offset;
       var dammy_rs_area_height = 24; // any value is ok
       // Determine the width of each measure
@@ -15343,7 +15453,7 @@ function (_Renderer) {
         meas_fixed_width += param.header_body_margin;
         rberet = _this5.render_body_elements(false, x, elements, param, music_context, yprof, paper, 0, 0
         /*meas_start_x*/
-        , m, 1, transpose, half_type, 0, 0);
+        , m, 1, transpose, half_type, key, 0, 0);
         meas_fixed_width += rberet.fixed_width;
         meas_num_flexible_rooms += rberet.num_flexible_rooms; // Draw footer
 
@@ -15383,18 +15493,17 @@ function (_Renderer) {
     }
   }, {
     key: "render_body_elements",
-    value: function render_body_elements(draw, x, elements, param, music_context, yprof, paper, _5lines_intv, meas_start_x, m, x_global_scale, transpose, half_type, C7_width, y_body_or_rs_base, balken) {
+    value: function render_body_elements(draw, x, elements, param, music_context, yprof, paper, _5lines_intv, meas_start_x, m, x_global_scale, transpose, half_type, key, C7_width, y_body_or_rs_base, balken) {
       var _this6 = this;
 
       var fixed_width = 0;
       var num_flexible_rooms = 0;
       var draw_scale = 1;
-
-      if (draw) {
-        console.log("Scaling : ");
-        console.log(m.renderprop.measure_width);
-        console.log(m.renderprop.meas_fixed_width);
-      }
+      /*if(draw){
+          console.log("Scaling : ");
+          console.log(m.renderprop.measure_width);
+          console.log(m.renderprop.meas_fixed_width);
+      }*/
 
       if (draw && param.scale_if_overlap && m.renderprop.room_per_elem < 0) {
         var body_width = m.renderprop.body_fixed_width + m.renderprop.room_per_elem * m.renderprop.meas_num_flexible_rooms;
@@ -15424,7 +15533,7 @@ function (_Renderer) {
           var cr = null;
 
           if (e0 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Chord"]) {
-            cr = _this6.render_chord_simplified(draw, e0, transpose, half_type, paper, x / draw_scale, yprof.body.y, param, C7_width);
+            cr = _this6.render_chord_simplified(draw, e0, transpose, half_type, key, paper, x / draw_scale, yprof.body.y, param, C7_width);
 
             if (draw && e0.exceptinal_comment !== null) {
               _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / draw_scale, yprof.mu.y + yprof.mu.height, e0.exceptinal_comment.comment, param.base_font_size / 2, "lb");
@@ -15496,7 +15605,7 @@ function (_Renderer) {
         } else {
           element_group.elems.forEach(function (e) {
             if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Chord"]) {
-              var _cr = _this6.render_chord_simplified(draw, e, transpose, half_type, paper, x / draw_scale, yprof.body.y, param, C7_width);
+              var _cr = _this6.render_chord_simplified(draw, e, transpose, half_type, key, paper, x / draw_scale, yprof.body.y, param, C7_width);
 
               if (draw && e.exceptinal_comment !== null) {
                 _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / draw_scale, yprof.mu.y + yprof.mu.height, e.exceptinal_comment.comment, param.base_font_size / 2, "lb");
@@ -15626,7 +15735,8 @@ function (_Renderer) {
 
       var x_global_scale = macros.X_GLOBAL_SCALE;
       var transpose = macros.TRANSPOSE;
-      var half_type = macros.HALF_TYPE;
+      var half_type = macros.KEY_TYPE;
+      var key = macros.KEY;
       var staff = macros.STAFF;
       /* Reference reserved width for empty measures or chord symbol without base names*/
 
@@ -15687,7 +15797,7 @@ function (_Renderer) {
 
         if (m.renderprop && m.renderprop.rg_from_here && m.renderprop.rg_from_here.name != "") {
           var reharsal_group = m.renderprop.rg_from_here;
-          var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasTextWithBox"](paper, meas_base_x, inner_reharsal_mark ? yprof.mu.y : yprof.rm.y, reharsal_group.name, param.reharsal_mark_font_size, 2, _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](param.reharsal_mark_font_size).height);
+          var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasTextWithBox"](paper, meas_base_x, inner_reharsal_mark ? yprof.mu.y : yprof.rm.y, reharsal_group.name, param.reharsal_mark_font_size, 2, _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](param.reharsal_mark_font_size, null, false, paper.ratio, paper.zoom).height);
           if (inner_reharsal_mark) mh_offset += r.width + 2;
         }
 
@@ -15739,7 +15849,7 @@ function (_Renderer) {
             x += e.renderprop.w;
             meas_start_x_actual_boundary = _r4.actual_boundary;
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Time"]) {
-            var chord_str_height = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](param.base_font_size).height;
+            var chord_str_height = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](param.base_font_size, null, false, paper.ratio, paper.zoom).height;
             var row_height = yprof.rs.detected ? param.rs_area_height : param.row_height;
             var cont_height = yprof.rs.detected ? param.rs_area_height : chord_str_height; //var lineThickNessShift = 0.064; // Line tickness
             //let fontSize = graphic.getFontSizeFromHeight(cont_height + lineThickNessShift*cont_height/4, 
@@ -15804,7 +15914,7 @@ function (_Renderer) {
         });
         x += param.header_body_margin; // Draw body
 
-        var rberet = _this7.render_body_elements(true, x, elements, param, music_context, yprof, paper, _5lines_intv, meas_start_x, m, x_global_scale, transpose, half_type, C7_width, y_body_or_rs_base, balken);
+        var rberet = _this7.render_body_elements(true, x, elements, param, music_context, yprof, paper, _5lines_intv, meas_start_x, m, x_global_scale, transpose, half_type, key, C7_width, y_body_or_rs_base, balken);
 
         x = rberet.x; // Draw footer
 
@@ -16185,12 +16295,12 @@ function (_Renderer) {
     }
   }, {
     key: "render_chord_simplified",
-    value: function render_chord_simplified(draw, chord, transpose, half_type, canvas, x, y_body_base, param, C7_width) {
+    value: function render_chord_simplified(draw, chord, transpose, half_type, key, canvas, x, y_body_base, param, C7_width) {
       if (!chord.is_valid_chord) {
         return this.render_chord_as_string_plain(chord, canvas, x, y_body_base, param, draw);
       }
 
-      var ce = this.chord_elem_classify(chord, transpose, half_type);
+      var ce = this.chord_elem_classify(chord, transpose, half_type, key);
       var bases = ce.bases;
       var elems = ce.mid_elem_objs;
       var y = y_body_base;
@@ -16211,7 +16321,7 @@ function (_Renderer) {
       var lower_width = 0;
       var tensions_width = 0;
       var onbass_width = 0;
-      var rootCharHeight = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](B).height; // Position parameters
+      var rootCharHeight = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](B, null, false, canvas.ratio, canvas.zoom).height; // Position parameters
 
       var upper_tension_y_offset = 0; // base line is middle of main chord character
 
@@ -16316,7 +16426,7 @@ function (_Renderer) {
         var _r17 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, "(", B * 0.5, "lb", B * 0.5, !draw);
 
         tensions_width += _r17.width;
-        var h = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](B * 0.5).height;
+        var h = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](B * 0.5, null, false, canvas.ratio, canvas.zoom).height;
 
         _alteredelem.forEach(function (e, index) {
           if (e.type == "b") {
@@ -16741,8 +16851,8 @@ function () {
     }
   }, {
     key: "chord_elem_classify",
-    value: function chord_elem_classify(chord, transpose, half_type) {
-      var bases = chord.getChordStrBase(transpose, half_type);
+    value: function chord_elem_classify(chord, transpose, half_type, key) {
+      var bases = chord.getChordStrBase(transpose, half_type, key);
       var elems = chord.mid_elem_objs; // if bases are null, elems are null, then it is just a duration information
 
       if (bases[0] == null && bases[1] == null && elems === undefined) {

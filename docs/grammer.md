@@ -204,5 +204,35 @@ Variables are specified by the form of "%VariableName=Value".
 
 | Variable Name        | Value Type          | Description  |
 | ------------- |:-------------:| -----|
-| TITLE     | String      | Specify the title of the song. | 
-| ARTIST     | String      | Specify the artist name. | 
+| TITLE     | String      | Title of the song. | 
+| ARTIST     | String      | Artist name. | 
+| KEY        | String      | Key of the song. e.g. C, Gm |
+| TRANSPOSE | String\|Integer | Transposed key (String) or transpose interval by integer in semitone unit. |
+
+### Transpose
+
+Transpose is done by speifying either of followings :
+
+- Specify base key by "%KEY" and transposed key by "%TRANSPOSE".
+- Specify base key by "%KEY" and transpose interval (integer) by "%TRANSPOSE" and prefered key type(flat or sharp) by "%KEY_TYPE".
+
+<!-- fumen:start -->
+%SHOW_HEADER="NO"
+%SHOW_FOOTER="NO"
+%KEY="C"
+%TRANSPOSE="Db"
+
+[A]
+| C | Dm G7 | C |
+<!-- fumen:end -->
+
+<!-- fumen:start -->
+%SHOW_HEADER="NO"
+%SHOW_FOOTER="NO"
+%KEY="C"
+%TRANSPOSE=1
+%KEY_TYPE="#"
+
+[A]
+| C | Dm G7 | C |
+<!-- fumen:end -->

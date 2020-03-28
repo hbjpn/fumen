@@ -16330,13 +16330,19 @@ function (_Renderer) {
       var root = bases[0];
       var onbass = bases[1];
       var chord_offset_on_bass = 0;
-      if (onbass != null && param.on_bass_style == "below") chord_offset_on_bass = param.on_bass_below_y_offset;
-      var coeff1 = 0.5;
+      if (onbass != null && param.on_bass_style == "below") chord_offset_on_bass = param.on_bass_below_y_offset; // Character width scaling, ratio to base font size in pt. Note that 1.0 does not mean the width of base character.
+      // In most case, non-proportional font have differnt width for each cahracter. 
+      // Typically "G" has max width among characters used for chords.
+      // Adjustment based on "G" sometimes lead to too much space for other thinner fonts like "F".
+      // A little bit of compressing the default character width will absorb such a difference. Here *0.9 is used. 
+
+      var char_width_scale = 0.7;
+      var main_char_width = 0.7;
 
       if (root) {
-        _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x, y + param.row_height / 2 + chord_offset_on_bass, root[0], B, "lm", B * coeff1, !draw);
-        upper_width = B * coeff1;
-        lower_width = B * coeff1;
+        _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x, y + param.row_height / 2 + chord_offset_on_bass, root[0], B, "lm", B * char_width_scale, !draw);
+        upper_width = B * main_char_width;
+        lower_width = B * main_char_width;
 
         if (root.length == 2) {
           var acc_height = rootCharHeight / 2.0 + rootCharHeight / 8.0;

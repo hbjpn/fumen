@@ -11,7 +11,7 @@ let MACRO_DEFAULT = {
     "STAFF": "AUTO",
     "TRANSPOSE" : 0,
     "KEY": "C",
-    "HALF_TYPE" : "GUESS",
+    "KEY_TYPE" : "AUTO",
 };
 
 export function shallowcopy(obj) {
@@ -571,7 +571,7 @@ export class Chord {
 
     getTranpsoedNote(transpose, half_type, key, note_base, sharp_flat) {
         // https://music.stackexchange.com/questions/40041/algorithm-for-transposing-chords-between-keys
-        
+
         var min_maj_map = {
             "B#m" : "D#",
             "Cm" : "Eb",
@@ -639,7 +639,7 @@ export class Chord {
             var tgt_value = (base_value + transpose + 12)%12;
 
             var half_to_apply = null;
-            if(half_type.toUpperCase()  == "GUESS")
+            if(half_type.toUpperCase()  == "AUTO")
                 half_to_apply = keyclass[org_maj_key]; // Use the similar key class as original key
             else if(half_type.toUpperCase() == "SHARP")
                 half_to_apply = "#";

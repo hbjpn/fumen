@@ -933,7 +933,7 @@ export class MobileRenderer extends Renderer {
         music_context
     ){
         var transpose = macros.TRANSPOSE;
-        var half_type = macros.HALF_TYPE;
+        var half_type = macros.KEY_TYPE;
         var key = macros.KEY;
 
         var total_width = param.paper_width / param.zoom - 2 * param.x_offset;
@@ -1405,7 +1405,7 @@ export class MobileRenderer extends Renderer {
     ) {
         var x_global_scale = macros.X_GLOBAL_SCALE;
         var transpose = macros.TRANSPOSE;
-        var half_type = macros.HALF_TYPE;
+        var half_type = macros.KEY_TYPE;
         var key = macros.KEY;
         var staff = macros.STAFF;
 

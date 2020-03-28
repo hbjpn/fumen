@@ -2239,8 +2239,13 @@ export class MobileRenderer extends Renderer {
         if(onbass != null && param.on_bass_style == "below")
             chord_offset_on_bass = param.on_bass_below_y_offset;
 
-
-        var coeff1 = 0.5;
+        // Character width scaling, ratio to base font size in pt. Note that 1.0 does not mean the width of base character.
+        // In most case, non-proportional font have differnt width for each cahracter. 
+        // Typically "G" has max width among characters used for chords.
+        // Adjustment based on "G" sometimes lead to too much space for other thinner fonts like "F".
+        // A little bit of compressing the default character width will absorb such a difference. Here *0.9 is used. 
+        var char_width_scale = 0.7;
+        var main_char_width = 0.7; 
 
         if (root) {
             graphic.CanvasText(
@@ -2250,11 +2255,11 @@ export class MobileRenderer extends Renderer {
                 root[0],
                 B,
                 "lm",
-                B * coeff1,
+                B * char_width_scale,
                 !draw
             );
-            upper_width = B * coeff1;
-            lower_width = B * coeff1;
+            upper_width = B * main_char_width;
+            lower_width = B * main_char_width;
             if (root.length == 2) {
                 let acc_height = rootCharHeight/2.0+rootCharHeight/8.0;
                 let acc_width = B * 0.25;

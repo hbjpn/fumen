@@ -660,7 +660,7 @@ export class Chord {
             transpose = ((note_values_2[target_key] - note_values_2[org_maj_key])+12)%12;
         }
 
-        console.log("Orignal key = "+org_maj_key + " Target key = " + target_key);
+        //console.log("Orignal key = "+org_maj_key + " Target key = " + target_key);
 
         var letter_diff = letters.indexOf(target_key[0]) - letters.indexOf(org_maj_key[0]);
 

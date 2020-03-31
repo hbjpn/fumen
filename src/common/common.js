@@ -227,7 +227,27 @@ export class Track {
         this.reharsal_groups = new Array();
         this.macros = deepcopy(MACRO_DEFAULT);
         this.pre_render_info = {};
-	}
+    }
+    
+    // Utility functions open for external
+    getKey() {
+        if(Number.isInteger(this.macros["TRANSPOSE"])){
+            let transposed_key = getTransposedKeyFromOffset(this.macros["KEY"], this.macros["TRANSPOSE"], this.macros["KEY_TYPE"]);
+            return {key:transposed_key, originalKey:this.macros["KEY"]};
+        }else{
+            return {key:this.macros["TRANSPOSE"], originalKey:this.macros["KEY"]};
+        }
+    }
+
+    setVariable(obj){
+        for(let key in obj){
+            this.macros[key] = deepcopy(obj[key]);
+        }
+    }
+
+    getVariable(name){
+        return this.macros[name];
+    }
 }
 
 export class ReharsalGroup {
@@ -498,6 +518,153 @@ function parseChordNotes(str) {
     return note_group_list;
 }
 
+function getTranpsoedNote(transpose, half_type, key, note_base, sharp_flat) {
+    // https://music.stackexchange.com/questions/40041/algorithm-for-transposing-chords-between-keys
+
+    var min_maj_map = {
+        "B#m" : "D#",
+        "Cm" : "Eb",
+        "C#m" : "E",
+        "Dbm" : "Fb",
+        "Dm" : "F",
+        "D#m" : "F#",
+        "Ebm" : "Gb",
+        "Em" : "G",
+        //"Fbm" : "Abb",
+        "E#m" : "G#",
+        "Fm" : "Ab",
+        "F#m" : "A",
+        //"Gbm" : "Bbb",
+        "Gm" : "Bb",
+        "G#m" : "B",
+        "Abm" : "Cb",
+        "Am" : "C",
+        "A#m" : "C#",
+        "Bbm" : "Db",
+        "Bm" : "D",
+        //"Cbm" : "Ebb"
+    };
+
+    var note_values_1 = [
+        ["C",  null, "B#"],
+        [null, "Db", "C#"],
+        ["D",  null, null],
+        [null, "Eb", "D#"],
+        ["E",  "Fb", null],
+        ["F",  null, "E#"],
+        [null, "Gb", "F#"],
+        ["G",  null, null],
+        [null, "Ab", "G#"],
+        ["A",  null, null],
+        [null, "Bb", "A#"],
+        ["B",  "Cb", null]
+    ];
+    var note_values_2 = {
+        "B#":0, "C":0, "C#":1, "Db":1, "D":2, "D#":3, "Eb":3, "E":4, "Fb":4, "E#":5, "F":5, 
+        "F#":6, "Gb":6, "G":7, "G#":8, "Ab":8, "A":9, "A#":10, "Bb":10, "B":11, "Cb":11
+    };
+    var keyclass_maj = {
+        "B#":"#", "C":"b", "C#":"#", "Db":"b", "D":"#", "D#":"#", "Eb":"b", "E":"b", "Fb":"b", "E#":"#", "F":"b", 
+        "F#":"#", "Gb":"b", "G":"#", "G#":"#", "Ab":"b", "A":"#", "A#":"#", "Bb":"b", "B":"#", "Cb":"b"
+    };
+
+    var letters = ["A","B","C","D","E","F","G"];
+
+    /////
+
+    var note = note_base;
+    if (sharp_flat) note += sharp_flat;
+
+    var org_maj_key = key; 
+
+    if(key in min_maj_map)
+        org_maj_key = min_maj_map[key]; // minor is converted to maj key
+
+    var target_maj_key = null; // given from external. Temprory implementation.
+
+    if(Number.isInteger(transpose)){
+
+        var base_value = note_values_2[org_maj_key];
+        var tgt_value = (base_value + transpose + 12)%12;
+
+        var half_to_apply = null;
+        if(half_type.toUpperCase()  == "AUTO")
+            half_to_apply = keyclass_maj[org_maj_key]; // Use the similar key class as original key
+        else if(half_type.toUpperCase() == "SHARP")
+            half_to_apply = "#";
+        else if(half_type.toUpperCase() == "FLAT")
+            half_to_apply = "b";
+        else
+            half_to_apply = half_type; // "#" or "b" directly is OK.
+
+        var tgt_key_cand = note_values_1[tgt_value];
+        if(tgt_key_cand[0]) target_maj_key = tgt_key_cand[0];
+        else target_maj_key = tgt_key_cand[ half_to_apply == "b" ? 1 : 2];
+
+    }else {
+        // Key is specified directly
+        target_maj_key = transpose;
+        if(target_maj_key in min_maj_map)
+            target_maj_key = min_maj_map[target_maj_key]; // minor is converted to maj key
+        transpose = ((note_values_2[target_maj_key] - note_values_2[org_maj_key])+12)%12;
+    }
+
+    //console.log("Orignal key = "+org_maj_key + " Target key = " + target_key);
+
+    var letter_diff = letters.indexOf(target_maj_key[0]) - letters.indexOf(org_maj_key[0]);
+
+    var letter_index = letters.indexOf(note_base);
+    var new_letter_index = (letter_index + letter_diff + 7)%7;
+    var newletter = letters[new_letter_index];
+
+    var nvalue = note_values_2[note];
+    var new_nvalue = (nvalue + transpose + 12) % 12;
+
+    var acc="";
+    // eslint-disable-next-line no-constant-condition
+    while(true){
+        // Take circular diff
+        var offset = 6 - note_values_2[newletter]; 
+        var fs = (new_nvalue + offset + 12)%12 - 6; // >0 means #, <0 means flat, 0 means no accidental
+
+        if(fs == 0){ acc = ""; break; }
+        else if(fs == 1){ acc = "#"; break; }
+        else if(fs == -1){ acc = "b"; break; }
+        else if(fs >= 2) { // ## can happen.
+            // 2 can happen e.g. E# in key=C = III#. Key=D goes to F##. Convert it to G.
+            // 3 can happen e.g. G# in key=Gb = I##. Key=C# goes to C###. Convert it to D#.
+            // Next letter
+            new_letter_index = (new_letter_index+1)%7;
+            newletter = letters[new_letter_index];
+        }else if(fs <= -2){
+            // Previous letter
+            // -2 can happen e.g. Fb in key=C = IVb. Key=Eb goes to Abb. Convert it to G.
+            // -3 can happen e.g. Gb in key=B = VIbb = G#bb. Key=Db goes to Bbbb. Convert it to Ab.
+            new_letter_index = (new_letter_index-1+7)%7;
+            newletter = letters[new_letter_index];                
+        }else{
+            throw "Unexpected situation on transpose";
+        }
+    }
+
+    return newletter+acc;
+    
+}
+
+function getTransposedKeyFromOffset(key, transpose, half_type){
+
+    let is_minor = key[key.length-1] == "m";
+    let note = (is_minor ? key.substr(0, key.length-1) : key);
+    let note_base = note[0];
+    let acc = note.length==2 ? key[1] : null;
+
+    let transposed_key = getTranpsoedNote(transpose, half_type, key, note_base, acc);
+
+    if(is_minor) transposed_key += "m";
+
+    return transposed_key;
+}
+
 export class Chord {
     constructor(chord_str) {
         this.chord_str = chord_str;
@@ -570,136 +737,7 @@ export class Chord {
     }
 
     getTranpsoedNote(transpose, half_type, key, note_base, sharp_flat) {
-        // https://music.stackexchange.com/questions/40041/algorithm-for-transposing-chords-between-keys
-
-        var min_maj_map = {
-            "B#m" : "D#",
-            "Cm" : "Eb",
-            "C#m" : "E",
-            "Dbm" : "Fb",
-            "Dm" : "F",
-            "D#m" : "F#",
-            "Ebm" : "Gb",
-            "Em" : "G",
-            //"Fbm" : "Abb",
-            "E#m" : "G#",
-            "Fm" : "Ab",
-            "F#m" : "A",
-            //"Gbm" : "Bbb",
-            "Gm" : "Bb",
-            "G#m" : "B",
-            "Abm" : "Cb",
-            "Am" : "C",
-            "A#m" : "C#",
-            "Bbm" : "Db",
-            "Bm" : "D",
-            //"Cbm" : "Ebb"
-        };
-
-        var note_values_1 = [
-            ["C",  null, "B#"],
-            [null, "Db", "C#"],
-            ["D",  null, null],
-            [null, "Eb", "D#"],
-            ["E",  "Fb", null],
-            ["F",  null, "E#"],
-            [null, "Gb", "F#"],
-            ["G",  null, null],
-            [null, "Ab", "G#"],
-            ["A",  null, null],
-            [null, "Bb", "A#"],
-            ["B",  "Cb", null]
-        ];
-        var note_values_2 = {
-            "B#":0, "C":0, "C#":1, "Db":1, "D":2, "D#":3, "Eb":3, "E":4, "Fb":4, "E#":5, "F":5, 
-            "F#":6, "Gb":6, "G":7, "G#":8, "Ab":8, "A":9, "A#":10, "Bb":10, "B":11, "Cb":11
-        };
-        var keyclass = {
-            "B#":"#", "C":"b", "C#":"#", "Db":"b", "D":"#", "D#":"#", "Eb":"b", "E":"b", "Fb":"b", "E#":"#", "F":"b", 
-            "F#":"#", "Gb":"b", "G":"#", "G#":"#", "Ab":"b", "A":"#", "A#":"#", "Bb":"b", "B":"#", "Cb":"b"
-        };
-
-        var letters = ["A","B","C","D","E","F","G"];
-
-        /////
-
-        var note = note_base;
-        if (sharp_flat !== undefined) note += sharp_flat;
-
-        var org_maj_key = key; 
-
-        if(key in min_maj_map)
-            org_maj_key = min_maj_map[key]; // minor is converted to maj key
-
-        var target_key = null; // given from external. Temprory implementation.
-
-        if(Number.isInteger(transpose)){
-
-            var base_value = note_values_2[org_maj_key];
-            var tgt_value = (base_value + transpose + 12)%12;
-
-            var half_to_apply = null;
-            if(half_type.toUpperCase()  == "AUTO")
-                half_to_apply = keyclass[org_maj_key]; // Use the similar key class as original key
-            else if(half_type.toUpperCase() == "SHARP")
-                half_to_apply = "#";
-            else if(half_type.toUpperCase() == "FLAT")
-                half_to_apply = "b";
-            else
-                half_to_apply = half_type; // "#" or "b" directly is OK.
-
-            var tgt_key_cand = note_values_1[tgt_value];
-            if(tgt_key_cand[0]) target_key = tgt_key_cand[0];
-            else target_key = tgt_key_cand[ half_to_apply == "b" ? 1 : 2];
-
-        }else {
-            // Key is specified directly
-            target_key = transpose;
-            if(target_key in min_maj_map)
-                target_key = min_maj_map[target_key]; // minor is converted to maj key
-            transpose = ((note_values_2[target_key] - note_values_2[org_maj_key])+12)%12;
-        }
-
-        //console.log("Orignal key = "+org_maj_key + " Target key = " + target_key);
-
-        var letter_diff = letters.indexOf(target_key[0]) - letters.indexOf(org_maj_key[0]);
-
-        var letter_index = letters.indexOf(note_base);
-        var new_letter_index = (letter_index + letter_diff + 7)%7;
-        var newletter = letters[new_letter_index];
-
-        var nvalue = note_values_2[note];
-        var new_nvalue = (nvalue + transpose + 12) % 12;
-
-        var acc="";
-        // eslint-disable-next-line no-constant-condition
-        while(true){
-            // Take circular diff
-            var offset = 6 - note_values_2[newletter]; 
-            var fs = (new_nvalue + offset + 12)%12 - 6; // >0 means #, <0 means flat, 0 means no accidental
-
-            if(fs == 0){ acc = ""; break; }
-            else if(fs == 1){ acc = "#"; break; }
-            else if(fs == -1){ acc = "b"; break; }
-            else if(fs >= 2) { // ## can happen.
-                // 2 can happen e.g. E# in key=C = III#. Key=D goes to F##. Convert it to G.
-                // 3 can happen e.g. G# in key=Gb = I##. Key=C# goes to C###. Convert it to D#.
-                // Next letter
-                new_letter_index = (new_letter_index+1)%7;
-                newletter = letters[new_letter_index];
-            }else if(fs <= -2){
-                // Previous letter
-                // -2 can happen e.g. Fb in key=C = IVb. Key=Eb goes to Abb. Convert it to G.
-                // -3 can happen e.g. Gb in key=B = VIbb = G#bb. Key=Db goes to Bbbb. Convert it to Ab.
-                new_letter_index = (new_letter_index-1+7)%7;
-                newletter = letters[new_letter_index];                
-            }else{
-                throw "Unexpected situation on transpose";
-            }
-        }
-
-        return newletter+acc;
-        
+        return getTranpsoedNote(transpose, half_type, key, note_base, sharp_flat);
     }
 
     getChordStrBase(tranpose, half_type, key) {

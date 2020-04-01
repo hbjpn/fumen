@@ -48,7 +48,8 @@ var SR_RENDER_PARAM = {
     balken_width: 3,
     note_bar_length: 24/4*3.5, // 3.5 times of interval is the conventional length
     note_flag_interval: 5,
-    optimize_type: 3, // 0 : Constant room for each flexible element. 1: Not defined, 2: Evenly division of measures(force), 3: Evenly division of measures as much as possible
+    optimize_type: 3, // 0 : Constant room for each flexible element. 1: Uniform ratio (propotional to each fixed width of flexible element), 2: Evenly division of measures(force), 3: Evenly division of measures as much as possible
+    fallback_type: 0, // In case of lack of spacing, fall back to which optimize_type
     vertical_align: 1, // 1: Enable, 0: Disable
     vertical_align_intensity: 0.9, // Vertical align intensity 0:No align, 1:Always align
     min_room: 10, // Minimum room for flexile elements
@@ -191,13 +192,35 @@ export class MobileRenderer extends Renderer {
                     x_width_info[mi].meas_fixed_width - 
                     min_room*x_width_info[mi].meas_num_flexible_rooms);
             }
+            let room_per_elem_uniform_ratio = (total_width - fixed_width_others) / fixed_width_flexbile_only;
 
-            if(room_per_elem_constant < 0 || param.optimize_type == 0){
+            if( (room_per_elem_constant < 0 && param.fallback_type==0) || param.optimize_type == 0){
                 row_elements_list.forEach((e,mi)=>{
                     let room_per_elem = room_per_elem_constant+min_room;
                     e.renderprop.room_per_elem =
                         new Array(x_width_info[mi].meas_num_flexible_rooms).fill(room_per_elem);
                     e.renderprop.total_room = room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
+                    x_width_info[mi].measure_width = e.renderprop.total_room + x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
+                    e.renderprop.measure_width = x_width_info[mi].measure_width;
+                    e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
+                    e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
+                    e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
+                });
+                row++;
+            }else if( (room_per_elem_constant < 0 && param.fallback_type==1) || param.optimize_type == 1){
+                row_elements_list.forEach((e,mi)=>{
+                    let fixed_width_flexbile_only_details = common.deepcopy(x_width_info[mi]["body_fixed_width_details"]);
+                    for(let ii=0; ii < fixed_width_flexbile_only_details.length; ++ii){
+                        fixed_width_flexbile_only_details[ii] += min_room;
+                    }
+
+                    e.renderprop.room_per_elem = new Array(x_width_info[mi].meas_num_flexible_rooms);
+                    e.renderprop.total_room = 0; //room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
+                    for(let ii=0; ii<e.renderprop.room_per_elem.length; ++ii){
+                        e.renderprop.room_per_elem[ii] = 
+                            (room_per_elem_uniform_ratio-1) * fixed_width_flexbile_only_details[ii] + min_room;
+                        e.renderprop.total_room += e.renderprop.room_per_elem[ii];
+                    }
                     x_width_info[mi].measure_width = e.renderprop.total_room + x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
                     e.renderprop.measure_width = x_width_info[mi].measure_width;
                     e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
@@ -1029,6 +1052,7 @@ export class MobileRenderer extends Renderer {
             x_width_info.push({
                 meas_fixed_width:meas_fixed_width,
                 body_fixed_width: rberet.fixed_width,
+                body_fixed_width_details: rberet.fixed_width_details,
                 meas_num_flexible_rooms:meas_num_flexible_rooms});
 
         }
@@ -1052,6 +1076,7 @@ export class MobileRenderer extends Renderer {
         balken
     ){
         let fixed_width = 0;
+        let fixed_width_details = []; // show be same as num_flexible_rooms
         let num_flexible_rooms = 0;
 
         let draw_scale = 1;
@@ -1078,6 +1103,7 @@ export class MobileRenderer extends Renderer {
                 x += (1 * param.base_font_size + m.renderprop.total_room);
             }else{
                 fixed_width += (1 * param.base_font_size);
+                fixed_width_details.push(1 * param.base_font_size);
                 num_flexible_rooms++;
             }
         }
@@ -1195,6 +1221,7 @@ export class MobileRenderer extends Renderer {
                 }else{
                     let rs_area_bounding_box = new common.BoundingBox();
                     // Only try to esimate using non-flag-balken drawer
+                    let tmp_fixed_width_details = [];
                     element_group.elems.forEach(e=>{
                         let balken_element = this.generate_balken_element(
                             e, x, yprof.rs.height, music_context);
@@ -1203,12 +1230,14 @@ export class MobileRenderer extends Renderer {
                         e.renderprop.balken_element = balken_element;
                         rs_area_bounding_box.add_rect(r.bounding_box);
                         x += r.bounding_box.w;
+                        tmp_fixed_width_details.push(r.bounding_box.w);
                     });
                     let rs_area_width = rs_area_bounding_box.get().w;
                     element_group.renderprop.w = Math.max(rs_area_width, cr.width);
                     element_group.renderprop.rs_area_width = rs_area_width;
                     element_group.renderprop.based_on_rs_elem = (rs_area_width > cr.width);
                     fixed_width += element_group.renderprop.w;
+                    fixed_width_details.concat(rs_area_width > cr.width ? tmp_fixed_width_details : cr.width );
                     num_flexible_rooms += (element_group.renderprop.based_on_rs_elem ? element_group.elems.length : 1);
                 }
 
@@ -1258,6 +1287,7 @@ export class MobileRenderer extends Renderer {
                         else{
                             e.renderprop.w = cr.width;
                             fixed_width += e.renderprop.w;
+                            fixed_width_details.push(e.renderprop.w);
                             num_flexible_rooms++;
                         }
 
@@ -1280,6 +1310,7 @@ export class MobileRenderer extends Renderer {
                         else{
                             e.renderprop.w = cr.bounding_box.w;
                             fixed_width += e.renderprop.w;
+                            fixed_width_details.push(e.renderprop.w);
                             num_flexible_rooms++;
                         }
                     } else if (e instanceof common.Simile) {
@@ -1301,6 +1332,7 @@ export class MobileRenderer extends Renderer {
                         else{
                             e.renderprop.w = cr.width;
                             fixed_width += e.renderprop.w;
+                            fixed_width_details.push(e.renderprop.w);
                             num_flexible_rooms++;
                         }
                     } else if (e instanceof common.Space) {
@@ -1313,6 +1345,7 @@ export class MobileRenderer extends Renderer {
                                 param.base_font_size, "lt", 0.5*param.base_font_size, true, null); // width parameter needs to be aligned with chord rendering
                             e.renderprop.w = e.length * r.width;
                             fixed_width += e.renderprop.w;
+                            fixed_width_details.push(e.renderprop.w);
                             num_flexible_rooms++;
                         }
                     }
@@ -1326,7 +1359,7 @@ export class MobileRenderer extends Renderer {
             paper.getContext("2d").scale(1/draw_scale, 1);
         }
 
-        return {x:x, fixed_width:fixed_width, num_flexible_rooms:num_flexible_rooms};
+        return {x:x, fixed_width:fixed_width, num_flexible_rooms:num_flexible_rooms, fixed_width_details:fixed_width_details};
     }
     
     grouping_body_elemnts_enh(body_elements){

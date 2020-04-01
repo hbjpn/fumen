@@ -161,6 +161,8 @@ export class MobileRenderer extends Renderer {
             
             let num_flexible_rooms = field_sum(x_width_info,"meas_num_flexible_rooms");
             let fixed_width = field_sum(x_width_info,"meas_fixed_width") + min_room * num_flexible_rooms;
+            let fixed_width_flexbile_only = field_sum(x_width_info,"body_fixed_width") + min_room * num_flexible_rooms;
+            let fixed_width_others = fixed_width - fixed_width_flexbile_only;
             let num_meas = row_elements_list.length;
 
             let num_meas_to_consider = num_meas;  // for type #2 and #3
@@ -177,13 +179,7 @@ export class MobileRenderer extends Renderer {
                 reduced_meas_valid = (reharsal_x_width_info[rowdash][0].length > num_meas);
             
                 if(reduced_meas_valid){
-                    //let dammy_add_num = reharsal_x_width_info[row-1][0].length - num_meas;
                     num_meas_to_consider = reharsal_x_width_info[rowdash][0].length;
-                    /*for(let di=0; di < dammy_add_num; ++di){
-                        let dammy_measure = new common.Measure();
-                    row_elements_list.splice(0, 0, dammy_measure);
-                    x_width_info.splice(0, 0, {"meas_fixed_width":0, "meas_num_flexible_rooms":0});
-                    }*/
                 }
             }
 
@@ -198,9 +194,11 @@ export class MobileRenderer extends Renderer {
 
             if(room_per_elem_constant < 0 || param.optimize_type == 0){
                 row_elements_list.forEach((e,mi)=>{
-                    e.renderprop.room_per_elem=room_per_elem_constant+min_room;
-                    x_width_info[mi].measure_width = e.renderprop.room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
-                    x_width_info[mi].measure_width += x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
+                    let room_per_elem = room_per_elem_constant+min_room;
+                    e.renderprop.room_per_elem =
+                        new Array(x_width_info[mi].meas_num_flexible_rooms).fill(room_per_elem);
+                    e.renderprop.total_room = room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
+                    x_width_info[mi].measure_width = e.renderprop.total_room + x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
                     e.renderprop.measure_width = x_width_info[mi].measure_width;
                     e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
                     e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
@@ -210,12 +208,11 @@ export class MobileRenderer extends Renderer {
             }else if(param.optimize_type == 2){
                 // Equal division
                 row_elements_list.forEach((e,mi)=>{
-                    e.renderprop.room_per_elem = 
-                        room_per_meas_even_meas[mi] / x_width_info[mi].meas_num_flexible_rooms +
+                    let room_per_elem = room_per_meas_even_meas[mi] / x_width_info[mi].meas_num_flexible_rooms +
                         min_room;
-                    
-                    x_width_info[mi].measure_width = e.renderprop.room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
-                    x_width_info[mi].measure_width += x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
+                    e.renderprop.room_per_elem = new Array(x_width_info[mi].meas_num_flexible_rooms).fill(room_per_elem);
+                    e.renderprop.total_room = room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
+                    x_width_info[mi].measure_width = e.renderprop.total_room + x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
                     e.renderprop.measure_width = x_width_info[mi].measure_width;
                     e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
                     e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
@@ -243,12 +240,11 @@ export class MobileRenderer extends Renderer {
                 row_elements_list.forEach((e,mi)=>{
                     let R0 = room_per_elem_constant * x_width_info[mi].meas_num_flexible_rooms;
                     let R2 = room_per_meas_even_meas[mi];
-                    e.renderprop.room_per_elem = 
-                        ( alpha * R0 + (1 - alpha) * R2 ) / x_width_info[mi].meas_num_flexible_rooms +
+                    let room_per_elem = ( alpha * R0 + (1 - alpha) * R2 ) / x_width_info[mi].meas_num_flexible_rooms +
                         min_room;
-                    
-                    x_width_info[mi].measure_width = e.renderprop.room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
-                    x_width_info[mi].measure_width += x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
+                    e.renderprop.room_per_elem = new Array(x_width_info[mi].meas_num_flexible_rooms).fill(room_per_elem);
+                    e.renderprop.total_room = room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
+                    x_width_info[mi].measure_width = e.renderprop.total_room + x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
                     e.renderprop.measure_width = x_width_info[mi].measure_width;
                     e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
                     e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
@@ -365,15 +361,6 @@ export class MobileRenderer extends Renderer {
                                     all_meets_thread = false;
                                     break;
                                 }
-                                /*
-                                let dammy_room_per_elem = (dammy_max_measure_widths[mi] 
-                                    - same_nmeas_row_group[rowdash2][1][mi_ref].meas_fixed_width)/
-                                    same_nmeas_row_group[rowdash2][1][mi_ref].meas_num_flexible_rooms;
-
-                                let m = same_nmeas_row_group[rowdash2][0][mi_ref];
-
-                                m.renderprop.room_per_elem;
-                                */
                             }
                             if(all_meets_thread == false)
                                 break;
@@ -405,8 +392,11 @@ export class MobileRenderer extends Renderer {
                         if(mi_ref == null) continue;
                         let m = row_elements_list[mi_ref];
                         // No need to separtely consider min_room here. Just simply distribute rooms for each elements
-                        m.renderprop.room_per_elem = (max_measure_widths[mi] - x_width_info[mi_ref].meas_fixed_width) /
+                        let room_per_elem = (max_measure_widths[mi] - x_width_info[mi_ref].meas_fixed_width) /
                             x_width_info[mi_ref].meas_num_flexible_rooms; 
+                        // TODO : To cater for the case of differnt room per elem inside the measure
+                        m.renderprop.room_per_elem = new Array(x_width_info[mi_ref].meas_num_flexible_rooms).fill(room_per_elem);
+                        m.renderprop.total_room = (max_measure_widths[mi] - x_width_info[mi_ref].meas_fixed_width);
                         m.renderprop.measure_width = max_measure_widths[mi];
                         m.renderprop.meas_fixed_width = x_width_info[mi_ref].meas_fixed_width; // Actually this is already set
                         m.renderprop.body_fixed_width = x_width_info[mi_ref].body_fixed_width;
@@ -1072,9 +1062,8 @@ export class MobileRenderer extends Renderer {
             console.log(m.renderprop.meas_fixed_width);
         }*/
 
-        if(draw && param.scale_if_overlap && m.renderprop.room_per_elem < 0){
-            let body_width = m.renderprop.body_fixed_width
-                + m.renderprop.room_per_elem * m.renderprop.meas_num_flexible_rooms;
+        if(draw && param.scale_if_overlap && m.renderprop.total_room < 0){
+            let body_width = m.renderprop.body_fixed_width + m.renderprop.total_room;
             draw_scale = body_width / m.renderprop.body_fixed_width;
             console.log("draw_scale = " + draw_scale);
             // and then for this case room_per_elem is 0 and scale fixed elemetns while keeping
@@ -1086,12 +1075,14 @@ export class MobileRenderer extends Renderer {
             if(draw && draw_scale < 1){
                 x += (1 * param.base_font_size * draw_scale + 0);
             }else if(draw){
-                x += (1 * param.base_font_size + m.renderprop.room_per_elem);
+                x += (1 * param.base_font_size + m.renderprop.total_room);
             }else{
                 fixed_width += (1 * param.base_font_size);
                 num_flexible_rooms++;
             }
         }
+
+        let this_group_start_index = 0; // used only for draw phase. Used for index room_per_elem.
 
         let body_grouping_info = m.renderprop.body_grouping_info;
 
@@ -1151,15 +1142,22 @@ export class MobileRenderer extends Renderer {
                     let element_group_width = 0;
                     if(element_group.renderprop.based_on_rs_elem){
                         // In case RS area elements has wider fixed width(in total) than that of first element
-                        room_for_rs_per_elem = m.renderprop.room_per_elem;
-                        element_group_width = element_group.renderprop.w + 
-                            m.renderprop.room_per_elem * element_group.elems.length;
+                        // total room for rs by sum of rooms in this element group. total rooms cannnot be used as it is total in a measure
+                        let room_for_rs = 0;
+                        for(let ei=0; ei<element_group.elems.length; ++ei)
+                            room_for_rs += m.renderprop.room_per_elem[this_group_start_index+ei];
+                        room_for_rs_per_elem = room_for_rs / element_group.elems.length; // TODO : Improve non constant div
+                        element_group_width = element_group.renderprop.w + room_for_rs;
+
+                        this_group_start_index += element_group.elems.length;
                     }else{
                         // In case the first element has wider fixed width than RS area elements
-                        let room_for_rs = (element_group.renderprop.w + m.renderprop.room_per_elem) 
+                        let room_for_rs = (element_group.renderprop.w + m.renderprop.room_per_elem[this_group_start_index]) 
                             - element_group.renderprop.rs_area_width; 
                         room_for_rs_per_elem = room_for_rs / element_group.elems.length;
-                        element_group_width = element_group.renderprop.w + m.renderprop.room_per_elem;
+                        element_group_width = element_group.renderprop.w + m.renderprop.room_per_elem[this_group_start_index];
+
+                        this_group_start_index += 1;
                     }
 
                     let g = this.render_rs_area(
@@ -1215,7 +1213,7 @@ export class MobileRenderer extends Renderer {
                 }
 
             } else{
-                element_group.elems.forEach(e=>{
+                element_group.elems.forEach((e,ei)=>{
                     if (e instanceof common.Chord) {
                         let cr = this.render_chord_simplified(
                             draw,
@@ -1256,7 +1254,7 @@ export class MobileRenderer extends Renderer {
                         if(draw && draw_scale<1){
                             x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
                         }else if(draw)
-                            x += ( e.renderprop.w + m.renderprop.room_per_elem);
+                            x += ( e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index+ei]);
                         else{
                             e.renderprop.w = cr.width;
                             fixed_width += e.renderprop.w;
@@ -1278,7 +1276,7 @@ export class MobileRenderer extends Renderer {
                         if(draw && draw_scale<1){
                             x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
                         }else if(draw)
-                            x += (e.renderprop.w +m.renderprop.room_per_elem); 
+                            x += (e.renderprop.w +m.renderprop.room_per_elem[this_group_start_index+ei]); 
                         else{
                             e.renderprop.w = cr.bounding_box.w;
                             fixed_width += e.renderprop.w;
@@ -1299,7 +1297,7 @@ export class MobileRenderer extends Renderer {
                         if(draw && draw_scale<1){
                             x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
                         }else if(draw)
-                            x += (e.renderprop.w + m.renderprop.room_per_elem); 
+                            x += (e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index+ei]); 
                         else{
                             e.renderprop.w = cr.width;
                             fixed_width += e.renderprop.w;
@@ -1309,7 +1307,7 @@ export class MobileRenderer extends Renderer {
                         if(draw && draw_scale<1){
                             x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
                         }else if(draw)
-                            x += (e.renderprop.w + m.renderprop.room_per_elem); 
+                            x += (e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index+ei]); 
                         else{
                             let r = graphic.CanvasText(paper, 0, 0, "M", 
                                 param.base_font_size, "lt", 0.5*param.base_font_size, true, null); // width parameter needs to be aligned with chord rendering
@@ -1319,6 +1317,8 @@ export class MobileRenderer extends Renderer {
                         }
                     }
                 });
+
+                if(draw) this_group_start_index += element_group.elems.length; // This count should be same as num_flexible_rooms;
             }
         });
 

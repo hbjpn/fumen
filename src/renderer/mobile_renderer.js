@@ -140,6 +140,215 @@ export class MobileRenderer extends Renderer {
         });
     }
 
+    field_sum(arr,field){
+        return arr.reduce( (acc,e)=>{ let obj={}; obj[field]=acc[field]+e[field]; return obj;} )[field];
+    }
+
+    optimize_type0(row_elements_list, min_room, x_width_info, total_width){
+
+        let num_flexible_rooms = this.field_sum(x_width_info,"meas_num_flexible_rooms");
+        let fixed_width = this.field_sum(x_width_info,"meas_fixed_width") + min_room * num_flexible_rooms;
+            
+        let room_per_elem_constant = (total_width - fixed_width) / num_flexible_rooms; // Constant room for all room
+            
+        row_elements_list.forEach((e,mi)=>{
+            let room_per_elem = room_per_elem_constant+min_room;
+            e.renderprop.room_per_elem =
+                new Array(x_width_info[mi].meas_num_flexible_rooms).fill(room_per_elem);
+            e.renderprop.total_room = room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
+            x_width_info[mi].measure_width = e.renderprop.total_room + x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
+            e.renderprop.measure_width = x_width_info[mi].measure_width;
+            e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
+            e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
+            e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
+        });
+    }
+
+    room_for_equal_ratio_divison(min_room, x_width_info, total_width, 
+        num_meas, num_meas_to_consider){
+        
+        let num_flexible_rooms = this.field_sum(x_width_info,"meas_num_flexible_rooms");
+        let fixed_width = this.field_sum(x_width_info,"meas_fixed_width") + min_room * num_flexible_rooms;
+        let fixed_width_flexbile_only = this.field_sum(x_width_info,"body_fixed_width") + min_room * num_flexible_rooms;
+        let fixed_width_others = fixed_width - fixed_width_flexbile_only;
+
+        let room_per_elem_even_ratio_meas = [];
+        let room_per_meas_even_ratio_meas = []; // room per measure for each meas in case even division of width for each measure
+        // Used for optimize type = 1 
+        let room_per_elem_uniform_ratio = (total_width - fixed_width_others) / fixed_width_flexbile_only;
+        console.log("S for type1 = " + room_per_elem_uniform_ratio);
+        
+        for(let mi=0; mi < num_meas; ++mi){
+            let fixed_width_flexbile_only_details = common.deepcopy(x_width_info[mi]["body_fixed_width_details"]);
+            for(let ii=0; ii < fixed_width_flexbile_only_details.length; ++ii){
+                fixed_width_flexbile_only_details[ii] += min_room;
+            }
+
+            let room_per_elem = new Array(x_width_info[mi].meas_num_flexible_rooms);
+            let room_per_meas = 0;
+            for(let ii=0; ii< x_width_info[mi].meas_num_flexible_rooms; ++ii){
+                room_per_elem[ii] = 
+                    (room_per_elem_uniform_ratio-1) * fixed_width_flexbile_only_details[ii] + min_room;
+                room_per_meas += room_per_elem[ii];
+            }
+            room_per_elem_even_ratio_meas.push(room_per_elem);
+            room_per_meas_even_ratio_meas.push(room_per_meas);
+        }
+
+        return {
+            "S": room_per_elem_uniform_ratio,
+            "room_per_elem":room_per_elem_even_ratio_meas, 
+            "room_per_meas":room_per_meas_even_ratio_meas};
+    }
+
+    optimize_type1(row_elements_list, min_room, x_width_info, total_width,
+        num_meas, num_meas_to_consider, reduced_meas_valid){
+        
+        let room_equal_ratio = this.room_for_equal_ratio_divison(min_room, x_width_info, total_width, 
+            num_meas, num_meas_to_consider);
+        
+        row_elements_list.forEach((e,mi)=>{
+            e.renderprop.room_per_elem = room_equal_ratio.room_per_elem[mi];
+            e.renderprop.total_room = room_equal_ratio.room_per_meas[mi]; //room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
+            x_width_info[mi].measure_width = e.renderprop.total_room + x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
+            e.renderprop.measure_width = x_width_info[mi].measure_width;
+            e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
+            e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
+            e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
+        });
+    }
+
+    room_per_meas_for_equal_divison(x_width_info, total_width, 
+        min_room, num_meas, num_meas_to_consider){
+        let room_per_meas_even_meas = []; // room per measure for each meas in case even division of width for each measure
+        for(let mi=0; mi < num_meas; ++mi){
+            room_per_meas_even_meas.push(
+                total_width/num_meas_to_consider - 
+                x_width_info[mi].meas_fixed_width -
+                min_room * x_width_info[mi].meas_num_flexible_rooms);
+        }
+        return room_per_meas_even_meas;
+    }
+
+    optimize_type2(row_elements_list, x_width_info, total_width, 
+        min_room, num_meas, num_meas_to_consider, reduced_meas_valid){
+
+        // Equal division
+        let room_per_meas_even_meas = this.room_per_meas_for_equal_divison(
+            x_width_info, total_width,
+            min_room, num_meas, num_meas_to_consider);
+
+        row_elements_list.forEach((e,mi)=>{
+            let room_per_elem = room_per_meas_even_meas[mi] / x_width_info[mi].meas_num_flexible_rooms + min_room;
+            e.renderprop.room_per_elem = new Array(x_width_info[mi].meas_num_flexible_rooms).fill(room_per_elem);
+            e.renderprop.total_room = room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
+            x_width_info[mi].measure_width = e.renderprop.total_room + x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
+            e.renderprop.measure_width = x_width_info[mi].measure_width;
+            e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
+            e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
+            e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
+        });
+            
+        if(reduced_meas_valid && row_elements_list[0].align == "right")
+            row_elements_list[0].renderprop.left_margin = total_width / 
+                num_meas_to_consider * (num_meas_to_consider - num_meas);
+    }
+
+    optimize_type3(row_elements_list, min_room, x_width_info, total_width, 
+        num_meas, num_meas_to_consider, reduced_meas_valid){
+        // https://docs.google.com/document/d/1oPmUvAF6-KTsQrEovYJgMZSDqlztp4pL-XVs8uee7A4/edit?usp=sharing
+        // Here alpha=1 case is filtered at the first IF statement, then we only consider the case
+        // where room when optimize_type = 0 is positive.
+        let num_flexible_rooms = this.field_sum(x_width_info,"meas_num_flexible_rooms");
+        let fixed_width = this.field_sum(x_width_info,"meas_fixed_width") + min_room * num_flexible_rooms;
+        
+        let room_per_meas_even_meas = this.room_per_meas_for_equal_divison(
+            x_width_info, total_width,
+            num_meas, num_meas_to_consider);
+        
+        let room_per_elem_constant = (total_width - fixed_width) / num_flexible_rooms; // Constant room for all room
+        
+        let alpha = 0.0;
+        for(let mi=0; mi < num_meas; ++mi){
+            if(room_per_meas_even_meas[mi] < 0){
+                let R0 = room_per_elem_constant * x_width_info[mi].meas_num_flexible_rooms;
+                let R2 = room_per_meas_even_meas[mi];
+                let alpha_dash = R2/(R2 - R0); // should be a positive value less than 1
+                alpha = Math.max(alpha, alpha_dash);
+            }
+        }
+        let row_total_width = 0;
+        row_elements_list.forEach((e,mi)=>{
+            let R0 = room_per_elem_constant * x_width_info[mi].meas_num_flexible_rooms;
+            let R2 = room_per_meas_even_meas[mi];
+            let room_per_elem = ( alpha * R0 + (1 - alpha) * R2 ) / x_width_info[mi].meas_num_flexible_rooms +
+                min_room;
+            e.renderprop.room_per_elem = new Array(x_width_info[mi].meas_num_flexible_rooms).fill(room_per_elem);
+            e.renderprop.total_room = room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
+            x_width_info[mi].measure_width = e.renderprop.total_room + x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
+            e.renderprop.measure_width = x_width_info[mi].measure_width;
+            e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
+            e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
+            e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
+
+            row_total_width += x_width_info[mi].measure_width; 
+        });
+        if(reduced_meas_valid && row_elements_list[0].align == "right")
+            row_elements_list[0].renderprop.left_margin = total_width - row_total_width;
+        console.log("alpha = " + alpha);
+    }
+
+    optimize_type4(row_elements_list, min_room, x_width_info, total_width, 
+        num_meas, num_meas_to_consider, reduced_meas_valid){
+        // https://docs.google.com/document/d/1oPmUvAF6-KTsQrEovYJgMZSDqlztp4pL-XVs8uee7A4/edit?usp=sharing
+        // Here alpha=1 case is filtered at the first IF statement, then we only consider the case
+        // where room when optimize_type = 0 is positive.
+        let num_flexible_rooms = this.field_sum(x_width_info,"meas_num_flexible_rooms");
+        let fixed_width = this.field_sum(x_width_info,"meas_fixed_width") + min_room * num_flexible_rooms;
+        
+        let room_per_meas_even_meas = this.room_per_meas_for_equal_divison(
+            min_room, x_width_info, total_width,
+            num_meas, num_meas_to_consider);
+        
+        let room_equal_ratio = this.room_for_equal_ratio_divison(row_elements_list, min_room, x_width_info, total_width);
+
+        let alpha = 0.0;
+        for(let mi=0; mi < num_meas; ++mi){
+            if(room_per_meas_even_meas[mi] < 0){
+                let R1 = room_equal_ratio.room_per_meas[mi];
+                let R2 = room_per_meas_even_meas[mi];
+                let alpha_dash = R2/(R2 - R1); // should be a positive value less than 1
+                alpha = Math.max(alpha, alpha_dash);
+            }
+        }
+        let row_total_width = 0;
+        row_elements_list.forEach((e,mi)=>{
+            let R1 = room_equal_ratio.room_per_meas[mi];
+            let R2 = room_per_meas_even_meas[mi];
+            let room_per_elem = new Array(x_width_info[mi].meas_num_flexible_rooms);
+            let room_per_meas = 0;
+            for(let ii=0; ii< x_width_info[mi].meas_num_flexible_rooms; ++ii){
+                let f_ratio = (x_width_info[mi].body_fixed_width_details[ii]+min_room) / 
+                    (x_width_info[mi].body_fixed_width + min_room * x_width_info[mi].meas_num_flexible_rooms);
+                room_per_elem[ii] = ( alpha * R1 * f_ratio + (1 - alpha) * R2 / x_width_info[mi].meas_num_flexible_rooms ) +
+                    min_room;
+                room_per_meas += room_per_elem[ii];
+            }
+            e.renderprop.room_per_elem = room_per_elem;
+            e.renderprop.total_room = room_per_meas;
+            x_width_info[mi].measure_width = e.renderprop.total_room + x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
+            e.renderprop.measure_width = x_width_info[mi].measure_width;
+            e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
+            e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
+            e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
+
+            row_total_width += x_width_info[mi].measure_width; 
+        });
+        if(reduced_meas_valid && row_elements_list[0].align == "right")
+            row_elements_list[0].renderprop.left_margin = total_width - row_total_width;
+        console.log("alpha = " + alpha);
+    }
+
     determine_rooms(param, reharsal_x_width_info){
         let total_width = param.paper_width / this.param.zoom - 2*param.x_offset;
 
@@ -184,6 +393,7 @@ export class MobileRenderer extends Renderer {
                 }
             }
 
+            // Used for optimize type = 3
             let room_per_elem_constant = (total_width - fixed_width) / num_flexible_rooms; // Constant room for all room
             let room_per_meas_even_meas = []; // room per measure for each meas in case even division of width for each measure
             for(let mi=0; mi < num_meas; ++mi){
@@ -192,7 +402,13 @@ export class MobileRenderer extends Renderer {
                     x_width_info[mi].meas_fixed_width - 
                     min_room*x_width_info[mi].meas_num_flexible_rooms);
             }
+
+            // Used for optimize type = 1 
             let room_per_elem_uniform_ratio = (total_width - fixed_width_others) / fixed_width_flexbile_only;
+            console.log("S for type1 = " + room_per_elem_uniform_ratio);
+
+            // Used for optimize type = 4
+
 
             if( (room_per_elem_constant < 0 && param.fallback_type==0) || param.optimize_type == 0){
                 row_elements_list.forEach((e,mi)=>{
@@ -247,6 +463,39 @@ export class MobileRenderer extends Renderer {
                         num_meas_to_consider * (num_meas_to_consider - num_meas);
                 row++;          
             }else if(param.optimize_type == 3){
+                // https://docs.google.com/document/d/1oPmUvAF6-KTsQrEovYJgMZSDqlztp4pL-XVs8uee7A4/edit?usp=sharing
+                // Here alpha=1 case is filtered at the first IF statement, then we only consider the case
+                // where room when optimize_type = 0 is positive.
+                let alpha = 0.0;
+                for(let mi=0; mi < num_meas; ++mi){
+                    if(room_per_meas_even_meas[mi] < 0){
+                        let R0 = room_per_elem_constant * x_width_info[mi].meas_num_flexible_rooms;
+                        let R2 = room_per_meas_even_meas[mi];
+                        let alpha_dash = R2/(R2 - R0); // should be a positive value less than 1
+                        alpha = Math.max(alpha, alpha_dash);
+                    }
+                }
+                let row_total_width = 0;
+                row_elements_list.forEach((e,mi)=>{
+                    let R0 = room_per_elem_constant * x_width_info[mi].meas_num_flexible_rooms;
+                    let R2 = room_per_meas_even_meas[mi];
+                    let room_per_elem = ( alpha * R0 + (1 - alpha) * R2 ) / x_width_info[mi].meas_num_flexible_rooms +
+                        min_room;
+                    e.renderprop.room_per_elem = new Array(x_width_info[mi].meas_num_flexible_rooms).fill(room_per_elem);
+                    e.renderprop.total_room = room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
+                    x_width_info[mi].measure_width = e.renderprop.total_room + x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
+                    e.renderprop.measure_width = x_width_info[mi].measure_width;
+                    e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
+                    e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
+                    e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
+
+                    row_total_width += x_width_info[mi].measure_width; 
+                });
+                if(reduced_meas_valid && row_elements_list[0].align == "right")
+                    row_elements_list[0].renderprop.left_margin = total_width - row_total_width;
+                console.log("alpha = " + alpha);
+                row++; 
+            }else if(param.optimize_type == 4){
                 // https://docs.google.com/document/d/1oPmUvAF6-KTsQrEovYJgMZSDqlztp4pL-XVs8uee7A4/edit?usp=sharing
                 // Here alpha=1 case is filtered at the first IF statement, then we only consider the case
                 // where room when optimize_type = 0 is positive.

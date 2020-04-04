@@ -28,6 +28,7 @@ var SR_RENDER_PARAM = {
     repeat_mark_y_margin: 2, // RS are upper/bootom and Repeat Marks( DalSegno, DaCapo, Fine, xX ) y margin in case RS are is shown.
     xtimes_mark_y_margin: 2, // Margin between body/RS are and "(x times)" mark.
     header_body_margin: 2, // Margin between header and body (x-direction)
+    body_footer_margin: 2, // Margin between body and footer (x-direction)
     max_scaling: 1.2,
     paper_width: (96 * 210) / 25.4, // 96dpi * A4_width[mm] / 25.4[mm/inche], total canvas width = paper_width, internal paper width is paper_width/zoom
     paper_height: (96 * 297) / 25.4, // 96dpi * A4_height[mm] / 25.4[mm/inche], total canvas height = paper_height. internal paper height is paper_height/zoom
@@ -1165,6 +1166,8 @@ export class MobileRenderer extends Renderer {
             meas_fixed_width += rberet.fixed_width;
             meas_num_flexible_rooms += rberet.num_flexible_rooms;
 
+            meas_fixed_width += param.body_footer_margin;
+
             // Draw footer
             elements.footer.forEach(e => {
                 if (e instanceof common.MeasureBoundary) {
@@ -1832,6 +1835,8 @@ export class MobileRenderer extends Renderer {
                 balken);
             
             x = rberet.x;
+
+            x += param.body_footer_margin;
 
             // Draw footer
             var footer_base = x;

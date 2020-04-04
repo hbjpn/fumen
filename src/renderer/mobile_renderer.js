@@ -1392,7 +1392,7 @@ export class MobileRenderer extends Renderer {
                     element_group.renderprop.rs_area_width = rs_area_width;
                     element_group.renderprop.based_on_rs_elem = (rs_area_width > cr.width);
                     fixed_width += element_group.renderprop.w;
-                    fixed_width_details.concat(rs_area_width > cr.width ? tmp_fixed_width_details : cr.width );
+                    fixed_width_details = fixed_width_details.concat(rs_area_width > cr.width ? tmp_fixed_width_details : [cr.width] );
                     num_flexible_rooms += (element_group.renderprop.based_on_rs_elem ? element_group.elems.length : 1);
                 }
 

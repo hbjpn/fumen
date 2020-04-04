@@ -491,7 +491,7 @@ export class Renderer {
             balken_element.renderprop.note_x_center = x;
             if(draw){
                 balken_element.notes_coord.x
-                    .push([x, x, x + ret.bounding_box.w]);
+                    .push([x, x, x + ret.bounding_box.w, x + ret.bounding_box.w]);
             }
         } else if(balken_element.type == "notes") {
 
@@ -532,10 +532,31 @@ export class Renderer {
                     throw "SOMETHING WRONG WITH PARSING";
                 }
 
+                let note_right_side = note_x_center + r.bounding_box.w;
+
                 bounding_box.add_rect(r.bounding_box);
+
+                // dots
+                let dots_bounding_box = new common.BoundingBox();
+                dots_bounding_box.add(note_right_side, y);
+                for (let i = 0; i < numdot; ++i) {
+                    let dy =
+                        pos_on_5lines[ci] % 2 == 0 ? -_5lines_intv / 2 : 0;
+    
+                    r = graphic.CanvasCircle(paper, note_x_center + 12 + i * 5, y + dy, 1, draw);
+                    
+                    bounding_box.add_rect(r.bounding_box);
+                    dots_bounding_box.add_rect(r.bounding_box);
+                }
+
                 if(draw){
+                    // notes_coord.x : 
+                    //   0 : Left side of note including accidentals
+                    //   1 : Left side of note
+                    //   2 : Right side of note
+                    //   3 : Right side of note including dots
                     balken_element.notes_coord.x
-                        .push([x, note_x_center, note_x_center + r.bounding_box.w]);
+                        .push([x, note_x_center, note_right_side, note_right_side + dots_bounding_box.get().w]);
                 }
                 
                 // draw sharp, flat and natrual
@@ -550,15 +571,6 @@ export class Renderer {
                         x, y + _5lines_intv*dy, null, _5lines_intv*2.5, "lm", draw);
                     
                     bounding_box.add_rect(r.bounding_box);
-                }
-
-                // dots
-                for (let i = 0; i < numdot; ++i) {
-                    let dy =
-                        pos_on_5lines[ci] % 2 == 0 ? -_5lines_intv / 2 : 0;
-    
-                    r = graphic.CanvasCircle(paper, note_x_center + 12 + i * 5, y + dy, 1, draw);
-                        bounding_box.add_rect(r.bounding_box);
                 }
 
                 // Draw additional horizontal lines
@@ -604,7 +616,7 @@ export class Renderer {
 
             if(draw){
                 balken_element.notes_coord.x
-                    .push([x, x, x + r.bounding_box.w]);
+                    .push([x, x, x + r.bounding_box.w, x + r.bounding_box.w,]);
             }
         }else if(balken_element.type == "space"){
 
@@ -614,6 +626,9 @@ export class Renderer {
         }else if(balken_element.type == "simile"){
             alert("Impleetaion not ready for siile in RS area");
         }
+
+        // Apply minimum room for RS area elements
+        bounding_box.expand(0, param.rs_elem_min_room, 0, 0); // Apply minimum room
 
         return {bounding_box:bounding_box.get()};
     }
@@ -781,16 +796,16 @@ export class Renderer {
                             // Crossing measure row. Previous RS mark could be on another page.
                             // Make sure to create curve on the paper on which previous RS is drawn.
                             var brace_points = [
-                                [prev_coord.x[ci][2] * prev_draw_scale + sdx, prev_coord.y[ci] + dy],
-                                [prev_coord.x[ci][2] * prev_draw_scale + sdx, prev_coord.y[ci] - round + dy],
+                                [prev_coord.x[ci][3] * prev_draw_scale + sdx, prev_coord.y[ci] + dy],
+                                [prev_coord.x[ci][3] * prev_draw_scale + sdx, prev_coord.y[ci] - round + dy],
                                 [psm.renderprop.meas_end_x + 20, prev_coord.y[ci] - round + dy],
                                 [psm.renderprop.meas_end_x + 20, prev_coord.y[ci] + dy]
                             ];
 
                             let clip_rect = [
-                                prev_coord.x[ci][2] * prev_draw_scale +sdx, 
+                                prev_coord.x[ci][3] * prev_draw_scale +sdx, 
                                 (prev_coord.y[ci] - 50), 
-                                (psm.renderprop.meas_end_x - (prev_coord.x[ci][2] * prev_draw_scale + sdx)  + 5),
+                                (psm.renderprop.meas_end_x - (prev_coord.x[ci][3] * prev_draw_scale + sdx)  + 5),
                                 100];
 
                             console.group("Tie");
@@ -831,8 +846,8 @@ export class Renderer {
 
                         } else {
                             let brace_points = [
-                                [prev_coord.x[ci][2] * prev_draw_scale + sdx, prev_coord.y[ci] + dy],
-                                [prev_coord.x[ci][2] * prev_draw_scale + sdx, prev_coord.y[ci] - round + dy],
+                                [prev_coord.x[ci][3] * prev_draw_scale + sdx, prev_coord.y[ci] + dy],
+                                [prev_coord.x[ci][3] * prev_draw_scale + sdx, prev_coord.y[ci] - round + dy],
                                 [xs[ci][0] * draw_scale + edx, y - round + dy],
                                 [xs[ci][0] * draw_scale + edx, y + dy]
                             ];

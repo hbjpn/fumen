@@ -1709,8 +1709,6 @@ export class MobileRenderer extends Renderer {
             let meas_start_x_actual_boundary = x;
 
             // Draw header
-            var header_rs_area_width = 0;
-            var header_body_area_width = 0;
             // Clef, Key, Begin Boundary, Time(1st one) are included in this area
             elements.header.forEach(e => {
                 if (e instanceof common.MeasureBoundary) {
@@ -1798,6 +1796,8 @@ export class MobileRenderer extends Renderer {
                 }
             });
 
+            let header_width = x - meas_start_x;
+
             x += param.header_body_margin;
 
             // Draw body
@@ -1819,6 +1819,8 @@ export class MobileRenderer extends Renderer {
             x = rberet.x;
 
             x += param.body_footer_margin;
+
+            let footer_start_x = x;
 
             // Draw footer
             var footer_base = x;
@@ -1922,6 +1924,8 @@ export class MobileRenderer extends Renderer {
                 }
             }
 
+            let footer_width = x - footer_start_x;
+
             var meas_end_x = x;
 
             // Draw Upper and Lower Signs
@@ -1947,9 +1951,8 @@ export class MobileRenderer extends Renderer {
                     let height = yprof.rs.detected ? param.rs_area_height : param.row_height;
                     let sx =
                         meas_start_x +
-                        m.header_width -
-                        param.header_body_margin; // More beautiful for long rest if header body margin is omitted
-                    let fx = meas_end_x - m.footer_width;
+                        header_width; // header_width does not include header_body_margin
+                    let fx = meas_end_x - footer_width;
                     var rh = height;
                     var r_lrmargin = 0.05;
                     var min_lrmargin = 5;
@@ -2010,9 +2013,8 @@ export class MobileRenderer extends Renderer {
                     // Simile mark in measure wide element if there is no other body elements in this measure
                     let sx =
                         meas_start_x +
-                        m.header_width -
-                        param.header_body_margin; // More beautiful for long rest if header body margin is omitted
-                    let fx = meas_end_x - m.footer_width;
+                        header_width; // header_width does not include header_body_margin
+                    let fx = meas_end_x - footer_width;
                     this.render_simile_mark_plain(
                         draw,
                         paper,

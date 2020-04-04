@@ -54,7 +54,6 @@ let takediff = (img1path, img2path, diffpath) => {
     }
 };
 
-
 let capture = (async(addr, fumenfile, headInfo) => {
 	let tcname = path.parse(fumenfile).name;
 	let code = fs.readFileSync(fumenfile,"utf-8");
@@ -122,23 +121,40 @@ let capture = (async(addr, fumenfile, headInfo) => {
     console.log(clips[0]);
     let scdir = path.join(path.dirname(fumenfile),scdirname);
     //outpath = path.join(outpath,`${tcname}.${i}.${datems}.${headInfo.commit}.png`);
-    let full_path = path.join(scdir,pngname);
-    console.log("Capturing to "+full_path);
-    await page.screenshot({ clip: clips[0], path: full_path});
+    let head_full_path = path.join(scdir,pngname);
+    console.log("Capturing to "+head_full_path);
+    await page.screenshot({ clip: clips[0], path: head_full_path});
 
+    let prev_full_path = "";
+    let diff_full_path = "";
     // Generate diff file if prev file is identified
     if(prev_sc_file){
-        let prev_full_path = path.join(scdir, prev_sc_file.file);
-        let diff_full_path = path.join(scdir, `${tcname}.diff.${headInfo.commit}-${prev_sc_file.commit}.png`);
-        numDiffPixels = takediff(full_path, prev_full_path, diff_full_path);
+        prev_full_path = path.join(scdir, prev_sc_file.file);
+        diff_full_path = path.join(scdir, `${tcname}.diff.${headInfo.commit}-${prev_sc_file.commit}.png`);
+        numDiffPixels = takediff(head_full_path, prev_full_path, diff_full_path);
     }else{
         numDiffPixels = FIRST_SC;
     }
 
     await browser.close();
     
-    return numDiffPixels;
+    return {numDiffPixels:numDiffPixels, head_full_path:head_full_path, prev_full_path:prev_full_path, diff_full_path:diff_full_path};
 });
+
+let imgtag = function(src){
+    return "<img src=\""+src+"\"/>";
+};
+let tablerowtag = function(cols){
+    let html="<tr>";
+    for(let i=0;i<cols.length;++i){
+        html += "<td>"+cols[i]+"</td>";
+    }
+    html += "</tr>";
+    return html;
+}
+
+let report_html = "<html><head><title>CI</title><head><body>";
+report_html += "<table>";
 
 let dotest = async (headInfo)=>{
     const addr = process.argv[2];
@@ -154,9 +170,18 @@ let dotest = async (headInfo)=>{
         "align.fumen"];
     const results = [];
     for(let i=0; i<files.length; ++i){
-        let numDiffPixels = await capture(addr,files[i], headInfo);
-        results.push(numDiffPixels);
+        let r = await capture(addr,files[i], headInfo);
+        results.push(r.numDiffPixels);
+        report_html += tablerowtag([
+            files[i], r.numDiffPixels,
+            imgtag(r.head_full_path), imgtag(r.prev_full_path), imgtag(r.diff_full_path)]
+        );
     }
+    report_html += "</body>";
+    fs.writeFile("report.html", report_html, (err) => {
+        if (err) throw err;
+        console.log("Report generated");
+    });
     
     for(let i=0; i<files.length; ++i){
         console.log(files[i]+ " : " + results[i]);

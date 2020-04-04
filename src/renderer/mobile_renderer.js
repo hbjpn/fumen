@@ -48,7 +48,7 @@ var SR_RENDER_PARAM = {
     balken_width: 3,
     note_bar_length: 24/4*3.5, // 3.5 times of interval is the conventional length
     note_flag_interval: 5,
-    optimize_type: 3, // 0 : Constant room for each flexible element. 1: Uniform ratio (propotional to each fixed width of flexible element), 2: Evenly division of measures(force), 3: Evenly division of measures as much as possible
+    optimize_type: 4, // 0 : Constant room for each flexible element. 1: Uniform ratio (propotional to each fixed width of flexible element), 2: Evenly division of measures(force), 3: Evenly division of measures as much as possible
     vertical_align: 1, // 1: Enable, 0: Disable
     vertical_align_intensity: 0.9, // Vertical align intensity 0:No align, 1:Always align
     min_room: 10, // Minimum room for flexile elements

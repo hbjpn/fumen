@@ -153,7 +153,7 @@ let tablerowtag = function(cols){
     return html;
 }
 
-let report_html = "<html><head><title>CI</title><head><body>";
+let report_html = "<html><head><style>img { width:250px; } td{border: solid 1px gray; } table{border-collapse: collapse; }</style><title>CI</title><head><body>";
 report_html += "<table>";
 
 let dotest = async (headInfo)=>{

@@ -1,7 +1,7 @@
 %TITLE="Sample Piece"
 %SUB_TITLE="(Sub Title)"
 %ARTIST="Some artists"
-%PARAM={"zoom":1.2}
+%PARAM={"text_size":1.2}
 
 [Intro]
 

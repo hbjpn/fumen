@@ -31,9 +31,9 @@ var SR_RENDER_PARAM = {
     body_footer_margin: 2, // Margin between body and footer (x-direction)
     rs_elem_min_room: 5, // Minimum room after RS area elements in x-direction
     max_scaling: 1.2,
-    paper_width: (96 * 210) / 25.4, // 96dpi * A4_width[mm] / 25.4[mm/inche], total canvas width = paper_width, internal paper width is paper_width/zoom
-    paper_height: (96 * 297) / 25.4, // 96dpi * A4_height[mm] / 25.4[mm/inche], total canvas height = paper_height. internal paper height is paper_height/zoom
-    zoom: 1.0, // total canvas size will be [paper_width * zoom, paper_height*zoom]. NOTE that even the canvas size is scaled with zoom, any coordinate unit/size infomation inside the renderer stays the same and no need to be conscious about zoom value.
+    paper_width: (96 * 210) / 25.4, // 96dpi * A4_width[mm] / 25.4[mm/inche], total canvas width = paper_width, internal paper width is paper_width/text_size
+    paper_height: (96 * 297) / 25.4, // 96dpi * A4_height[mm] / 25.4[mm/inche], total canvas height = paper_height. internal paper height is paper_height/text_size
+    text_size: 1.0, // total canvas size will be [paper_width * text_size, paper_height*text_size]. NOTE that even the canvas size is scaled with text_size, any coordinate unit/size infomation inside the renderer stays the same and no need to be conscious about text_size value.
     pixel_ratio: 2, // integer. null : use system default, this is not configurable in source as it is memoried in global variable.
     ncol: 1, // Number of columns of score inside the paper
     nrow: 1, // Number of rows of score inside the paper
@@ -123,7 +123,7 @@ export class MobileRenderer extends Renderer {
     }
 
     render_footer(canvaslist, songname, y){
-        var score_width = this.param.paper_width / this.param.zoom / this.param.ncol;
+        var score_width = this.param.paper_width / this.param.text_size / this.param.ncol;
         canvaslist.forEach((canvas,pageidx)=>{
             // Page number footer
             let footerstr =
@@ -361,7 +361,7 @@ export class MobileRenderer extends Renderer {
     }
 
     determine_rooms(param, reharsal_x_width_info){
-        let total_width = param.paper_width / this.param.zoom - 2*param.x_offset;
+        let total_width = param.paper_width / this.param.text_size - 2*param.x_offset;
 
         let field_sum = function(arr,field){
             return arr.reduce( (acc,e)=>{ let obj={}; obj[field]=acc[field]+e[field]; return obj;} )[field];
@@ -609,7 +609,7 @@ export class MobileRenderer extends Renderer {
         var y_subtitle_offset = origin.y + param.y_subtitle_offset;
         var y_artist_offset = origin.y + param.y_artist_offset;
         var x_offset = origin.x + param.x_offset;
-        var width = param.paper_width / this.param.zoom / param.ncol - param.x_offset * 2;
+        var width = param.paper_width / this.param.text_size / param.ncol - param.x_offset * 2;
 
         // Music context
         var music_context = {
@@ -756,10 +756,10 @@ export class MobileRenderer extends Renderer {
             this.memCanvas = document.createElement("canvas");
             graphic.SetupHiDPICanvas(
                 this.memCanvas,
-                this.param.paper_width / this.param.zoom,
-                400 / this.param.zoom,
+                this.param.paper_width / this.param.text_size,
+                400 / this.param.text_size,
                 this.param.pixel_ratio,
-                this.param.zoom
+                this.param.text_size
             );
         }
 
@@ -848,19 +848,19 @@ export class MobileRenderer extends Renderer {
         }
         graphic.SetupHiDPICanvas(
             canvas,
-            this.param.paper_width / this.param.zoom,
-            (this.param.paper_height > 0 ? this.param.paper_height/this.param.zoom : y_base_screening),
+            this.param.paper_width / this.param.text_size,
+            (this.param.paper_height > 0 ? this.param.paper_height/this.param.text_size : y_base_screening),
             this.param.pixel_ratio,
-            this.param.zoom
+            this.param.text_size
         );
 
-        var score_height = (this.param.paper_height > 0 ? this.param.paper_height/this.param.zoom : y_base_screening)
+        var score_height = (this.param.paper_height > 0 ? this.param.paper_height/this.param.text_size : y_base_screening)
             / param.nrow;
 
         if(param.background_color)
             graphic.CanvasRect(canvas, 0, 0, 
-                this.param.paper_width / this.param.zoom, 
-                (this.param.paper_height > 0 ? this.param.paper_height/this.param.zoom : y_base_screening), 
+                this.param.paper_width / this.param.text_size, 
+                (this.param.paper_height > 0 ? this.param.paper_height/this.param.text_size : y_base_screening), 
                 param.background_color);
 
         var y_base = origin.y;
@@ -947,16 +947,16 @@ export class MobileRenderer extends Renderer {
                     canvaslist.push(canvas);
                     graphic.SetupHiDPICanvas(
                         canvas,
-                        yse[pei].param.paper_width / this.param.zoom,
-                        yse[pei].param.paper_height / this.param.zoom,
+                        yse[pei].param.paper_width / this.param.text_size,
+                        yse[pei].param.paper_height / this.param.text_size,
                         this.param.pixel_ratio,
-                        this.param.zoom
+                        this.param.text_size
                     );
                     
                     if(param.background_color)
                         graphic.CanvasRect(canvas, 0, 0, 
-                            this.param.paper_width / this.param.zoom, 
-                            this.param.paper_height / this.param.zoom, 
+                            this.param.paper_width / this.param.text_size, 
+                            this.param.paper_height / this.param.text_size, 
                             param.background_color);
 
                     // try again next page
@@ -1084,7 +1084,7 @@ export class MobileRenderer extends Renderer {
         var half_type = macros.KEY_TYPE;
         var key = macros.KEY;
 
-        var total_width = param.paper_width / param.zoom - 2 * param.x_offset;
+        var total_width = param.paper_width / param.text_size - 2 * param.x_offset;
 
         let dammy_rs_area_height = 24; // any value is ok
 

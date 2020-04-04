@@ -12781,7 +12781,7 @@ function () {
 /*!**********************!*\
   !*** ./src/index.js ***!
   \**********************/
-/*! exports provided: Parser, MobileRenderer, SetupHiDPICanvas, GetCharProfile, CanvasTextWithBox, CanvasText, getFontSizeFromHeight */
+/*! exports provided: Parser, DefaultRenderer, SetupHiDPICanvas, GetCharProfile, CanvasTextWithBox, CanvasText, getFontSizeFromHeight */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -12791,8 +12791,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _parser_parser__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./parser/parser */ "./src/parser/parser.js");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Parser", function() { return _parser_parser__WEBPACK_IMPORTED_MODULE_1__["Parser"]; });
 
-/* harmony import */ var _renderer_mobile_renderer__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./renderer/mobile_renderer */ "./src/renderer/mobile_renderer.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MobileRenderer", function() { return _renderer_mobile_renderer__WEBPACK_IMPORTED_MODULE_2__["MobileRenderer"]; });
+/* harmony import */ var _renderer_default_renderer__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./renderer/default_renderer */ "./src/renderer/default_renderer.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DefaultRenderer", function() { return _renderer_default_renderer__WEBPACK_IMPORTED_MODULE_2__["DefaultRenderer"]; });
 
 /* harmony import */ var _renderer_graphic__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./renderer/graphic */ "./src/renderer/graphic.js");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SetupHiDPICanvas", function() { return _renderer_graphic__WEBPACK_IMPORTED_MODULE_3__["SetupHiDPICanvas"]; });
@@ -13707,6 +13707,2441 @@ function () {
 
 /***/ }),
 
+/***/ "./src/renderer/default_renderer.js":
+/*!******************************************!*\
+  !*** ./src/renderer/default_renderer.js ***!
+  \******************************************/
+/*! exports provided: DefaultRenderer */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DefaultRenderer", function() { return DefaultRenderer; });
+/* harmony import */ var _babel_polyfill__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/polyfill */ "./node_modules/@babel/polyfill/lib/index.js");
+/* harmony import */ var _babel_polyfill__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_polyfill__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _renderer__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./renderer */ "./src/renderer/renderer.js");
+/* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../common/common */ "./src/common/common.js");
+/* harmony import */ var _graphic__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./graphic */ "./src/renderer/graphic.js");
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) { return; } var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+
+
+
+ //import { getGlobalMacros, getMacros } from "../parser/parser";
+
+var SR_RENDER_PARAM = {
+  origin: {
+    x: 0,
+    y: 0
+  },
+  y_title_offset: 2,
+  y_subtitle_offset: 16,
+  y_artist_offset: 16,
+  y_first_page_offset: 30,
+  // With header
+  y_offset: 10,
+  // Without header
+  x_offset: 10,
+  y_footer_offset: 10,
+  min_measure_width: 100,
+  row_height: 28,
+  // Basic height of the measure when no rs, mu and ml area is drawn
+  base_body_height: 28,
+  // Height in body area (not applicable for RS area) used for simile and rest rendering. Recommended to keep this value irrespective of row_height.
+  row_margin: 4,
+  // Margin between next y_base and lower edge of Measure Lower Area
+  rs_area_height: 24,
+  // Rhythm Slashes Area // 
+  rm_area_height: 15,
+  // Reharsal Mark Area
+  mu_area_height: 15,
+  // Measure Upper Area ( Repeat signs area )
+  ml_row_height: 10,
+  // Measure Lower Area ( Lyrics etc.. )
+  below_mu_area_margin: 2,
+  // Margin between MU and chord
+  above_rs_area_margin: 0,
+  // Margin between chord and rythm slash
+  below_rs_area_margin: 10,
+  // Margin below chord and rhthm slash
+  above_ml_area_margin: 0,
+  // Margin between (chord/rythm slash) and measure lower(lyrics etc) rea
+  repeat_mark_y_margin: 2,
+  // RS are upper/bootom and Repeat Marks( DalSegno, DaCapo, Fine, xX ) y margin in case RS are is shown.
+  xtimes_mark_y_margin: 2,
+  // Margin between body/RS are and "(x times)" mark.
+  header_body_margin: 2,
+  // Margin between header and body (x-direction)
+  body_footer_margin: 2,
+  // Margin between body and footer (x-direction)
+  rs_elem_min_room: 5,
+  // Minimum room after RS area elements in x-direction
+  max_scaling: 1.2,
+  paper_width: 96 * 210 / 25.4,
+  // 96dpi * A4_width[mm] / 25.4[mm/inche], total canvas width = paper_width, internal paper width is paper_width/text_size
+  paper_height: 96 * 297 / 25.4,
+  // 96dpi * A4_height[mm] / 25.4[mm/inche], total canvas height = paper_height. internal paper height is paper_height/text_size
+  text_size: 1.0,
+  // total canvas size will be [paper_width * text_size, paper_height*text_size]. NOTE that even the canvas size is scaled with text_size, any coordinate unit/size infomation inside the renderer stays the same and no need to be conscious about text_size value.
+  pixel_ratio: 2,
+  // integer. null : use system default, this is not configurable in source as it is memoried in global variable.
+  ncol: 1,
+  // Number of columns of score inside the paper
+  nrow: 1,
+  // Number of rows of score inside the paper
+  repeat_mark_font: {
+    "font-family": "Times New Roman",
+    "font-style": "italic",
+    "font-weight": "bold"
+  },
+  reharsal_mark_font_size: 12,
+  title_font_size: 14,
+  subtitle_font_size: 12,
+  artist_font_size: 14,
+  base_font_size: 28,
+  balken_width: 3,
+  note_bar_length: 24 / 4 * 3.5,
+  // 3.5 times of interval is the conventional length
+  note_flag_interval: 5,
+  optimize_type: 4,
+  // 0 : Constant room for each flexible element. 1: Uniform ratio (propotional to each fixed width of flexible element), 2: Evenly division of measures(force), 3: Evenly division of measures as much as possible
+  vertical_align: 1,
+  // 1: Enable, 0: Disable
+  vertical_align_intensity: 0.9,
+  // Vertical align intensity 0:No align, 1:Always align
+  scale_if_overlap: 1,
+  // 1 or 0
+  on_bass_style: "right",
+  // right|below
+  on_bass_below_y_offset: 0,
+  background_color: "white" // null will be transparent
+
+}; // Simple renderer offsets
+
+var DefaultRenderer =
+/*#__PURE__*/
+function (_Renderer) {
+  _inherits(DefaultRenderer, _Renderer);
+
+  function DefaultRenderer(canvas, param) {
+    var _this;
+
+    var canvas_provider = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+
+    _classCallCheck(this, DefaultRenderer);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(DefaultRenderer).call(this));
+    _this.canvas = canvas;
+    _this.memCanvas = null; // Canvas on memory used for screening
+
+    _this.param = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](SR_RENDER_PARAM); // Default parameters
+    // Overwrite
+
+    for (var key in param) {
+      _this.param[key] = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](param[key]);
+    }
+
+    _this.canvas_provider = canvas_provider;
+    _this.track = null;
+    _this.context = {
+      paper: null,
+      region_id: 0
+    };
+    _this.buravura = _graphic__WEBPACK_IMPORTED_MODULE_3__["getBravuraInstance"]("Bravura Text", "./assets/fonts/BravuraText.woff", "./assets/fonts/bravura_metadata.json", "./assets/fonts/glyphnames.json");
+    return _this;
+  }
+
+  _createClass(DefaultRenderer, [{
+    key: "render",
+    value: function render(track, async_mode, progress_cb) {
+      var _this2 = this;
+
+      this.track = track; // Always works as asynchronously
+      // Preload images, which is done asynchronously
+
+      var urls = ["assets/img/segno.svg", "assets/img/coda.svg", "assets/img/flat.svg", "assets/img/sharp.svg", "assets/img/natural.svg", "assets/img/rest1.svg", "assets/img/rest2.svg", "assets/img/rest4.svg", "assets/img/rest8.svg", "assets/img/w1note.svg", "assets/img/w2note.svg", "assets/img/bnote.svg", "assets/img/flag_f.svg", "assets/img/flag_i.svg"];
+      var param = this.param;
+      return _graphic__WEBPACK_IMPORTED_MODULE_3__["PreloadImages"](urls).then(function () {
+        return _this2.buravura.ready();
+      }).then(function () {
+        return _this2.render_impl(track, param);
+      });
+    }
+  }, {
+    key: "render_footer",
+    value: function render_footer(canvaslist, songname, y) {
+      var _this3 = this;
+
+      var score_width = this.param.paper_width / this.param.text_size / this.param.ncol;
+      canvaslist.forEach(function (canvas, pageidx) {
+        // Page number footer
+        var footerstr = songname + " - " + (pageidx + 1) + " of " + canvaslist.length; //alert(footerstr);
+
+        _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, _this3.param.origin.x + score_width / 2, y, //this.param.origin.y + score_height - this.param.y_footer_offset,
+        footerstr, 12, "ct");
+      });
+    }
+  }, {
+    key: "field_sum",
+    value: function field_sum(arr, field) {
+      return arr.reduce(function (acc, e) {
+        var obj = {};
+        obj[field] = acc[field] + e[field];
+        return obj;
+      })[field];
+    }
+  }, {
+    key: "optimize_type0",
+    value: function optimize_type0(row_elements_list, x_width_info, total_width) {
+      var num_flexible_rooms = this.field_sum(x_width_info, "meas_num_flexible_rooms");
+      var fixed_width = this.field_sum(x_width_info, "meas_fixed_width");
+      var room_per_elem_constant = (total_width - fixed_width) / num_flexible_rooms; // Constant room for all room
+
+      row_elements_list.forEach(function (e, mi) {
+        var room_per_elem = room_per_elem_constant;
+        e.renderprop.room_per_elem = new Array(x_width_info[mi].meas_num_flexible_rooms).fill(room_per_elem);
+        e.renderprop.total_room = room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
+        x_width_info[mi].measure_width = e.renderprop.total_room + x_width_info[mi].meas_fixed_width;
+        e.renderprop.measure_width = x_width_info[mi].measure_width;
+        e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
+        e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
+        e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
+      });
+    }
+  }, {
+    key: "room_for_equal_ratio_divison",
+    value: function room_for_equal_ratio_divison(x_width_info, total_width, num_meas, num_meas_to_consider) {
+      var num_flexible_rooms = this.field_sum(x_width_info, "meas_num_flexible_rooms");
+      var fixed_width = this.field_sum(x_width_info, "meas_fixed_width");
+      var fixed_width_flexbile_only = this.field_sum(x_width_info, "body_fixed_width");
+      var fixed_width_others = fixed_width - fixed_width_flexbile_only;
+      var room_per_elem_even_ratio_meas = [];
+      var room_per_meas_even_ratio_meas = []; // room per measure for each meas in case even division of width for each measure
+      // Used for optimize type = 1 
+
+      var room_per_elem_uniform_ratio = (total_width - fixed_width_others) / fixed_width_flexbile_only;
+      console.log("S for type1 = " + room_per_elem_uniform_ratio);
+
+      for (var mi = 0; mi < num_meas; ++mi) {
+        var fixed_width_flexbile_only_details = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](x_width_info[mi]["body_fixed_width_details"]);
+        var room_per_elem = new Array(x_width_info[mi].meas_num_flexible_rooms);
+        var room_per_meas = 0;
+
+        for (var ii = 0; ii < x_width_info[mi].meas_num_flexible_rooms; ++ii) {
+          room_per_elem[ii] = (room_per_elem_uniform_ratio - 1) * fixed_width_flexbile_only_details[ii];
+          room_per_meas += room_per_elem[ii];
+        }
+
+        room_per_elem_even_ratio_meas.push(room_per_elem);
+        room_per_meas_even_ratio_meas.push(room_per_meas);
+      }
+
+      return {
+        "S": room_per_elem_uniform_ratio,
+        "room_per_elem": room_per_elem_even_ratio_meas,
+        "room_per_meas": room_per_meas_even_ratio_meas
+      };
+    }
+  }, {
+    key: "optimize_type1",
+    value: function optimize_type1(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid) {
+      var room_equal_ratio = this.room_for_equal_ratio_divison(x_width_info, total_width, num_meas, num_meas_to_consider);
+      row_elements_list.forEach(function (e, mi) {
+        e.renderprop.room_per_elem = room_equal_ratio.room_per_elem[mi];
+        e.renderprop.total_room = room_equal_ratio.room_per_meas[mi]; //room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
+
+        x_width_info[mi].measure_width = e.renderprop.total_room + x_width_info[mi].meas_fixed_width;
+        e.renderprop.measure_width = x_width_info[mi].measure_width;
+        e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
+        e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
+        e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
+      });
+    }
+  }, {
+    key: "room_per_meas_for_equal_divison",
+    value: function room_per_meas_for_equal_divison(x_width_info, total_width, num_meas, num_meas_to_consider) {
+      var room_per_meas_even_meas = []; // room per measure for each meas in case even division of width for each measure
+
+      for (var mi = 0; mi < num_meas; ++mi) {
+        room_per_meas_even_meas.push(total_width / num_meas_to_consider - x_width_info[mi].meas_fixed_width);
+      }
+
+      return room_per_meas_even_meas;
+    }
+  }, {
+    key: "optimize_type2",
+    value: function optimize_type2(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid) {
+      // Equal division
+      var room_per_meas_even_meas = this.room_per_meas_for_equal_divison(x_width_info, total_width, num_meas, num_meas_to_consider);
+      row_elements_list.forEach(function (e, mi) {
+        var room_per_elem = room_per_meas_even_meas[mi] / x_width_info[mi].meas_num_flexible_rooms;
+        e.renderprop.room_per_elem = new Array(x_width_info[mi].meas_num_flexible_rooms).fill(room_per_elem);
+        e.renderprop.total_room = room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
+        x_width_info[mi].measure_width = e.renderprop.total_room + x_width_info[mi].meas_fixed_width;
+        e.renderprop.measure_width = x_width_info[mi].measure_width;
+        e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
+        e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
+        e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
+      });
+      if (reduced_meas_valid && row_elements_list[0].align == "right") row_elements_list[0].renderprop.left_margin = total_width / num_meas_to_consider * (num_meas_to_consider - num_meas);
+    }
+  }, {
+    key: "optimize_type3",
+    value: function optimize_type3(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid) {
+      // https://docs.google.com/document/d/1oPmUvAF6-KTsQrEovYJgMZSDqlztp4pL-XVs8uee7A4/edit?usp=sharing
+      // Here alpha=1 case is filtered at the first IF statement, then we only consider the case
+      // where room when optimize_type = 0 is positive.
+      var num_flexible_rooms = this.field_sum(x_width_info, "meas_num_flexible_rooms");
+      var fixed_width = this.field_sum(x_width_info, "meas_fixed_width");
+      var room_per_meas_even_meas = this.room_per_meas_for_equal_divison(x_width_info, total_width, num_meas, num_meas_to_consider);
+      var room_per_elem_constant = (total_width - fixed_width) / num_flexible_rooms; // Constant room for all room
+
+      var alpha = null;
+
+      if (room_per_elem_constant < 0) {
+        // No room in total.
+        alpha = 1.0; // Type 0
+      } else {
+        alpha = 0.0;
+
+        for (var mi = 0; mi < num_meas; ++mi) {
+          if (room_per_meas_even_meas[mi] < 0) {
+            var R0 = room_per_elem_constant * x_width_info[mi].meas_num_flexible_rooms;
+            var R2 = room_per_meas_even_meas[mi];
+            var alpha_dash = R2 / (R2 - R0); // should be a positive value less than 1
+
+            alpha = Math.max(alpha, alpha_dash);
+          }
+        }
+      }
+
+      var row_total_width = 0;
+      row_elements_list.forEach(function (e, mi) {
+        var R0 = room_per_elem_constant * x_width_info[mi].meas_num_flexible_rooms;
+        var R2 = room_per_meas_even_meas[mi];
+        var room_per_elem = (alpha * R0 + (1 - alpha) * R2) / x_width_info[mi].meas_num_flexible_rooms;
+        e.renderprop.room_per_elem = new Array(x_width_info[mi].meas_num_flexible_rooms).fill(room_per_elem);
+        e.renderprop.total_room = room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
+        x_width_info[mi].measure_width = e.renderprop.total_room + x_width_info[mi].meas_fixed_width;
+        e.renderprop.measure_width = x_width_info[mi].measure_width;
+        e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
+        e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
+        e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
+        row_total_width += x_width_info[mi].measure_width;
+      });
+      if (reduced_meas_valid && row_elements_list[0].align == "right") row_elements_list[0].renderprop.left_margin = total_width - row_total_width;
+      console.log("alpha = " + alpha);
+    }
+  }, {
+    key: "optimize_type4",
+    value: function optimize_type4(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid) {
+      // https://docs.google.com/document/d/1oPmUvAF6-KTsQrEovYJgMZSDqlztp4pL-XVs8uee7A4/edit?usp=sharing
+      // Here alpha=1 case is filtered at the first IF statement, then we only consider the case
+      // where room when optimize_type = 0 is positive.
+      var num_flexible_rooms = this.field_sum(x_width_info, "meas_num_flexible_rooms");
+      var fixed_width = this.field_sum(x_width_info, "meas_fixed_width");
+      var room_per_meas_even_meas = this.room_per_meas_for_equal_divison(x_width_info, total_width, num_meas, num_meas_to_consider);
+      var room_equal_ratio = this.room_for_equal_ratio_divison(x_width_info, total_width, num_meas, num_meas_to_consider);
+      var alpha = null;
+
+      if (room_equal_ratio.S < 1) {
+        // No room in total.
+        alpha = 1.0; // Type 1
+      } else {
+        alpha = 0.0;
+
+        for (var mi = 0; mi < num_meas; ++mi) {
+          if (room_per_meas_even_meas[mi] < 0) {
+            var R1 = room_equal_ratio.room_per_meas[mi];
+            var R2 = room_per_meas_even_meas[mi];
+            var alpha_dash = R2 / (R2 - R1); // should be a positive value less than 1
+
+            alpha = Math.max(alpha, alpha_dash);
+          }
+        }
+      }
+
+      var row_total_width = 0;
+      row_elements_list.forEach(function (e, mi) {
+        var R1 = room_equal_ratio.room_per_meas[mi];
+        var R2 = room_per_meas_even_meas[mi];
+        var room_per_elem = new Array(x_width_info[mi].meas_num_flexible_rooms);
+        var room_per_meas = 0;
+
+        for (var ii = 0; ii < x_width_info[mi].meas_num_flexible_rooms; ++ii) {
+          var f_ratio = x_width_info[mi].body_fixed_width_details[ii] / x_width_info[mi].body_fixed_width;
+          room_per_elem[ii] = alpha * R1 * f_ratio + (1 - alpha) * R2 / x_width_info[mi].meas_num_flexible_rooms;
+          room_per_meas += room_per_elem[ii];
+        }
+
+        e.renderprop.room_per_elem = room_per_elem;
+        e.renderprop.total_room = room_per_meas;
+        x_width_info[mi].measure_width = e.renderprop.total_room + x_width_info[mi].meas_fixed_width;
+        e.renderprop.measure_width = x_width_info[mi].measure_width;
+        e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
+        e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
+        e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
+        row_total_width += x_width_info[mi].measure_width;
+      });
+      if (reduced_meas_valid && row_elements_list[0].align == "right") row_elements_list[0].renderprop.left_margin = total_width - row_total_width;
+      console.log("alpha = " + alpha);
+    }
+  }, {
+    key: "determine_rooms",
+    value: function determine_rooms(param, reharsal_x_width_info) {
+      var total_width = param.paper_width / this.param.text_size - 2 * param.x_offset;
+
+      var field_sum = function field_sum(arr, field) {
+        return arr.reduce(function (acc, e) {
+          var obj = {};
+          obj[field] = acc[field] + e[field];
+          return obj;
+        })[field];
+      }; // Optimize width of each measure
+
+
+      var row = 0;
+
+      while (row < reharsal_x_width_info.length) {
+        var row_elements_list = reharsal_x_width_info[row][0];
+        var x_width_info = reharsal_x_width_info[row][1]; // For number of measures
+
+        var num_meas = row_elements_list.length;
+        var num_meas_to_consider = num_meas; // for type #2 and #3
+        // In case right or left align is specified
+
+        var reduced_meas_valid = false;
+
+        if (row_elements_list[0].align != "expand" && row > 0) {
+          // find the last measure for which expand is applied, or fallback to #0.
+          var rowdash = void 0;
+
+          for (rowdash = row - 1; rowdash >= 0; --rowdash) {
+            if (reharsal_x_width_info[rowdash][0].align == "expand") break;
+          }
+
+          if (rowdash < 0) rowdash = 0; // Fallback to #0 even it has right|left align
+
+          reduced_meas_valid = reharsal_x_width_info[rowdash][0].length > num_meas;
+
+          if (reduced_meas_valid) {
+            num_meas_to_consider = reharsal_x_width_info[rowdash][0].length;
+          }
+        }
+
+        if (param.optimize_type == 0) {
+          this.optimize_type0(row_elements_list, x_width_info, total_width);
+          row++;
+        } else if (param.optimize_type == 1) {
+          this.optimize_type1(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid);
+          row++;
+        } else if (param.optimize_type == 2) {
+          // Equal division
+          this.optimize_type2(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid);
+          row++;
+        } else if (param.optimize_type == 3) {
+          // Combination of 2 and 0(fallback option when negative total room)
+          this.optimize_type3(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid);
+          row++;
+        } else if (param.optimize_type == 4) {
+          // Combination of 2 and 1(fallback option when negative total room)
+          this.optimize_type4(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid);
+          row++;
+        } else {
+          throw "Invalid optimize type";
+        }
+      }
+
+      if (param.vertical_align) {
+        var _row = 0;
+
+        while (_row < reharsal_x_width_info.length) {
+          console.log("row :" + _row);
+          var _num_meas = reharsal_x_width_info[_row][0].length; // Group the rows with :
+          //     1. the same number of measures from #row
+          //     2. Having right align mark and having less than 1st row
+
+          var same_nmeas_row_group = [];
+
+          var _rowdash = void 0;
+
+          for (_rowdash = _row; _rowdash < reharsal_x_width_info.length; ++_rowdash) {
+            if (reharsal_x_width_info[_rowdash][0].length == _num_meas) {
+              same_nmeas_row_group.push(reharsal_x_width_info[_rowdash]);
+            } else if (_rowdash > 0 && reharsal_x_width_info[_rowdash][0][0].align != "expand" && reharsal_x_width_info[_rowdash][0].length < _num_meas) {
+              same_nmeas_row_group.push(reharsal_x_width_info[_rowdash]);
+            } else {
+              break; // only group the continuous rows with same number of measures
+            }
+          } // Withing the group above, search for the groups for which alternation extension condition is met
+          // Take maximum of each column, and check if total width wider than paper width
+          // Make virtual combined row having : 
+          //    Fixed width = max( fixed width of all rows in correspoding column )
+
+
+          var max_measure_widths = new Array(_num_meas).fill(0); // In case the row with less measures than other rows exists,
+          // mapping of measure index is not a simple 1:1 relation.
+          // This function is to map the global measure index to local measure index
+
+          var getMeasRefIndex = function getMeasRefIndex(globalmi, row_elements_list, base_num_meas) {
+            var mi_ref = globalmi;
+
+            if (row_elements_list.length < base_num_meas) {
+              if (row_elements_list[0].align == "right") {
+                if (globalmi >= base_num_meas - row_elements_list.length) mi_ref = globalmi - (base_num_meas - row_elements_list.length);else mi_ref = null; // Not corresponding meas exist
+              } else if (row_elements_list[0].align == "left") {
+                if (globalmi < row_elements_list.length) mi_ref = globalmi;else mi_ref = null; // Not corresponding meas exist
+              }
+            } else if (row_elements_list.length > base_num_meas) {
+              throw "Vertical align process error"; // Should be bug
+            }
+
+            return mi_ref;
+          }; // TODO : More clean code ...
+
+
+          for (_rowdash = 0; _rowdash < same_nmeas_row_group.length; ++_rowdash) {
+            var dammy_max_measure_widths = new Array(_num_meas).fill(0);
+            var _x_width_info = same_nmeas_row_group[_rowdash][1];
+            var _row_elements_list = same_nmeas_row_group[_rowdash][0];
+
+            for (var mi = 0; mi < _num_meas; ++mi) {
+              var mi_ref = getMeasRefIndex(mi, _row_elements_list, _num_meas);
+
+              if (mi_ref == null) {
+                // corresponding measure does not exist : inherit current max value
+                dammy_max_measure_widths[mi] = max_measure_widths[mi];
+                continue;
+              }
+
+              dammy_max_measure_widths[mi] = Math.max(_x_width_info[mi_ref].measure_width, max_measure_widths[mi]);
+            }
+
+            var dammy_total_max_measure_width = dammy_max_measure_widths.reduce(function (acc, e) {
+              return acc + e;
+            }); // This is always >= total_width except reduced measure with left/right align is under analysis.
+            // Nomralize so that total width does not surpass total_width.
+            // In case only reduced measure row is under analysis and dammy_total_max_measure_width is less than total_width,
+            // do nothiing.  
+
+            for (var _mi = 0; _mi < _num_meas; ++_mi) {
+              dammy_max_measure_widths[_mi] = dammy_max_measure_widths[_mi] / dammy_total_max_measure_width * Math.min(total_width, dammy_total_max_measure_width);
+            } // If there is at least one measure which does not meet alternate threshold, then do not include rowdash
+
+
+            var all_meets_thread = true;
+
+            if (_rowdash == 0) {// First row is always fixed.
+            } else {
+              // For the case of 2 and more rows. Judge if combined rows meets the criteria.
+              for (var rowdash2 = 0; rowdash2 <= _rowdash; ++rowdash2) {
+                for (var _mi2 = 0; _mi2 < _num_meas; ++_mi2) {
+                  var _mi_ref = getMeasRefIndex(_mi2, same_nmeas_row_group[rowdash2][0], _num_meas);
+
+                  if (_mi_ref == null) continue; // Calculate alter ratio for this measure
+
+                  var alter_ratio = same_nmeas_row_group[rowdash2][1][_mi_ref].measure_width / dammy_max_measure_widths[_mi2]; //if(Math.abs(1.0 - alter_ratio) > alter_thresh){
+
+                  if (alter_ratio < 1 - param.vertical_align_intensity) {
+                    // only check how much the width is narrowed. Expanding case is not checked.
+                    all_meets_thread = false;
+                    break;
+                  }
+                }
+
+                if (all_meets_thread == false) break;
+              }
+            }
+
+            if (all_meets_thread) {
+              max_measure_widths = dammy_max_measure_widths;
+            } else {
+              break;
+            }
+          } // Here rowdash means number of actually grouped rows
+
+
+          var act_num_grouped_rows = _rowdash;
+          console.log("max_fixed_widths :");
+          console.log(max_measure_widths); //let max_measure_widths = new Array(num_meas).fill(0);
+          // room per froom with maximum fixed with only
+          // Then, at last, calculate the rooms for each row and measure
+
+          for (_rowdash = 0; _rowdash < act_num_grouped_rows; ++_rowdash) {
+            var _x_width_info2 = same_nmeas_row_group[_rowdash][1];
+            var _row_elements_list2 = same_nmeas_row_group[_rowdash][0];
+
+            for (var _mi3 = 0; _mi3 < _num_meas; ++_mi3) {
+              var _mi_ref2 = getMeasRefIndex(_mi3, _row_elements_list2, _num_meas);
+
+              if (_mi_ref2 == null) continue;
+              var m = _row_elements_list2[_mi_ref2];
+              var room_per_elem = (max_measure_widths[_mi3] - _x_width_info2[_mi_ref2].meas_fixed_width) / _x_width_info2[_mi_ref2].meas_num_flexible_rooms; // TODO : To cater for the case of differnt room per elem inside the measure
+
+              m.renderprop.room_per_elem = new Array(_x_width_info2[_mi_ref2].meas_num_flexible_rooms).fill(room_per_elem);
+              m.renderprop.total_room = max_measure_widths[_mi3] - _x_width_info2[_mi_ref2].meas_fixed_width;
+              m.renderprop.measure_width = max_measure_widths[_mi3];
+              m.renderprop.meas_fixed_width = _x_width_info2[_mi_ref2].meas_fixed_width; // Actually this is already set
+
+              m.renderprop.body_fixed_width = _x_width_info2[_mi_ref2].body_fixed_width;
+              m.renderprop.meas_num_flexible_rooms = _x_width_info2[_mi_ref2].meas_num_flexible_rooms;
+            }
+          } // Set left margin in case it is needed.
+
+
+          for (_rowdash = 0; _rowdash < act_num_grouped_rows; ++_rowdash) {
+            var _row_elements_list3 = same_nmeas_row_group[_rowdash][0];
+            var row_total_width = 0;
+
+            for (var _mi4 = 0; _mi4 < _row_elements_list3.length; ++_mi4) {
+              row_total_width += max_measure_widths[_mi4 + (max_measure_widths.length - _row_elements_list3.length)];
+            }
+
+            var _m = _row_elements_list3[0];
+
+            if (_m.align == "right") {
+              _m.renderprop.left_margin = total_width - row_total_width;
+            }
+          }
+
+          _row += act_num_grouped_rows;
+          console.log("row updated : " + _row + " / " + act_num_grouped_rows);
+
+          if (act_num_grouped_rows <= 0) {
+            throw "Something wrong with the code";
+          }
+        }
+      }
+    }
+  }, {
+    key: "merge_param",
+    value: function merge_param(param, additional_param) {
+      var takemax = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+
+      for (var _i = 0, _Object$entries = Object.entries(additional_param); _i < _Object$entries.length; _i++) {
+        var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
+            param_key = _Object$entries$_i[0],
+            param_value = _Object$entries$_i[1];
+
+        if (param_key.includes("margin") && takemax) {
+          param[param_key] = Math.max(param[param_key], param_value);
+        } else {
+          param[param_key] = param_value;
+        }
+      }
+    }
+  }, {
+    key: "render_impl",
+    value: function () {
+      var _render_impl = _asyncToGenerator(
+      /*#__PURE__*/
+      regeneratorRuntime.mark(function _callee(track, param) {
+        var _this4 = this;
+
+        var global_macros, show_header, show_footer, origin, y_title_offset, y_subtitle_offset, y_artist_offset, x_offset, width, music_context, meas_row_list, accum_block_id, meas_row, meas_row_rg_ids, meas_row_block_ids, i, rg, bi, block_measures, ml, m, meas_row_list_inv, _loop, _i2, y_stacks, next_reharsal_group_index, yse, y_base_screening, dammy_music_context, current_accum_block_id, reharsal_x_width_info, pei, x, row_elements_list, _ml, _m2, elements, geret, yprof, x_width_info, canvas, score_height, y_base, ri, canvaslist, _pei, _row_elements_list4, ylimit, r;
+
+        return regeneratorRuntime.wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                global_macros = track.macros; //getGlobalMacros(track);
+
+                if ("PARAM" in global_macros) {
+                  this.merge_param(this.param, global_macros["PARAM"], false); // Merge to defaul param
+                }
+
+                show_header = global_macros["SHOW_HEADER"] == "YES";
+                show_footer = global_macros["SHOW_FOOTER"] == "YES";
+                origin = param.origin; //{x:0,y:0};
+
+                y_title_offset = origin.y + param.y_title_offset;
+                y_subtitle_offset = origin.y + param.y_subtitle_offset;
+                y_artist_offset = origin.y + param.y_artist_offset;
+                x_offset = origin.x + param.x_offset;
+                width = param.paper_width / this.param.text_size / param.ncol - param.x_offset * 2; // Music context
+
+                music_context = {
+                  accidental_info: {},
+                  key_info: {},
+                  time_info: {},
+                  tie_info: {
+                    rs_prev_coord: null,
+                    rs_prev_draw_scale: 1.0,
+                    rs_prev_meas: null,
+                    rs_prev_has_tie: false,
+                    rs_prev_tie_paper: null,
+                    prev_has_tie: false
+                  },
+                  pos_in_a_measure: 0
+                };
+                meas_row_list = []; // Firstly, just split with new lines
+
+                accum_block_id = 0;
+                meas_row = [];
+                meas_row_rg_ids = [];
+                meas_row_block_ids = [];
+
+                for (i = 0; i < track.reharsal_groups.length; ++i) {
+                  rg = track.reharsal_groups[i];
+
+                  for (bi = 0; bi < rg.blocks.length; ++bi) {
+                    block_measures = rg.blocks[bi];
+
+                    for (ml = 0; ml < block_measures.length; ++ml) {
+                      m = block_measures[ml];
+
+                      if (m.raw_new_line) {
+                        meas_row_list.push({
+                          meas_row: meas_row,
+                          meas_row_rg_ids: meas_row_rg_ids,
+                          meas_row_block_ids: meas_row_block_ids
+                        });
+                        meas_row = [];
+                        meas_row_rg_ids = [];
+                        meas_row_block_ids = [];
+                      }
+
+                      meas_row.push(m);
+                      meas_row_rg_ids.push(i);
+                      meas_row_block_ids.push(accum_block_id);
+                    }
+
+                    if (meas_row.length > 0) {
+                      meas_row_list.push({
+                        meas_row: meas_row,
+                        meas_row_rg_ids: meas_row_rg_ids,
+                        meas_row_block_ids: meas_row_block_ids
+                      });
+                      meas_row = [];
+                      meas_row_rg_ids = [];
+                      meas_row_block_ids = [];
+                    }
+
+                    accum_block_id++;
+                  }
+                } // If there is inline reharsal group, then combine the last row of the 
+                // last reharsal group  and first row of the reharsal group
+                // tmp variable : shallow copy of meas_row_list
+
+
+                meas_row_list_inv = meas_row_list.slice().reverse();
+
+                _loop = function _loop(_i2) {
+                  var rg = track.reharsal_groups[_i2];
+
+                  if (rg.inline) {
+                    var dst_idx = meas_row_list_inv.findIndex(function (e) {
+                      return e.meas_row_rg_ids.includes(_i2 - 1);
+                    });
+                    dst_idx = meas_row_list.length - 1 - dst_idx; // Convert to index for non-inversed array
+
+                    var src_idx = meas_row_list.findIndex(function (e) {
+                      return e.meas_row_rg_ids.includes(_i2);
+                    });
+                    var dst = meas_row_list[dst_idx];
+                    var src = meas_row_list[src_idx];
+                    dst.meas_row = dst.meas_row.concat(src.meas_row);
+                    dst.meas_row_rg_ids = dst.meas_row_rg_ids.concat(src.meas_row_rg_ids);
+                    dst.meas_row_block_ids = dst.meas_row_block_ids.concat(src.meas_row_block_ids);
+                    meas_row_list.splice(src_idx, 1); // Delete the first row
+
+                    meas_row_list_inv = meas_row_list.slice().reverse();
+                  }
+                };
+
+                for (_i2 = 0; _i2 < track.reharsal_groups.length; ++_i2) {
+                  _loop(_i2);
+                } // Make y-strack elements, and mark the reharsal mark position
+
+
+                y_stacks = [];
+                next_reharsal_group_index = 0;
+                meas_row_list.forEach(function (e, i) {
+                  // eslint-disable-next-line no-constant-condition
+                  while (true) {
+                    var meas_index = e.meas_row_rg_ids.findIndex(function (e) {
+                      return e == next_reharsal_group_index;
+                    });
+                    if (meas_index < 0) break;
+                    e.meas_row[meas_index].renderprop.rg_from_here = track.reharsal_groups[next_reharsal_group_index];
+                    ++next_reharsal_group_index;
+                  }
+
+                  var prev_measures = i > 0 ? meas_row_list[i - 1].meas_row : null;
+                  var prev_measure = prev_measures ? prev_measures[prev_measures.legnth - 1] : null;
+                  var next_measures = i < meas_row_list.length - 1 ? meas_row_list[i + 1].meas_row : null;
+                  var next_measure = next_measures ? next_measures[0] : null; // Determine params to be applied for this. 
+                  // As of now, 
+                  //var rg_macros = getMacros(global_macros, track.reharsal_groups[i]);
+
+                  var row_macros = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](global_macros);
+                  var param_for_row = _this4.param;
+                  var param_for_row_alt = false;
+                  e.meas_row.forEach(function (m) {
+                    if (!m.macros) return;
+
+                    for (var _i3 = 0, _Object$entries2 = Object.entries(m.macros); _i3 < _Object$entries2.length; _i3++) {
+                      var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i3], 2),
+                          key = _Object$entries2$_i[0],
+                          value = _Object$entries2$_i[1];
+
+                      if (key == "PARAM") {
+                        if (!param_for_row_alt) {
+                          param_for_row = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](_this4.param); // Make copy
+
+                          _this4.merge_param(param_for_row, value, false); // Overwrite 
+
+
+                          param_for_row_alt = true;
+                        } else {
+                          _this4.merge_param(param_for_row, value, true); // Update 
+
+                        }
+                      } else {
+                        row_macros[key] = value;
+                      }
+                    }
+                  });
+                  y_stacks.push({
+                    type: "meas",
+                    height: 0,
+                    cont: e.meas_row,
+                    rg_ids: e.meas_row_rg_ids,
+                    block_ids: e.meas_row_block_ids,
+                    nm: next_measure,
+                    pm: prev_measure,
+                    //rg: track.reharsal_groups[i],
+                    //rg_id : i,
+                    macros: global_macros,
+                    // TODO : Macros for each row...?
+                    param: param_for_row //block_id: bi,
+                    //row_id_in_block: row_id_in_block-1 // Already incremented then row id is minus 1
+
+                  });
+                }); // ---------------------
+                // Stage 1 : Screening
+                // ---------------------
+
+                if (!this.memCanvas) {
+                  // Canvas on memory for screening
+                  // TODO : Canvas height 400 is enough ?
+                  this.memCanvas = document.createElement("canvas");
+                  _graphic__WEBPACK_IMPORTED_MODULE_3__["SetupHiDPICanvas"](this.memCanvas, this.param.paper_width / this.param.text_size, 400 / this.param.text_size, this.param.pixel_ratio, this.param.text_size);
+                }
+
+                yse = y_stacks;
+                y_base_screening = origin.y;
+
+                if (show_header) {
+                  y_base_screening += param.y_first_page_offset;
+                } else {
+                  y_base_screening += param.y_offset;
+                }
+
+                dammy_music_context = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](music_context); // Maybe not required ?
+
+                current_accum_block_id = 0;
+                reharsal_x_width_info = [];
+                pei = 0;
+
+              case 31:
+                if (!(pei < yse.length)) {
+                  _context.next = 46;
+                  break;
+                }
+
+                if (!(yse[pei].type == "titles")) {
+                  _context.next = 34;
+                  break;
+                }
+
+                return _context.abrupt("continue", 43);
+
+              case 34:
+                x = yse[pei].param.x_offset; //if(yse[pei].rg_id != current_rg_block[0] || yse[pei].block_id != current_rg_block[1]){
+
+                if (!yse[pei].block_ids.includes(current_accum_block_id)) {
+                  // Per block optimization
+                  this.determine_rooms(yse[pei].param, reharsal_x_width_info);
+                  current_accum_block_id = yse[pei].block_ids[0]; // First block ID is the reference block id
+
+                  reharsal_x_width_info = [];
+                }
+
+                row_elements_list = yse[pei].cont; // Screening music contexts and determine grouping in body elements
+                // For each measure in this row
+
+                for (_ml = 0; _ml < row_elements_list.length; ++_ml) {
+                  // measure object
+                  _m2 = row_elements_list[_ml];
+                  elements = this.classifyElements(_m2); // Too much call of calssify elements.
+                  // Grouping body elements which share the same balken
+
+                  geret = this.grouping_body_elemnts_enh(elements.body);
+                  _m2.renderprop.body_grouping_info = geret;
+                } // y-screening is done in stage 2 as well : TODO : Make it once
+                // Do it in the dammy position y = 0;
+
+
+                yprof = this.screening_y_areas(row_elements_list, 0, yse[pei].param, yse[pei].macros.STAFF, yse[pei].macros.REHARSAL_MARK_POSITION == "Inner"); // yprof.end.y means the row total height
+
+                y_base_screening += yprof.end.y; // Screening x elements and determine the rendering policy for x-axis.
+
+                x_width_info = this.screening_x_areas(x, this.memCanvas, yse[pei].macros, row_elements_list, yse[pei].pm, yse[pei].nm, yprof, yse[pei].param, dammy_music_context);
+                reharsal_x_width_info.push([row_elements_list, x_width_info]);
+
+                if (pei == yse.length - 1) {
+                  // Per block optimization
+                  this.determine_rooms(yse[pei].param, reharsal_x_width_info);
+                }
+
+              case 43:
+                ++pei;
+                _context.next = 31;
+                break;
+
+              case 46:
+                y_base_screening += param.y_offset; // Here y_base_screening means the height of the total score if single page applied.
+                // ----------------------
+                // Stage 2 : Rendering
+                // ----------------------
+
+                canvas = this.canvas;
+
+                if (!(canvas == null)) {
+                  _context.next = 52;
+                  break;
+                }
+
+                _context.next = 51;
+                return this.canvas_provider();
+
+              case 51:
+                canvas = _context.sent;
+
+              case 52:
+                _graphic__WEBPACK_IMPORTED_MODULE_3__["SetupHiDPICanvas"](canvas, this.param.paper_width / this.param.text_size, this.param.paper_height > 0 ? this.param.paper_height / this.param.text_size : y_base_screening, this.param.pixel_ratio, this.param.text_size);
+                score_height = (this.param.paper_height > 0 ? this.param.paper_height / this.param.text_size : y_base_screening) / param.nrow;
+                if (param.background_color) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasRect"](canvas, 0, 0, this.param.paper_width / this.param.text_size, this.param.paper_height > 0 ? this.param.paper_height / this.param.text_size : y_base_screening, param.background_color);
+                y_base = origin.y;
+
+                if (show_header) {
+                  // Title
+                  ri = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width / 2, y_title_offset, global_macros.TITLE, param.title_font_size, "ct", null, false, {
+                    "bold": true
+                  }); // Sub Title
+
+                  if (global_macros.SUB_TITLE != "") _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width / 2, y_subtitle_offset, global_macros.SUB_TITLE, param.subtitle_font_size, "ct", null, false, {
+                    "bold": false
+                  }); // Artist
+
+                  _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width, y_artist_offset, global_macros.ARTIST, param.artist_font_size, "rt", null, false, {
+                    "bold": false
+                  });
+                  y_stacks.push({
+                    type: "titles",
+                    height: param.y_first_page_offset
+                  });
+                  y_base += param.y_first_page_offset;
+                } else {
+                  y_base += param.y_offset;
+                }
+
+                canvaslist = [canvas];
+                _pei = 0;
+
+              case 59:
+                if (!(_pei < yse.length)) {
+                  _context.next = 86;
+                  break;
+                }
+
+                if (!(yse[_pei].type == "titles")) {
+                  _context.next = 63;
+                  break;
+                }
+
+                _context.next = 83;
+                break;
+
+              case 63:
+                if (!(yse[_pei].type == "meas")) {
+                  _context.next = 83;
+                  break;
+                }
+
+                _row_elements_list4 = yse[_pei].cont;
+                ylimit = this.canvas_provider != null ? score_height - yse[_pei].param.y_offset : null;
+                r = this.render_measure_row_simplified(x_offset, canvas, yse[_pei].macros, _row_elements_list4, yse[_pei].pm, yse[_pei].nm, y_base, yse[_pei].param, true, yse[_pei].macros.REHARSAL_MARK_POSITION == "Inner", ylimit, music_context);
+
+                if (r) {
+                  _context.next = 82;
+                  break;
+                }
+
+                if (!(y_base == origin.y + yse[_pei].param.y_offset)) {
+                  _context.next = 72;
+                  break;
+                }
+
+                throw "Paper height is too short to fit in single row";
+
+              case 72:
+                y_base = origin.y + yse[_pei].param.y_offset;
+
+              case 73:
+                _context.next = 75;
+                return this.canvas_provider();
+
+              case 75:
+                canvas = _context.sent;
+                canvaslist.push(canvas);
+                _graphic__WEBPACK_IMPORTED_MODULE_3__["SetupHiDPICanvas"](canvas, yse[_pei].param.paper_width / this.param.text_size, yse[_pei].param.paper_height / this.param.text_size, this.param.pixel_ratio, this.param.text_size);
+                if (param.background_color) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasRect"](canvas, 0, 0, this.param.paper_width / this.param.text_size, this.param.paper_height / this.param.text_size, param.background_color); // try again next page
+
+                _pei = _pei - 1;
+                _context.next = 83;
+                break;
+
+              case 82:
+                y_base = r.y_base;
+
+              case 83:
+                ++_pei;
+                _context.next = 59;
+                break;
+
+              case 86:
+                if (show_footer) this.render_footer(canvaslist, global_macros.TITLE + "/" + global_macros.ARTIST, this.param.origin.y + score_height - this.param.y_footer_offset);
+                return _context.abrupt("return", {
+                  pages: canvaslist.length,
+                  height: score_height
+                });
+
+              case 88:
+              case "end":
+                return _context.stop();
+            }
+          }
+        }, _callee, this);
+      }));
+
+      function render_impl(_x, _x2) {
+        return _render_impl.apply(this, arguments);
+      }
+
+      return render_impl;
+    }()
+  }, {
+    key: "screening_y_areas",
+    value: function screening_y_areas(row_elements_list, y_base, param, staff, inner_reharsal_mark) {
+      var ycomps = ["rm", "mu", "body", "rs", "ml", "irm", "end"];
+      var yprof = {
+        rm: {
+          detected: false,
+          height: param.rm_area_height,
+          margin: [0, 0]
+        },
+        // Rhearsal mark if any
+        mu: {
+          detected: false,
+          height: param.mu_area_height,
+          margin: [0, param.below_mu_area_margin]
+        },
+        body: {
+          detected: true,
+          height: param.row_height,
+          margin: [0, 0]
+        },
+        rs: {
+          detected: false,
+          height: param.rs_area_height,
+          margin: [param.above_rs_area_margin, param.below_rs_area_margin]
+        },
+        ml: {
+          detected: false,
+          height: param.ml_row_height,
+          margin: [param.above_ml_area_margin, 0]
+        },
+        irm: {
+          detected: true,
+          height: param.row_margin,
+          margin: [0, 0]
+        },
+        // Virtual row represeinting fixed inter-row margin
+        end: {
+          detected: true,
+          height: 0,
+          margin: [0, 0]
+        } // Vitrual row representing start of end of row = start of next row
+
+      };
+      var lyric_rows = 0; //var draw_5line = false;
+
+      if (staff == "ON") {
+        yprof.rs.detected = true;
+      } // Screening of y-axis areas
+
+
+      var rg_mark_detected = false;
+
+      for (var ml = 0; ml < row_elements_list.length; ++ml) {
+        var m = row_elements_list[ml];
+        if (m.renderprop && m.renderprop.rg_from_here && m.renderprop.rg_from_here.name != "") // Anonymous reharsal group is not rendered
+          rg_mark_detected = true;
+
+        for (var ei = 0; ei < m.elements.length; ++ei) {
+          var e = m.elements[ei];
+
+          if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Coda"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Segno"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Comment"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["LoopIndicator"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["ToCoda"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DalSegno"]) {
+            yprof.mu.detected = true;
+          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["MeasureBoundary"]) {
+            yprof.ml.detected = yprof.ml.detected || e.times != null && (e.ntimes || e.times != 2);
+          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Chord"]) {
+            yprof.rs.detected |= e.note_group_list !== null;
+          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Lyric"]) {
+            yprof.ml.detected = true;
+            lyric_rows = Math.max(e.lyric.split("/").length, lyric_rows);
+          }
+        }
+      }
+
+      if (staff == "OFF") {
+        yprof.rs.detected = false;
+      }
+
+      if (rg_mark_detected) {
+        if (inner_reharsal_mark) {
+          yprof.mu.detected = true; // In MU area
+        } else {
+          yprof.rm.detected = true; // dedecated rehardsal mark region
+        }
+      } // Calculate yposition  for each area
+
+
+      for (var i = 0; i < ycomps.length; ++i) {
+        var name = ycomps[i];
+        var prev = i > 0 ? ycomps[i - 1] : null; // Here y is the start of body element, not upper edge
+
+        yprof[name].y = i == 0 ? y_base : yprof[prev].y - yprof[prev].margin[0] + yprof[prev].whole_height + yprof[name].margin[0];
+
+        if (!yprof[name].detected) {
+          yprof[name].whole_height = 0;
+        } else {
+          if (name == "ml") {
+            yprof[name].whole_height = Math.max(1, lyric_rows) * yprof[name].height + yprof[name].margin[0] + yprof[name].margin[1]; // multiplied by lyric ros
+          } else {
+            yprof[name].whole_height = yprof[name].height + yprof[name].margin[0] + yprof[name].margin[1];
+          }
+        }
+      }
+
+      return yprof;
+    }
+  }, {
+    key: "screening_x_areas",
+    value: function screening_x_areas(x, paper, macros, row_elements_list, prev_measure, next_measure, yprof, param, music_context) {
+      var _this5 = this;
+
+      var transpose = macros.TRANSPOSE;
+      var half_type = macros.KEY_TYPE;
+      var key = macros.KEY;
+      var total_width = param.paper_width / param.text_size - 2 * param.x_offset;
+      var dammy_rs_area_height = 24; // any value is ok
+      // Determine the width of each measure
+
+      var x_width_info = []; // for number of measures
+
+      var _loop2 = function _loop2(ml) {
+        // Reset music context
+        music_context.pos_in_a_measure = 0; // reset
+        // TODO : consider key infomration
+        // TODO : consider tie
+        // C3 -> 0x3C as 0 C-2 as index 0, G8 as 127(0x7F)
+
+        music_context.accidental_info = new Array(128).fill(0); // measure object
+
+        var m = row_elements_list[ml];
+        var meas_fixed_width = 0;
+        meas_num_flexible_rooms = 0;
+        elements = _this5.classifyElements(m);
+        elements.header.forEach(function (e) {
+          if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["MeasureBoundary"]) {
+            var pm = ml == 0 ? prev_measure : row_elements_list[ml - 1];
+            var ne = pm ? pm.elements[pm.elements.length - 1] : null;
+
+            var r = _this5.draw_boundary_simplified("begin", ne, e, ml == 0, //m.raw_new_line,
+            paper, x, 0, dammy_rs_area_height, // any value is OK
+            dammy_rs_area_height, param, false);
+
+            meas_fixed_width += r.width;
+            e.renderprop = {
+              w: r.width
+            };
+          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Time"]) {
+            meas_fixed_width += 10;
+            e.renderprop = {
+              w: 10
+            };
+          }
+        });
+        meas_fixed_width += param.header_body_margin;
+        rberet = _this5.render_body_elements(false, x, elements, param, music_context, yprof, paper, 0, 0
+        /*meas_start_x*/
+        , m, 1, transpose, half_type, key, 0, 0);
+        meas_fixed_width += rberet.fixed_width;
+        meas_num_flexible_rooms += rberet.num_flexible_rooms;
+        meas_fixed_width += param.body_footer_margin; // Draw footer
+
+        elements.footer.forEach(function (e) {
+          if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["MeasureBoundary"]) {
+            var nm = ml == row_elements_list.length - 1 ? next_measure : row_elements_list[ml + 1];
+            var ne = nm ? nm.elements[0] : null;
+
+            var r = _this5.draw_boundary_simplified("end", e, ne, ml == row_elements_list.length - 1, //nm ? nm.raw_new_line : false,
+            paper, x, 0, dammy_rs_area_height, dammy_rs_area_height, param, false);
+
+            e.renderprop = {
+              w: r.width
+            };
+            meas_fixed_width += r.width; // eslint-disable-next-line no-empty
+          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DaCapo"]) {// eslint-disable-next-line no-empty
+          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DalSegno"]) {// eslint-disable-next-line no-empty
+          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["ToCoda"]) {// eslint-disable-next-line no-empty
+          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Fine"]) {}
+        });
+        x_width_info.push({
+          meas_fixed_width: meas_fixed_width,
+          body_fixed_width: rberet.fixed_width,
+          body_fixed_width_details: rberet.fixed_width_details,
+          meas_num_flexible_rooms: meas_num_flexible_rooms
+        });
+      };
+
+      for (var ml = 0; ml < row_elements_list.length; ++ml) {
+        var meas_num_flexible_rooms;
+        var elements;
+        var rberet;
+
+        _loop2(ml);
+      }
+
+      return x_width_info;
+    }
+  }, {
+    key: "render_body_elements",
+    value: function render_body_elements(draw, x, elements, param, music_context, yprof, paper, _5lines_intv, meas_start_x, m, x_global_scale, transpose, half_type, key, C7_width, y_body_or_rs_base, balken) {
+      var _this6 = this;
+
+      var fixed_width = 0;
+      var fixed_width_details = []; // show be same as num_flexible_rooms
+
+      var num_flexible_rooms = 0;
+      var draw_scale = 1;
+      /*if(draw){
+          console.log("Scaling : ");
+          console.log(m.renderprop.measure_width);
+          console.log(m.renderprop.meas_fixed_width);
+      }*/
+
+      if (draw && param.scale_if_overlap && m.renderprop.total_room < 0) {
+        var body_width = m.renderprop.body_fixed_width + m.renderprop.total_room;
+        draw_scale = body_width / m.renderprop.body_fixed_width;
+        console.log("draw_scale = " + draw_scale); // and then for this case room_per_elem is 0 and scale fixed elemetns while keeping
+        // total width.
+
+        paper.getContext("2d").scale(draw_scale, 1);
+      }
+
+      if (elements.body.length == 0) {
+        if (draw && draw_scale < 1) {
+          x += 1 * param.base_font_size * draw_scale + 0;
+        } else if (draw) {
+          x += 1 * param.base_font_size + m.renderprop.total_room;
+        } else {
+          fixed_width += 1 * param.base_font_size;
+          fixed_width_details.push(1 * param.base_font_size);
+          num_flexible_rooms++;
+        }
+      }
+
+      var this_group_start_index = 0; // used only for draw phase. Used for index room_per_elem.
+
+      var body_grouping_info = m.renderprop.body_grouping_info;
+      body_grouping_info.groupedBodyElems.forEach(function (element_group, gbei) {
+        // Draw Rythm Slashes, first
+        if (yprof.rs.detected && body_grouping_info.all_has_length) {
+          var e0 = element_group.elems[0];
+          var cr = null;
+
+          if (e0 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Chord"]) {
+            cr = _this6.render_chord_simplified(draw, e0, transpose, half_type, key, paper, x / draw_scale, yprof.body.y, param, C7_width);
+
+            if (draw && e0.exceptinal_comment !== null) {
+              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / draw_scale, yprof.mu.y + yprof.mu.height, e0.exceptinal_comment.comment, param.base_font_size / 2, "lb");
+            }
+
+            if (draw && e0.lyric !== null) {
+              var llist = e0.lyric.lyric.split("/");
+
+              for (var li = 0; li < llist.length; ++li) {
+                _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / draw_scale, yprof.ml.y + li * param.ml_row_height, llist[li], param.base_font_size / 3, "lt");
+              }
+            }
+          } else {
+            // Rest or Simile
+            // Rest is drawn in render_rs_area function in RS area
+            cr = {
+              width: 0
+            };
+          }
+
+          if (draw) {
+            var room_for_rs_per_elem = 0;
+            var element_group_width = 0;
+
+            if (element_group.renderprop.based_on_rs_elem) {
+              // In case RS area elements has wider fixed width(in total) than that of first element
+              // total room for rs by sum of rooms in this element group. total rooms cannnot be used as it is total in a measure
+              var room_for_rs = 0;
+
+              for (var ei = 0; ei < element_group.elems.length; ++ei) {
+                room_for_rs += m.renderprop.room_per_elem[this_group_start_index + ei];
+              }
+
+              room_for_rs_per_elem = room_for_rs / element_group.elems.length; // TODO : Improve non constant div
+
+              element_group_width = element_group.renderprop.w + room_for_rs;
+              this_group_start_index += element_group.elems.length;
+            } else {
+              // In case the first element has wider fixed width than RS area elements
+              var _room_for_rs = element_group.renderprop.w + m.renderprop.room_per_elem[this_group_start_index] - element_group.renderprop.rs_area_width;
+
+              room_for_rs_per_elem = _room_for_rs / element_group.elems.length;
+              element_group_width = element_group.renderprop.w + m.renderprop.room_per_elem[this_group_start_index];
+              this_group_start_index += 1;
+            }
+
+            var g = _this6.render_rs_area(x / draw_scale, draw_scale, element_group.elems, paper, yprof.rs.y, yprof.rs.height, meas_start_x, // NOTE : meas_start_x sould be irrespective of draw_scale.
+            draw, 0, 1.0, x_global_scale, music_context, m, param, draw_scale < 1 ? 0 : room_for_rs_per_elem, balken, gbei == body_grouping_info.groupedBodyElems.length - 1);
+
+            var rs_area_width = (g.x - x / draw_scale) * draw_scale; // validation
+
+            if (Math.abs(rs_area_width - element_group_width) > 0.0001) {
+              console.log("Whould be the same : " + [rs_area_width, element_group_width]); //throw "Something wrong with RS area code drawing";
+            }
+
+            if (draw_scale < 1) {
+              x += element_group.renderprop.w * draw_scale + 0;
+            } else {
+              x += element_group_width;
+            }
+          } else {
+            var rs_area_bounding_box = new _common_common__WEBPACK_IMPORTED_MODULE_2__["BoundingBox"](); // Only try to esimate using non-flag-balken drawer
+
+            var tmp_fixed_width_details = [];
+            element_group.elems.forEach(function (e) {
+              var balken_element = _this6.generate_balken_element(e, x, yprof.rs.height, music_context);
+
+              var r = _this6.draw_rs_area_without_flag_balken(draw, paper, param, e, balken_element, x, yprof.rs.y, yprof.rs.height);
+
+              e.renderprop.balken_element = balken_element;
+              rs_area_bounding_box.add_rect(r.bounding_box);
+              x += r.bounding_box.w;
+              tmp_fixed_width_details.push(r.bounding_box.w);
+            });
+            var _rs_area_width = rs_area_bounding_box.get().w;
+            element_group.renderprop.w = Math.max(_rs_area_width, cr.width);
+            element_group.renderprop.rs_area_width = _rs_area_width;
+            element_group.renderprop.based_on_rs_elem = _rs_area_width > cr.width;
+            fixed_width += element_group.renderprop.w;
+            fixed_width_details = fixed_width_details.concat(_rs_area_width > cr.width ? tmp_fixed_width_details : [cr.width]);
+            num_flexible_rooms += element_group.renderprop.based_on_rs_elem ? element_group.elems.length : 1;
+          }
+        } else {
+          element_group.elems.forEach(function (e, ei) {
+            if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Chord"]) {
+              var _cr = _this6.render_chord_simplified(draw, e, transpose, half_type, key, paper, x / draw_scale, yprof.body.y, param, C7_width);
+
+              if (draw && e.exceptinal_comment !== null) {
+                _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / draw_scale, yprof.mu.y + yprof.mu.height, e.exceptinal_comment.comment, param.base_font_size / 2, "lb");
+              }
+
+              if (draw && e.lyric !== null) {
+                var llist = e.lyric.lyric.split("/");
+
+                for (var li = 0; li < llist.length; ++li) {
+                  _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / draw_scale, yprof.ml.y + li * param.ml_row_height, llist[li], param.base_font_size / 3, "lt");
+                }
+              }
+
+              if (draw && draw_scale < 1) {
+                x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
+              } else if (draw) x += e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index + ei];else {
+                e.renderprop.w = _cr.width;
+                fixed_width += e.renderprop.w;
+                fixed_width_details.push(e.renderprop.w);
+                num_flexible_rooms++;
+              }
+            } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Rest"]) {
+              var _cr2 = _this6.render_rest_plain(e, paper, draw, x / draw_scale, y_body_or_rs_base, C7_width, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, param);
+
+              if (draw && draw_scale < 1) {
+                x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
+              } else if (draw) x += e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index + ei];else {
+                e.renderprop.w = _cr2.bounding_box.w;
+                fixed_width += e.renderprop.w;
+                fixed_width_details.push(e.renderprop.w);
+                num_flexible_rooms++;
+              }
+            } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Simile"]) {
+              var _cr3 = _this6.render_simile_mark_plain(draw, paper, x / draw_scale, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, e.numslash, false, "l");
+
+              if (draw && draw_scale < 1) {
+                x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
+              } else if (draw) x += e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index + ei];else {
+                e.renderprop.w = _cr3.width;
+                fixed_width += e.renderprop.w;
+                fixed_width_details.push(e.renderprop.w);
+                num_flexible_rooms++;
+              }
+            } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Space"]) {
+              if (draw && draw_scale < 1) {
+                x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
+              } else if (draw) x += e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index + ei];else {
+                var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, 0, 0, "M", param.base_font_size, "lt", 0.5 * param.base_font_size, true, null); // width parameter needs to be aligned with chord rendering
+
+                e.renderprop.w = e.length * r.width;
+                fixed_width += e.renderprop.w;
+                fixed_width_details.push(e.renderprop.w);
+                num_flexible_rooms++;
+              }
+            }
+          });
+          if (draw) this_group_start_index += element_group.elems.length; // This count should be same as num_flexible_rooms;
+        }
+      });
+
+      if (draw && draw_scale < 1) {
+        paper.getContext("2d").scale(1 / draw_scale, 1);
+      }
+
+      return {
+        x: x,
+        fixed_width: fixed_width,
+        num_flexible_rooms: num_flexible_rooms,
+        fixed_width_details: fixed_width_details
+      };
+    }
+  }, {
+    key: "grouping_body_elemnts_enh",
+    value: function grouping_body_elemnts_enh(body_elements) {
+      // First, guess chord duration here.
+      // In current version, each chord in the measure is assumed to have the same duration.
+      // TODO : Improve based on number of spaces or duration indication mark.
+      var all_has_length = true;
+      var chord_name_str = null;
+      var sum_length = 0;
+      var rest_or_long_rests_detected = false;
+      body_elements.forEach(function (e) {
+        if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Space"]) return;
+        all_has_length &= e.note_group_list !== null;
+        if (all_has_length) sum_length += e.note_group_list[0].lengthIndicator.length;
+        rest_or_long_rests_detected |= e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Rest"];
+      });
+      var tmpl = {
+        elems: [],
+        groupedChordsLen: 0,
+        renderprop: {}
+      };
+      var groupedBodyElems = [];
+      if (body_elements.length > 0) groupedBodyElems.push(_common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](tmpl));
+      var gbei = 0; // Grouping the chord and notes among which the x-axis rooms are shared
+      // grouping is just done whether same chord is sahred.
+      // If this measure starts with Rest/Simle, then following Rests and chord without chord 
+      // name are regarded as in the same group.
+      // IF this measure starts with Chord with no name, then folowing Rests/Similre and Chords 
+      // with no names are grouped in the same group.
+
+      body_elements.forEach(function (e, ei) {
+        var this_chord_str = "";
+
+        if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Chord"]) {
+          this_chord_str = e.chord_name_str;
+        } else {
+          this_chord_str = ""; // Rests, Simile(in body) and Space are regarded as empty chord
+        }
+
+        if (chord_name_str === null) chord_name_str = this_chord_str;
+
+        if (groupedBodyElems[gbei].elems.length == 0) {// Keep in the same group
+        } else if (all_has_length && (this_chord_str == chord_name_str || this_chord_str == "" && chord_name_str != "")) {// Keep in the same group
+        } else {
+          // flush
+          groupedBodyElems.push(_common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](tmpl));
+          ++gbei;
+          chord_name_str = this_chord_str;
+        }
+
+        groupedBodyElems[gbei].elems.push(e);
+      });
+      return {
+        groupedBodyElems: groupedBodyElems,
+        all_has_length: all_has_length
+      };
+    }
+  }, {
+    key: "render_measure_row_simplified",
+    value: function render_measure_row_simplified(x, paper, macros, row_elements_list, prev_measure, next_measure, y_base, param, draw, inner_reharsal_mark, ylimit, music_context) {
+      var _this7 = this;
+
+      var x_global_scale = macros.X_GLOBAL_SCALE;
+      var transpose = macros.TRANSPOSE;
+      var half_type = macros.KEY_TYPE;
+      var key = macros.KEY;
+      var staff = macros.STAFF;
+      /* Reference reserved width for empty measures or chord symbol without base names*/
+
+      var C7_width = 20;
+
+      if (staff == "ON") {} // rs_area_detected = true; // Fix me : Not supported in simplified renderer
+      // interval of 5 lines
+
+
+      var _5lines_intv = param.rs_area_height / (5 - 1);
+
+      var yprof = this.screening_y_areas(row_elements_list, y_base, param, staff, inner_reharsal_mark);
+      var y_next_base = yprof.end.y;
+      var y_body_or_rs_base = yprof.rs.detected ? yprof.rs.y : yprof.body.y;
+      var repeat_mark_y_base = yprof.rs.detected ? yprof.rs.y - param.repeat_mark_y_margin : yprof.mu.y + yprof.mu.height; // if ylimit is specified, and drawing region surpass that limit, do not render
+
+      if (ylimit !== null && y_next_base > ylimit) {
+        return null;
+      }
+
+      if (row_elements_list[0].renderprop.left_margin != null) {
+        x += row_elements_list[0].renderprop.left_margin;
+      } // Reharsal mark if any
+
+      /*if(first_block_first_row && !inner_reharsal_mark){
+          let r = graphic.CanvasTextWithBox(
+              paper,
+              param.x_offset,
+              yprof.rm.y,
+              reharsal_group.name,
+              param.reharsal_mark_font_size,
+              2, 
+              graphic.GetCharProfile(param.reharsal_mark_font_size).height
+          );
+      }*/
+      // For each measure in this row
+
+
+      var _loop3 = function _loop3(ml) {
+        // measure object
+        var m = row_elements_list[ml];
+
+        var elements = _this7.classifyElements(m);
+
+        mh_offset = 0;
+        meas_base_x = x; // Reset music context
+
+        music_context.pos_in_a_measure = 0; // reset
+        // TODO : consider key infomration
+        // TODO : consider tie
+        // C3 -> 0x3C as 0 C-2 as index 0, G8 as 127(0x7F)
+
+        music_context.accidental_info = new Array(128).fill(0); // balken context inside a measure
+
+        var balken = {
+          groups: []
+        }; // Reharsal group mark, only rendred when it has name
+
+        if (m.renderprop && m.renderprop.rg_from_here && m.renderprop.rg_from_here.name != "") {
+          var reharsal_group = m.renderprop.rg_from_here;
+          var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasTextWithBox"](paper, meas_base_x, inner_reharsal_mark ? yprof.mu.y : yprof.rm.y, reharsal_group.name, param.reharsal_mark_font_size, 2, _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](param.reharsal_mark_font_size, null, false, paper.ratio, paper.zoom).height);
+          if (inner_reharsal_mark) mh_offset += r.width + 2;
+        }
+
+        for (ei = 0; ei < elements.header.length; ++ei) {
+          var e = elements.header[ei];
+
+          if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Coda"]) {
+            var _r = _this7.draw_coda_plain(paper, meas_base_x + mh_offset, yprof.mu.y + yprof.mu.height, "lb", e, param.base_font_size);
+
+            mh_offset += _r.width;
+          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Segno"]) {
+            var _r2 = _this7.draw_segno_plain(paper, meas_base_x + mh_offset, yprof.mu.y + yprof.mu.height, e, param.base_font_size);
+
+            mh_offset += _r2.width;
+          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Comment"]) {
+            // If this comment is associated with a chord with exceptional comment, not rendered here.
+            if (!e.chorddep) {
+              var _r3 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, meas_base_x + mh_offset, yprof.mu.y + yprof.mu.height, e.comment, param.base_font_size / 2, "lb");
+
+              mh_offset += _r3.width;
+            }
+          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Lyric"]) {
+            if (draw) {
+              // If this comment is associated with a chord with exceptional comment, not rendered here.
+              if (!e.chorddep) {// Currently lyrics are only rendered for chord dependency case
+              }
+            }
+          }
+        } // Header loop
+
+
+        var meas_start_x = x;
+        var meas_start_x_actual_boundary = x; // Draw header
+        // Clef, Key, Begin Boundary, Time(1st one) are included in this area
+
+        elements.header.forEach(function (e) {
+          if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["MeasureBoundary"]) {
+            var pm = ml == 0 ? prev_measure : row_elements_list[ml - 1];
+            var ne = pm ? pm.elements[pm.elements.length - 1] : null;
+
+            var _r4 = _this7.draw_boundary_simplified("begin", ne, e, ml == 0, //m.raw_new_line,
+            paper, x, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, param, true);
+
+            m.renderprop.y = y_body_or_rs_base;
+            m.renderprop.sx = x;
+            m.renderprop.paper = paper;
+            x += e.renderprop.w;
+            meas_start_x_actual_boundary = _r4.actual_boundary;
+          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Time"]) {
+            var chord_str_height = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](param.base_font_size, null, false, paper.ratio, paper.zoom).height;
+            var row_height = yprof.rs.detected ? param.rs_area_height : param.row_height;
+            var cont_height = yprof.rs.detected ? param.rs_area_height : chord_str_height; //var lineThickNessShift = 0.064; // Line tickness
+            //let fontSize = graphic.getFontSizeFromHeight(cont_height + lineThickNessShift*cont_height/4, 
+            //    "Bravura Text", String.fromCodePoint(0xE014)); // 5 line is baseline
+            //console.log("fontSize="+fontSize);
+
+            /*graphic.CanvasText(
+                paper,
+                x + e.renderprop.w / 2,
+                y_body_or_rs_base + row_height/2  - cont_height/2,
+                //e.numer,
+                String.fromCodePoint(0xE014),
+                fontSize,
+                "lt",
+                e.renderprop.w,
+                false,
+                {"fontfamily":"Bravura Text", "raw":true}
+            );*/
+
+            /*graphic.CanvasText(
+                paper,
+                x + e.renderprop.w / 2,
+                y_body_or_rs_base + row_height/2 - cont_height/2 - cont_height/4*3,
+                //e.numer,
+                String.fromCodePoint(0xE080+parseInt(e.numer)),
+                fontSize,
+                "lt",
+                e.renderprop.w,
+                false,
+                {"fontfamily":"Bravura Text", "raw":true}
+            );*/
+
+            _this7.buravura.put(paper, 0xE080 + parseInt(e.numer), cont_height / 4, x, y_body_or_rs_base + row_height / 2 - cont_height / 2 - cont_height / 4 * 3);
+            /*graphic.CanvasText(
+                paper,
+                x + e.renderprop.w / 2,
+                y_body_or_rs_base + row_height/2 - cont_height/2 - cont_height/4*1,
+                //e.denom,
+                String.fromCodePoint(0xE080+parseInt(e.denom)),
+                fontSize,
+                "rt",
+                e.renderprop.w,
+                false,
+                {"fontfamily":"Bravura Text", "raw":true}
+            );*/
+
+
+            _this7.buravura.put(paper, 0xE080 + parseInt(e.denom), cont_height / 4, x, y_body_or_rs_base + row_height / 2 - cont_height / 2 - cont_height / 4 * 1);
+            /*var ly = yprof.body.y + row_height / 2;
+            if (draw && !yprof.rs.detected)
+                graphic.CanvasLine(
+                    paper,
+                    x,
+                    ly,
+                    x + e.renderprop.w,
+                    ly
+                );*/
+
+
+            x += e.renderprop.w;
+          }
+        });
+        var header_width = x - meas_start_x;
+        x += param.header_body_margin; // Draw body
+
+        var rberet = _this7.render_body_elements(true, x, elements, param, music_context, yprof, paper, _5lines_intv, meas_start_x, m, x_global_scale, transpose, half_type, key, C7_width, y_body_or_rs_base, balken);
+
+        x = rberet.x;
+        x += param.body_footer_margin;
+        var footer_start_x = x; // Draw footer
+
+        footer_base = x;
+
+        for (var _ei = 0; _ei < elements.footer.length; ++_ei) {
+          var _e2 = elements.footer[_ei];
+
+          if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["MeasureBoundary"]) {
+            nm = ml == row_elements_list.length - 1 ? next_measure : row_elements_list[ml + 1];
+            ne = nm ? nm.elements[0] : null;
+
+            var _r5 = _this7.draw_boundary_simplified("end", _e2, ne, ml == row_elements_list.length - 1, //nm ? nm.raw_new_line : false,
+            paper, x, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, param, true);
+
+            m.renderprop.ex = x;
+            x += _e2.renderprop.w;
+          } else if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DaCapo"]) {
+            _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, repeat_mark_y_base, _e2.toString(), param.base_font_size / 2, "rb"); //if (yprof.rs.detected) x += 15 * 4;
+          } else if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DalSegno"]) {
+            _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, repeat_mark_y_base, _e2.toString(), param.base_font_size / 2, "rb");
+          } else if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["ToCoda"]) {
+            if (yprof.rs.detected) {
+              /*
+              var text = raphaelText(
+                  paper,
+                  x,
+                  y_body_or_rs_base,
+                  "To",
+                  param.base_font_size / 2,
+                  "lb"
+              ).attr(param.repeat_mark_font);
+              x += text.getBBox().width + 5;
+              rs_area_svg_groups.push(text);
+              var coda = draw_coda(
+                  paper,
+                  x,
+                  y_body_or_rs_base,
+                  "lb",
+                  e
+              );
+              x += coda.getBBox().width;
+              rs_area_svg_groups.push(coda);
+              */
+            } else {
+              var _r6 = _this7.draw_coda_plain(paper, x, yprof.mu.y + yprof.mu.height, "rb", _e2, param.base_font_size); //paper.getContext("2d").drawImage(graphic.G_imgmap["assets/img/coda.svg"], x - 15, y_body_or_rs_base - 15, 15, 15);
+
+
+              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x - _r6.width, yprof.mu.y + yprof.mu.height, "To", param.base_font_size / 2, "rb");
+            }
+          } else if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Fine"]) {
+            _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, repeat_mark_y_base, _e2.toString(), param.base_font_size / 2, "rb");
+            if (yprof.rs.detected) x += 15 * 4;
+          } else {
+            throw "Unkown instance of footer elements";
+          }
+        }
+
+        var footer_width = x - footer_start_x;
+        meas_end_x = x; // Draw Upper and Lower Signs
+
+        for (var _ei2 = 0; _ei2 < elements.measure_wide.length; ++_ei2) {
+          var _e3 = elements.measure_wide[_ei2];
+
+          if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["LoopIndicator"]) {
+            oy = 10;
+            ly = yprof.body.y - 2 - oy;
+            sx = meas_start_x_actual_boundary;
+            fx = meas_start_x + (meas_end_x - meas_start_x) * 0.7;
+            _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, sx, ly, sx, ly + oy);
+            _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, sx, ly, fx, ly);
+            s = _e3.indicators.join(",");
+            _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, sx + 2, ly, s, param.base_font_size / 3, "lt");
+          } else if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["LongRestIndicator"]) {
+            var height = yprof.rs.detected ? param.rs_area_height : param.row_height;
+
+            var _sx = meas_start_x + header_width; // header_width does not include header_body_margin
+
+
+            var _fx = meas_end_x - footer_width;
+
+            rh = height;
+            r_lrmargin = 0.05;
+            min_lrmargin = 5;
+            max_lrmargin = 10;
+            yshift = 0; // height / 6;
+
+            vlmargin = 0.2;
+            var lrmargin = Math.max(min_lrmargin, Math.min(max_lrmargin, (_sx + _fx) * r_lrmargin));
+            lx = _sx + lrmargin;
+            rx = _fx - lrmargin;
+            if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, lx, y_body_or_rs_base + height / 2 + yshift, rx, y_body_or_rs_base + height / 2 + yshift, {
+              width: height / 5
+            });
+            if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, lx, y_body_or_rs_base + rh * vlmargin + yshift, lx, y_body_or_rs_base + rh - rh * vlmargin + yshift, {
+              width: "1"
+            });
+            if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, rx, y_body_or_rs_base + rh * vlmargin + yshift, rx, y_body_or_rs_base + rh - rh * vlmargin + yshift, {
+              width: "1"
+            });
+
+            if (draw) {
+              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, (_sx + _fx) / 2, y_body_or_rs_base, _e3.longrestlen, param.base_font_size / 2, "ct", undefined, !draw);
+            } //rest_or_long_rests_detected |= true;
+
+          } else if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Simile"]) {
+            // Simile mark in measure wide element if there is no other body elements in this measure
+            var _sx2 = meas_start_x + header_width; // header_width does not include header_body_margin
+
+
+            var _fx2 = meas_end_x - footer_width;
+
+            _this7.render_simile_mark_plain(draw, paper, (_sx2 + _fx2) / 2, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, _e3.numslash, false, "c");
+          } else {
+            throw "Unkown measure wide instance detected";
+          }
+        }
+
+        m.renderprop.meas_end_x = meas_end_x;
+        m.renderprop.meas_start_x = meas_start_x;
+      };
+
+      for (var ml = 0; ml < row_elements_list.length; ++ml) {
+        var mh_offset;
+        var meas_base_x;
+        var ei;
+        var footer_base;
+        var nm;
+        var ne;
+        var meas_end_x;
+        var oy;
+        var ly;
+        var sx;
+        var fx;
+        var s;
+        var rh;
+        var r_lrmargin;
+        var min_lrmargin;
+        var max_lrmargin;
+        var yshift;
+        var vlmargin;
+        var lx;
+        var rx;
+
+        _loop3(ml);
+      } // measure loop
+      // 0. Draw 5 lines
+
+
+      if (draw && yprof.rs.detected) {
+        var start_x = row_elements_list[0].renderprop.meas_start_x;
+        var end_x = row_elements_list[row_elements_list.length - 1].renderprop.meas_end_x - 1; // -1 as meas_end_x point to the next point of end of boundary(= Normally total_width - x_margin)
+
+        for (var i = 0; i < 5; ++i) {
+          var intv = _5lines_intv;
+          var dy = 0;
+          _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, start_x, yprof.rs.y + i * intv + dy, end_x, yprof.rs.y + i * intv + dy, {
+            width: 1
+          });
+        }
+      } // return {y_base:y_base + param.row_height + param.row_margin};
+
+
+      return {
+        y_base: y_next_base
+      };
+    }
+  }, {
+    key: "draw_segno_plain",
+    value: function draw_segno_plain(paper, x, y, segno, B) {
+      var lx = x;
+      var img_width = B / 3;
+      var img_height = B / 2;
+      var text_size = B / 2;
+      /*paper
+          .getContext("2d")
+          .drawImage(graphic.G_imgmap["assets/img/segno.svg"], lx, y, B / 3, B / 2);
+      */
+
+      _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["assets/img/segno.svg"], lx, y, img_width, img_height, "lb", true);
+      lx += img_width;
+
+      if (segno.number !== null) {
+        var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, lx, y, segno.number, text_size, "lb");
+        lx += r.width;
+      }
+
+      if (segno.opt !== null) {
+        var _r7 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, lx, y, "(" + segno.opt + ")", text_size, "lb");
+
+        lx += _r7.width;
+      }
+
+      return {
+        width: lx - x
+      };
+    }
+  }, {
+    key: "draw_coda_plain",
+    value: function draw_coda_plain(paper, x, y, align, coda, B) {
+      var width = 0;
+      var ys = 0;
+      var img_width = B / 2;
+      var img_height = B / 2;
+      var text_size = B / 2;
+
+      if (align[1] == "b") {
+        ys = -img_height;
+      } else if (align[1] == "m") {
+        ys = -img_height / 2;
+      } // var img_y = y; // + ys;
+
+
+      if (align[0] == "r") {
+        if (coda.number !== null) {
+          var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, y, //img_y + img_height,
+          coda.number, text_size, "rb");
+          width += r.width;
+        }
+        /*paper
+            .getContext("2d")
+            .drawImage(
+                graphic.G_imgmap["assets/img/coda.svg"],
+                x - width - B / 2,
+                img_y,
+                B / 2,
+                B / 2
+            );*/
+
+
+        _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["assets/img/coda.svg"], x - width, y, img_width, img_height, "rb", true);
+        width += img_width;
+      } else if (align[0] == "l") {
+        /*paper
+            .getContext("2d")
+            .drawImage(
+                graphic.G_imgmap["assets/img/coda.svg"],
+                x,
+                img_y,
+                img_width,
+                img_height
+            );*/
+        _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["assets/img/coda.svg"], x, y, img_width, img_height, "lb", true);
+        width += img_width;
+
+        if (coda.number !== null) {
+          var _r8 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x + width, y, //img_y + img_height,
+          coda.number, text_size, "lb");
+
+          width += _r8.width;
+        }
+      } else {
+        throw "NOT SUPPORTED";
+      }
+
+      return {
+        width: width
+      };
+    }
+  }, {
+    key: "render_chord_as_string_plain",
+    value: function render_chord_as_string_plain(chord, paper, x, y_body_base, param, draw) {
+      var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, y_body_base + param.row_height / 2, chord.chord_str, param.base_font_size * 0.6, "lm", undefined, !draw);
+      return {
+        width: r.width
+      };
+    }
+  }, {
+    key: "render_rest_plain",
+    value: function render_rest_plain(e, paper, draw, x, y_body_or_rs_base, C7_width, row_height, base_body_height, param) {
+      var _5i = base_body_height / 4;
+
+      var yoffsets = {
+        1: -_5i,
+        2: -_5i / 6 * 4,
+        4: -_5i * 1.5,
+        8: -_5i,
+        16: 0,
+        32: 0,
+        64: _5i
+      };
+      var heights = {
+        1: _5i / 6 * 4,
+        2: _5i / 6 * 4,
+        4: _5i * 3,
+        8: _5i * 2.5,
+        16: _5i * 2.5,
+        32: _5i * 2.5,
+        64: _5i * 2.5
+      };
+      var dot_xoffsets = {
+        1: 16,
+        2: 16,
+        4: 10,
+        8: 12,
+        16: 14,
+        32: 16,
+        64: 18
+      };
+      var rd = e.note_group_list[0].lengthIndicator.base;
+      var numdot = e.note_group_list[0].lengthIndicator.numdot;
+      var oy = yoffsets[rd];
+      var fs = 14;
+      var ctx = paper.getContext("2d"); // eslint-disable-next-line no-constant-condition
+
+      if (false) { var i; }
+
+      if (draw) {
+        var img = _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["assets/img/rest" + (rd <= 4 ? rd : 8) + ".svg"];
+        var s = img.height / heights[rd];
+
+        if (rd <= 4) {
+          ctx.drawImage(img, x, y_body_or_rs_base + row_height / 2 + oy, img.width / s, img.height / s);
+        } else {
+          var nKasane = _common_common__WEBPACK_IMPORTED_MODULE_2__["myLog2"](rd) - 2;
+          var rdx = 2;
+          var rdy = -_5i;
+
+          for (var k = 0; k < nKasane; ++k) {
+            ctx.drawImage(img, x + k * rdx, y_body_or_rs_base + row_height / 2 + k * rdy + oy, img.width / s, img.height / s);
+          }
+        } // dots
+
+
+        for (var di = 0; di < numdot; ++di) {
+          _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](paper, x + dot_xoffsets[rd] + di * 5, y_body_or_rs_base + row_height / 2 - _5i / 2, 1);
+        }
+      }
+
+      return {
+        bounding_box: {
+          x: x,
+          y: y_body_or_rs_base,
+          w: 10,
+          h: row_height
+        }
+      }; // TODO : Impelment correctly
+    }
+  }, {
+    key: "render_simile_mark_plain",
+    value: function render_simile_mark_plain(draw, paper, x, y_body_base, row_height, base_body_height, // In RS area, row_height == base_body_height is asuumed
+    numslash, put_boundary, align) {
+      var h = 4;
+      var H = 12;
+      var i = 4;
+      var cm = 2;
+      var cr = 1.2;
+
+      var _5lines_intv = base_body_height / 4;
+
+      var width = (h + i) * (numslash - 1) + h + H;
+      if (align == "c") x -= width / 2;else if (align == "r") x -= width;
+      var x0 = x;
+      if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](paper, x + cm, y_body_base + row_height / 2 - _5lines_intv * 0.5, cr);
+
+      for (var r = 0; r < numslash; ++r) {
+        var y = y_body_base + row_height / 2;
+        x += (h + i) * r;
+
+        if (draw) {
+          var points = [[x, y + _5lines_intv * 1], [x + h, y + _5lines_intv * 1], [x + h + H, y - _5lines_intv * 1], [x + H, y - _5lines_intv * 1]];
+          _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasPolygon"](paper, points, true, true);
+        }
+      }
+
+      if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](paper, x + h + H - cm, y_body_base + row_height / 2 + _5lines_intv * 0.5, cr);
+
+      if (put_boundary) {
+        if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, x0 + width / 2, y_body_base, x0 + width / 2, y_body_base + row_height, {
+          width: 1
+        });
+      }
+
+      return {
+        width: width
+      };
+    }
+  }, {
+    key: "render_chord_simplified",
+    value: function render_chord_simplified(draw, chord, transpose, half_type, key, canvas, x, y_body_base, param, C7_width) {
+      if (!chord.is_valid_chord) {
+        return this.render_chord_as_string_plain(chord, canvas, x, y_body_base, param, draw);
+      }
+
+      var ce = this.chord_elem_classify(chord, transpose, half_type, key);
+      var bases = ce.bases;
+      var elems = ce.mid_elem_objs;
+      var y = y_body_base;
+      var B = param.base_font_size; // if bases are null, elems are null, then it is just a duration information
+
+      if (bases[0] == null && bases[1] == null && elems === undefined) {
+        return {
+          width: B
+        };
+      }
+
+      var _3rdelem = ce._3rdelem;
+      var _5thelem = ce._5thelem;
+      var _6791113suselem = ce._6791113suselem;
+      var _alteredelem = ce._alteredelem; // #11, #9, b9, #13, b13,
+
+      var upper_width = 0;
+      var lower_width = 0;
+      var tensions_width = 0;
+      var onbass_width = 0;
+      var rootCharHeight = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](B, null, false, canvas.ratio, canvas.zoom).height; // Position parameters
+
+      var upper_tension_y_offset = 0; // base line is middle of main chord character
+
+      var lower_onbass_y_offset = rootCharHeight / 16; // base line is bottom of main chord character. For on bass this applies for normal onbass style. For on bass style of "below", offset 0 is applied.
+
+      var root = bases[0];
+      var onbass = bases[1];
+      var chord_offset_on_bass = 0;
+      if (onbass != null && param.on_bass_style == "below") chord_offset_on_bass = param.on_bass_below_y_offset; // Character width scaling, ratio to base font size in pt. Note that 1.0 does not mean the width of base character.
+      // In most case, non-proportional font have differnt width for each cahracter. 
+      // Typically "G" has max width among characters used for chords.
+      // Adjustment based on "G" sometimes lead to too much space for other thinner fonts like "F".
+      // A little bit of compressing the default character width will absorb such a difference. Here *0.9 is used. 
+
+      var char_width_scale = 0.7;
+      var main_char_width = 0.7;
+
+      if (root) {
+        _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x, y + param.row_height / 2 + chord_offset_on_bass, root[0], B, "lm", B * char_width_scale, !draw);
+        upper_width = B * main_char_width;
+        lower_width = B * main_char_width;
+
+        if (root.length == 2) {
+          var acc_height = rootCharHeight / 2.0 + rootCharHeight / 8.0;
+          var acc_width = B * 0.25;
+
+          if (root[1] == "b") {
+            if (draw) {
+              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["assets/img/flat.svg"], x + upper_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, acc_width, acc_height, "lb");
+            }
+
+            upper_width += acc_width;
+          } else {
+            if (draw) {
+              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["assets/img/sharp.svg"], x + upper_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, acc_width, acc_height, "lb");
+            }
+
+            upper_width += acc_width;
+          }
+        }
+      } else {} // No root but only bass
+      // Half diminish is firstly rendered
+
+
+      if (ce._halfdim_exists) {
+        // Remove m7 and -5
+        _3rdelem = _3rdelem.filter(function (e) {
+          return e.type != "m";
+        });
+        _6791113suselem = _6791113suselem.filter(function (e) {
+          return !(e.type == "dig" && e.param == "7");
+        });
+        _5thelem = _5thelem.filter(function (e) {
+          return e.type != "b";
+        });
+        var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x00d8), B * 0.5, "lb", B * 0.5, !draw);
+        lower_width += r.width;
+      }
+
+      _3rdelem.forEach(function (e) {
+        if (e.type == "M" && _6791113suselem.length > 0) {
+          var _r9 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x0394), B * 0.5, "lb", B * 0.5, !draw);
+
+          lower_width += _r9.width;
+        } else if (e.type == "m") {
+          var _r10 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x2013), B * 0.5, "lb", B * 0.5, !draw);
+
+          lower_width += _r10.width;
+        } else {// Unkown type
+        }
+      });
+
+      _6791113suselem.forEach(function (e) {
+        if (e.type == "dig") {
+          var _r11 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, e.param, B * 0.5, "lb", B * 0.5, !draw);
+
+          lower_width += _r11.width;
+        } else if (e.type == "sus" || e.type == "add") {
+          var _r12 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, e.type + (e.param ? e.param : ""), B * 0.5, "lb", B * 0.8, !draw);
+
+          lower_width += _r12.width;
+        } else if (e.type == "dim") {
+          var _r13 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x004f) + (e.param ? e.param : ""), B * 0.5, "lb", B * 0.5, !draw);
+
+          lower_width += _r13.width;
+        } else if (e.type == "M") {
+          var _r14 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x0394) + (e.param ? e.param : ""), B * 0.5, "lb", B * 0.5, !draw);
+
+          lower_width += _r14.width;
+        }
+      });
+
+      _5thelem.forEach(function (e) {
+        if (e.type == "b") {
+          var _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + upper_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, "-5", B * 0.5, "lb", B * 0.5, !draw);
+
+          upper_width += _r15.width;
+        } else if (e.type == "#") {
+          var _r16 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + upper_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, "+5", B * 0.5, "lb", B * 0.5, !draw);
+
+          upper_width += _r16.width;
+        }
+      });
+
+      if (_alteredelem.length > 0) {
+        var tensions_pos = Math.max(upper_width, lower_width); // Assume onbass below does not exceed lower_width
+
+        var _r17 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, "(", B * 0.5, "lb", B * 0.5, !draw);
+
+        tensions_width += _r17.width;
+        var h = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](B * 0.5, null, false, canvas.ratio, canvas.zoom).height;
+
+        _alteredelem.forEach(function (e, index) {
+          if (e.type == "b") {
+            if (draw) {
+              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["assets/img/flat.svg"], x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, B * 0.2, h, "lb");
+            }
+
+            tensions_width += B * 0.2;
+          } else if (e.type == "#") {
+            if (draw) {
+              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["assets/img/sharp.svg"], x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, B * 0.2, h, "lb");
+            }
+
+            tensions_width += B * 0.2;
+          }
+
+          var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, e.param, B * 0.5, "lb", B * 0.5, !draw);
+          tensions_width += r.width;
+
+          if (index != _alteredelem.length - 1) {
+            var _r18 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, ", ", B * 0.5, "lb", B * 0.5, !draw);
+
+            tensions_width += _r18.width;
+          }
+        });
+
+        _r17 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, ")", B * 0.5, "lb", B * 0.5, !draw);
+        tensions_width += _r17.width;
+      }
+
+      if (onbass != null) {
+        var on_bass_below_a_margin = param.on_bass_style == "below" ? 1 : 0;
+        var onbass_pos = param.on_bass_style == "below" ? x : x + Math.max(upper_width, lower_width) + tensions_width;
+        var on_bass_y_offset = param.on_bass_style == "below" ? 0 : lower_onbass_y_offset;
+
+        var _r19 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, onbass_pos, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, "/" + onbass[0], B * 0.45, param.on_bass_style == "below" ? "lt" : "lb", B * 0.5, !draw);
+
+        onbass_width += _r19.width;
+
+        if (onbass.length == 2) {
+          if (onbass[1] == "b") {
+            if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["assets/img/flat.svg"], onbass_pos + onbass_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, B * 0.2, _r19.height, param.on_bass_style == "below" ? "lt" : "lb", true);
+            onbass_width += B * 0.2;
+          } else {
+            if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["assets/img/sharp.svg"], onbass_pos + onbass_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, B * 0.2, _r19.height, param.on_bass_style == "below" ? "lt" : "lb", true);
+            onbass_width += B * 0.2;
+          }
+        }
+      }
+
+      var width = 0;
+      if (param.on_bass_style == "below") width = Math.max(upper_width, lower_width, onbass_width) + tensions_width;else {
+        width = Math.max(upper_width, lower_width) + tensions_width + onbass_width;
+      } // Quantize with 0.25*B unit : Not so beneficial ?
+      // width = Math.ceil(width / (B/4.0)) * (B/4.0);
+
+      return {
+        width: width
+      };
+    }
+    /**
+     * Draw boundary
+     * @param side : 'begin' or 'end' of boundary for current measure
+     * @param e0 : Boundary element: 0
+     *             - 'end' boundary if the previous measure when <side> is 'begin'
+     *             - 'end' boundary of current measure when <side> is 'end' 
+     *             - can be null if there is no previous measure when <side> is 'begin'.
+     * @param e1 : Boundary element: 1
+     *             - 'begin' boundary of current measure when <side> is 'begin'
+     *             - 'begin' boundary of next measure when <side> is 'end'
+     *             - can be null if there is no next measure when <side> is 'end'.
+     * @param is_row_edge : Whether this boundary is at the edge of row( left edge if <side> is 'begin', or right edge if <side> is 'end')
+     * @param paper : Paper object
+     * @param x : Current x position
+     * @param darw : Whether to draw or just estimating sizes
+     *
+     * @return dictionary with following keys and values
+     *             x : updated x position.
+     */
+
+  }, {
+    key: "draw_boundary_simplified",
+    value: function draw_boundary_simplified(side, e0, e1, is_row_edge, canvas, x, y_body_base, row_height, base_body_height, param, draw) {
+      var draw_type = null; // "s, d, lb, le, lb, f"
+
+      var w = 0; // width of boundary
+
+      var actual_boundary = 0; // Actual boundary when having more than 1 pixel width. 
+
+      if (side == "end" && !is_row_edge) {
+        // If this is not the last measure in this line, then does not draw the boundary. Draw in the "begin" side of next measure.
+        return {
+          width: 0,
+          actual_boundary: 0
+        };
+      }
+      /*
+          var thisIsLastMeasureInLine = e1 === null || is_row_edge;
+           // If this is not the last measure in this line, then does not draw the boundary. Draw in the "begin" side of next measure.
+          if (!thisIsLastMeasureInLine) return { width: 0, actual_boundary : 0 };
+      }*/
+
+
+      if (is_row_edge === null || is_row_edge == false) {
+        // 1. 2 boundaries in  differnt rows in the code will be rendered as an adjacent measure, or
+        // 2. The adjacent measures in the codes are measured as is
+        draw_type = this.boundary_type_without_line_break(e0, e1);
+      } else {
+        // 1. The adjacnet measures in the codes are measured in differnt rows
+        // 2. 2 boundraies in differnt rows in the code will be rendered as is (i.e. for differnt rows)
+        draw_type = this.boundary_type_with_line_break(e0, e1, side);
+      } //console.log([draw_type, side]);
+
+
+      var xshift = null;
+      var r = null;
+
+      switch (draw_type) {
+        case "s":
+        case "d":
+          // begin and end
+          var nline = draw_type == "s" ? 1 : 2;
+          var barintv = 3;
+          w = 1 + (nline - 1) * barintv;
+
+          for (var li = 0; li < nline; ++li) {
+            if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + li * barintv, y_body_base, x + li * barintv, y_body_base + row_height);
+          }
+
+          actual_boundary = x + (nline - 1) * barintv;
+          break;
+
+        case "b":
+          // begin only
+          w = 8;
+          actual_boundary = x;
+          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x, y_body_base, x, y_body_base + row_height, {
+            width: 2
+          });
+          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 3, y_body_base, x + 3, y_body_base + row_height);
+          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 7, y_body_base + row_height / 4 * 1.5, 1);
+          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 7, y_body_base + row_height / 4 * 2.5, 1);
+          break;
+
+        case "e":
+          // begin and end
+          w = 8;
+          actual_boundary = x + w;
+          xshift = side == "end" ? 0 : 0;
+          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + xshift, y_body_base + row_height / 4 * 1.5, 1);
+          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + xshift, y_body_base + row_height / 4 * 2.5, 1);
+          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 4, y_body_base, x + xshift + 4, y_body_base + row_height);
+          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 7, y_body_base, x + xshift + 7, y_body_base + row_height, {
+            width: 2
+          });
+
+          if (e0.times !== null && (e0.ntimes || e0.times != 2)) {
+            var stimes = e0.ntimes == true ? "X" : "" + e0.times;
+            if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + xshift + w, y_body_base + row_height + param.xtimes_mark_y_margin, "(" + stimes + " times)", param.base_font_size / 2, "rt");
+          }
+
+          break;
+
+        case "B":
+          // begin only
+          w = 15;
+          actual_boundary = x + w / 2;
+          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x, y_body_base + row_height / 4 * 1.5, 1);
+          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x, y_body_base + row_height / 4 * 2.5, 1);
+          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 4, y_body_base, x + 4, y_body_base + row_height);
+          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 7, y_body_base, x + 7, y_body_base + row_height, {
+            width: 2
+          });
+          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 10, y_body_base, x + 10, y_body_base + row_height);
+
+          if (e0.times !== null && (e0.ntimes || e0.times != 2)) {
+            var _stimes = e0.ntimes == true ? "X" : "" + e0.times;
+
+            if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + 8, y_body_base + row_height, "(" + _stimes + " times)", param.base_font_size / 2, "rt");
+          }
+
+          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 14, y_body_base + row_height / 4 * 1.5, 1);
+          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 14, y_body_base + row_height / 4 * 2.5, 1);
+          break;
+
+        case "f":
+          // begin and end (normally, end)
+          w = 5;
+          xshift = side == "end" ? 0 : 0;
+          actual_boundary = x + w;
+          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift, y_body_base, x + xshift, y_body_base + row_height);
+          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 3, y_body_base, x + xshift + 3, y_body_base + row_height, {
+            width: 2
+          });
+          break;
+
+        case "r":
+          r = this.render_simile_mark_plain(draw, canvas, x, y_body_base, row_height, base_body_height, 2, true, "l");
+          x += r.width;
+          w = r.width;
+          actual_boundary = x + w / 2;
+          break;
+
+        default:
+          throw "Internal error";
+      }
+
+      return {
+        width: w,
+        actual_boundary: actual_boundary
+      };
+    }
+  }]);
+
+  return DefaultRenderer;
+}(_renderer__WEBPACK_IMPORTED_MODULE_1__["Renderer"]);
+
+/***/ }),
+
 /***/ "./src/renderer/graphic.js":
 /*!*********************************!*\
   !*** ./src/renderer/graphic.js ***!
@@ -14432,2439 +16867,6 @@ function () {
 
 /***/ }),
 
-/***/ "./src/renderer/mobile_renderer.js":
-/*!*****************************************!*\
-  !*** ./src/renderer/mobile_renderer.js ***!
-  \*****************************************/
-/*! exports provided: MobileRenderer */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MobileRenderer", function() { return MobileRenderer; });
-/* harmony import */ var _babel_polyfill__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/polyfill */ "./node_modules/@babel/polyfill/lib/index.js");
-/* harmony import */ var _babel_polyfill__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_polyfill__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _renderer__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./renderer */ "./src/renderer/renderer.js");
-/* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../common/common */ "./src/common/common.js");
-/* harmony import */ var _graphic__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./graphic */ "./src/renderer/graphic.js");
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
-
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
-
-function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) { return; } var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
-
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-
-
-
- //import { getGlobalMacros, getMacros } from "../parser/parser";
-
-var SR_RENDER_PARAM = {
-  origin: {
-    x: 0,
-    y: 0
-  },
-  y_title_offset: 2,
-  y_subtitle_offset: 16,
-  y_artist_offset: 16,
-  y_first_page_offset: 30,
-  // With header
-  y_offset: 10,
-  // Without header
-  x_offset: 10,
-  y_footer_offset: 10,
-  min_measure_width: 100,
-  row_height: 28,
-  // Basic height of the measure when no rs, mu and ml area is drawn
-  base_body_height: 28,
-  // Height in body area (not applicable for RS area) used for simile and rest rendering. Recommended to keep this value irrespective of row_height.
-  row_margin: 4,
-  // Margin between next y_base and lower edge of Measure Lower Area
-  rs_area_height: 24,
-  // Rhythm Slashes Area // 
-  rm_area_height: 15,
-  // Reharsal Mark Area
-  mu_area_height: 15,
-  // Measure Upper Area ( Repeat signs area )
-  ml_row_height: 10,
-  // Measure Lower Area ( Lyrics etc.. )
-  below_mu_area_margin: 2,
-  // Margin between MU and chord
-  above_rs_area_margin: 0,
-  // Margin between chord and rythm slash
-  below_rs_area_margin: 10,
-  // Margin below chord and rhthm slash
-  above_ml_area_margin: 0,
-  // Margin between (chord/rythm slash) and measure lower(lyrics etc) rea
-  repeat_mark_y_margin: 2,
-  // RS are upper/bootom and Repeat Marks( DalSegno, DaCapo, Fine, xX ) y margin in case RS are is shown.
-  xtimes_mark_y_margin: 2,
-  // Margin between body/RS are and "(x times)" mark.
-  header_body_margin: 2,
-  // Margin between header and body (x-direction)
-  body_footer_margin: 2,
-  // Margin between body and footer (x-direction)
-  max_scaling: 1.2,
-  paper_width: 96 * 210 / 25.4,
-  // 96dpi * A4_width[mm] / 25.4[mm/inche], total canvas width = paper_width, internal paper width is paper_width/zoom
-  paper_height: 96 * 297 / 25.4,
-  // 96dpi * A4_height[mm] / 25.4[mm/inche], total canvas height = paper_height. internal paper height is paper_height/zoom
-  zoom: 1.0,
-  // total canvas size will be [paper_width * zoom, paper_height*zoom]. NOTE that even the canvas size is scaled with zoom, any coordinate unit/size infomation inside the renderer stays the same and no need to be conscious about zoom value.
-  pixel_ratio: 2,
-  // integer. null : use system default, this is not configurable in source as it is memoried in global variable.
-  ncol: 1,
-  // Number of columns of score inside the paper
-  nrow: 1,
-  // Number of rows of score inside the paper
-  repeat_mark_font: {
-    "font-family": "Times New Roman",
-    "font-style": "italic",
-    "font-weight": "bold"
-  },
-  reharsal_mark_font_size: 12,
-  title_font_size: 14,
-  subtitle_font_size: 12,
-  artist_font_size: 14,
-  base_font_size: 28,
-  balken_width: 3,
-  note_bar_length: 24 / 4 * 3.5,
-  // 3.5 times of interval is the conventional length
-  note_flag_interval: 5,
-  optimize_type: 4,
-  // 0 : Constant room for each flexible element. 1: Uniform ratio (propotional to each fixed width of flexible element), 2: Evenly division of measures(force), 3: Evenly division of measures as much as possible
-  vertical_align: 1,
-  // 1: Enable, 0: Disable
-  vertical_align_intensity: 0.9,
-  // Vertical align intensity 0:No align, 1:Always align
-  scale_if_overlap: 1,
-  // 1 or 0
-  on_bass_style: "right",
-  // right|below
-  on_bass_below_y_offset: 0,
-  background_color: "white" // null will be transparent
-
-}; // Simple renderer offsets
-
-var MobileRenderer =
-/*#__PURE__*/
-function (_Renderer) {
-  _inherits(MobileRenderer, _Renderer);
-
-  function MobileRenderer(canvas, param) {
-    var _this;
-
-    var canvas_provider = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-
-    _classCallCheck(this, MobileRenderer);
-
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(MobileRenderer).call(this));
-    _this.canvas = canvas;
-    _this.memCanvas = null; // Canvas on memory used for screening
-
-    _this.param = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](SR_RENDER_PARAM); // Default parameters
-    // Overwrite
-
-    for (var key in param) {
-      _this.param[key] = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](param[key]);
-    }
-
-    _this.canvas_provider = canvas_provider;
-    _this.track = null;
-    _this.context = {
-      paper: null,
-      region_id: 0
-    };
-    _this.buravura = _graphic__WEBPACK_IMPORTED_MODULE_3__["getBravuraInstance"]("Bravura Text", "./assets/fonts/BravuraText.woff", "./assets/fonts/bravura_metadata.json", "./assets/fonts/glyphnames.json");
-    return _this;
-  }
-
-  _createClass(MobileRenderer, [{
-    key: "render",
-    value: function render(track, async_mode, progress_cb) {
-      var _this2 = this;
-
-      this.track = track; // Always works as asynchronously
-      // Preload images, which is done asynchronously
-
-      var urls = ["assets/img/segno.svg", "assets/img/coda.svg", "assets/img/flat.svg", "assets/img/sharp.svg", "assets/img/natural.svg", "assets/img/rest1.svg", "assets/img/rest2.svg", "assets/img/rest4.svg", "assets/img/rest8.svg", "assets/img/w1note.svg", "assets/img/w2note.svg", "assets/img/bnote.svg", "assets/img/flag_f.svg", "assets/img/flag_i.svg"];
-      var param = this.param;
-      return _graphic__WEBPACK_IMPORTED_MODULE_3__["PreloadImages"](urls).then(function () {
-        return _this2.buravura.ready();
-      }).then(function () {
-        return _this2.render_impl(track, param);
-      });
-    }
-  }, {
-    key: "render_footer",
-    value: function render_footer(canvaslist, songname, y) {
-      var _this3 = this;
-
-      var score_width = this.param.paper_width / this.param.zoom / this.param.ncol;
-      canvaslist.forEach(function (canvas, pageidx) {
-        // Page number footer
-        var footerstr = songname + " - " + (pageidx + 1) + " of " + canvaslist.length; //alert(footerstr);
-
-        _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, _this3.param.origin.x + score_width / 2, y, //this.param.origin.y + score_height - this.param.y_footer_offset,
-        footerstr, 12, "ct");
-      });
-    }
-  }, {
-    key: "field_sum",
-    value: function field_sum(arr, field) {
-      return arr.reduce(function (acc, e) {
-        var obj = {};
-        obj[field] = acc[field] + e[field];
-        return obj;
-      })[field];
-    }
-  }, {
-    key: "optimize_type0",
-    value: function optimize_type0(row_elements_list, x_width_info, total_width) {
-      var num_flexible_rooms = this.field_sum(x_width_info, "meas_num_flexible_rooms");
-      var fixed_width = this.field_sum(x_width_info, "meas_fixed_width");
-      var room_per_elem_constant = (total_width - fixed_width) / num_flexible_rooms; // Constant room for all room
-
-      row_elements_list.forEach(function (e, mi) {
-        var room_per_elem = room_per_elem_constant;
-        e.renderprop.room_per_elem = new Array(x_width_info[mi].meas_num_flexible_rooms).fill(room_per_elem);
-        e.renderprop.total_room = room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
-        x_width_info[mi].measure_width = e.renderprop.total_room + x_width_info[mi].meas_fixed_width;
-        e.renderprop.measure_width = x_width_info[mi].measure_width;
-        e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
-        e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
-        e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
-      });
-    }
-  }, {
-    key: "room_for_equal_ratio_divison",
-    value: function room_for_equal_ratio_divison(x_width_info, total_width, num_meas, num_meas_to_consider) {
-      var num_flexible_rooms = this.field_sum(x_width_info, "meas_num_flexible_rooms");
-      var fixed_width = this.field_sum(x_width_info, "meas_fixed_width");
-      var fixed_width_flexbile_only = this.field_sum(x_width_info, "body_fixed_width");
-      var fixed_width_others = fixed_width - fixed_width_flexbile_only;
-      var room_per_elem_even_ratio_meas = [];
-      var room_per_meas_even_ratio_meas = []; // room per measure for each meas in case even division of width for each measure
-      // Used for optimize type = 1 
-
-      var room_per_elem_uniform_ratio = (total_width - fixed_width_others) / fixed_width_flexbile_only;
-      console.log("S for type1 = " + room_per_elem_uniform_ratio);
-
-      for (var mi = 0; mi < num_meas; ++mi) {
-        var fixed_width_flexbile_only_details = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](x_width_info[mi]["body_fixed_width_details"]);
-        var room_per_elem = new Array(x_width_info[mi].meas_num_flexible_rooms);
-        var room_per_meas = 0;
-
-        for (var ii = 0; ii < x_width_info[mi].meas_num_flexible_rooms; ++ii) {
-          room_per_elem[ii] = (room_per_elem_uniform_ratio - 1) * fixed_width_flexbile_only_details[ii];
-          room_per_meas += room_per_elem[ii];
-        }
-
-        room_per_elem_even_ratio_meas.push(room_per_elem);
-        room_per_meas_even_ratio_meas.push(room_per_meas);
-      }
-
-      return {
-        "S": room_per_elem_uniform_ratio,
-        "room_per_elem": room_per_elem_even_ratio_meas,
-        "room_per_meas": room_per_meas_even_ratio_meas
-      };
-    }
-  }, {
-    key: "optimize_type1",
-    value: function optimize_type1(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid) {
-      var room_equal_ratio = this.room_for_equal_ratio_divison(x_width_info, total_width, num_meas, num_meas_to_consider);
-      row_elements_list.forEach(function (e, mi) {
-        e.renderprop.room_per_elem = room_equal_ratio.room_per_elem[mi];
-        e.renderprop.total_room = room_equal_ratio.room_per_meas[mi]; //room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
-
-        x_width_info[mi].measure_width = e.renderprop.total_room + x_width_info[mi].meas_fixed_width;
-        e.renderprop.measure_width = x_width_info[mi].measure_width;
-        e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
-        e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
-        e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
-      });
-    }
-  }, {
-    key: "room_per_meas_for_equal_divison",
-    value: function room_per_meas_for_equal_divison(x_width_info, total_width, num_meas, num_meas_to_consider) {
-      var room_per_meas_even_meas = []; // room per measure for each meas in case even division of width for each measure
-
-      for (var mi = 0; mi < num_meas; ++mi) {
-        room_per_meas_even_meas.push(total_width / num_meas_to_consider - x_width_info[mi].meas_fixed_width);
-      }
-
-      return room_per_meas_even_meas;
-    }
-  }, {
-    key: "optimize_type2",
-    value: function optimize_type2(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid) {
-      // Equal division
-      var room_per_meas_even_meas = this.room_per_meas_for_equal_divison(x_width_info, total_width, num_meas, num_meas_to_consider);
-      row_elements_list.forEach(function (e, mi) {
-        var room_per_elem = room_per_meas_even_meas[mi] / x_width_info[mi].meas_num_flexible_rooms;
-        e.renderprop.room_per_elem = new Array(x_width_info[mi].meas_num_flexible_rooms).fill(room_per_elem);
-        e.renderprop.total_room = room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
-        x_width_info[mi].measure_width = e.renderprop.total_room + x_width_info[mi].meas_fixed_width;
-        e.renderprop.measure_width = x_width_info[mi].measure_width;
-        e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
-        e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
-        e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
-      });
-      if (reduced_meas_valid && row_elements_list[0].align == "right") row_elements_list[0].renderprop.left_margin = total_width / num_meas_to_consider * (num_meas_to_consider - num_meas);
-    }
-  }, {
-    key: "optimize_type3",
-    value: function optimize_type3(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid) {
-      // https://docs.google.com/document/d/1oPmUvAF6-KTsQrEovYJgMZSDqlztp4pL-XVs8uee7A4/edit?usp=sharing
-      // Here alpha=1 case is filtered at the first IF statement, then we only consider the case
-      // where room when optimize_type = 0 is positive.
-      var num_flexible_rooms = this.field_sum(x_width_info, "meas_num_flexible_rooms");
-      var fixed_width = this.field_sum(x_width_info, "meas_fixed_width");
-      var room_per_meas_even_meas = this.room_per_meas_for_equal_divison(x_width_info, total_width, num_meas, num_meas_to_consider);
-      var room_per_elem_constant = (total_width - fixed_width) / num_flexible_rooms; // Constant room for all room
-
-      var alpha = null;
-
-      if (room_per_elem_constant < 0) {
-        // No room in total.
-        alpha = 1.0; // Type 0
-      } else {
-        alpha = 0.0;
-
-        for (var mi = 0; mi < num_meas; ++mi) {
-          if (room_per_meas_even_meas[mi] < 0) {
-            var R0 = room_per_elem_constant * x_width_info[mi].meas_num_flexible_rooms;
-            var R2 = room_per_meas_even_meas[mi];
-            var alpha_dash = R2 / (R2 - R0); // should be a positive value less than 1
-
-            alpha = Math.max(alpha, alpha_dash);
-          }
-        }
-      }
-
-      var row_total_width = 0;
-      row_elements_list.forEach(function (e, mi) {
-        var R0 = room_per_elem_constant * x_width_info[mi].meas_num_flexible_rooms;
-        var R2 = room_per_meas_even_meas[mi];
-        var room_per_elem = (alpha * R0 + (1 - alpha) * R2) / x_width_info[mi].meas_num_flexible_rooms;
-        e.renderprop.room_per_elem = new Array(x_width_info[mi].meas_num_flexible_rooms).fill(room_per_elem);
-        e.renderprop.total_room = room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
-        x_width_info[mi].measure_width = e.renderprop.total_room + x_width_info[mi].meas_fixed_width;
-        e.renderprop.measure_width = x_width_info[mi].measure_width;
-        e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
-        e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
-        e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
-        row_total_width += x_width_info[mi].measure_width;
-      });
-      if (reduced_meas_valid && row_elements_list[0].align == "right") row_elements_list[0].renderprop.left_margin = total_width - row_total_width;
-      console.log("alpha = " + alpha);
-    }
-  }, {
-    key: "optimize_type4",
-    value: function optimize_type4(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid) {
-      // https://docs.google.com/document/d/1oPmUvAF6-KTsQrEovYJgMZSDqlztp4pL-XVs8uee7A4/edit?usp=sharing
-      // Here alpha=1 case is filtered at the first IF statement, then we only consider the case
-      // where room when optimize_type = 0 is positive.
-      var num_flexible_rooms = this.field_sum(x_width_info, "meas_num_flexible_rooms");
-      var fixed_width = this.field_sum(x_width_info, "meas_fixed_width");
-      var room_per_meas_even_meas = this.room_per_meas_for_equal_divison(x_width_info, total_width, num_meas, num_meas_to_consider);
-      var room_equal_ratio = this.room_for_equal_ratio_divison(x_width_info, total_width, num_meas, num_meas_to_consider);
-      var alpha = null;
-
-      if (room_equal_ratio.S < 1) {
-        // No room in total.
-        alpha = 1.0; // Type 1
-      } else {
-        alpha = 0.0;
-
-        for (var mi = 0; mi < num_meas; ++mi) {
-          if (room_per_meas_even_meas[mi] < 0) {
-            var R1 = room_equal_ratio.room_per_meas[mi];
-            var R2 = room_per_meas_even_meas[mi];
-            var alpha_dash = R2 / (R2 - R1); // should be a positive value less than 1
-
-            alpha = Math.max(alpha, alpha_dash);
-          }
-        }
-      }
-
-      var row_total_width = 0;
-      row_elements_list.forEach(function (e, mi) {
-        var R1 = room_equal_ratio.room_per_meas[mi];
-        var R2 = room_per_meas_even_meas[mi];
-        var room_per_elem = new Array(x_width_info[mi].meas_num_flexible_rooms);
-        var room_per_meas = 0;
-
-        for (var ii = 0; ii < x_width_info[mi].meas_num_flexible_rooms; ++ii) {
-          var f_ratio = x_width_info[mi].body_fixed_width_details[ii] / x_width_info[mi].body_fixed_width;
-          room_per_elem[ii] = alpha * R1 * f_ratio + (1 - alpha) * R2 / x_width_info[mi].meas_num_flexible_rooms;
-          room_per_meas += room_per_elem[ii];
-        }
-
-        e.renderprop.room_per_elem = room_per_elem;
-        e.renderprop.total_room = room_per_meas;
-        x_width_info[mi].measure_width = e.renderprop.total_room + x_width_info[mi].meas_fixed_width;
-        e.renderprop.measure_width = x_width_info[mi].measure_width;
-        e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
-        e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
-        e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
-        row_total_width += x_width_info[mi].measure_width;
-      });
-      if (reduced_meas_valid && row_elements_list[0].align == "right") row_elements_list[0].renderprop.left_margin = total_width - row_total_width;
-      console.log("alpha = " + alpha);
-    }
-  }, {
-    key: "determine_rooms",
-    value: function determine_rooms(param, reharsal_x_width_info) {
-      var total_width = param.paper_width / this.param.zoom - 2 * param.x_offset;
-
-      var field_sum = function field_sum(arr, field) {
-        return arr.reduce(function (acc, e) {
-          var obj = {};
-          obj[field] = acc[field] + e[field];
-          return obj;
-        })[field];
-      }; // Optimize width of each measure
-
-
-      var row = 0;
-
-      while (row < reharsal_x_width_info.length) {
-        var row_elements_list = reharsal_x_width_info[row][0];
-        var x_width_info = reharsal_x_width_info[row][1]; // For number of measures
-
-        var num_meas = row_elements_list.length;
-        var num_meas_to_consider = num_meas; // for type #2 and #3
-        // In case right or left align is specified
-
-        var reduced_meas_valid = false;
-
-        if (row_elements_list[0].align != "expand" && row > 0) {
-          // find the last measure for which expand is applied, or fallback to #0.
-          var rowdash = void 0;
-
-          for (rowdash = row - 1; rowdash >= 0; --rowdash) {
-            if (reharsal_x_width_info[rowdash][0].align == "expand") break;
-          }
-
-          if (rowdash < 0) rowdash = 0; // Fallback to #0 even it has right|left align
-
-          reduced_meas_valid = reharsal_x_width_info[rowdash][0].length > num_meas;
-
-          if (reduced_meas_valid) {
-            num_meas_to_consider = reharsal_x_width_info[rowdash][0].length;
-          }
-        }
-
-        if (param.optimize_type == 0) {
-          this.optimize_type0(row_elements_list, x_width_info, total_width);
-          row++;
-        } else if (param.optimize_type == 1) {
-          this.optimize_type1(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid);
-          row++;
-        } else if (param.optimize_type == 2) {
-          // Equal division
-          this.optimize_type2(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid);
-          row++;
-        } else if (param.optimize_type == 3) {
-          // Combination of 2 and 0(fallback option when negative total room)
-          this.optimize_type3(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid);
-          row++;
-        } else if (param.optimize_type == 4) {
-          // Combination of 2 and 1(fallback option when negative total room)
-          this.optimize_type4(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid);
-          row++;
-        } else {
-          throw "Invalid optimize type";
-        }
-      }
-
-      if (param.vertical_align) {
-        var _row = 0;
-
-        while (_row < reharsal_x_width_info.length) {
-          console.log("row :" + _row);
-          var _num_meas = reharsal_x_width_info[_row][0].length; // Group the rows with :
-          //     1. the same number of measures from #row
-          //     2. Having right align mark and having less than 1st row
-
-          var same_nmeas_row_group = [];
-
-          var _rowdash = void 0;
-
-          for (_rowdash = _row; _rowdash < reharsal_x_width_info.length; ++_rowdash) {
-            if (reharsal_x_width_info[_rowdash][0].length == _num_meas) {
-              same_nmeas_row_group.push(reharsal_x_width_info[_rowdash]);
-            } else if (_rowdash > 0 && reharsal_x_width_info[_rowdash][0][0].align != "expand" && reharsal_x_width_info[_rowdash][0].length < _num_meas) {
-              same_nmeas_row_group.push(reharsal_x_width_info[_rowdash]);
-            } else {
-              break; // only group the continuous rows with same number of measures
-            }
-          } // Withing the group above, search for the groups for which alternation extension condition is met
-          // Take maximum of each column, and check if total width wider than paper width
-          // Make virtual combined row having : 
-          //    Fixed width = max( fixed width of all rows in correspoding column )
-
-
-          var max_measure_widths = new Array(_num_meas).fill(0); // In case the row with less measures than other rows exists,
-          // mapping of measure index is not a simple 1:1 relation.
-          // This function is to map the global measure index to local measure index
-
-          var getMeasRefIndex = function getMeasRefIndex(globalmi, row_elements_list, base_num_meas) {
-            var mi_ref = globalmi;
-
-            if (row_elements_list.length < base_num_meas) {
-              if (row_elements_list[0].align == "right") {
-                if (globalmi >= base_num_meas - row_elements_list.length) mi_ref = globalmi - (base_num_meas - row_elements_list.length);else mi_ref = null; // Not corresponding meas exist
-              } else if (row_elements_list[0].align == "left") {
-                if (globalmi < row_elements_list.length) mi_ref = globalmi;else mi_ref = null; // Not corresponding meas exist
-              }
-            } else if (row_elements_list.length > base_num_meas) {
-              throw "Vertical align process error"; // Should be bug
-            }
-
-            return mi_ref;
-          }; // TODO : More clean code ...
-
-
-          for (_rowdash = 0; _rowdash < same_nmeas_row_group.length; ++_rowdash) {
-            var dammy_max_measure_widths = new Array(_num_meas).fill(0);
-            var _x_width_info = same_nmeas_row_group[_rowdash][1];
-            var _row_elements_list = same_nmeas_row_group[_rowdash][0];
-
-            for (var mi = 0; mi < _num_meas; ++mi) {
-              var mi_ref = getMeasRefIndex(mi, _row_elements_list, _num_meas);
-
-              if (mi_ref == null) {
-                // corresponding measure does not exist : inherit current max value
-                dammy_max_measure_widths[mi] = max_measure_widths[mi];
-                continue;
-              }
-
-              dammy_max_measure_widths[mi] = Math.max(_x_width_info[mi_ref].measure_width, max_measure_widths[mi]);
-            }
-
-            var dammy_total_max_measure_width = dammy_max_measure_widths.reduce(function (acc, e) {
-              return acc + e;
-            }); // This is always >= total_width except reduced measure with left/right align is under analysis.
-            // Nomralize so that total width does not surpass total_width.
-            // In case only reduced measure row is under analysis and dammy_total_max_measure_width is less than total_width,
-            // do nothiing.  
-
-            for (var _mi = 0; _mi < _num_meas; ++_mi) {
-              dammy_max_measure_widths[_mi] = dammy_max_measure_widths[_mi] / dammy_total_max_measure_width * Math.min(total_width, dammy_total_max_measure_width);
-            } // If there is at least one measure which does not meet alternate threshold, then do not include rowdash
-
-
-            var all_meets_thread = true;
-
-            if (_rowdash == 0) {// First row is always fixed.
-            } else {
-              // For the case of 2 and more rows. Judge if combined rows meets the criteria.
-              for (var rowdash2 = 0; rowdash2 <= _rowdash; ++rowdash2) {
-                for (var _mi2 = 0; _mi2 < _num_meas; ++_mi2) {
-                  var _mi_ref = getMeasRefIndex(_mi2, same_nmeas_row_group[rowdash2][0], _num_meas);
-
-                  if (_mi_ref == null) continue; // Calculate alter ratio for this measure
-
-                  var alter_ratio = same_nmeas_row_group[rowdash2][1][_mi_ref].measure_width / dammy_max_measure_widths[_mi2]; //if(Math.abs(1.0 - alter_ratio) > alter_thresh){
-
-                  if (alter_ratio < 1 - param.vertical_align_intensity) {
-                    // only check how much the width is narrowed. Expanding case is not checked.
-                    all_meets_thread = false;
-                    break;
-                  }
-                }
-
-                if (all_meets_thread == false) break;
-              }
-            }
-
-            if (all_meets_thread) {
-              max_measure_widths = dammy_max_measure_widths;
-            } else {
-              break;
-            }
-          } // Here rowdash means number of actually grouped rows
-
-
-          var act_num_grouped_rows = _rowdash;
-          console.log("max_fixed_widths :");
-          console.log(max_measure_widths); //let max_measure_widths = new Array(num_meas).fill(0);
-          // room per froom with maximum fixed with only
-          // Then, at last, calculate the rooms for each row and measure
-
-          for (_rowdash = 0; _rowdash < act_num_grouped_rows; ++_rowdash) {
-            var _x_width_info2 = same_nmeas_row_group[_rowdash][1];
-            var _row_elements_list2 = same_nmeas_row_group[_rowdash][0];
-
-            for (var _mi3 = 0; _mi3 < _num_meas; ++_mi3) {
-              var _mi_ref2 = getMeasRefIndex(_mi3, _row_elements_list2, _num_meas);
-
-              if (_mi_ref2 == null) continue;
-              var m = _row_elements_list2[_mi_ref2];
-              var room_per_elem = (max_measure_widths[_mi3] - _x_width_info2[_mi_ref2].meas_fixed_width) / _x_width_info2[_mi_ref2].meas_num_flexible_rooms; // TODO : To cater for the case of differnt room per elem inside the measure
-
-              m.renderprop.room_per_elem = new Array(_x_width_info2[_mi_ref2].meas_num_flexible_rooms).fill(room_per_elem);
-              m.renderprop.total_room = max_measure_widths[_mi3] - _x_width_info2[_mi_ref2].meas_fixed_width;
-              m.renderprop.measure_width = max_measure_widths[_mi3];
-              m.renderprop.meas_fixed_width = _x_width_info2[_mi_ref2].meas_fixed_width; // Actually this is already set
-
-              m.renderprop.body_fixed_width = _x_width_info2[_mi_ref2].body_fixed_width;
-              m.renderprop.meas_num_flexible_rooms = _x_width_info2[_mi_ref2].meas_num_flexible_rooms;
-            }
-          } // Set left margin in case it is needed.
-
-
-          for (_rowdash = 0; _rowdash < act_num_grouped_rows; ++_rowdash) {
-            var _row_elements_list3 = same_nmeas_row_group[_rowdash][0];
-            var row_total_width = 0;
-
-            for (var _mi4 = 0; _mi4 < _row_elements_list3.length; ++_mi4) {
-              row_total_width += max_measure_widths[_mi4 + (max_measure_widths.length - _row_elements_list3.length)];
-            }
-
-            var _m = _row_elements_list3[0];
-
-            if (_m.align == "right") {
-              _m.renderprop.left_margin = total_width - row_total_width;
-            }
-          }
-
-          _row += act_num_grouped_rows;
-          console.log("row updated : " + _row + " / " + act_num_grouped_rows);
-
-          if (act_num_grouped_rows <= 0) {
-            throw "Something wrong with the code";
-          }
-        }
-      }
-    }
-  }, {
-    key: "merge_param",
-    value: function merge_param(param, additional_param) {
-      var takemax = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
-
-      for (var _i = 0, _Object$entries = Object.entries(additional_param); _i < _Object$entries.length; _i++) {
-        var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
-            param_key = _Object$entries$_i[0],
-            param_value = _Object$entries$_i[1];
-
-        if (param_key.includes("margin") && takemax) {
-          param[param_key] = Math.max(param[param_key], param_value);
-        } else {
-          param[param_key] = param_value;
-        }
-      }
-    }
-  }, {
-    key: "render_impl",
-    value: function () {
-      var _render_impl = _asyncToGenerator(
-      /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee(track, param) {
-        var _this4 = this;
-
-        var global_macros, show_header, show_footer, origin, y_title_offset, y_subtitle_offset, y_artist_offset, x_offset, width, music_context, meas_row_list, accum_block_id, meas_row, meas_row_rg_ids, meas_row_block_ids, i, rg, bi, block_measures, ml, m, meas_row_list_inv, _loop, _i2, y_stacks, next_reharsal_group_index, yse, y_base_screening, dammy_music_context, current_accum_block_id, reharsal_x_width_info, pei, x, row_elements_list, _ml, _m2, elements, geret, yprof, x_width_info, canvas, score_height, y_base, ri, canvaslist, _pei, _row_elements_list4, ylimit, r;
-
-        return regeneratorRuntime.wrap(function _callee$(_context) {
-          while (1) {
-            switch (_context.prev = _context.next) {
-              case 0:
-                global_macros = track.macros; //getGlobalMacros(track);
-
-                if ("PARAM" in global_macros) {
-                  this.merge_param(this.param, global_macros["PARAM"], false); // Merge to defaul param
-                }
-
-                show_header = global_macros["SHOW_HEADER"] == "YES";
-                show_footer = global_macros["SHOW_FOOTER"] == "YES";
-                origin = param.origin; //{x:0,y:0};
-
-                y_title_offset = origin.y + param.y_title_offset;
-                y_subtitle_offset = origin.y + param.y_subtitle_offset;
-                y_artist_offset = origin.y + param.y_artist_offset;
-                x_offset = origin.x + param.x_offset;
-                width = param.paper_width / this.param.zoom / param.ncol - param.x_offset * 2; // Music context
-
-                music_context = {
-                  accidental_info: {},
-                  key_info: {},
-                  time_info: {},
-                  tie_info: {
-                    rs_prev_coord: null,
-                    rs_prev_draw_scale: 1.0,
-                    rs_prev_meas: null,
-                    rs_prev_has_tie: false,
-                    rs_prev_tie_paper: null,
-                    prev_has_tie: false
-                  },
-                  pos_in_a_measure: 0
-                };
-                meas_row_list = []; // Firstly, just split with new lines
-
-                accum_block_id = 0;
-                meas_row = [];
-                meas_row_rg_ids = [];
-                meas_row_block_ids = [];
-
-                for (i = 0; i < track.reharsal_groups.length; ++i) {
-                  rg = track.reharsal_groups[i];
-
-                  for (bi = 0; bi < rg.blocks.length; ++bi) {
-                    block_measures = rg.blocks[bi];
-
-                    for (ml = 0; ml < block_measures.length; ++ml) {
-                      m = block_measures[ml];
-
-                      if (m.raw_new_line) {
-                        meas_row_list.push({
-                          meas_row: meas_row,
-                          meas_row_rg_ids: meas_row_rg_ids,
-                          meas_row_block_ids: meas_row_block_ids
-                        });
-                        meas_row = [];
-                        meas_row_rg_ids = [];
-                        meas_row_block_ids = [];
-                      }
-
-                      meas_row.push(m);
-                      meas_row_rg_ids.push(i);
-                      meas_row_block_ids.push(accum_block_id);
-                    }
-
-                    if (meas_row.length > 0) {
-                      meas_row_list.push({
-                        meas_row: meas_row,
-                        meas_row_rg_ids: meas_row_rg_ids,
-                        meas_row_block_ids: meas_row_block_ids
-                      });
-                      meas_row = [];
-                      meas_row_rg_ids = [];
-                      meas_row_block_ids = [];
-                    }
-
-                    accum_block_id++;
-                  }
-                } // If there is inline reharsal group, then combine the last row of the 
-                // last reharsal group  and first row of the reharsal group
-                // tmp variable : shallow copy of meas_row_list
-
-
-                meas_row_list_inv = meas_row_list.slice().reverse();
-
-                _loop = function _loop(_i2) {
-                  var rg = track.reharsal_groups[_i2];
-
-                  if (rg.inline) {
-                    var dst_idx = meas_row_list_inv.findIndex(function (e) {
-                      return e.meas_row_rg_ids.includes(_i2 - 1);
-                    });
-                    dst_idx = meas_row_list.length - 1 - dst_idx; // Convert to index for non-inversed array
-
-                    var src_idx = meas_row_list.findIndex(function (e) {
-                      return e.meas_row_rg_ids.includes(_i2);
-                    });
-                    var dst = meas_row_list[dst_idx];
-                    var src = meas_row_list[src_idx];
-                    dst.meas_row = dst.meas_row.concat(src.meas_row);
-                    dst.meas_row_rg_ids = dst.meas_row_rg_ids.concat(src.meas_row_rg_ids);
-                    dst.meas_row_block_ids = dst.meas_row_block_ids.concat(src.meas_row_block_ids);
-                    meas_row_list.splice(src_idx, 1); // Delete the first row
-
-                    meas_row_list_inv = meas_row_list.slice().reverse();
-                  }
-                };
-
-                for (_i2 = 0; _i2 < track.reharsal_groups.length; ++_i2) {
-                  _loop(_i2);
-                } // Make y-strack elements, and mark the reharsal mark position
-
-
-                y_stacks = [];
-                next_reharsal_group_index = 0;
-                meas_row_list.forEach(function (e, i) {
-                  // eslint-disable-next-line no-constant-condition
-                  while (true) {
-                    var meas_index = e.meas_row_rg_ids.findIndex(function (e) {
-                      return e == next_reharsal_group_index;
-                    });
-                    if (meas_index < 0) break;
-                    e.meas_row[meas_index].renderprop.rg_from_here = track.reharsal_groups[next_reharsal_group_index];
-                    ++next_reharsal_group_index;
-                  }
-
-                  var prev_measures = i > 0 ? meas_row_list[i - 1].meas_row : null;
-                  var prev_measure = prev_measures ? prev_measures[prev_measures.legnth - 1] : null;
-                  var next_measures = i < meas_row_list.length - 1 ? meas_row_list[i + 1].meas_row : null;
-                  var next_measure = next_measures ? next_measures[0] : null; // Determine params to be applied for this. 
-                  // As of now, 
-                  //var rg_macros = getMacros(global_macros, track.reharsal_groups[i]);
-
-                  var row_macros = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](global_macros);
-                  var param_for_row = _this4.param;
-                  var param_for_row_alt = false;
-                  e.meas_row.forEach(function (m) {
-                    if (!m.macros) return;
-
-                    for (var _i3 = 0, _Object$entries2 = Object.entries(m.macros); _i3 < _Object$entries2.length; _i3++) {
-                      var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i3], 2),
-                          key = _Object$entries2$_i[0],
-                          value = _Object$entries2$_i[1];
-
-                      if (key == "PARAM") {
-                        if (!param_for_row_alt) {
-                          param_for_row = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](_this4.param); // Make copy
-
-                          _this4.merge_param(param_for_row, value, false); // Overwrite 
-
-
-                          param_for_row_alt = true;
-                        } else {
-                          _this4.merge_param(param_for_row, value, true); // Update 
-
-                        }
-                      } else {
-                        row_macros[key] = value;
-                      }
-                    }
-                  });
-                  y_stacks.push({
-                    type: "meas",
-                    height: 0,
-                    cont: e.meas_row,
-                    rg_ids: e.meas_row_rg_ids,
-                    block_ids: e.meas_row_block_ids,
-                    nm: next_measure,
-                    pm: prev_measure,
-                    //rg: track.reharsal_groups[i],
-                    //rg_id : i,
-                    macros: global_macros,
-                    // TODO : Macros for each row...?
-                    param: param_for_row //block_id: bi,
-                    //row_id_in_block: row_id_in_block-1 // Already incremented then row id is minus 1
-
-                  });
-                }); // ---------------------
-                // Stage 1 : Screening
-                // ---------------------
-
-                if (!this.memCanvas) {
-                  // Canvas on memory for screening
-                  // TODO : Canvas height 400 is enough ?
-                  this.memCanvas = document.createElement("canvas");
-                  _graphic__WEBPACK_IMPORTED_MODULE_3__["SetupHiDPICanvas"](this.memCanvas, this.param.paper_width / this.param.zoom, 400 / this.param.zoom, this.param.pixel_ratio, this.param.zoom);
-                }
-
-                yse = y_stacks;
-                y_base_screening = origin.y;
-
-                if (show_header) {
-                  y_base_screening += param.y_first_page_offset;
-                } else {
-                  y_base_screening += param.y_offset;
-                }
-
-                dammy_music_context = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](music_context); // Maybe not required ?
-
-                current_accum_block_id = 0;
-                reharsal_x_width_info = [];
-                pei = 0;
-
-              case 31:
-                if (!(pei < yse.length)) {
-                  _context.next = 46;
-                  break;
-                }
-
-                if (!(yse[pei].type == "titles")) {
-                  _context.next = 34;
-                  break;
-                }
-
-                return _context.abrupt("continue", 43);
-
-              case 34:
-                x = yse[pei].param.x_offset; //if(yse[pei].rg_id != current_rg_block[0] || yse[pei].block_id != current_rg_block[1]){
-
-                if (!yse[pei].block_ids.includes(current_accum_block_id)) {
-                  // Per block optimization
-                  this.determine_rooms(yse[pei].param, reharsal_x_width_info);
-                  current_accum_block_id = yse[pei].block_ids[0]; // First block ID is the reference block id
-
-                  reharsal_x_width_info = [];
-                }
-
-                row_elements_list = yse[pei].cont; // Screening music contexts and determine grouping in body elements
-                // For each measure in this row
-
-                for (_ml = 0; _ml < row_elements_list.length; ++_ml) {
-                  // measure object
-                  _m2 = row_elements_list[_ml];
-                  elements = this.classifyElements(_m2); // Too much call of calssify elements.
-                  // Grouping body elements which share the same balken
-
-                  geret = this.grouping_body_elemnts_enh(elements.body);
-                  _m2.renderprop.body_grouping_info = geret;
-                } // y-screening is done in stage 2 as well : TODO : Make it once
-                // Do it in the dammy position y = 0;
-
-
-                yprof = this.screening_y_areas(row_elements_list, 0, yse[pei].param, yse[pei].macros.STAFF, yse[pei].macros.REHARSAL_MARK_POSITION == "Inner"); // yprof.end.y means the row total height
-
-                y_base_screening += yprof.end.y; // Screening x elements and determine the rendering policy for x-axis.
-
-                x_width_info = this.screening_x_areas(x, this.memCanvas, yse[pei].macros, row_elements_list, yse[pei].pm, yse[pei].nm, yprof, yse[pei].param, dammy_music_context);
-                reharsal_x_width_info.push([row_elements_list, x_width_info]);
-
-                if (pei == yse.length - 1) {
-                  // Per block optimization
-                  this.determine_rooms(yse[pei].param, reharsal_x_width_info);
-                }
-
-              case 43:
-                ++pei;
-                _context.next = 31;
-                break;
-
-              case 46:
-                y_base_screening += param.y_offset; // Here y_base_screening means the height of the total score if single page applied.
-                // ----------------------
-                // Stage 2 : Rendering
-                // ----------------------
-
-                canvas = this.canvas;
-
-                if (!(canvas == null)) {
-                  _context.next = 52;
-                  break;
-                }
-
-                _context.next = 51;
-                return this.canvas_provider();
-
-              case 51:
-                canvas = _context.sent;
-
-              case 52:
-                _graphic__WEBPACK_IMPORTED_MODULE_3__["SetupHiDPICanvas"](canvas, this.param.paper_width / this.param.zoom, this.param.paper_height > 0 ? this.param.paper_height / this.param.zoom : y_base_screening, this.param.pixel_ratio, this.param.zoom);
-                score_height = (this.param.paper_height > 0 ? this.param.paper_height / this.param.zoom : y_base_screening) / param.nrow;
-                if (param.background_color) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasRect"](canvas, 0, 0, this.param.paper_width / this.param.zoom, this.param.paper_height > 0 ? this.param.paper_height / this.param.zoom : y_base_screening, param.background_color);
-                y_base = origin.y;
-
-                if (show_header) {
-                  // Title
-                  ri = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width / 2, y_title_offset, global_macros.TITLE, param.title_font_size, "ct", null, false, {
-                    "bold": true
-                  }); // Sub Title
-
-                  if (global_macros.SUB_TITLE != "") _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width / 2, y_subtitle_offset, global_macros.SUB_TITLE, param.subtitle_font_size, "ct", null, false, {
-                    "bold": false
-                  }); // Artist
-
-                  _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width, y_artist_offset, global_macros.ARTIST, param.artist_font_size, "rt", null, false, {
-                    "bold": false
-                  });
-                  y_stacks.push({
-                    type: "titles",
-                    height: param.y_first_page_offset
-                  });
-                  y_base += param.y_first_page_offset;
-                } else {
-                  y_base += param.y_offset;
-                }
-
-                canvaslist = [canvas];
-                _pei = 0;
-
-              case 59:
-                if (!(_pei < yse.length)) {
-                  _context.next = 86;
-                  break;
-                }
-
-                if (!(yse[_pei].type == "titles")) {
-                  _context.next = 63;
-                  break;
-                }
-
-                _context.next = 83;
-                break;
-
-              case 63:
-                if (!(yse[_pei].type == "meas")) {
-                  _context.next = 83;
-                  break;
-                }
-
-                _row_elements_list4 = yse[_pei].cont;
-                ylimit = this.canvas_provider != null ? score_height - yse[_pei].param.y_offset : null;
-                r = this.render_measure_row_simplified(x_offset, canvas, yse[_pei].macros, _row_elements_list4, yse[_pei].pm, yse[_pei].nm, y_base, yse[_pei].param, true, yse[_pei].macros.REHARSAL_MARK_POSITION == "Inner", ylimit, music_context);
-
-                if (r) {
-                  _context.next = 82;
-                  break;
-                }
-
-                if (!(y_base == origin.y + yse[_pei].param.y_offset)) {
-                  _context.next = 72;
-                  break;
-                }
-
-                throw "Paper height is too short to fit in single row";
-
-              case 72:
-                y_base = origin.y + yse[_pei].param.y_offset;
-
-              case 73:
-                _context.next = 75;
-                return this.canvas_provider();
-
-              case 75:
-                canvas = _context.sent;
-                canvaslist.push(canvas);
-                _graphic__WEBPACK_IMPORTED_MODULE_3__["SetupHiDPICanvas"](canvas, yse[_pei].param.paper_width / this.param.zoom, yse[_pei].param.paper_height / this.param.zoom, this.param.pixel_ratio, this.param.zoom);
-                if (param.background_color) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasRect"](canvas, 0, 0, this.param.paper_width / this.param.zoom, this.param.paper_height / this.param.zoom, param.background_color); // try again next page
-
-                _pei = _pei - 1;
-                _context.next = 83;
-                break;
-
-              case 82:
-                y_base = r.y_base;
-
-              case 83:
-                ++_pei;
-                _context.next = 59;
-                break;
-
-              case 86:
-                if (show_footer) this.render_footer(canvaslist, global_macros.TITLE + "/" + global_macros.ARTIST, this.param.origin.y + score_height - this.param.y_footer_offset);
-                return _context.abrupt("return", {
-                  pages: canvaslist.length,
-                  height: score_height
-                });
-
-              case 88:
-              case "end":
-                return _context.stop();
-            }
-          }
-        }, _callee, this);
-      }));
-
-      function render_impl(_x, _x2) {
-        return _render_impl.apply(this, arguments);
-      }
-
-      return render_impl;
-    }()
-  }, {
-    key: "screening_y_areas",
-    value: function screening_y_areas(row_elements_list, y_base, param, staff, inner_reharsal_mark) {
-      var ycomps = ["rm", "mu", "body", "rs", "ml", "irm", "end"];
-      var yprof = {
-        rm: {
-          detected: false,
-          height: param.rm_area_height,
-          margin: [0, 0]
-        },
-        // Rhearsal mark if any
-        mu: {
-          detected: false,
-          height: param.mu_area_height,
-          margin: [0, param.below_mu_area_margin]
-        },
-        body: {
-          detected: true,
-          height: param.row_height,
-          margin: [0, 0]
-        },
-        rs: {
-          detected: false,
-          height: param.rs_area_height,
-          margin: [param.above_rs_area_margin, param.below_rs_area_margin]
-        },
-        ml: {
-          detected: false,
-          height: param.ml_row_height,
-          margin: [param.above_ml_area_margin, 0]
-        },
-        irm: {
-          detected: true,
-          height: param.row_margin,
-          margin: [0, 0]
-        },
-        // Virtual row represeinting fixed inter-row margin
-        end: {
-          detected: true,
-          height: 0,
-          margin: [0, 0]
-        } // Vitrual row representing start of end of row = start of next row
-
-      };
-      var lyric_rows = 0; //var draw_5line = false;
-
-      if (staff == "ON") {
-        yprof.rs.detected = true;
-      } // Screening of y-axis areas
-
-
-      var rg_mark_detected = false;
-
-      for (var ml = 0; ml < row_elements_list.length; ++ml) {
-        var m = row_elements_list[ml];
-        if (m.renderprop && m.renderprop.rg_from_here && m.renderprop.rg_from_here.name != "") // Anonymous reharsal group is not rendered
-          rg_mark_detected = true;
-
-        for (var ei = 0; ei < m.elements.length; ++ei) {
-          var e = m.elements[ei];
-
-          if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Coda"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Segno"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Comment"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["LoopIndicator"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["ToCoda"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DalSegno"]) {
-            yprof.mu.detected = true;
-          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["MeasureBoundary"]) {
-            yprof.ml.detected = yprof.ml.detected || e.times != null && (e.ntimes || e.times != 2);
-          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Chord"]) {
-            yprof.rs.detected |= e.note_group_list !== null;
-          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Lyric"]) {
-            yprof.ml.detected = true;
-            lyric_rows = Math.max(e.lyric.split("/").length, lyric_rows);
-          }
-        }
-      }
-
-      if (staff == "OFF") {
-        yprof.rs.detected = false;
-      }
-
-      if (rg_mark_detected) {
-        if (inner_reharsal_mark) {
-          yprof.mu.detected = true; // In MU area
-        } else {
-          yprof.rm.detected = true; // dedecated rehardsal mark region
-        }
-      } // Calculate yposition  for each area
-
-
-      for (var i = 0; i < ycomps.length; ++i) {
-        var name = ycomps[i];
-        var prev = i > 0 ? ycomps[i - 1] : null; // Here y is the start of body element, not upper edge
-
-        yprof[name].y = i == 0 ? y_base : yprof[prev].y - yprof[prev].margin[0] + yprof[prev].whole_height + yprof[name].margin[0];
-
-        if (!yprof[name].detected) {
-          yprof[name].whole_height = 0;
-        } else {
-          if (name == "ml") {
-            yprof[name].whole_height = Math.max(1, lyric_rows) * yprof[name].height + yprof[name].margin[0] + yprof[name].margin[1]; // multiplied by lyric ros
-          } else {
-            yprof[name].whole_height = yprof[name].height + yprof[name].margin[0] + yprof[name].margin[1];
-          }
-        }
-      }
-
-      return yprof;
-    }
-  }, {
-    key: "screening_x_areas",
-    value: function screening_x_areas(x, paper, macros, row_elements_list, prev_measure, next_measure, yprof, param, music_context) {
-      var _this5 = this;
-
-      var transpose = macros.TRANSPOSE;
-      var half_type = macros.KEY_TYPE;
-      var key = macros.KEY;
-      var total_width = param.paper_width / param.zoom - 2 * param.x_offset;
-      var dammy_rs_area_height = 24; // any value is ok
-      // Determine the width of each measure
-
-      var x_width_info = []; // for number of measures
-
-      var _loop2 = function _loop2(ml) {
-        // Reset music context
-        music_context.pos_in_a_measure = 0; // reset
-        // TODO : consider key infomration
-        // TODO : consider tie
-        // C3 -> 0x3C as 0 C-2 as index 0, G8 as 127(0x7F)
-
-        music_context.accidental_info = new Array(128).fill(0); // measure object
-
-        var m = row_elements_list[ml];
-        var meas_fixed_width = 0;
-        meas_num_flexible_rooms = 0;
-        elements = _this5.classifyElements(m);
-        elements.header.forEach(function (e) {
-          if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["MeasureBoundary"]) {
-            var pm = ml == 0 ? prev_measure : row_elements_list[ml - 1];
-            var ne = pm ? pm.elements[pm.elements.length - 1] : null;
-
-            var r = _this5.draw_boundary_simplified("begin", ne, e, ml == 0, //m.raw_new_line,
-            paper, x, 0, dammy_rs_area_height, // any value is OK
-            dammy_rs_area_height, param, false);
-
-            meas_fixed_width += r.width;
-            e.renderprop = {
-              w: r.width
-            };
-          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Time"]) {
-            meas_fixed_width += 10;
-            e.renderprop = {
-              w: 10
-            };
-          }
-        });
-        meas_fixed_width += param.header_body_margin;
-        rberet = _this5.render_body_elements(false, x, elements, param, music_context, yprof, paper, 0, 0
-        /*meas_start_x*/
-        , m, 1, transpose, half_type, key, 0, 0);
-        meas_fixed_width += rberet.fixed_width;
-        meas_num_flexible_rooms += rberet.num_flexible_rooms;
-        meas_fixed_width += param.body_footer_margin; // Draw footer
-
-        elements.footer.forEach(function (e) {
-          if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["MeasureBoundary"]) {
-            var nm = ml == row_elements_list.length - 1 ? next_measure : row_elements_list[ml + 1];
-            var ne = nm ? nm.elements[0] : null;
-
-            var r = _this5.draw_boundary_simplified("end", e, ne, ml == row_elements_list.length - 1, //nm ? nm.raw_new_line : false,
-            paper, x, 0, dammy_rs_area_height, dammy_rs_area_height, param, false);
-
-            e.renderprop = {
-              w: r.width
-            };
-            meas_fixed_width += r.width; // eslint-disable-next-line no-empty
-          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DaCapo"]) {// eslint-disable-next-line no-empty
-          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DalSegno"]) {// eslint-disable-next-line no-empty
-          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["ToCoda"]) {// eslint-disable-next-line no-empty
-          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Fine"]) {}
-        });
-        x_width_info.push({
-          meas_fixed_width: meas_fixed_width,
-          body_fixed_width: rberet.fixed_width,
-          body_fixed_width_details: rberet.fixed_width_details,
-          meas_num_flexible_rooms: meas_num_flexible_rooms
-        });
-      };
-
-      for (var ml = 0; ml < row_elements_list.length; ++ml) {
-        var meas_num_flexible_rooms;
-        var elements;
-        var rberet;
-
-        _loop2(ml);
-      }
-
-      return x_width_info;
-    }
-  }, {
-    key: "render_body_elements",
-    value: function render_body_elements(draw, x, elements, param, music_context, yprof, paper, _5lines_intv, meas_start_x, m, x_global_scale, transpose, half_type, key, C7_width, y_body_or_rs_base, balken) {
-      var _this6 = this;
-
-      var fixed_width = 0;
-      var fixed_width_details = []; // show be same as num_flexible_rooms
-
-      var num_flexible_rooms = 0;
-      var draw_scale = 1;
-      /*if(draw){
-          console.log("Scaling : ");
-          console.log(m.renderprop.measure_width);
-          console.log(m.renderprop.meas_fixed_width);
-      }*/
-
-      if (draw && param.scale_if_overlap && m.renderprop.total_room < 0) {
-        var body_width = m.renderprop.body_fixed_width + m.renderprop.total_room;
-        draw_scale = body_width / m.renderprop.body_fixed_width;
-        console.log("draw_scale = " + draw_scale); // and then for this case room_per_elem is 0 and scale fixed elemetns while keeping
-        // total width.
-
-        paper.getContext("2d").scale(draw_scale, 1);
-      }
-
-      if (elements.body.length == 0) {
-        if (draw && draw_scale < 1) {
-          x += 1 * param.base_font_size * draw_scale + 0;
-        } else if (draw) {
-          x += 1 * param.base_font_size + m.renderprop.total_room;
-        } else {
-          fixed_width += 1 * param.base_font_size;
-          fixed_width_details.push(1 * param.base_font_size);
-          num_flexible_rooms++;
-        }
-      }
-
-      var this_group_start_index = 0; // used only for draw phase. Used for index room_per_elem.
-
-      var body_grouping_info = m.renderprop.body_grouping_info;
-      body_grouping_info.groupedBodyElems.forEach(function (element_group, gbei) {
-        // Draw Rythm Slashes, first
-        if (yprof.rs.detected && body_grouping_info.all_has_length) {
-          var e0 = element_group.elems[0];
-          var cr = null;
-
-          if (e0 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Chord"]) {
-            cr = _this6.render_chord_simplified(draw, e0, transpose, half_type, key, paper, x / draw_scale, yprof.body.y, param, C7_width);
-
-            if (draw && e0.exceptinal_comment !== null) {
-              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / draw_scale, yprof.mu.y + yprof.mu.height, e0.exceptinal_comment.comment, param.base_font_size / 2, "lb");
-            }
-
-            if (draw && e0.lyric !== null) {
-              var llist = e0.lyric.lyric.split("/");
-
-              for (var li = 0; li < llist.length; ++li) {
-                _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / draw_scale, yprof.ml.y + li * param.ml_row_height, llist[li], param.base_font_size / 3, "lt");
-              }
-            }
-          } else {
-            // Rest or Simile
-            // Rest is drawn in render_rs_area function in RS area
-            cr = {
-              width: 0
-            };
-          }
-
-          if (draw) {
-            var room_for_rs_per_elem = 0;
-            var element_group_width = 0;
-
-            if (element_group.renderprop.based_on_rs_elem) {
-              // In case RS area elements has wider fixed width(in total) than that of first element
-              // total room for rs by sum of rooms in this element group. total rooms cannnot be used as it is total in a measure
-              var room_for_rs = 0;
-
-              for (var ei = 0; ei < element_group.elems.length; ++ei) {
-                room_for_rs += m.renderprop.room_per_elem[this_group_start_index + ei];
-              }
-
-              room_for_rs_per_elem = room_for_rs / element_group.elems.length; // TODO : Improve non constant div
-
-              element_group_width = element_group.renderprop.w + room_for_rs;
-              this_group_start_index += element_group.elems.length;
-            } else {
-              // In case the first element has wider fixed width than RS area elements
-              var _room_for_rs = element_group.renderprop.w + m.renderprop.room_per_elem[this_group_start_index] - element_group.renderprop.rs_area_width;
-
-              room_for_rs_per_elem = _room_for_rs / element_group.elems.length;
-              element_group_width = element_group.renderprop.w + m.renderprop.room_per_elem[this_group_start_index];
-              this_group_start_index += 1;
-            }
-
-            var g = _this6.render_rs_area(x / draw_scale, draw_scale, element_group.elems, paper, yprof.rs.y, yprof.rs.height, meas_start_x, // NOTE : meas_start_x sould be irrespective of draw_scale.
-            draw, 0, 1.0, x_global_scale, music_context, m, param, draw_scale < 1 ? 0 : room_for_rs_per_elem, balken, gbei == body_grouping_info.groupedBodyElems.length - 1);
-
-            var rs_area_width = (g.x - x / draw_scale) * draw_scale; // validation
-
-            if (Math.abs(rs_area_width - element_group_width) > 0.0001) {
-              console.log("Whould be the same : " + [rs_area_width, element_group_width]); //throw "Something wrong with RS area code drawing";
-            }
-
-            if (draw_scale < 1) {
-              x += element_group.renderprop.w * draw_scale + 0;
-            } else {
-              x += element_group_width;
-            }
-          } else {
-            var rs_area_bounding_box = new _common_common__WEBPACK_IMPORTED_MODULE_2__["BoundingBox"](); // Only try to esimate using non-flag-balken drawer
-
-            var tmp_fixed_width_details = [];
-            element_group.elems.forEach(function (e) {
-              var balken_element = _this6.generate_balken_element(e, x, yprof.rs.height, music_context);
-
-              var r = _this6.draw_rs_area_without_flag_balken(draw, paper, param, e, balken_element, x, yprof.rs.y, yprof.rs.height);
-
-              e.renderprop.balken_element = balken_element;
-              rs_area_bounding_box.add_rect(r.bounding_box);
-              x += r.bounding_box.w;
-              tmp_fixed_width_details.push(r.bounding_box.w);
-            });
-            var _rs_area_width = rs_area_bounding_box.get().w;
-            element_group.renderprop.w = Math.max(_rs_area_width, cr.width);
-            element_group.renderprop.rs_area_width = _rs_area_width;
-            element_group.renderprop.based_on_rs_elem = _rs_area_width > cr.width;
-            fixed_width += element_group.renderprop.w;
-            fixed_width_details = fixed_width_details.concat(_rs_area_width > cr.width ? tmp_fixed_width_details : [cr.width]);
-            num_flexible_rooms += element_group.renderprop.based_on_rs_elem ? element_group.elems.length : 1;
-          }
-        } else {
-          element_group.elems.forEach(function (e, ei) {
-            if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Chord"]) {
-              var _cr = _this6.render_chord_simplified(draw, e, transpose, half_type, key, paper, x / draw_scale, yprof.body.y, param, C7_width);
-
-              if (draw && e.exceptinal_comment !== null) {
-                _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / draw_scale, yprof.mu.y + yprof.mu.height, e.exceptinal_comment.comment, param.base_font_size / 2, "lb");
-              }
-
-              if (draw && e.lyric !== null) {
-                var llist = e.lyric.lyric.split("/");
-
-                for (var li = 0; li < llist.length; ++li) {
-                  _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / draw_scale, yprof.ml.y + li * param.ml_row_height, llist[li], param.base_font_size / 3, "lt");
-                }
-              }
-
-              if (draw && draw_scale < 1) {
-                x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
-              } else if (draw) x += e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index + ei];else {
-                e.renderprop.w = _cr.width;
-                fixed_width += e.renderprop.w;
-                fixed_width_details.push(e.renderprop.w);
-                num_flexible_rooms++;
-              }
-            } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Rest"]) {
-              var _cr2 = _this6.render_rest_plain(e, paper, draw, x / draw_scale, y_body_or_rs_base, C7_width, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, param);
-
-              if (draw && draw_scale < 1) {
-                x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
-              } else if (draw) x += e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index + ei];else {
-                e.renderprop.w = _cr2.bounding_box.w;
-                fixed_width += e.renderprop.w;
-                fixed_width_details.push(e.renderprop.w);
-                num_flexible_rooms++;
-              }
-            } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Simile"]) {
-              var _cr3 = _this6.render_simile_mark_plain(draw, paper, x / draw_scale, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, e.numslash, false, "l");
-
-              if (draw && draw_scale < 1) {
-                x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
-              } else if (draw) x += e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index + ei];else {
-                e.renderprop.w = _cr3.width;
-                fixed_width += e.renderprop.w;
-                fixed_width_details.push(e.renderprop.w);
-                num_flexible_rooms++;
-              }
-            } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Space"]) {
-              if (draw && draw_scale < 1) {
-                x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
-              } else if (draw) x += e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index + ei];else {
-                var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, 0, 0, "M", param.base_font_size, "lt", 0.5 * param.base_font_size, true, null); // width parameter needs to be aligned with chord rendering
-
-                e.renderprop.w = e.length * r.width;
-                fixed_width += e.renderprop.w;
-                fixed_width_details.push(e.renderprop.w);
-                num_flexible_rooms++;
-              }
-            }
-          });
-          if (draw) this_group_start_index += element_group.elems.length; // This count should be same as num_flexible_rooms;
-        }
-      });
-
-      if (draw && draw_scale < 1) {
-        paper.getContext("2d").scale(1 / draw_scale, 1);
-      }
-
-      return {
-        x: x,
-        fixed_width: fixed_width,
-        num_flexible_rooms: num_flexible_rooms,
-        fixed_width_details: fixed_width_details
-      };
-    }
-  }, {
-    key: "grouping_body_elemnts_enh",
-    value: function grouping_body_elemnts_enh(body_elements) {
-      // First, guess chord duration here.
-      // In current version, each chord in the measure is assumed to have the same duration.
-      // TODO : Improve based on number of spaces or duration indication mark.
-      var all_has_length = true;
-      var chord_name_str = null;
-      var sum_length = 0;
-      var rest_or_long_rests_detected = false;
-      body_elements.forEach(function (e) {
-        if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Space"]) return;
-        all_has_length &= e.note_group_list !== null;
-        if (all_has_length) sum_length += e.note_group_list[0].lengthIndicator.length;
-        rest_or_long_rests_detected |= e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Rest"];
-      });
-      var tmpl = {
-        elems: [],
-        groupedChordsLen: 0,
-        renderprop: {}
-      };
-      var groupedBodyElems = [];
-      if (body_elements.length > 0) groupedBodyElems.push(_common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](tmpl));
-      var gbei = 0; // Grouping the chord and notes among which the x-axis rooms are shared
-      // grouping is just done whether same chord is sahred.
-      // If this measure starts with Rest/Simle, then following Rests and chord without chord 
-      // name are regarded as in the same group.
-      // IF this measure starts with Chord with no name, then folowing Rests/Similre and Chords 
-      // with no names are grouped in the same group.
-
-      body_elements.forEach(function (e, ei) {
-        var this_chord_str = "";
-
-        if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Chord"]) {
-          this_chord_str = e.chord_name_str;
-        } else {
-          this_chord_str = ""; // Rests, Simile(in body) and Space are regarded as empty chord
-        }
-
-        if (chord_name_str === null) chord_name_str = this_chord_str;
-
-        if (groupedBodyElems[gbei].elems.length == 0) {// Keep in the same group
-        } else if (all_has_length && (this_chord_str == chord_name_str || this_chord_str == "" && chord_name_str != "")) {// Keep in the same group
-        } else {
-          // flush
-          groupedBodyElems.push(_common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](tmpl));
-          ++gbei;
-          chord_name_str = this_chord_str;
-        }
-
-        groupedBodyElems[gbei].elems.push(e);
-      });
-      return {
-        groupedBodyElems: groupedBodyElems,
-        all_has_length: all_has_length
-      };
-    }
-  }, {
-    key: "render_measure_row_simplified",
-    value: function render_measure_row_simplified(x, paper, macros, row_elements_list, prev_measure, next_measure, y_base, param, draw, inner_reharsal_mark, ylimit, music_context) {
-      var _this7 = this;
-
-      var x_global_scale = macros.X_GLOBAL_SCALE;
-      var transpose = macros.TRANSPOSE;
-      var half_type = macros.KEY_TYPE;
-      var key = macros.KEY;
-      var staff = macros.STAFF;
-      /* Reference reserved width for empty measures or chord symbol without base names*/
-
-      var C7_width = 20;
-
-      if (staff == "ON") {} // rs_area_detected = true; // Fix me : Not supported in simplified renderer
-      // interval of 5 lines
-
-
-      var _5lines_intv = param.rs_area_height / (5 - 1);
-
-      var yprof = this.screening_y_areas(row_elements_list, y_base, param, staff, inner_reharsal_mark);
-      var y_next_base = yprof.end.y;
-      var y_body_or_rs_base = yprof.rs.detected ? yprof.rs.y : yprof.body.y;
-      var repeat_mark_y_base = yprof.rs.detected ? yprof.rs.y - param.repeat_mark_y_margin : yprof.mu.y + yprof.mu.height; // if ylimit is specified, and drawing region surpass that limit, do not render
-
-      if (ylimit !== null && y_next_base > ylimit) {
-        return null;
-      }
-
-      if (row_elements_list[0].renderprop.left_margin != null) {
-        x += row_elements_list[0].renderprop.left_margin;
-      } // Reharsal mark if any
-
-      /*if(first_block_first_row && !inner_reharsal_mark){
-          let r = graphic.CanvasTextWithBox(
-              paper,
-              param.x_offset,
-              yprof.rm.y,
-              reharsal_group.name,
-              param.reharsal_mark_font_size,
-              2, 
-              graphic.GetCharProfile(param.reharsal_mark_font_size).height
-          );
-      }*/
-      // For each measure in this row
-
-
-      var _loop3 = function _loop3(ml) {
-        // measure object
-        var m = row_elements_list[ml];
-
-        var elements = _this7.classifyElements(m);
-
-        mh_offset = 0;
-        meas_base_x = x; // Reset music context
-
-        music_context.pos_in_a_measure = 0; // reset
-        // TODO : consider key infomration
-        // TODO : consider tie
-        // C3 -> 0x3C as 0 C-2 as index 0, G8 as 127(0x7F)
-
-        music_context.accidental_info = new Array(128).fill(0); // balken context inside a measure
-
-        var balken = {
-          groups: []
-        }; // Reharsal group mark, only rendred when it has name
-
-        if (m.renderprop && m.renderprop.rg_from_here && m.renderprop.rg_from_here.name != "") {
-          var reharsal_group = m.renderprop.rg_from_here;
-          var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasTextWithBox"](paper, meas_base_x, inner_reharsal_mark ? yprof.mu.y : yprof.rm.y, reharsal_group.name, param.reharsal_mark_font_size, 2, _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](param.reharsal_mark_font_size, null, false, paper.ratio, paper.zoom).height);
-          if (inner_reharsal_mark) mh_offset += r.width + 2;
-        }
-
-        for (ei = 0; ei < elements.header.length; ++ei) {
-          var e = elements.header[ei];
-
-          if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Coda"]) {
-            var _r = _this7.draw_coda_plain(paper, meas_base_x + mh_offset, yprof.mu.y + yprof.mu.height, "lb", e, param.base_font_size);
-
-            mh_offset += _r.width;
-          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Segno"]) {
-            var _r2 = _this7.draw_segno_plain(paper, meas_base_x + mh_offset, yprof.mu.y + yprof.mu.height, e, param.base_font_size);
-
-            mh_offset += _r2.width;
-          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Comment"]) {
-            // If this comment is associated with a chord with exceptional comment, not rendered here.
-            if (!e.chorddep) {
-              var _r3 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, meas_base_x + mh_offset, yprof.mu.y + yprof.mu.height, e.comment, param.base_font_size / 2, "lb");
-
-              mh_offset += _r3.width;
-            }
-          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Lyric"]) {
-            if (draw) {
-              // If this comment is associated with a chord with exceptional comment, not rendered here.
-              if (!e.chorddep) {// Currently lyrics are only rendered for chord dependency case
-              }
-            }
-          }
-        } // Header loop
-
-
-        var meas_start_x = x;
-        var meas_start_x_actual_boundary = x; // Draw header
-        // Clef, Key, Begin Boundary, Time(1st one) are included in this area
-
-        elements.header.forEach(function (e) {
-          if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["MeasureBoundary"]) {
-            var pm = ml == 0 ? prev_measure : row_elements_list[ml - 1];
-            var ne = pm ? pm.elements[pm.elements.length - 1] : null;
-
-            var _r4 = _this7.draw_boundary_simplified("begin", ne, e, ml == 0, //m.raw_new_line,
-            paper, x, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, param, true);
-
-            m.renderprop.y = y_body_or_rs_base;
-            m.renderprop.sx = x;
-            m.renderprop.paper = paper;
-            x += e.renderprop.w;
-            meas_start_x_actual_boundary = _r4.actual_boundary;
-          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Time"]) {
-            var chord_str_height = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](param.base_font_size, null, false, paper.ratio, paper.zoom).height;
-            var row_height = yprof.rs.detected ? param.rs_area_height : param.row_height;
-            var cont_height = yprof.rs.detected ? param.rs_area_height : chord_str_height; //var lineThickNessShift = 0.064; // Line tickness
-            //let fontSize = graphic.getFontSizeFromHeight(cont_height + lineThickNessShift*cont_height/4, 
-            //    "Bravura Text", String.fromCodePoint(0xE014)); // 5 line is baseline
-            //console.log("fontSize="+fontSize);
-
-            /*graphic.CanvasText(
-                paper,
-                x + e.renderprop.w / 2,
-                y_body_or_rs_base + row_height/2  - cont_height/2,
-                //e.numer,
-                String.fromCodePoint(0xE014),
-                fontSize,
-                "lt",
-                e.renderprop.w,
-                false,
-                {"fontfamily":"Bravura Text", "raw":true}
-            );*/
-
-            /*graphic.CanvasText(
-                paper,
-                x + e.renderprop.w / 2,
-                y_body_or_rs_base + row_height/2 - cont_height/2 - cont_height/4*3,
-                //e.numer,
-                String.fromCodePoint(0xE080+parseInt(e.numer)),
-                fontSize,
-                "lt",
-                e.renderprop.w,
-                false,
-                {"fontfamily":"Bravura Text", "raw":true}
-            );*/
-
-            _this7.buravura.put(paper, 0xE080 + parseInt(e.numer), cont_height / 4, x, y_body_or_rs_base + row_height / 2 - cont_height / 2 - cont_height / 4 * 3);
-            /*graphic.CanvasText(
-                paper,
-                x + e.renderprop.w / 2,
-                y_body_or_rs_base + row_height/2 - cont_height/2 - cont_height/4*1,
-                //e.denom,
-                String.fromCodePoint(0xE080+parseInt(e.denom)),
-                fontSize,
-                "rt",
-                e.renderprop.w,
-                false,
-                {"fontfamily":"Bravura Text", "raw":true}
-            );*/
-
-
-            _this7.buravura.put(paper, 0xE080 + parseInt(e.denom), cont_height / 4, x, y_body_or_rs_base + row_height / 2 - cont_height / 2 - cont_height / 4 * 1);
-            /*var ly = yprof.body.y + row_height / 2;
-            if (draw && !yprof.rs.detected)
-                graphic.CanvasLine(
-                    paper,
-                    x,
-                    ly,
-                    x + e.renderprop.w,
-                    ly
-                );*/
-
-
-            x += e.renderprop.w;
-          }
-        });
-        var header_width = x - meas_start_x;
-        x += param.header_body_margin; // Draw body
-
-        var rberet = _this7.render_body_elements(true, x, elements, param, music_context, yprof, paper, _5lines_intv, meas_start_x, m, x_global_scale, transpose, half_type, key, C7_width, y_body_or_rs_base, balken);
-
-        x = rberet.x;
-        x += param.body_footer_margin;
-        var footer_start_x = x; // Draw footer
-
-        footer_base = x;
-
-        for (var _ei = 0; _ei < elements.footer.length; ++_ei) {
-          var _e2 = elements.footer[_ei];
-
-          if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["MeasureBoundary"]) {
-            nm = ml == row_elements_list.length - 1 ? next_measure : row_elements_list[ml + 1];
-            ne = nm ? nm.elements[0] : null;
-
-            var _r5 = _this7.draw_boundary_simplified("end", _e2, ne, ml == row_elements_list.length - 1, //nm ? nm.raw_new_line : false,
-            paper, x, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, param, true);
-
-            m.renderprop.ex = x;
-            x += _e2.renderprop.w;
-          } else if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DaCapo"]) {
-            _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, repeat_mark_y_base, _e2.toString(), param.base_font_size / 2, "rb"); //if (yprof.rs.detected) x += 15 * 4;
-          } else if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DalSegno"]) {
-            _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, repeat_mark_y_base, _e2.toString(), param.base_font_size / 2, "rb");
-          } else if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["ToCoda"]) {
-            if (yprof.rs.detected) {
-              /*
-              var text = raphaelText(
-                  paper,
-                  x,
-                  y_body_or_rs_base,
-                  "To",
-                  param.base_font_size / 2,
-                  "lb"
-              ).attr(param.repeat_mark_font);
-              x += text.getBBox().width + 5;
-              rs_area_svg_groups.push(text);
-              var coda = draw_coda(
-                  paper,
-                  x,
-                  y_body_or_rs_base,
-                  "lb",
-                  e
-              );
-              x += coda.getBBox().width;
-              rs_area_svg_groups.push(coda);
-              */
-            } else {
-              var _r6 = _this7.draw_coda_plain(paper, x, yprof.mu.y + yprof.mu.height, "rb", _e2, param.base_font_size); //paper.getContext("2d").drawImage(graphic.G_imgmap["assets/img/coda.svg"], x - 15, y_body_or_rs_base - 15, 15, 15);
-
-
-              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x - _r6.width, yprof.mu.y + yprof.mu.height, "To", param.base_font_size / 2, "rb");
-            }
-          } else if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Fine"]) {
-            _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, repeat_mark_y_base, _e2.toString(), param.base_font_size / 2, "rb");
-            if (yprof.rs.detected) x += 15 * 4;
-          } else {
-            throw "Unkown instance of footer elements";
-          }
-        }
-
-        var footer_width = x - footer_start_x;
-        meas_end_x = x; // Draw Upper and Lower Signs
-
-        for (var _ei2 = 0; _ei2 < elements.measure_wide.length; ++_ei2) {
-          var _e3 = elements.measure_wide[_ei2];
-
-          if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["LoopIndicator"]) {
-            oy = 10;
-            ly = yprof.body.y - 2 - oy;
-            sx = meas_start_x_actual_boundary;
-            fx = meas_start_x + (meas_end_x - meas_start_x) * 0.7;
-            _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, sx, ly, sx, ly + oy);
-            _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, sx, ly, fx, ly);
-            s = _e3.indicators.join(",");
-            _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, sx + 2, ly, s, param.base_font_size / 3, "lt");
-          } else if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["LongRestIndicator"]) {
-            var height = yprof.rs.detected ? param.rs_area_height : param.row_height;
-
-            var _sx = meas_start_x + header_width; // header_width does not include header_body_margin
-
-
-            var _fx = meas_end_x - footer_width;
-
-            rh = height;
-            r_lrmargin = 0.05;
-            min_lrmargin = 5;
-            max_lrmargin = 10;
-            yshift = 0; // height / 6;
-
-            vlmargin = 0.2;
-            var lrmargin = Math.max(min_lrmargin, Math.min(max_lrmargin, (_sx + _fx) * r_lrmargin));
-            lx = _sx + lrmargin;
-            rx = _fx - lrmargin;
-            if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, lx, y_body_or_rs_base + height / 2 + yshift, rx, y_body_or_rs_base + height / 2 + yshift, {
-              width: height / 5
-            });
-            if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, lx, y_body_or_rs_base + rh * vlmargin + yshift, lx, y_body_or_rs_base + rh - rh * vlmargin + yshift, {
-              width: "1"
-            });
-            if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, rx, y_body_or_rs_base + rh * vlmargin + yshift, rx, y_body_or_rs_base + rh - rh * vlmargin + yshift, {
-              width: "1"
-            });
-
-            if (draw) {
-              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, (_sx + _fx) / 2, y_body_or_rs_base, _e3.longrestlen, param.base_font_size / 2, "ct", undefined, !draw);
-            } //rest_or_long_rests_detected |= true;
-
-          } else if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Simile"]) {
-            // Simile mark in measure wide element if there is no other body elements in this measure
-            var _sx2 = meas_start_x + header_width; // header_width does not include header_body_margin
-
-
-            var _fx2 = meas_end_x - footer_width;
-
-            _this7.render_simile_mark_plain(draw, paper, (_sx2 + _fx2) / 2, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, _e3.numslash, false, "c");
-          } else {
-            throw "Unkown measure wide instance detected";
-          }
-        }
-
-        m.renderprop.meas_end_x = meas_end_x;
-        m.renderprop.meas_start_x = meas_start_x;
-      };
-
-      for (var ml = 0; ml < row_elements_list.length; ++ml) {
-        var mh_offset;
-        var meas_base_x;
-        var ei;
-        var footer_base;
-        var nm;
-        var ne;
-        var meas_end_x;
-        var oy;
-        var ly;
-        var sx;
-        var fx;
-        var s;
-        var rh;
-        var r_lrmargin;
-        var min_lrmargin;
-        var max_lrmargin;
-        var yshift;
-        var vlmargin;
-        var lx;
-        var rx;
-
-        _loop3(ml);
-      } // measure loop
-      // 0. Draw 5 lines
-
-
-      if (draw && yprof.rs.detected) {
-        var start_x = row_elements_list[row_elements_list.length - 1].renderprop.meas_end_x;
-        var end_x = row_elements_list[0].renderprop.meas_start_x;
-
-        for (var i = 0; i < 5; ++i) {
-          var intv = _5lines_intv;
-          var dy = 0;
-          _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, start_x, yprof.rs.y + i * intv + dy, end_x, yprof.rs.y + i * intv + dy, {
-            width: 1
-          });
-        }
-      } // return {y_base:y_base + param.row_height + param.row_margin};
-
-
-      return {
-        y_base: y_next_base
-      };
-    }
-  }, {
-    key: "draw_segno_plain",
-    value: function draw_segno_plain(paper, x, y, segno, B) {
-      var lx = x;
-      var img_width = B / 3;
-      var img_height = B / 2;
-      var text_size = B / 2;
-      /*paper
-          .getContext("2d")
-          .drawImage(graphic.G_imgmap["assets/img/segno.svg"], lx, y, B / 3, B / 2);
-      */
-
-      _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["assets/img/segno.svg"], lx, y, img_width, img_height, "lb", true);
-      lx += img_width;
-
-      if (segno.number !== null) {
-        var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, lx, y, segno.number, text_size, "lb");
-        lx += r.width;
-      }
-
-      if (segno.opt !== null) {
-        var _r7 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, lx, y, "(" + segno.opt + ")", text_size, "lb");
-
-        lx += _r7.width;
-      }
-
-      return {
-        width: lx - x
-      };
-    }
-  }, {
-    key: "draw_coda_plain",
-    value: function draw_coda_plain(paper, x, y, align, coda, B) {
-      var width = 0;
-      var ys = 0;
-      var img_width = B / 2;
-      var img_height = B / 2;
-      var text_size = B / 2;
-
-      if (align[1] == "b") {
-        ys = -img_height;
-      } else if (align[1] == "m") {
-        ys = -img_height / 2;
-      } // var img_y = y; // + ys;
-
-
-      if (align[0] == "r") {
-        if (coda.number !== null) {
-          var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, y, //img_y + img_height,
-          coda.number, text_size, "rb");
-          width += r.width;
-        }
-        /*paper
-            .getContext("2d")
-            .drawImage(
-                graphic.G_imgmap["assets/img/coda.svg"],
-                x - width - B / 2,
-                img_y,
-                B / 2,
-                B / 2
-            );*/
-
-
-        _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["assets/img/coda.svg"], x - width, y, img_width, img_height, "rb", true);
-        width += img_width;
-      } else if (align[0] == "l") {
-        /*paper
-            .getContext("2d")
-            .drawImage(
-                graphic.G_imgmap["assets/img/coda.svg"],
-                x,
-                img_y,
-                img_width,
-                img_height
-            );*/
-        _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["assets/img/coda.svg"], x, y, img_width, img_height, "lb", true);
-        width += img_width;
-
-        if (coda.number !== null) {
-          var _r8 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x + width, y, //img_y + img_height,
-          coda.number, text_size, "lb");
-
-          width += _r8.width;
-        }
-      } else {
-        throw "NOT SUPPORTED";
-      }
-
-      return {
-        width: width
-      };
-    }
-  }, {
-    key: "render_chord_as_string_plain",
-    value: function render_chord_as_string_plain(chord, paper, x, y_body_base, param, draw) {
-      var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, y_body_base + param.row_height / 2, chord.chord_str, param.base_font_size * 0.6, "lm", undefined, !draw);
-      return {
-        width: r.width
-      };
-    }
-  }, {
-    key: "render_rest_plain",
-    value: function render_rest_plain(e, paper, draw, x, y_body_or_rs_base, C7_width, row_height, base_body_height, param) {
-      var _5i = base_body_height / 4;
-
-      var yoffsets = {
-        1: -_5i,
-        2: -_5i / 6 * 4,
-        4: -_5i * 1.5,
-        8: -_5i,
-        16: 0,
-        32: 0,
-        64: _5i
-      };
-      var heights = {
-        1: _5i / 6 * 4,
-        2: _5i / 6 * 4,
-        4: _5i * 3,
-        8: _5i * 2.5,
-        16: _5i * 2.5,
-        32: _5i * 2.5,
-        64: _5i * 2.5
-      };
-      var dot_xoffsets = {
-        1: 16,
-        2: 16,
-        4: 10,
-        8: 12,
-        16: 14,
-        32: 16,
-        64: 18
-      };
-      var rd = e.note_group_list[0].lengthIndicator.base;
-      var numdot = e.note_group_list[0].lengthIndicator.numdot;
-      var oy = yoffsets[rd];
-      var fs = 14;
-      var ctx = paper.getContext("2d"); // eslint-disable-next-line no-constant-condition
-
-      if (false) { var i; }
-
-      if (draw) {
-        var img = _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["assets/img/rest" + (rd <= 4 ? rd : 8) + ".svg"];
-        var s = img.height / heights[rd];
-
-        if (rd <= 4) {
-          ctx.drawImage(img, x, y_body_or_rs_base + row_height / 2 + oy, img.width / s, img.height / s);
-        } else {
-          var nKasane = _common_common__WEBPACK_IMPORTED_MODULE_2__["myLog2"](rd) - 2;
-          var rdx = 2;
-          var rdy = -_5i;
-
-          for (var k = 0; k < nKasane; ++k) {
-            ctx.drawImage(img, x + k * rdx, y_body_or_rs_base + row_height / 2 + k * rdy + oy, img.width / s, img.height / s);
-          }
-        } // dots
-
-
-        for (var di = 0; di < numdot; ++di) {
-          _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](paper, x + dot_xoffsets[rd] + di * 5, y_body_or_rs_base + row_height / 2 - _5i / 2, 1);
-        }
-      }
-
-      return {
-        bounding_box: {
-          x: x,
-          y: y_body_or_rs_base,
-          w: 10,
-          h: row_height
-        }
-      }; // TODO : Impelment correctly
-    }
-  }, {
-    key: "render_simile_mark_plain",
-    value: function render_simile_mark_plain(draw, paper, x, y_body_base, row_height, base_body_height, // In RS area, row_height == base_body_height is asuumed
-    numslash, put_boundary, align) {
-      var h = 4;
-      var H = 12;
-      var i = 4;
-      var cm = 2;
-      var cr = 1.2;
-
-      var _5lines_intv = base_body_height / 4;
-
-      var width = (h + i) * (numslash - 1) + h + H;
-      if (align == "c") x -= width / 2;else if (align == "r") x -= width;
-      var x0 = x;
-      if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](paper, x + cm, y_body_base + row_height / 2 - _5lines_intv * 0.5, cr);
-
-      for (var r = 0; r < numslash; ++r) {
-        var y = y_body_base + row_height / 2;
-        x += (h + i) * r;
-
-        if (draw) {
-          var points = [[x, y + _5lines_intv * 1], [x + h, y + _5lines_intv * 1], [x + h + H, y - _5lines_intv * 1], [x + H, y - _5lines_intv * 1]];
-          _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasPolygon"](paper, points, true, true);
-        }
-      }
-
-      if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](paper, x + h + H - cm, y_body_base + row_height / 2 + _5lines_intv * 0.5, cr);
-
-      if (put_boundary) {
-        if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, x0 + width / 2, y_body_base, x0 + width / 2, y_body_base + row_height, {
-          width: 1
-        });
-      }
-
-      return {
-        width: width
-      };
-    }
-  }, {
-    key: "render_chord_simplified",
-    value: function render_chord_simplified(draw, chord, transpose, half_type, key, canvas, x, y_body_base, param, C7_width) {
-      if (!chord.is_valid_chord) {
-        return this.render_chord_as_string_plain(chord, canvas, x, y_body_base, param, draw);
-      }
-
-      var ce = this.chord_elem_classify(chord, transpose, half_type, key);
-      var bases = ce.bases;
-      var elems = ce.mid_elem_objs;
-      var y = y_body_base;
-      var B = param.base_font_size; // if bases are null, elems are null, then it is just a duration information
-
-      if (bases[0] == null && bases[1] == null && elems === undefined) {
-        return {
-          width: B
-        };
-      }
-
-      var _3rdelem = ce._3rdelem;
-      var _5thelem = ce._5thelem;
-      var _6791113suselem = ce._6791113suselem;
-      var _alteredelem = ce._alteredelem; // #11, #9, b9, #13, b13,
-
-      var upper_width = 0;
-      var lower_width = 0;
-      var tensions_width = 0;
-      var onbass_width = 0;
-      var rootCharHeight = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](B, null, false, canvas.ratio, canvas.zoom).height; // Position parameters
-
-      var upper_tension_y_offset = 0; // base line is middle of main chord character
-
-      var lower_onbass_y_offset = rootCharHeight / 16; // base line is bottom of main chord character. For on bass this applies for normal onbass style. For on bass style of "below", offset 0 is applied.
-
-      var root = bases[0];
-      var onbass = bases[1];
-      var chord_offset_on_bass = 0;
-      if (onbass != null && param.on_bass_style == "below") chord_offset_on_bass = param.on_bass_below_y_offset; // Character width scaling, ratio to base font size in pt. Note that 1.0 does not mean the width of base character.
-      // In most case, non-proportional font have differnt width for each cahracter. 
-      // Typically "G" has max width among characters used for chords.
-      // Adjustment based on "G" sometimes lead to too much space for other thinner fonts like "F".
-      // A little bit of compressing the default character width will absorb such a difference. Here *0.9 is used. 
-
-      var char_width_scale = 0.7;
-      var main_char_width = 0.7;
-
-      if (root) {
-        _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x, y + param.row_height / 2 + chord_offset_on_bass, root[0], B, "lm", B * char_width_scale, !draw);
-        upper_width = B * main_char_width;
-        lower_width = B * main_char_width;
-
-        if (root.length == 2) {
-          var acc_height = rootCharHeight / 2.0 + rootCharHeight / 8.0;
-          var acc_width = B * 0.25;
-
-          if (root[1] == "b") {
-            if (draw) {
-              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["assets/img/flat.svg"], x + upper_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, acc_width, acc_height, "lb");
-            }
-
-            upper_width += acc_width;
-          } else {
-            if (draw) {
-              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["assets/img/sharp.svg"], x + upper_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, acc_width, acc_height, "lb");
-            }
-
-            upper_width += acc_width;
-          }
-        }
-      } else {} // No root but only bass
-      // Half diminish is firstly rendered
-
-
-      if (ce._halfdim_exists) {
-        // Remove m7 and -5
-        _3rdelem = _3rdelem.filter(function (e) {
-          return e.type != "m";
-        });
-        _6791113suselem = _6791113suselem.filter(function (e) {
-          return !(e.type == "dig" && e.param == "7");
-        });
-        _5thelem = _5thelem.filter(function (e) {
-          return e.type != "b";
-        });
-        var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x00d8), B * 0.5, "lb", B * 0.5, !draw);
-        lower_width += r.width;
-      }
-
-      _3rdelem.forEach(function (e) {
-        if (e.type == "M" && _6791113suselem.length > 0) {
-          var _r9 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x0394), B * 0.5, "lb", B * 0.5, !draw);
-
-          lower_width += _r9.width;
-        } else if (e.type == "m") {
-          var _r10 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x2013), B * 0.5, "lb", B * 0.5, !draw);
-
-          lower_width += _r10.width;
-        } else {// Unkown type
-        }
-      });
-
-      _6791113suselem.forEach(function (e) {
-        if (e.type == "dig") {
-          var _r11 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, e.param, B * 0.5, "lb", B * 0.5, !draw);
-
-          lower_width += _r11.width;
-        } else if (e.type == "sus" || e.type == "add") {
-          var _r12 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, e.type + (e.param ? e.param : ""), B * 0.5, "lb", B * 0.8, !draw);
-
-          lower_width += _r12.width;
-        } else if (e.type == "dim") {
-          var _r13 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x004f) + (e.param ? e.param : ""), B * 0.5, "lb", B * 0.5, !draw);
-
-          lower_width += _r13.width;
-        } else if (e.type == "M") {
-          var _r14 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x0394) + (e.param ? e.param : ""), B * 0.5, "lb", B * 0.5, !draw);
-
-          lower_width += _r14.width;
-        }
-      });
-
-      _5thelem.forEach(function (e) {
-        if (e.type == "b") {
-          var _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + upper_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, "-5", B * 0.5, "lb", B * 0.5, !draw);
-
-          upper_width += _r15.width;
-        } else if (e.type == "#") {
-          var _r16 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + upper_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, "+5", B * 0.5, "lb", B * 0.5, !draw);
-
-          upper_width += _r16.width;
-        }
-      });
-
-      if (_alteredelem.length > 0) {
-        var tensions_pos = Math.max(upper_width, lower_width); // Assume onbass below does not exceed lower_width
-
-        var _r17 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, "(", B * 0.5, "lb", B * 0.5, !draw);
-
-        tensions_width += _r17.width;
-        var h = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](B * 0.5, null, false, canvas.ratio, canvas.zoom).height;
-
-        _alteredelem.forEach(function (e, index) {
-          if (e.type == "b") {
-            if (draw) {
-              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["assets/img/flat.svg"], x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, B * 0.2, h, "lb");
-            }
-
-            tensions_width += B * 0.2;
-          } else if (e.type == "#") {
-            if (draw) {
-              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["assets/img/sharp.svg"], x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, B * 0.2, h, "lb");
-            }
-
-            tensions_width += B * 0.2;
-          }
-
-          var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, e.param, B * 0.5, "lb", B * 0.5, !draw);
-          tensions_width += r.width;
-
-          if (index != _alteredelem.length - 1) {
-            var _r18 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, ", ", B * 0.5, "lb", B * 0.5, !draw);
-
-            tensions_width += _r18.width;
-          }
-        });
-
-        _r17 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, ")", B * 0.5, "lb", B * 0.5, !draw);
-        tensions_width += _r17.width;
-      }
-
-      if (onbass != null) {
-        var on_bass_below_a_margin = param.on_bass_style == "below" ? 1 : 0;
-        var onbass_pos = param.on_bass_style == "below" ? x : x + Math.max(upper_width, lower_width) + tensions_width;
-        var on_bass_y_offset = param.on_bass_style == "below" ? 0 : lower_onbass_y_offset;
-
-        var _r19 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, onbass_pos, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, "/" + onbass[0], B * 0.45, param.on_bass_style == "below" ? "lt" : "lb", B * 0.5, !draw);
-
-        onbass_width += _r19.width;
-
-        if (onbass.length == 2) {
-          if (onbass[1] == "b") {
-            if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["assets/img/flat.svg"], onbass_pos + onbass_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, B * 0.2, _r19.height, param.on_bass_style == "below" ? "lt" : "lb", true);
-            onbass_width += B * 0.2;
-          } else {
-            if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["assets/img/sharp.svg"], onbass_pos + onbass_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, B * 0.2, _r19.height, param.on_bass_style == "below" ? "lt" : "lb", true);
-            onbass_width += B * 0.2;
-          }
-        }
-      }
-
-      var width = 0;
-      if (param.on_bass_style == "below") width = Math.max(upper_width, lower_width, onbass_width) + tensions_width;else {
-        width = Math.max(upper_width, lower_width) + tensions_width + onbass_width;
-      } // Quantize with 0.25*B unit : Not so beneficial ?
-      // width = Math.ceil(width / (B/4.0)) * (B/4.0);
-
-      return {
-        width: width
-      };
-    }
-    /**
-     * Draw boundary
-     * @param side : 'begin' or 'end' of boundary for current measure
-     * @param e0 : Boundary element: 0
-     *             - 'end' boundary if the previous measure when <side> is 'begin'
-     *             - 'end' boundary of current measure when <side> is 'end' 
-     *             - can be null if there is no previous measure when <side> is 'begin'.
-     * @param e1 : Boundary element: 1
-     *             - 'begin' boundary of current measure when <side> is 'begin'
-     *             - 'begin' boundary of next measure when <side> is 'end'
-     *             - can be null if there is no next measure when <side> is 'end'.
-     * @param is_row_edge : Whether this boundary is at the edge of row( left edge if <side> is 'begin', or right edge if <side> is 'end')
-     * @param paper : Paper object
-     * @param x : Current x position
-     * @param darw : Whether to draw or just estimating sizes
-     *
-     * @return dictionary with following keys and values
-     *             x : updated x position.
-     */
-
-  }, {
-    key: "draw_boundary_simplified",
-    value: function draw_boundary_simplified(side, e0, e1, is_row_edge, canvas, x, y_body_base, row_height, base_body_height, param, draw) {
-      var draw_type = null; // "s, d, lb, le, lb, f"
-
-      var w = 0; // width of boundary
-
-      var actual_boundary = 0; // Actual boundary when having more than 1 pixel width. 
-
-      if (side == "end" && !is_row_edge) {
-        // If this is not the last measure in this line, then does not draw the boundary. Draw in the "begin" side of next measure.
-        return {
-          width: 0,
-          actual_boundary: 0
-        };
-      }
-      /*
-          var thisIsLastMeasureInLine = e1 === null || is_row_edge;
-           // If this is not the last measure in this line, then does not draw the boundary. Draw in the "begin" side of next measure.
-          if (!thisIsLastMeasureInLine) return { width: 0, actual_boundary : 0 };
-      }*/
-
-
-      if (is_row_edge === null || is_row_edge == false) {
-        // 1. 2 boundaries in  differnt rows in the code will be rendered as an adjacent measure, or
-        // 2. The adjacent measures in the codes are measured as is
-        draw_type = this.boundary_type_without_line_break(e0, e1);
-      } else {
-        // 1. The adjacnet measures in the codes are measured in differnt rows
-        // 2. 2 boundraies in differnt rows in the code will be rendered as is (i.e. for differnt rows)
-        draw_type = this.boundary_type_with_line_break(e0, e1, side);
-      } //console.log([draw_type, side]);
-
-
-      var xshift = null;
-      var r = null;
-
-      switch (draw_type) {
-        case "s":
-        case "d":
-          // begin and end
-          var nline = draw_type == "s" ? 1 : 2;
-          var barintv = 3;
-          w = 1 + (nline - 1) * barintv;
-
-          for (var li = 0; li < nline; ++li) {
-            if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + li * barintv, y_body_base, x + li * barintv, y_body_base + row_height);
-          }
-
-          actual_boundary = x + (nline - 1) * barintv;
-          break;
-
-        case "b":
-          // begin only
-          w = 8;
-          actual_boundary = x;
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x, y_body_base, x, y_body_base + row_height, {
-            width: 2
-          });
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 3, y_body_base, x + 3, y_body_base + row_height);
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 7, y_body_base + row_height / 4 * 1.5, 1);
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 7, y_body_base + row_height / 4 * 2.5, 1);
-          break;
-
-        case "e":
-          // begin and end
-          w = 8;
-          actual_boundary = x + w;
-          xshift = side == "end" ? 0 : 0;
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + xshift, y_body_base + row_height / 4 * 1.5, 1);
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + xshift, y_body_base + row_height / 4 * 2.5, 1);
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 4, y_body_base, x + xshift + 4, y_body_base + row_height);
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 7, y_body_base, x + xshift + 7, y_body_base + row_height, {
-            width: 2
-          });
-
-          if (e0.times !== null && (e0.ntimes || e0.times != 2)) {
-            var stimes = e0.ntimes == true ? "X" : "" + e0.times;
-            if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + xshift + w, y_body_base + row_height + param.xtimes_mark_y_margin, "(" + stimes + " times)", param.base_font_size / 2, "rt");
-          }
-
-          break;
-
-        case "B":
-          // begin only
-          w = 15;
-          actual_boundary = x + w / 2;
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x, y_body_base + row_height / 4 * 1.5, 1);
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x, y_body_base + row_height / 4 * 2.5, 1);
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 4, y_body_base, x + 4, y_body_base + row_height);
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 7, y_body_base, x + 7, y_body_base + row_height, {
-            width: 2
-          });
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 10, y_body_base, x + 10, y_body_base + row_height);
-
-          if (e0.times !== null && (e0.ntimes || e0.times != 2)) {
-            var _stimes = e0.ntimes == true ? "X" : "" + e0.times;
-
-            if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + 8, y_body_base + row_height, "(" + _stimes + " times)", param.base_font_size / 2, "rt");
-          }
-
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 14, y_body_base + row_height / 4 * 1.5, 1);
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 14, y_body_base + row_height / 4 * 2.5, 1);
-          break;
-
-        case "f":
-          // begin and end (normally, end)
-          w = 5;
-          xshift = side == "end" ? 0 : 0;
-          actual_boundary = x + w;
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift, y_body_base, x + xshift, y_body_base + row_height);
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 3, y_body_base, x + xshift + 3, y_body_base + row_height, {
-            width: 2
-          });
-          break;
-
-        case "r":
-          r = this.render_simile_mark_plain(draw, canvas, x, y_body_base, row_height, base_body_height, 2, true, "l");
-          x += r.width;
-          w = r.width;
-          actual_boundary = x + w / 2;
-          break;
-
-        default:
-          throw "Internal error";
-      }
-
-      return {
-        width: w,
-        actual_boundary: actual_boundary
-      };
-    }
-  }]);
-
-  return MobileRenderer;
-}(_renderer__WEBPACK_IMPORTED_MODULE_1__["Renderer"]);
-
-/***/ }),
-
 /***/ "./src/renderer/renderer.js":
 /*!**********************************!*\
   !*** ./src/renderer/renderer.js ***!
@@ -17331,7 +17333,7 @@ function () {
         balken_element.renderprop.note_x_center = x;
 
         if (draw) {
-          balken_element.notes_coord.x.push([x, x, x + ret.bounding_box.w]);
+          balken_element.notes_coord.x.push([x, x, x + ret.bounding_box.w, x + ret.bounding_box.w]);
         }
       } else if (balken_element.type == "notes") {
         var xs = [];
@@ -17358,10 +17360,26 @@ function () {
             throw "SOMETHING WRONG WITH PARSING";
           }
 
-          bounding_box.add_rect(r.bounding_box);
+          var note_right_side = note_x_center + r.bounding_box.w;
+          bounding_box.add_rect(r.bounding_box); // dots
+
+          var dots_bounding_box = new _common_common__WEBPACK_IMPORTED_MODULE_1__["BoundingBox"]();
+          dots_bounding_box.add(note_right_side, y);
+
+          for (var i = 0; i < numdot; ++i) {
+            var dy = pos_on_5lines[ci] % 2 == 0 ? -_5lines_intv / 2 : 0;
+            r = _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasCircle"](paper, note_x_center + 12 + i * 5, y + dy, 1, draw);
+            bounding_box.add_rect(r.bounding_box);
+            dots_bounding_box.add_rect(r.bounding_box);
+          }
 
           if (draw) {
-            balken_element.notes_coord.x.push([x, note_x_center, note_x_center + r.bounding_box.w]);
+            // notes_coord.x : 
+            //   0 : Left side of note including accidentals
+            //   1 : Left side of note
+            //   2 : Right side of note
+            //   3 : Right side of note including dots
+            balken_element.notes_coord.x.push([x, note_x_center, note_right_side, note_right_side + dots_bounding_box.get().w]);
           } // draw sharp, flat and natrual
           // http://finale-hossy.sakura.ne.jp/finale/2011/11/post-18.html
 
@@ -17378,16 +17396,8 @@ function () {
               0: 0
             };
             var url = "assets/img/" + svgname[sharp_flats[ci]];
-            var dy = svg_dy[sharp_flats[ci]];
-            r = _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_2__["G_imgmap"][url], x, y + _5lines_intv * dy, null, _5lines_intv * 2.5, "lm", draw);
-            bounding_box.add_rect(r.bounding_box);
-          } // dots
-
-
-          for (var i = 0; i < numdot; ++i) {
-            var _dy = pos_on_5lines[ci] % 2 == 0 ? -_5lines_intv / 2 : 0;
-
-            r = _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasCircle"](paper, note_x_center + 12 + i * 5, y + _dy, 1, draw);
+            var _dy = svg_dy[sharp_flats[ci]];
+            r = _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_2__["G_imgmap"][url], x, y + _5lines_intv * _dy, null, _5lines_intv * 2.5, "lm", draw);
             bounding_box.add_rect(r.bounding_box);
           } // Draw additional horizontal lines
 
@@ -17418,14 +17428,17 @@ function () {
         bounding_box.add_rect(_r.bounding_box);
 
         if (draw) {
-          balken_element.notes_coord.x.push([x, x, x + _r.bounding_box.w]);
+          balken_element.notes_coord.x.push([x, x, x + _r.bounding_box.w, x + _r.bounding_box.w]);
         }
       } else if (balken_element.type == "space") {
         // Do not use expand here in case only one space is grouped in balken group
         bounding_box.add(x, rs_y_base, 0.5 * param.base_font_size, 0);
       } else if (balken_element.type == "simile") {
         alert("Impleetaion not ready for siile in RS area");
-      }
+      } // Apply minimum room for RS area elements
+
+
+      bounding_box.expand(0, param.rs_elem_min_room, 0, 0); // Apply minimum room
 
       return {
         bounding_box: bounding_box.get()
@@ -17578,8 +17591,8 @@ function () {
               if (y != prev_coord.y[_ci]) {
                 // Crossing measure row. Previous RS mark could be on another page.
                 // Make sure to create curve on the paper on which previous RS is drawn.
-                var brace_points = [[prev_coord.x[_ci][2] * prev_draw_scale + sdx, prev_coord.y[_ci] + _dy2], [prev_coord.x[_ci][2] * prev_draw_scale + sdx, prev_coord.y[_ci] - round + _dy2], [psm.renderprop.meas_end_x + 20, prev_coord.y[_ci] - round + _dy2], [psm.renderprop.meas_end_x + 20, prev_coord.y[_ci] + _dy2]];
-                var clip_rect = [prev_coord.x[_ci][2] * prev_draw_scale + sdx, prev_coord.y[_ci] - 50, psm.renderprop.meas_end_x - (prev_coord.x[_ci][2] * prev_draw_scale + sdx) + 5, 100];
+                var brace_points = [[prev_coord.x[_ci][3] * prev_draw_scale + sdx, prev_coord.y[_ci] + _dy2], [prev_coord.x[_ci][3] * prev_draw_scale + sdx, prev_coord.y[_ci] - round + _dy2], [psm.renderprop.meas_end_x + 20, prev_coord.y[_ci] - round + _dy2], [psm.renderprop.meas_end_x + 20, prev_coord.y[_ci] + _dy2]];
+                var clip_rect = [prev_coord.x[_ci][3] * prev_draw_scale + sdx, prev_coord.y[_ci] - 50, psm.renderprop.meas_end_x - (prev_coord.x[_ci][3] * prev_draw_scale + sdx) + 5, 100];
                 console.group("Tie");
                 console.log(brace_points);
                 console.log(clip_rect);
@@ -17601,7 +17614,7 @@ function () {
                 });
                 paper.getContext("2d").scale(draw_scale, 1.0);
               } else {
-                var _brace_points = [[prev_coord.x[_ci][2] * prev_draw_scale + sdx, prev_coord.y[_ci] + _dy2], [prev_coord.x[_ci][2] * prev_draw_scale + sdx, prev_coord.y[_ci] - round + _dy2], [xs[_ci][0] * draw_scale + edx, y - round + _dy2], [xs[_ci][0] * draw_scale + edx, y + _dy2]];
+                var _brace_points = [[prev_coord.x[_ci][3] * prev_draw_scale + sdx, prev_coord.y[_ci] + _dy2], [prev_coord.x[_ci][3] * prev_draw_scale + sdx, prev_coord.y[_ci] - round + _dy2], [xs[_ci][0] * draw_scale + edx, y - round + _dy2], [xs[_ci][0] * draw_scale + edx, y + _dy2]];
                 paper.getContext("2d").scale(1.0 / draw_scale, 1.0);
                 _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasbBzierCurve"](paper, _brace_points, false, false);
                 paper.getContext("2d").scale(draw_scale, 1.0);

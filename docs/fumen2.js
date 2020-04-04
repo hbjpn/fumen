@@ -11855,13 +11855,50 @@ function () {
 //
 
 var WHOLE_NOTE_LENGTH = 2 * 3 * 5 * 7 * 9 * 11 * 13 * 64;
-var Track = function Track() {
-  _classCallCheck(this, Track);
+var Track =
+/*#__PURE__*/
+function () {
+  function Track() {
+    _classCallCheck(this, Track);
 
-  this.reharsal_groups = new Array();
-  this.macros = deepcopy(MACRO_DEFAULT);
-  this.pre_render_info = {};
-};
+    this.reharsal_groups = new Array();
+    this.macros = deepcopy(MACRO_DEFAULT);
+    this.pre_render_info = {};
+  } // Utility functions open for external
+
+
+  _createClass(Track, [{
+    key: "getKey",
+    value: function getKey() {
+      if (Number.isInteger(this.macros["TRANSPOSE"])) {
+        var transposed_key = getTransposedKeyFromOffset(this.macros["KEY"], this.macros["TRANSPOSE"], this.macros["KEY_TYPE"]);
+        return {
+          key: transposed_key,
+          originalKey: this.macros["KEY"]
+        };
+      } else {
+        return {
+          key: this.macros["TRANSPOSE"],
+          originalKey: this.macros["KEY"]
+        };
+      }
+    }
+  }, {
+    key: "setVariable",
+    value: function setVariable(obj) {
+      for (var key in obj) {
+        this.macros[key] = deepcopy(obj[key]);
+      }
+    }
+  }, {
+    key: "getVariable",
+    value: function getVariable(name) {
+      return this.macros[name];
+    }
+  }]);
+
+  return Track;
+}();
 var ReharsalGroup = function ReharsalGroup(name) {
   var inline = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
@@ -12183,6 +12220,160 @@ function parseChordNotes(str) {
   return note_group_list;
 }
 
+function _getTranpsoedNote(transpose, half_type, key, note_base, sharp_flat) {
+  // https://music.stackexchange.com/questions/40041/algorithm-for-transposing-chords-between-keys
+  var min_maj_map = {
+    "B#m": "D#",
+    "Cm": "Eb",
+    "C#m": "E",
+    "Dbm": "Fb",
+    "Dm": "F",
+    "D#m": "F#",
+    "Ebm": "Gb",
+    "Em": "G",
+    //"Fbm" : "Abb",
+    "E#m": "G#",
+    "Fm": "Ab",
+    "F#m": "A",
+    //"Gbm" : "Bbb",
+    "Gm": "Bb",
+    "G#m": "B",
+    "Abm": "Cb",
+    "Am": "C",
+    "A#m": "C#",
+    "Bbm": "Db",
+    "Bm": "D" //"Cbm" : "Ebb"
+
+  };
+  var note_values_1 = [["C", null, "B#"], [null, "Db", "C#"], ["D", null, null], [null, "Eb", "D#"], ["E", "Fb", null], ["F", null, "E#"], [null, "Gb", "F#"], ["G", null, null], [null, "Ab", "G#"], ["A", null, null], [null, "Bb", "A#"], ["B", "Cb", null]];
+  var note_values_2 = {
+    "B#": 0,
+    "C": 0,
+    "C#": 1,
+    "Db": 1,
+    "D": 2,
+    "D#": 3,
+    "Eb": 3,
+    "E": 4,
+    "Fb": 4,
+    "E#": 5,
+    "F": 5,
+    "F#": 6,
+    "Gb": 6,
+    "G": 7,
+    "G#": 8,
+    "Ab": 8,
+    "A": 9,
+    "A#": 10,
+    "Bb": 10,
+    "B": 11,
+    "Cb": 11
+  };
+  var keyclass_maj = {
+    "B#": "#",
+    "C": "b",
+    "C#": "#",
+    "Db": "b",
+    "D": "#",
+    "D#": "#",
+    "Eb": "b",
+    "E": "b",
+    "Fb": "b",
+    "E#": "#",
+    "F": "b",
+    "F#": "#",
+    "Gb": "b",
+    "G": "#",
+    "G#": "#",
+    "Ab": "b",
+    "A": "#",
+    "A#": "#",
+    "Bb": "b",
+    "B": "#",
+    "Cb": "b"
+  };
+  var letters = ["A", "B", "C", "D", "E", "F", "G"]; /////
+
+  var note = note_base;
+  if (sharp_flat) note += sharp_flat;
+  var org_maj_key = key;
+  if (key in min_maj_map) org_maj_key = min_maj_map[key]; // minor is converted to maj key
+
+  var target_maj_key = null; // given from external. Temprory implementation.
+
+  if (Number.isInteger(transpose)) {
+    var base_value = note_values_2[org_maj_key];
+    var tgt_value = (base_value + transpose + 12) % 12;
+    var half_to_apply = null;
+    if (half_type.toUpperCase() == "AUTO") half_to_apply = keyclass_maj[org_maj_key]; // Use the similar key class as original key
+    else if (half_type.toUpperCase() == "SHARP") half_to_apply = "#";else if (half_type.toUpperCase() == "FLAT") half_to_apply = "b";else half_to_apply = half_type; // "#" or "b" directly is OK.
+
+    var tgt_key_cand = note_values_1[tgt_value];
+    if (tgt_key_cand[0]) target_maj_key = tgt_key_cand[0];else target_maj_key = tgt_key_cand[half_to_apply == "b" ? 1 : 2];
+  } else {
+    // Key is specified directly
+    target_maj_key = transpose;
+    if (target_maj_key in min_maj_map) target_maj_key = min_maj_map[target_maj_key]; // minor is converted to maj key
+
+    transpose = (note_values_2[target_maj_key] - note_values_2[org_maj_key] + 12) % 12;
+  } //console.log("Orignal key = "+org_maj_key + " Target key = " + target_key);
+
+
+  var letter_diff = letters.indexOf(target_maj_key[0]) - letters.indexOf(org_maj_key[0]);
+  var letter_index = letters.indexOf(note_base);
+  var new_letter_index = (letter_index + letter_diff + 7) % 7;
+  var newletter = letters[new_letter_index];
+  var nvalue = note_values_2[note];
+  var new_nvalue = (nvalue + transpose + 12) % 12;
+  var acc = ""; // eslint-disable-next-line no-constant-condition
+
+  while (true) {
+    // Take circular diff
+    var offset = 6 - note_values_2[newletter];
+    var fs = (new_nvalue + offset + 12) % 12 - 6; // >0 means #, <0 means flat, 0 means no accidental
+
+    if (fs == 0) {
+      acc = "";
+      break;
+    } else if (fs == 1) {
+      acc = "#";
+      break;
+    } else if (fs == -1) {
+      acc = "b";
+      break;
+    } else if (fs >= 2) {
+      // ## can happen.
+      // 2 can happen e.g. E# in key=C = III#. Key=D goes to F##. Convert it to G.
+      // 3 can happen e.g. G# in key=Gb = I##. Key=C# goes to C###. Convert it to D#.
+      // Next letter
+      new_letter_index = (new_letter_index + 1) % 7;
+      newletter = letters[new_letter_index];
+    } else if (fs <= -2) {
+      // Previous letter
+      // -2 can happen e.g. Fb in key=C = IVb. Key=Eb goes to Abb. Convert it to G.
+      // -3 can happen e.g. Gb in key=B = VIbb = G#bb. Key=Db goes to Bbbb. Convert it to Ab.
+      new_letter_index = (new_letter_index - 1 + 7) % 7;
+      newletter = letters[new_letter_index];
+    } else {
+      throw "Unexpected situation on transpose";
+    }
+  }
+
+  return newletter + acc;
+}
+
+function getTransposedKeyFromOffset(key, transpose, half_type) {
+  var is_minor = key[key.length - 1] == "m";
+  var note = is_minor ? key.substr(0, key.length - 1) : key;
+  var note_base = note[0];
+  var acc = note.length == 2 ? key[1] : null;
+
+  var transposed_key = _getTranpsoedNote(transpose, half_type, key, note_base, acc);
+
+  if (is_minor) transposed_key += "m";
+  return transposed_key;
+}
+
 var Chord =
 /*#__PURE__*/
 function () {
@@ -12260,145 +12451,7 @@ function () {
   }, {
     key: "getTranpsoedNote",
     value: function getTranpsoedNote(transpose, half_type, key, note_base, sharp_flat) {
-      // https://music.stackexchange.com/questions/40041/algorithm-for-transposing-chords-between-keys
-      var min_maj_map = {
-        "B#m": "D#",
-        "Cm": "Eb",
-        "C#m": "E",
-        "Dbm": "Fb",
-        "Dm": "F",
-        "D#m": "F#",
-        "Ebm": "Gb",
-        "Em": "G",
-        //"Fbm" : "Abb",
-        "E#m": "G#",
-        "Fm": "Ab",
-        "F#m": "A",
-        //"Gbm" : "Bbb",
-        "Gm": "Bb",
-        "G#m": "B",
-        "Abm": "Cb",
-        "Am": "C",
-        "A#m": "C#",
-        "Bbm": "Db",
-        "Bm": "D" //"Cbm" : "Ebb"
-
-      };
-      var note_values_1 = [["C", null, "B#"], [null, "Db", "C#"], ["D", null, null], [null, "Eb", "D#"], ["E", "Fb", null], ["F", null, "E#"], [null, "Gb", "F#"], ["G", null, null], [null, "Ab", "G#"], ["A", null, null], [null, "Bb", "A#"], ["B", "Cb", null]];
-      var note_values_2 = {
-        "B#": 0,
-        "C": 0,
-        "C#": 1,
-        "Db": 1,
-        "D": 2,
-        "D#": 3,
-        "Eb": 3,
-        "E": 4,
-        "Fb": 4,
-        "E#": 5,
-        "F": 5,
-        "F#": 6,
-        "Gb": 6,
-        "G": 7,
-        "G#": 8,
-        "Ab": 8,
-        "A": 9,
-        "A#": 10,
-        "Bb": 10,
-        "B": 11,
-        "Cb": 11
-      };
-      var keyclass = {
-        "B#": "#",
-        "C": "b",
-        "C#": "#",
-        "Db": "b",
-        "D": "#",
-        "D#": "#",
-        "Eb": "b",
-        "E": "b",
-        "Fb": "b",
-        "E#": "#",
-        "F": "b",
-        "F#": "#",
-        "Gb": "b",
-        "G": "#",
-        "G#": "#",
-        "Ab": "b",
-        "A": "#",
-        "A#": "#",
-        "Bb": "b",
-        "B": "#",
-        "Cb": "b"
-      };
-      var letters = ["A", "B", "C", "D", "E", "F", "G"]; /////
-
-      var note = note_base;
-      if (sharp_flat !== undefined) note += sharp_flat;
-      var org_maj_key = key;
-      if (key in min_maj_map) org_maj_key = min_maj_map[key]; // minor is converted to maj key
-
-      var target_key = null; // given from external. Temprory implementation.
-
-      if (Number.isInteger(transpose)) {
-        var base_value = note_values_2[org_maj_key];
-        var tgt_value = (base_value + transpose + 12) % 12;
-        var half_to_apply = null;
-        if (half_type.toUpperCase() == "AUTO") half_to_apply = keyclass[org_maj_key]; // Use the similar key class as original key
-        else if (half_type.toUpperCase() == "SHARP") half_to_apply = "#";else if (half_type.toUpperCase() == "FLAT") half_to_apply = "b";else half_to_apply = half_type; // "#" or "b" directly is OK.
-
-        var tgt_key_cand = note_values_1[tgt_value];
-        if (tgt_key_cand[0]) target_key = tgt_key_cand[0];else target_key = tgt_key_cand[half_to_apply == "b" ? 1 : 2];
-      } else {
-        // Key is specified directly
-        target_key = transpose;
-        if (target_key in min_maj_map) target_key = min_maj_map[target_key]; // minor is converted to maj key
-
-        transpose = (note_values_2[target_key] - note_values_2[org_maj_key] + 12) % 12;
-      }
-
-      console.log("Orignal key = " + org_maj_key + " Target key = " + target_key);
-      var letter_diff = letters.indexOf(target_key[0]) - letters.indexOf(org_maj_key[0]);
-      var letter_index = letters.indexOf(note_base);
-      var new_letter_index = (letter_index + letter_diff + 7) % 7;
-      var newletter = letters[new_letter_index];
-      var nvalue = note_values_2[note];
-      var new_nvalue = (nvalue + transpose + 12) % 12;
-      var acc = ""; // eslint-disable-next-line no-constant-condition
-
-      while (true) {
-        // Take circular diff
-        var offset = 6 - note_values_2[newletter];
-        var fs = (new_nvalue + offset + 12) % 12 - 6; // >0 means #, <0 means flat, 0 means no accidental
-
-        if (fs == 0) {
-          acc = "";
-          break;
-        } else if (fs == 1) {
-          acc = "#";
-          break;
-        } else if (fs == -1) {
-          acc = "b";
-          break;
-        } else if (fs >= 2) {
-          // ## can happen.
-          // 2 can happen e.g. E# in key=C = III#. Key=D goes to F##. Convert it to G.
-          // 3 can happen e.g. G# in key=Gb = I##. Key=C# goes to C###. Convert it to D#.
-          // Next letter
-          new_letter_index = (new_letter_index + 1) % 7;
-          newletter = letters[new_letter_index];
-        } else if (fs <= -2) {
-          // Previous letter
-          // -2 can happen e.g. Fb in key=C = IVb. Key=Eb goes to Abb. Convert it to G.
-          // -3 can happen e.g. Gb in key=B = VIbb = G#bb. Key=Db goes to Bbbb. Convert it to Ab.
-          new_letter_index = (new_letter_index - 1 + 7) % 7;
-          newletter = letters[new_letter_index];
-        } else {
-          throw "Unexpected situation on transpose";
-        }
-      }
-
-      return newletter + acc;
+      return _getTranpsoedNote(transpose, half_type, key, note_base, sharp_flat);
     }
   }, {
     key: "getChordStrBase",
@@ -14472,6 +14525,8 @@ var SR_RENDER_PARAM = {
   // Margin between body/RS are and "(x times)" mark.
   header_body_margin: 2,
   // Margin between header and body (x-direction)
+  body_footer_margin: 2,
+  // Margin between body and footer (x-direction)
   max_scaling: 1.2,
   paper_width: 96 * 210 / 25.4,
   // 96dpi * A4_width[mm] / 25.4[mm/inche], total canvas width = paper_width, internal paper width is paper_width/zoom
@@ -14499,14 +14554,12 @@ var SR_RENDER_PARAM = {
   note_bar_length: 24 / 4 * 3.5,
   // 3.5 times of interval is the conventional length
   note_flag_interval: 5,
-  optimize_type: 3,
-  // 0 : Constant room for each flexible element. 1: Not defined, 2: Evenly division of measures(force), 3: Evenly division of measures as much as possible
+  optimize_type: 4,
+  // 0 : Constant room for each flexible element. 1: Uniform ratio (propotional to each fixed width of flexible element), 2: Evenly division of measures(force), 3: Evenly division of measures as much as possible
   vertical_align: 1,
   // 1: Enable, 0: Disable
   vertical_align_intensity: 0.9,
   // Vertical align intensity 0:No align, 1:Always align
-  min_room: 10,
-  // Minimum room for flexile elements
   scale_if_overlap: 1,
   // 1 or 0
   on_bass_style: "right",
@@ -14580,6 +14633,211 @@ function (_Renderer) {
       });
     }
   }, {
+    key: "field_sum",
+    value: function field_sum(arr, field) {
+      return arr.reduce(function (acc, e) {
+        var obj = {};
+        obj[field] = acc[field] + e[field];
+        return obj;
+      })[field];
+    }
+  }, {
+    key: "optimize_type0",
+    value: function optimize_type0(row_elements_list, x_width_info, total_width) {
+      var num_flexible_rooms = this.field_sum(x_width_info, "meas_num_flexible_rooms");
+      var fixed_width = this.field_sum(x_width_info, "meas_fixed_width");
+      var room_per_elem_constant = (total_width - fixed_width) / num_flexible_rooms; // Constant room for all room
+
+      row_elements_list.forEach(function (e, mi) {
+        var room_per_elem = room_per_elem_constant;
+        e.renderprop.room_per_elem = new Array(x_width_info[mi].meas_num_flexible_rooms).fill(room_per_elem);
+        e.renderprop.total_room = room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
+        x_width_info[mi].measure_width = e.renderprop.total_room + x_width_info[mi].meas_fixed_width;
+        e.renderprop.measure_width = x_width_info[mi].measure_width;
+        e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
+        e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
+        e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
+      });
+    }
+  }, {
+    key: "room_for_equal_ratio_divison",
+    value: function room_for_equal_ratio_divison(x_width_info, total_width, num_meas, num_meas_to_consider) {
+      var num_flexible_rooms = this.field_sum(x_width_info, "meas_num_flexible_rooms");
+      var fixed_width = this.field_sum(x_width_info, "meas_fixed_width");
+      var fixed_width_flexbile_only = this.field_sum(x_width_info, "body_fixed_width");
+      var fixed_width_others = fixed_width - fixed_width_flexbile_only;
+      var room_per_elem_even_ratio_meas = [];
+      var room_per_meas_even_ratio_meas = []; // room per measure for each meas in case even division of width for each measure
+      // Used for optimize type = 1 
+
+      var room_per_elem_uniform_ratio = (total_width - fixed_width_others) / fixed_width_flexbile_only;
+      console.log("S for type1 = " + room_per_elem_uniform_ratio);
+
+      for (var mi = 0; mi < num_meas; ++mi) {
+        var fixed_width_flexbile_only_details = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](x_width_info[mi]["body_fixed_width_details"]);
+        var room_per_elem = new Array(x_width_info[mi].meas_num_flexible_rooms);
+        var room_per_meas = 0;
+
+        for (var ii = 0; ii < x_width_info[mi].meas_num_flexible_rooms; ++ii) {
+          room_per_elem[ii] = (room_per_elem_uniform_ratio - 1) * fixed_width_flexbile_only_details[ii];
+          room_per_meas += room_per_elem[ii];
+        }
+
+        room_per_elem_even_ratio_meas.push(room_per_elem);
+        room_per_meas_even_ratio_meas.push(room_per_meas);
+      }
+
+      return {
+        "S": room_per_elem_uniform_ratio,
+        "room_per_elem": room_per_elem_even_ratio_meas,
+        "room_per_meas": room_per_meas_even_ratio_meas
+      };
+    }
+  }, {
+    key: "optimize_type1",
+    value: function optimize_type1(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid) {
+      var room_equal_ratio = this.room_for_equal_ratio_divison(x_width_info, total_width, num_meas, num_meas_to_consider);
+      row_elements_list.forEach(function (e, mi) {
+        e.renderprop.room_per_elem = room_equal_ratio.room_per_elem[mi];
+        e.renderprop.total_room = room_equal_ratio.room_per_meas[mi]; //room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
+
+        x_width_info[mi].measure_width = e.renderprop.total_room + x_width_info[mi].meas_fixed_width;
+        e.renderprop.measure_width = x_width_info[mi].measure_width;
+        e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
+        e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
+        e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
+      });
+    }
+  }, {
+    key: "room_per_meas_for_equal_divison",
+    value: function room_per_meas_for_equal_divison(x_width_info, total_width, num_meas, num_meas_to_consider) {
+      var room_per_meas_even_meas = []; // room per measure for each meas in case even division of width for each measure
+
+      for (var mi = 0; mi < num_meas; ++mi) {
+        room_per_meas_even_meas.push(total_width / num_meas_to_consider - x_width_info[mi].meas_fixed_width);
+      }
+
+      return room_per_meas_even_meas;
+    }
+  }, {
+    key: "optimize_type2",
+    value: function optimize_type2(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid) {
+      // Equal division
+      var room_per_meas_even_meas = this.room_per_meas_for_equal_divison(x_width_info, total_width, num_meas, num_meas_to_consider);
+      row_elements_list.forEach(function (e, mi) {
+        var room_per_elem = room_per_meas_even_meas[mi] / x_width_info[mi].meas_num_flexible_rooms;
+        e.renderprop.room_per_elem = new Array(x_width_info[mi].meas_num_flexible_rooms).fill(room_per_elem);
+        e.renderprop.total_room = room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
+        x_width_info[mi].measure_width = e.renderprop.total_room + x_width_info[mi].meas_fixed_width;
+        e.renderprop.measure_width = x_width_info[mi].measure_width;
+        e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
+        e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
+        e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
+      });
+      if (reduced_meas_valid && row_elements_list[0].align == "right") row_elements_list[0].renderprop.left_margin = total_width / num_meas_to_consider * (num_meas_to_consider - num_meas);
+    }
+  }, {
+    key: "optimize_type3",
+    value: function optimize_type3(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid) {
+      // https://docs.google.com/document/d/1oPmUvAF6-KTsQrEovYJgMZSDqlztp4pL-XVs8uee7A4/edit?usp=sharing
+      // Here alpha=1 case is filtered at the first IF statement, then we only consider the case
+      // where room when optimize_type = 0 is positive.
+      var num_flexible_rooms = this.field_sum(x_width_info, "meas_num_flexible_rooms");
+      var fixed_width = this.field_sum(x_width_info, "meas_fixed_width");
+      var room_per_meas_even_meas = this.room_per_meas_for_equal_divison(x_width_info, total_width, num_meas, num_meas_to_consider);
+      var room_per_elem_constant = (total_width - fixed_width) / num_flexible_rooms; // Constant room for all room
+
+      var alpha = null;
+
+      if (room_per_elem_constant < 0) {
+        // No room in total.
+        alpha = 1.0; // Type 0
+      } else {
+        alpha = 0.0;
+
+        for (var mi = 0; mi < num_meas; ++mi) {
+          if (room_per_meas_even_meas[mi] < 0) {
+            var R0 = room_per_elem_constant * x_width_info[mi].meas_num_flexible_rooms;
+            var R2 = room_per_meas_even_meas[mi];
+            var alpha_dash = R2 / (R2 - R0); // should be a positive value less than 1
+
+            alpha = Math.max(alpha, alpha_dash);
+          }
+        }
+      }
+
+      var row_total_width = 0;
+      row_elements_list.forEach(function (e, mi) {
+        var R0 = room_per_elem_constant * x_width_info[mi].meas_num_flexible_rooms;
+        var R2 = room_per_meas_even_meas[mi];
+        var room_per_elem = (alpha * R0 + (1 - alpha) * R2) / x_width_info[mi].meas_num_flexible_rooms;
+        e.renderprop.room_per_elem = new Array(x_width_info[mi].meas_num_flexible_rooms).fill(room_per_elem);
+        e.renderprop.total_room = room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
+        x_width_info[mi].measure_width = e.renderprop.total_room + x_width_info[mi].meas_fixed_width;
+        e.renderprop.measure_width = x_width_info[mi].measure_width;
+        e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
+        e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
+        e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
+        row_total_width += x_width_info[mi].measure_width;
+      });
+      if (reduced_meas_valid && row_elements_list[0].align == "right") row_elements_list[0].renderprop.left_margin = total_width - row_total_width;
+      console.log("alpha = " + alpha);
+    }
+  }, {
+    key: "optimize_type4",
+    value: function optimize_type4(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid) {
+      // https://docs.google.com/document/d/1oPmUvAF6-KTsQrEovYJgMZSDqlztp4pL-XVs8uee7A4/edit?usp=sharing
+      // Here alpha=1 case is filtered at the first IF statement, then we only consider the case
+      // where room when optimize_type = 0 is positive.
+      var num_flexible_rooms = this.field_sum(x_width_info, "meas_num_flexible_rooms");
+      var fixed_width = this.field_sum(x_width_info, "meas_fixed_width");
+      var room_per_meas_even_meas = this.room_per_meas_for_equal_divison(x_width_info, total_width, num_meas, num_meas_to_consider);
+      var room_equal_ratio = this.room_for_equal_ratio_divison(x_width_info, total_width, num_meas, num_meas_to_consider);
+      var alpha = null;
+
+      if (room_equal_ratio.S < 1) {
+        // No room in total.
+        alpha = 1.0; // Type 1
+      } else {
+        alpha = 0.0;
+
+        for (var mi = 0; mi < num_meas; ++mi) {
+          if (room_per_meas_even_meas[mi] < 0) {
+            var R1 = room_equal_ratio.room_per_meas[mi];
+            var R2 = room_per_meas_even_meas[mi];
+            var alpha_dash = R2 / (R2 - R1); // should be a positive value less than 1
+
+            alpha = Math.max(alpha, alpha_dash);
+          }
+        }
+      }
+
+      var row_total_width = 0;
+      row_elements_list.forEach(function (e, mi) {
+        var R1 = room_equal_ratio.room_per_meas[mi];
+        var R2 = room_per_meas_even_meas[mi];
+        var room_per_elem = new Array(x_width_info[mi].meas_num_flexible_rooms);
+        var room_per_meas = 0;
+
+        for (var ii = 0; ii < x_width_info[mi].meas_num_flexible_rooms; ++ii) {
+          var f_ratio = x_width_info[mi].body_fixed_width_details[ii] / x_width_info[mi].body_fixed_width;
+          room_per_elem[ii] = alpha * R1 * f_ratio + (1 - alpha) * R2 / x_width_info[mi].meas_num_flexible_rooms;
+          room_per_meas += room_per_elem[ii];
+        }
+
+        e.renderprop.room_per_elem = room_per_elem;
+        e.renderprop.total_room = room_per_meas;
+        x_width_info[mi].measure_width = e.renderprop.total_room + x_width_info[mi].meas_fixed_width;
+        e.renderprop.measure_width = x_width_info[mi].measure_width;
+        e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
+        e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
+        e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
+        row_total_width += x_width_info[mi].measure_width;
+      });
+      if (reduced_meas_valid && row_elements_list[0].align == "right") row_elements_list[0].renderprop.left_margin = total_width - row_total_width;
+      console.log("alpha = " + alpha);
+    }
+  }, {
     key: "determine_rooms",
     value: function determine_rooms(param, reharsal_x_width_info) {
       var total_width = param.paper_width / this.param.zoom - 2 * param.x_offset;
@@ -14593,18 +14851,12 @@ function (_Renderer) {
       }; // Optimize width of each measure
 
 
-      var row = 0; // Minimum room for flexible elements. It is treated as part of fixed width, 
-      // hence it is just systematically added when "meas_fixed_width" is reffered.
-      // And finallly min_room is added for room_per_elem.
+      var row = 0;
 
-      var min_room = param.min_room;
-
-      var _loop = function _loop() {
+      while (row < reharsal_x_width_info.length) {
         var row_elements_list = reharsal_x_width_info[row][0];
         var x_width_info = reharsal_x_width_info[row][1]; // For number of measures
 
-        var num_flexible_rooms = field_sum(x_width_info, "meas_num_flexible_rooms");
-        var fixed_width = field_sum(x_width_info, "meas_fixed_width") + min_room * num_flexible_rooms;
         var num_meas = row_elements_list.length;
         var num_meas_to_consider = num_meas; // for type #2 and #3
         // In case right or left align is specified
@@ -14613,101 +14865,42 @@ function (_Renderer) {
 
         if (row_elements_list[0].align != "expand" && row > 0) {
           // find the last measure for which expand is applied, or fallback to #0.
-          var _rowdash;
+          var rowdash = void 0;
 
-          for (_rowdash = row - 1; _rowdash >= 0; --_rowdash) {
-            if (reharsal_x_width_info[_rowdash][0].align == "expand") break;
+          for (rowdash = row - 1; rowdash >= 0; --rowdash) {
+            if (reharsal_x_width_info[rowdash][0].align == "expand") break;
           }
 
-          if (_rowdash < 0) _rowdash = 0; // Fallback to #0 even it has right|left align
+          if (rowdash < 0) rowdash = 0; // Fallback to #0 even it has right|left align
 
-          reduced_meas_valid = reharsal_x_width_info[_rowdash][0].length > num_meas;
+          reduced_meas_valid = reharsal_x_width_info[rowdash][0].length > num_meas;
 
           if (reduced_meas_valid) {
-            //let dammy_add_num = reharsal_x_width_info[row-1][0].length - num_meas;
-            num_meas_to_consider = reharsal_x_width_info[_rowdash][0].length;
-            /*for(let di=0; di < dammy_add_num; ++di){
-                let dammy_measure = new common.Measure();
-            row_elements_list.splice(0, 0, dammy_measure);
-            x_width_info.splice(0, 0, {"meas_fixed_width":0, "meas_num_flexible_rooms":0});
-            }*/
+            num_meas_to_consider = reharsal_x_width_info[rowdash][0].length;
           }
         }
 
-        var room_per_elem_constant = (total_width - fixed_width) / num_flexible_rooms; // Constant room for all room
-
-        var room_per_meas_even_meas = []; // room per measure for each meas in case even division of width for each measure
-
-        for (var _mi5 = 0; _mi5 < num_meas; ++_mi5) {
-          room_per_meas_even_meas.push(total_width / num_meas_to_consider - x_width_info[_mi5].meas_fixed_width - min_room * x_width_info[_mi5].meas_num_flexible_rooms);
-        }
-
-        if (room_per_elem_constant < 0 || param.optimize_type == 0) {
-          row_elements_list.forEach(function (e, mi) {
-            e.renderprop.room_per_elem = room_per_elem_constant + min_room;
-            x_width_info[mi].measure_width = e.renderprop.room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
-            x_width_info[mi].measure_width += x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
-
-            e.renderprop.measure_width = x_width_info[mi].measure_width;
-            e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
-            e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
-            e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
-          });
+        if (param.optimize_type == 0) {
+          this.optimize_type0(row_elements_list, x_width_info, total_width);
+          row++;
+        } else if (param.optimize_type == 1) {
+          this.optimize_type1(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid);
           row++;
         } else if (param.optimize_type == 2) {
           // Equal division
-          row_elements_list.forEach(function (e, mi) {
-            e.renderprop.room_per_elem = room_per_meas_even_meas[mi] / x_width_info[mi].meas_num_flexible_rooms + min_room;
-            x_width_info[mi].measure_width = e.renderprop.room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
-            x_width_info[mi].measure_width += x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
-
-            e.renderprop.measure_width = x_width_info[mi].measure_width;
-            e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
-            e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
-            e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
-          });
-          if (reduced_meas_valid && row_elements_list[0].align == "right") row_elements_list[0].renderprop.left_margin = total_width / num_meas_to_consider * (num_meas_to_consider - num_meas);
+          this.optimize_type2(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid);
           row++;
         } else if (param.optimize_type == 3) {
-          // https://docs.google.com/document/d/1oPmUvAF6-KTsQrEovYJgMZSDqlztp4pL-XVs8uee7A4/edit?usp=sharing
-          // Here alpha=1 case is filtered at the first IF statement, then we only consider the case
-          // where room when optimize_type = 0 is positive.
-          var alpha = 0.0;
-
-          for (var _mi6 = 0; _mi6 < num_meas; ++_mi6) {
-            if (room_per_meas_even_meas[_mi6] < 0) {
-              var R0 = room_per_elem_constant * x_width_info[_mi6].meas_num_flexible_rooms;
-              var R2 = room_per_meas_even_meas[_mi6];
-              var alpha_dash = R2 / (R2 - R0); // should be a positive value less than 1
-
-              alpha = Math.max(alpha, alpha_dash);
-            }
-          }
-
-          var _row_total_width = 0;
-          row_elements_list.forEach(function (e, mi) {
-            var R0 = room_per_elem_constant * x_width_info[mi].meas_num_flexible_rooms;
-            var R2 = room_per_meas_even_meas[mi];
-            e.renderprop.room_per_elem = (alpha * R0 + (1 - alpha) * R2) / x_width_info[mi].meas_num_flexible_rooms + min_room;
-            x_width_info[mi].measure_width = e.renderprop.room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
-            x_width_info[mi].measure_width += x_width_info[mi].meas_fixed_width; // min_room already cosidered in the above line
-
-            e.renderprop.measure_width = x_width_info[mi].measure_width;
-            e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
-            e.renderprop.body_fixed_width = x_width_info[mi].body_fixed_width;
-            e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
-            _row_total_width += x_width_info[mi].measure_width;
-          });
-          if (reduced_meas_valid && row_elements_list[0].align == "right") row_elements_list[0].renderprop.left_margin = total_width - _row_total_width;
-          console.log("alpha = " + alpha);
+          // Combination of 2 and 0(fallback option when negative total room)
+          this.optimize_type3(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid);
+          row++;
+        } else if (param.optimize_type == 4) {
+          // Combination of 2 and 1(fallback option when negative total room)
+          this.optimize_type4(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid);
           row++;
         } else {
           throw "Invalid optimize type";
         }
-      };
-
-      while (row < reharsal_x_width_info.length) {
-        _loop();
       }
 
       if (param.vertical_align) {
@@ -14715,18 +14908,19 @@ function (_Renderer) {
 
         while (_row < reharsal_x_width_info.length) {
           console.log("row :" + _row);
-          var num_meas = reharsal_x_width_info[_row][0].length; // Group the rows with :
+          var _num_meas = reharsal_x_width_info[_row][0].length; // Group the rows with :
           //     1. the same number of measures from #row
           //     2. Having right align mark and having less than 1st row
 
           var same_nmeas_row_group = [];
-          var rowdash = void 0;
 
-          for (rowdash = _row; rowdash < reharsal_x_width_info.length; ++rowdash) {
-            if (reharsal_x_width_info[rowdash][0].length == num_meas) {
-              same_nmeas_row_group.push(reharsal_x_width_info[rowdash]);
-            } else if (rowdash > 0 && reharsal_x_width_info[rowdash][0][0].align != "expand" && reharsal_x_width_info[rowdash][0].length < num_meas) {
-              same_nmeas_row_group.push(reharsal_x_width_info[rowdash]);
+          var _rowdash = void 0;
+
+          for (_rowdash = _row; _rowdash < reharsal_x_width_info.length; ++_rowdash) {
+            if (reharsal_x_width_info[_rowdash][0].length == _num_meas) {
+              same_nmeas_row_group.push(reharsal_x_width_info[_rowdash]);
+            } else if (_rowdash > 0 && reharsal_x_width_info[_rowdash][0][0].align != "expand" && reharsal_x_width_info[_rowdash][0].length < _num_meas) {
+              same_nmeas_row_group.push(reharsal_x_width_info[_rowdash]);
             } else {
               break; // only group the continuous rows with same number of measures
             }
@@ -14736,7 +14930,7 @@ function (_Renderer) {
           //    Fixed width = max( fixed width of all rows in correspoding column )
 
 
-          var max_measure_widths = new Array(num_meas).fill(0); // In case the row with less measures than other rows exists,
+          var max_measure_widths = new Array(_num_meas).fill(0); // In case the row with less measures than other rows exists,
           // mapping of measure index is not a simple 1:1 relation.
           // This function is to map the global measure index to local measure index
 
@@ -14757,13 +14951,13 @@ function (_Renderer) {
           }; // TODO : More clean code ...
 
 
-          for (rowdash = 0; rowdash < same_nmeas_row_group.length; ++rowdash) {
-            var dammy_max_measure_widths = new Array(num_meas).fill(0);
-            var x_width_info = same_nmeas_row_group[rowdash][1];
-            var row_elements_list = same_nmeas_row_group[rowdash][0];
+          for (_rowdash = 0; _rowdash < same_nmeas_row_group.length; ++_rowdash) {
+            var dammy_max_measure_widths = new Array(_num_meas).fill(0);
+            var _x_width_info = same_nmeas_row_group[_rowdash][1];
+            var _row_elements_list = same_nmeas_row_group[_rowdash][0];
 
-            for (var mi = 0; mi < num_meas; ++mi) {
-              var mi_ref = getMeasRefIndex(mi, row_elements_list, num_meas);
+            for (var mi = 0; mi < _num_meas; ++mi) {
+              var mi_ref = getMeasRefIndex(mi, _row_elements_list, _num_meas);
 
               if (mi_ref == null) {
                 // corresponding measure does not exist : inherit current max value
@@ -14771,7 +14965,7 @@ function (_Renderer) {
                 continue;
               }
 
-              dammy_max_measure_widths[mi] = Math.max(x_width_info[mi_ref].measure_width, max_measure_widths[mi]);
+              dammy_max_measure_widths[mi] = Math.max(_x_width_info[mi_ref].measure_width, max_measure_widths[mi]);
             }
 
             var dammy_total_max_measure_width = dammy_max_measure_widths.reduce(function (acc, e) {
@@ -14781,23 +14975,21 @@ function (_Renderer) {
             // In case only reduced measure row is under analysis and dammy_total_max_measure_width is less than total_width,
             // do nothiing.  
 
-            for (var _mi = 0; _mi < num_meas; ++_mi) {
+            for (var _mi = 0; _mi < _num_meas; ++_mi) {
               dammy_max_measure_widths[_mi] = dammy_max_measure_widths[_mi] / dammy_total_max_measure_width * Math.min(total_width, dammy_total_max_measure_width);
             } // If there is at least one measure which does not meet alternate threshold, then do not include rowdash
 
 
             var all_meets_thread = true;
 
-            if (rowdash == 0) {// First row is always fixed.
+            if (_rowdash == 0) {// First row is always fixed.
             } else {
               // For the case of 2 and more rows. Judge if combined rows meets the criteria.
-              for (var rowdash2 = 0; rowdash2 <= rowdash; ++rowdash2) {
-                for (var _mi2 = 0; _mi2 < num_meas; ++_mi2) {
-                  var _mi_ref = getMeasRefIndex(_mi2, same_nmeas_row_group[rowdash2][0], num_meas);
+              for (var rowdash2 = 0; rowdash2 <= _rowdash; ++rowdash2) {
+                for (var _mi2 = 0; _mi2 < _num_meas; ++_mi2) {
+                  var _mi_ref = getMeasRefIndex(_mi2, same_nmeas_row_group[rowdash2][0], _num_meas);
 
                   if (_mi_ref == null) continue; // Calculate alter ratio for this measure
-                  // If 
-                  //   1. Room per elem is bigger than min_room
 
                   var alter_ratio = same_nmeas_row_group[rowdash2][1][_mi_ref].measure_width / dammy_max_measure_widths[_mi2]; //if(Math.abs(1.0 - alter_ratio) > alter_thresh){
 
@@ -14806,14 +14998,6 @@ function (_Renderer) {
                     all_meets_thread = false;
                     break;
                   }
-                  /*
-                  let dammy_room_per_elem = (dammy_max_measure_widths[mi] 
-                      - same_nmeas_row_group[rowdash2][1][mi_ref].meas_fixed_width)/
-                      same_nmeas_row_group[rowdash2][1][mi_ref].meas_num_flexible_rooms;
-                   let m = same_nmeas_row_group[rowdash2][0][mi_ref];
-                   m.renderprop.room_per_elem;
-                  */
-
                 }
 
                 if (all_meets_thread == false) break;
@@ -14828,41 +15012,43 @@ function (_Renderer) {
           } // Here rowdash means number of actually grouped rows
 
 
-          var act_num_grouped_rows = rowdash;
+          var act_num_grouped_rows = _rowdash;
           console.log("max_fixed_widths :");
           console.log(max_measure_widths); //let max_measure_widths = new Array(num_meas).fill(0);
           // room per froom with maximum fixed with only
           // Then, at last, calculate the rooms for each row and measure
 
-          for (rowdash = 0; rowdash < act_num_grouped_rows; ++rowdash) {
-            var _x_width_info = same_nmeas_row_group[rowdash][1];
-            var _row_elements_list = same_nmeas_row_group[rowdash][0];
+          for (_rowdash = 0; _rowdash < act_num_grouped_rows; ++_rowdash) {
+            var _x_width_info2 = same_nmeas_row_group[_rowdash][1];
+            var _row_elements_list2 = same_nmeas_row_group[_rowdash][0];
 
-            for (var _mi3 = 0; _mi3 < num_meas; ++_mi3) {
-              var _mi_ref2 = getMeasRefIndex(_mi3, _row_elements_list, num_meas);
+            for (var _mi3 = 0; _mi3 < _num_meas; ++_mi3) {
+              var _mi_ref2 = getMeasRefIndex(_mi3, _row_elements_list2, _num_meas);
 
               if (_mi_ref2 == null) continue;
-              var m = _row_elements_list[_mi_ref2]; // No need to separtely consider min_room here. Just simply distribute rooms for each elements
+              var m = _row_elements_list2[_mi_ref2];
+              var room_per_elem = (max_measure_widths[_mi3] - _x_width_info2[_mi_ref2].meas_fixed_width) / _x_width_info2[_mi_ref2].meas_num_flexible_rooms; // TODO : To cater for the case of differnt room per elem inside the measure
 
-              m.renderprop.room_per_elem = (max_measure_widths[_mi3] - _x_width_info[_mi_ref2].meas_fixed_width) / _x_width_info[_mi_ref2].meas_num_flexible_rooms;
+              m.renderprop.room_per_elem = new Array(_x_width_info2[_mi_ref2].meas_num_flexible_rooms).fill(room_per_elem);
+              m.renderprop.total_room = max_measure_widths[_mi3] - _x_width_info2[_mi_ref2].meas_fixed_width;
               m.renderprop.measure_width = max_measure_widths[_mi3];
-              m.renderprop.meas_fixed_width = _x_width_info[_mi_ref2].meas_fixed_width; // Actually this is already set
+              m.renderprop.meas_fixed_width = _x_width_info2[_mi_ref2].meas_fixed_width; // Actually this is already set
 
-              m.renderprop.body_fixed_width = _x_width_info[_mi_ref2].body_fixed_width;
-              m.renderprop.meas_num_flexible_rooms = _x_width_info[_mi_ref2].meas_num_flexible_rooms;
+              m.renderprop.body_fixed_width = _x_width_info2[_mi_ref2].body_fixed_width;
+              m.renderprop.meas_num_flexible_rooms = _x_width_info2[_mi_ref2].meas_num_flexible_rooms;
             }
           } // Set left margin in case it is needed.
 
 
-          for (rowdash = 0; rowdash < act_num_grouped_rows; ++rowdash) {
-            var _row_elements_list2 = same_nmeas_row_group[rowdash][0];
+          for (_rowdash = 0; _rowdash < act_num_grouped_rows; ++_rowdash) {
+            var _row_elements_list3 = same_nmeas_row_group[_rowdash][0];
             var row_total_width = 0;
 
-            for (var _mi4 = 0; _mi4 < _row_elements_list2.length; ++_mi4) {
-              row_total_width += max_measure_widths[_mi4 + (max_measure_widths.length - _row_elements_list2.length)];
+            for (var _mi4 = 0; _mi4 < _row_elements_list3.length; ++_mi4) {
+              row_total_width += max_measure_widths[_mi4 + (max_measure_widths.length - _row_elements_list3.length)];
             }
 
-            var _m = _row_elements_list2[0];
+            var _m = _row_elements_list3[0];
 
             if (_m.align == "right") {
               _m.renderprop.left_margin = total_width - row_total_width;
@@ -14903,7 +15089,7 @@ function (_Renderer) {
       regeneratorRuntime.mark(function _callee(track, param) {
         var _this4 = this;
 
-        var global_macros, show_header, show_footer, origin, y_title_offset, y_subtitle_offset, y_artist_offset, x_offset, width, music_context, meas_row_list, accum_block_id, meas_row, meas_row_rg_ids, meas_row_block_ids, i, rg, bi, block_measures, ml, m, meas_row_list_inv, _loop2, _i2, y_stacks, next_reharsal_group_index, yse, y_base_screening, dammy_music_context, current_accum_block_id, reharsal_x_width_info, pei, x, row_elements_list, _ml, _m2, elements, geret, yprof, x_width_info, canvas, score_height, y_base, ri, canvaslist, _pei, _row_elements_list3, ylimit, r;
+        var global_macros, show_header, show_footer, origin, y_title_offset, y_subtitle_offset, y_artist_offset, x_offset, width, music_context, meas_row_list, accum_block_id, meas_row, meas_row_rg_ids, meas_row_block_ids, i, rg, bi, block_measures, ml, m, meas_row_list_inv, _loop, _i2, y_stacks, next_reharsal_group_index, yse, y_base_screening, dammy_music_context, current_accum_block_id, reharsal_x_width_info, pei, x, row_elements_list, _ml, _m2, elements, geret, yprof, x_width_info, canvas, score_height, y_base, ri, canvaslist, _pei, _row_elements_list4, ylimit, r;
 
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
@@ -14991,7 +15177,7 @@ function (_Renderer) {
 
                 meas_row_list_inv = meas_row_list.slice().reverse();
 
-                _loop2 = function _loop2(_i2) {
+                _loop = function _loop(_i2) {
                   var rg = track.reharsal_groups[_i2];
 
                   if (rg.inline) {
@@ -15015,7 +15201,7 @@ function (_Renderer) {
                 };
 
                 for (_i2 = 0; _i2 < track.reharsal_groups.length; ++_i2) {
-                  _loop2(_i2);
+                  _loop(_i2);
                 } // Make y-strack elements, and mark the reharsal mark position
 
 
@@ -15235,9 +15421,9 @@ function (_Renderer) {
                   break;
                 }
 
-                _row_elements_list3 = yse[_pei].cont;
+                _row_elements_list4 = yse[_pei].cont;
                 ylimit = this.canvas_provider != null ? score_height - yse[_pei].param.y_offset : null;
-                r = this.render_measure_row_simplified(x_offset, canvas, yse[_pei].macros, _row_elements_list3, yse[_pei].pm, yse[_pei].nm, y_base, yse[_pei].param, true, yse[_pei].macros.REHARSAL_MARK_POSITION == "Inner", ylimit, music_context);
+                r = this.render_measure_row_simplified(x_offset, canvas, yse[_pei].macros, _row_elements_list4, yse[_pei].pm, yse[_pei].nm, y_base, yse[_pei].param, true, yse[_pei].macros.REHARSAL_MARK_POSITION == "Inner", ylimit, music_context);
 
                 if (r) {
                   _context.next = 82;
@@ -15417,7 +15603,7 @@ function (_Renderer) {
 
       var x_width_info = []; // for number of measures
 
-      var _loop3 = function _loop3(ml) {
+      var _loop2 = function _loop2(ml) {
         // Reset music context
         music_context.pos_in_a_measure = 0; // reset
         // TODO : consider key infomration
@@ -15455,7 +15641,8 @@ function (_Renderer) {
         /*meas_start_x*/
         , m, 1, transpose, half_type, key, 0, 0);
         meas_fixed_width += rberet.fixed_width;
-        meas_num_flexible_rooms += rberet.num_flexible_rooms; // Draw footer
+        meas_num_flexible_rooms += rberet.num_flexible_rooms;
+        meas_fixed_width += param.body_footer_margin; // Draw footer
 
         elements.footer.forEach(function (e) {
           if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["MeasureBoundary"]) {
@@ -15477,6 +15664,7 @@ function (_Renderer) {
         x_width_info.push({
           meas_fixed_width: meas_fixed_width,
           body_fixed_width: rberet.fixed_width,
+          body_fixed_width_details: rberet.fixed_width_details,
           meas_num_flexible_rooms: meas_num_flexible_rooms
         });
       };
@@ -15486,7 +15674,7 @@ function (_Renderer) {
         var elements;
         var rberet;
 
-        _loop3(ml);
+        _loop2(ml);
       }
 
       return x_width_info;
@@ -15497,6 +15685,8 @@ function (_Renderer) {
       var _this6 = this;
 
       var fixed_width = 0;
+      var fixed_width_details = []; // show be same as num_flexible_rooms
+
       var num_flexible_rooms = 0;
       var draw_scale = 1;
       /*if(draw){
@@ -15505,8 +15695,8 @@ function (_Renderer) {
           console.log(m.renderprop.meas_fixed_width);
       }*/
 
-      if (draw && param.scale_if_overlap && m.renderprop.room_per_elem < 0) {
-        var body_width = m.renderprop.body_fixed_width + m.renderprop.room_per_elem * m.renderprop.meas_num_flexible_rooms;
+      if (draw && param.scale_if_overlap && m.renderprop.total_room < 0) {
+        var body_width = m.renderprop.body_fixed_width + m.renderprop.total_room;
         draw_scale = body_width / m.renderprop.body_fixed_width;
         console.log("draw_scale = " + draw_scale); // and then for this case room_per_elem is 0 and scale fixed elemetns while keeping
         // total width.
@@ -15518,12 +15708,15 @@ function (_Renderer) {
         if (draw && draw_scale < 1) {
           x += 1 * param.base_font_size * draw_scale + 0;
         } else if (draw) {
-          x += 1 * param.base_font_size + m.renderprop.room_per_elem;
+          x += 1 * param.base_font_size + m.renderprop.total_room;
         } else {
           fixed_width += 1 * param.base_font_size;
+          fixed_width_details.push(1 * param.base_font_size);
           num_flexible_rooms++;
         }
       }
+
+      var this_group_start_index = 0; // used only for draw phase. Used for index room_per_elem.
 
       var body_grouping_info = m.renderprop.body_grouping_info;
       body_grouping_info.groupedBodyElems.forEach(function (element_group, gbei) {
@@ -15560,13 +15753,24 @@ function (_Renderer) {
 
             if (element_group.renderprop.based_on_rs_elem) {
               // In case RS area elements has wider fixed width(in total) than that of first element
-              room_for_rs_per_elem = m.renderprop.room_per_elem;
-              element_group_width = element_group.renderprop.w + m.renderprop.room_per_elem * element_group.elems.length;
+              // total room for rs by sum of rooms in this element group. total rooms cannnot be used as it is total in a measure
+              var room_for_rs = 0;
+
+              for (var ei = 0; ei < element_group.elems.length; ++ei) {
+                room_for_rs += m.renderprop.room_per_elem[this_group_start_index + ei];
+              }
+
+              room_for_rs_per_elem = room_for_rs / element_group.elems.length; // TODO : Improve non constant div
+
+              element_group_width = element_group.renderprop.w + room_for_rs;
+              this_group_start_index += element_group.elems.length;
             } else {
               // In case the first element has wider fixed width than RS area elements
-              var room_for_rs = element_group.renderprop.w + m.renderprop.room_per_elem - element_group.renderprop.rs_area_width;
-              room_for_rs_per_elem = room_for_rs / element_group.elems.length;
-              element_group_width = element_group.renderprop.w + m.renderprop.room_per_elem;
+              var _room_for_rs = element_group.renderprop.w + m.renderprop.room_per_elem[this_group_start_index] - element_group.renderprop.rs_area_width;
+
+              room_for_rs_per_elem = _room_for_rs / element_group.elems.length;
+              element_group_width = element_group.renderprop.w + m.renderprop.room_per_elem[this_group_start_index];
+              this_group_start_index += 1;
             }
 
             var g = _this6.render_rs_area(x / draw_scale, draw_scale, element_group.elems, paper, yprof.rs.y, yprof.rs.height, meas_start_x, // NOTE : meas_start_x sould be irrespective of draw_scale.
@@ -15586,6 +15790,7 @@ function (_Renderer) {
           } else {
             var rs_area_bounding_box = new _common_common__WEBPACK_IMPORTED_MODULE_2__["BoundingBox"](); // Only try to esimate using non-flag-balken drawer
 
+            var tmp_fixed_width_details = [];
             element_group.elems.forEach(function (e) {
               var balken_element = _this6.generate_balken_element(e, x, yprof.rs.height, music_context);
 
@@ -15594,16 +15799,18 @@ function (_Renderer) {
               e.renderprop.balken_element = balken_element;
               rs_area_bounding_box.add_rect(r.bounding_box);
               x += r.bounding_box.w;
+              tmp_fixed_width_details.push(r.bounding_box.w);
             });
             var _rs_area_width = rs_area_bounding_box.get().w;
             element_group.renderprop.w = Math.max(_rs_area_width, cr.width);
             element_group.renderprop.rs_area_width = _rs_area_width;
             element_group.renderprop.based_on_rs_elem = _rs_area_width > cr.width;
             fixed_width += element_group.renderprop.w;
+            fixed_width_details = fixed_width_details.concat(_rs_area_width > cr.width ? tmp_fixed_width_details : [cr.width]);
             num_flexible_rooms += element_group.renderprop.based_on_rs_elem ? element_group.elems.length : 1;
           }
         } else {
-          element_group.elems.forEach(function (e) {
+          element_group.elems.forEach(function (e, ei) {
             if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Chord"]) {
               var _cr = _this6.render_chord_simplified(draw, e, transpose, half_type, key, paper, x / draw_scale, yprof.body.y, param, C7_width);
 
@@ -15621,9 +15828,10 @@ function (_Renderer) {
 
               if (draw && draw_scale < 1) {
                 x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
-              } else if (draw) x += e.renderprop.w + m.renderprop.room_per_elem;else {
+              } else if (draw) x += e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index + ei];else {
                 e.renderprop.w = _cr.width;
                 fixed_width += e.renderprop.w;
+                fixed_width_details.push(e.renderprop.w);
                 num_flexible_rooms++;
               }
             } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Rest"]) {
@@ -15631,9 +15839,10 @@ function (_Renderer) {
 
               if (draw && draw_scale < 1) {
                 x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
-              } else if (draw) x += e.renderprop.w + m.renderprop.room_per_elem;else {
+              } else if (draw) x += e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index + ei];else {
                 e.renderprop.w = _cr2.bounding_box.w;
                 fixed_width += e.renderprop.w;
+                fixed_width_details.push(e.renderprop.w);
                 num_flexible_rooms++;
               }
             } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Simile"]) {
@@ -15641,23 +15850,26 @@ function (_Renderer) {
 
               if (draw && draw_scale < 1) {
                 x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
-              } else if (draw) x += e.renderprop.w + m.renderprop.room_per_elem;else {
+              } else if (draw) x += e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index + ei];else {
                 e.renderprop.w = _cr3.width;
                 fixed_width += e.renderprop.w;
+                fixed_width_details.push(e.renderprop.w);
                 num_flexible_rooms++;
               }
             } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Space"]) {
               if (draw && draw_scale < 1) {
                 x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
-              } else if (draw) x += e.renderprop.w + m.renderprop.room_per_elem;else {
+              } else if (draw) x += e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index + ei];else {
                 var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, 0, 0, "M", param.base_font_size, "lt", 0.5 * param.base_font_size, true, null); // width parameter needs to be aligned with chord rendering
 
                 e.renderprop.w = e.length * r.width;
                 fixed_width += e.renderprop.w;
+                fixed_width_details.push(e.renderprop.w);
                 num_flexible_rooms++;
               }
             }
           });
+          if (draw) this_group_start_index += element_group.elems.length; // This count should be same as num_flexible_rooms;
         }
       });
 
@@ -15668,7 +15880,8 @@ function (_Renderer) {
       return {
         x: x,
         fixed_width: fixed_width,
-        num_flexible_rooms: num_flexible_rooms
+        num_flexible_rooms: num_flexible_rooms,
+        fixed_width_details: fixed_width_details
       };
     }
   }, {
@@ -15775,7 +15988,7 @@ function (_Renderer) {
       // For each measure in this row
 
 
-      var _loop4 = function _loop4(ml) {
+      var _loop3 = function _loop3(ml) {
         // measure object
         var m = row_elements_list[ml];
 
@@ -15831,9 +16044,7 @@ function (_Renderer) {
 
         var meas_start_x = x;
         var meas_start_x_actual_boundary = x; // Draw header
-
-        header_rs_area_width = 0;
-        header_body_area_width = 0; // Clef, Key, Begin Boundary, Time(1st one) are included in this area
+        // Clef, Key, Begin Boundary, Time(1st one) are included in this area
 
         elements.header.forEach(function (e) {
           if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["MeasureBoundary"]) {
@@ -15912,11 +16123,14 @@ function (_Renderer) {
             x += e.renderprop.w;
           }
         });
+        var header_width = x - meas_start_x;
         x += param.header_body_margin; // Draw body
 
         var rberet = _this7.render_body_elements(true, x, elements, param, music_context, yprof, paper, _5lines_intv, meas_start_x, m, x_global_scale, transpose, half_type, key, C7_width, y_body_or_rs_base, balken);
 
-        x = rberet.x; // Draw footer
+        x = rberet.x;
+        x += param.body_footer_margin;
+        var footer_start_x = x; // Draw footer
 
         footer_base = x;
 
@@ -15973,6 +16187,7 @@ function (_Renderer) {
           }
         }
 
+        var footer_width = x - footer_start_x;
         meas_end_x = x; // Draw Upper and Lower Signs
 
         for (var _ei2 = 0; _ei2 < elements.measure_wide.length; ++_ei2) {
@@ -15990,10 +16205,10 @@ function (_Renderer) {
           } else if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["LongRestIndicator"]) {
             var height = yprof.rs.detected ? param.rs_area_height : param.row_height;
 
-            var _sx = meas_start_x + m.header_width - param.header_body_margin; // More beautiful for long rest if header body margin is omitted
+            var _sx = meas_start_x + header_width; // header_width does not include header_body_margin
 
 
-            var _fx = meas_end_x - m.footer_width;
+            var _fx = meas_end_x - footer_width;
 
             rh = height;
             r_lrmargin = 0.05;
@@ -16021,10 +16236,10 @@ function (_Renderer) {
 
           } else if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Simile"]) {
             // Simile mark in measure wide element if there is no other body elements in this measure
-            var _sx2 = meas_start_x + m.header_width - param.header_body_margin; // More beautiful for long rest if header body margin is omitted
+            var _sx2 = meas_start_x + header_width; // header_width does not include header_body_margin
 
 
-            var _fx2 = meas_end_x - m.footer_width;
+            var _fx2 = meas_end_x - footer_width;
 
             _this7.render_simile_mark_plain(draw, paper, (_sx2 + _fx2) / 2, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, _e3.numslash, false, "c");
           } else {
@@ -16040,8 +16255,6 @@ function (_Renderer) {
         var mh_offset;
         var meas_base_x;
         var ei;
-        var header_rs_area_width;
-        var header_body_area_width;
         var footer_base;
         var nm;
         var ne;
@@ -16060,7 +16273,7 @@ function (_Renderer) {
         var lx;
         var rx;
 
-        _loop4(ml);
+        _loop3(ml);
       } // measure loop
       // 0. Draw 5 lines
 

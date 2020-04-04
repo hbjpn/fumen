@@ -268,15 +268,23 @@ export class MobileRenderer extends Renderer {
         
         let room_per_elem_constant = (total_width - fixed_width) / num_flexible_rooms; // Constant room for all room
         
-        let alpha = 0.0;
-        for(let mi=0; mi < num_meas; ++mi){
-            if(room_per_meas_even_meas[mi] < 0){
-                let R0 = room_per_elem_constant * x_width_info[mi].meas_num_flexible_rooms;
-                let R2 = room_per_meas_even_meas[mi];
-                let alpha_dash = R2/(R2 - R0); // should be a positive value less than 1
-                alpha = Math.max(alpha, alpha_dash);
+        let alpha = null;
+
+        if(room_per_elem_constant < 0){
+            // No room in total.
+            alpha = 1.0; // Type 0
+        }else{
+            alpha = 0.0;
+            for(let mi=0; mi < num_meas; ++mi){
+                if(room_per_meas_even_meas[mi] < 0){
+                    let R0 = room_per_elem_constant * x_width_info[mi].meas_num_flexible_rooms;
+                    let R2 = room_per_meas_even_meas[mi];
+                    let alpha_dash = R2/(R2 - R0); // should be a positive value less than 1
+                    alpha = Math.max(alpha, alpha_dash);
+                }
             }
         }
+
         let row_total_width = 0;
         row_elements_list.forEach((e,mi)=>{
             let R0 = room_per_elem_constant * x_width_info[mi].meas_num_flexible_rooms;
@@ -314,15 +322,23 @@ export class MobileRenderer extends Renderer {
             min_room, x_width_info, total_width, 
             num_meas, num_meas_to_consider);
 
-        let alpha = 0.0;
-        for(let mi=0; mi < num_meas; ++mi){
-            if(room_per_meas_even_meas[mi] < 0){
-                let R1 = room_equal_ratio.room_per_meas[mi];
-                let R2 = room_per_meas_even_meas[mi];
-                let alpha_dash = R2/(R2 - R1); // should be a positive value less than 1
-                alpha = Math.max(alpha, alpha_dash);
+        let alpha = null;
+
+        if(room_equal_ratio.S < 1){
+            // No room in total.
+            alpha = 1.0; // Type 1
+        }else{
+            alpha = 0.0;
+            for(let mi=0; mi < num_meas; ++mi){
+                if(room_per_meas_even_meas[mi] < 0){
+                    let R1 = room_equal_ratio.room_per_meas[mi];
+                    let R2 = room_per_meas_even_meas[mi];
+                    let alpha_dash = R2/(R2 - R1); // should be a positive value less than 1
+                    alpha = Math.max(alpha, alpha_dash);
+                }
             }
         }
+
         let row_total_width = 0;
         row_elements_list.forEach((e,mi)=>{
             let R1 = room_equal_ratio.room_per_meas[mi];

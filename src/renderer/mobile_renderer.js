@@ -2038,8 +2038,8 @@ export class MobileRenderer extends Renderer {
 
         // 0. Draw 5 lines
         if(draw && yprof.rs.detected){
-            let start_x = row_elements_list[row_elements_list.length-1].renderprop.meas_end_x;
-            let end_x   = row_elements_list[0].renderprop.meas_start_x;
+            let start_x   = row_elements_list[0].renderprop.meas_start_x;
+            let end_x = row_elements_list[row_elements_list.length-1].renderprop.meas_end_x - 1; // -1 as meas_end_x point to the next point of end of boundary(= Normally total_width - x_margin)
             for (let i = 0; i < 5; ++i) {
                 let intv = _5lines_intv;
                 let dy = 0;

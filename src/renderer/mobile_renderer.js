@@ -49,7 +49,6 @@ var SR_RENDER_PARAM = {
     note_bar_length: 24/4*3.5, // 3.5 times of interval is the conventional length
     note_flag_interval: 5,
     optimize_type: 3, // 0 : Constant room for each flexible element. 1: Uniform ratio (propotional to each fixed width of flexible element), 2: Evenly division of measures(force), 3: Evenly division of measures as much as possible
-    fallback_type: 0, // In case of lack of spacing, fall back to which optimize_type
     vertical_align: 1, // 1: Enable, 0: Disable
     vertical_align_intensity: 0.9, // Vertical align intensity 0:No align, 1:Always align
     min_room: 10, // Minimum room for flexile elements
@@ -409,13 +408,10 @@ export class MobileRenderer extends Renderer {
                 }
             }
 
-            // Used for optimize type = 3
-            let room_per_elem_constant = (total_width - fixed_width) / num_flexible_rooms; // Constant room for all room
-
-            if( (room_per_elem_constant < 0 && param.fallback_type==0) || param.optimize_type == 0){
+            if( param.optimize_type == 0){
                 this.optimize_type0(row_elements_list, min_room, x_width_info, total_width);
                 row++;
-            }else if( (room_per_elem_constant < 0 && param.fallback_type==1) || param.optimize_type == 1){
+            }else if( param.optimize_type == 1){
                 this.optimize_type1(row_elements_list, min_room, x_width_info, total_width,
                     num_meas, num_meas_to_consider, reduced_meas_valid);
                 row++;
@@ -425,12 +421,12 @@ export class MobileRenderer extends Renderer {
                     min_room, num_meas, num_meas_to_consider, reduced_meas_valid);
                 row++;          
             }else if(param.optimize_type == 3){
-                // Combination of 2 and 0
+                // Combination of 2 and 0(fallback option when negative total room)
                 this.optimize_type3(row_elements_list, min_room, x_width_info, total_width, 
                     num_meas, num_meas_to_consider, reduced_meas_valid);
                 row++; 
             }else if(param.optimize_type == 4){
-                // Combination of 1 and 0
+                // Combination of 2 and 1(fallback option when negative total room)
                 this.optimize_type4(row_elements_list, min_room, x_width_info, total_width, 
                     num_meas, num_meas_to_consider, reduced_meas_valid);
                 row++; 

@@ -65,15 +65,10 @@
                 {
                     console.log('active');
                     resolve(true);
-                    //var renderer = new Fumen.MobileRenderer(null, param, canvas_provider);
-                    //renderer.render(track);
                 },
                 inactive: function()
                 {
                     console.log('inactive');
-                    // Try, just in case
-                    //var renderer = new Fumen.MobileRenderer(null, param, canvas_provider);
-                    //renderer.render(track);
                     resolve(false); // not reject :)
                 }
              });

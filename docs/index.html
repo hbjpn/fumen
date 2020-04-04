@@ -85,7 +85,7 @@
         var maxWidth = 380;
         var mainwidth = document.getElementById("main").clientWidth;
 
-        var renderer = new Fumen.MobileRenderer(canvas, {"paper_width":Math.min(maxWidth, mainwidth), "paper_height":0});
+        var renderer = new Fumen.DefaultRenderer(canvas, {"paper_width":Math.min(maxWidth, mainwidth), "paper_height":0});
         await renderer.render(track).then(function(r){
           var canvasdiv = document.getElementById("fumen_canvasdiv_"+canvasIndex);
           var textareadiv = document.getElementById("fumen_textareadiv_"+canvasIndex);

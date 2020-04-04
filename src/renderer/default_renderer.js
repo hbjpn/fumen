@@ -62,7 +62,7 @@ var SR_RENDER_PARAM = {
 // Simple renderer offsets
 
 
-export class MobileRenderer extends Renderer {
+export class DefaultRenderer extends Renderer {
     constructor(canvas, param, canvas_provider=null) {
         super();
 

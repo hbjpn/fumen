@@ -12702,18 +12702,48 @@ function () {
 
   return Fine;
 }();
-var Comment = function Comment(comment, chorddep) {
-  _classCallCheck(this, Comment);
+var Comment =
+/*#__PURE__*/
+function () {
+  function Comment(comment) {
+    var chorddep = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
-  this.comment = comment;
-  this.chorddep = chorddep; // Dependency for particular chord : true/false
-};
-var Lyric = function Lyric(lyric, chorddep) {
-  _classCallCheck(this, Lyric);
+    _classCallCheck(this, Comment);
 
-  this.lyric = lyric;
-  this.chorddep = chorddep; // Dependency for particular chord : true/false
-}; // Utilities
+    this.comment = comment;
+    this.chorddep = chorddep; // Dependency for particular chord : true/false
+  }
+
+  _createClass(Comment, [{
+    key: "setCodeDependency",
+    value: function setCodeDependency(v) {
+      this.chorddep = v;
+    }
+  }]);
+
+  return Comment;
+}();
+var Lyric =
+/*#__PURE__*/
+function () {
+  function Lyric(lyric) {
+    var chorddep = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+    _classCallCheck(this, Lyric);
+
+    this.lyric = lyric;
+    this.chorddep = chorddep; // Dependency for particular chord : true/false
+  }
+
+  _createClass(Lyric, [{
+    key: "setCodeDependency",
+    value: function setCodeDependency(v) {
+      this.chorddep = v;
+    }
+  }]);
+
+  return Lyric;
+}(); // Utilities
 
 var BoundingBox =
 /*#__PURE__*/
@@ -13322,9 +13352,22 @@ function () {
       //   | or || or ||: or :|| at the end of the measure will "not" be consumed.
       var measure = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Measure"]();
       if (trig_token_obj.type == TOKEN_MB) measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundaryMark"](1));else if (trig_token_obj.type == TOKEN_MB_DBL) measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundaryMark"](2));else if (trig_token_obj.type == TOKEN_MB_LOOP_END) measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopEndMark"](trig_token_obj.param));else if (trig_token_obj.type == TOKEN_MB_LOOP_BEGIN) measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopBeginMark"]());else if (trig_token_obj.type == TOKEN_MB_LOOP_BOTH) measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopBothMark"](trig_token_obj.param));else if (trig_token_obj.type == TOKEN_MB_FIN) measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundaryFinMark"]());else if (trig_token_obj.type == TOKEN_MB_DBL_SIMILE) measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundaryDblSimile"]());
-      var loop_flg = true;
-      var atmark_detected = false;
-      var associated_chord = null;
+      var loop_flg = true; //var atmark_detected = false;
+
+      var atmark_associated_elements = [];
+
+      var associator = function associator(elem_list, chord) {
+        for (var ei = elem_list.length - 1; ei >= 0; --ei) {
+          var elem = elem_list[ei];
+          if (elem instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Chord"]) break;else if (elem instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Comment"]) {
+            elem.setCodeDependency(true);
+            chord.setException(elem);
+          } else if (elem instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Lyric"]) {
+            elem.setCodeDependency(true);
+            chord.setLyric(elem);
+          }
+        }
+      };
 
       while (loop_flg) {
         var r = this.nextToken(s);
@@ -13336,46 +13379,53 @@ function () {
             break;
 
           case TOKEN_STRING:
-            measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["Chord"](r.token));
+            var chord = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Chord"](r.token);
+
+            if (atmark_associated_elements.length > 0) {
+              associator(atmark_associated_elements, chord);
+              atmark_associated_elements = [];
+            }
+
+            measure.elements.push(chord);
             s = r.s;
             break;
 
           case TOKEN_STRING_SQ:
-            var comment = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Comment"](r.token, atmark_detected);
-
+            /*var comment = new common.Comment(r.token, atmark_detected);
+            previous_comment = comment;
             if (atmark_detected) {
-              associated_chord.setException(comment);
-              atmark_detected = false;
-              associated_chord = null;
-            }
-
+                associated_chord.setException(comment);
+                atmark_detected = false;
+                associated_chord = null;
+            }*/
+            var comment = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Comment"](r.token);
             measure.elements.push(comment);
             s = r.s;
             break;
 
           case TOKEN_STRING_GRAVE_ACCENT:
-            var lyric = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Lyric"](r.token, atmark_detected);
-
+            /*var lyric = new common.Lyric(r.token, atmark_detected);
+            previous_lyric = lyric;
             if (atmark_detected) {
-              associated_chord.setLyric(lyric);
-              atmark_detected = false;
-              associated_chord = null;
-            }
-
+                associated_chord.setLyric(lyric);
+                atmark_detected = false;
+                associated_chord = null;
+            }*/
+            var lyric = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Lyric"](r.token);
             measure.elements.push(lyric);
             s = r.s;
             break;
 
           case TOKEN_ATMARK:
-            var a_chord = measure.elements[measure.elements.length - 1];
-            if (!(a_chord instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Chord"])) this.onParseError("ATMARK_NOT_AFTER_CHORD_SYMBOL");
-            associated_chord = a_chord;
-            atmark_detected = true;
+            // At mark is now an independent element which associate previous elements to the next elements of atmark.
+            //atmark_detected = true;
+            atmark_associated_elements.push(measure.elements[measure.elements.length - 1]); // Remember the previous element
+
             s = r.s;
             break;
 
           case TOKEN_WORD:
-            // Analyze Rest symbol
+            // Analyze Rest symbol firstly, if not it is chord.
             var rr = this.parseRest(r.token, r.type, r.s);
 
             if (rr.rest !== null) {
@@ -13390,6 +13440,12 @@ function () {
           case TOKEN_SLASH:
           case TOKEN_COLON:
             r = this.parseChordSymbol(r.token, r.type, r.s);
+
+            if (atmark_associated_elements.length > 0) {
+              associator(atmark_associated_elements, r.chord);
+              atmark_associated_elements = [];
+            }
+
             measure.elements.push(r.chord);
             s = r.s;
             break;

@@ -1015,7 +1015,9 @@ export class DefaultRenderer extends Renderer {
                     e instanceof common.Comment ||
                     e instanceof common.LoopIndicator ||
                     e instanceof common.ToCoda ||
-                    e instanceof common.DalSegno
+                    e instanceof common.DalSegno ||
+                    e instanceof common.DaCapo ||
+                    e instanceof common.Fine
                 ) {
                     yprof.mu.detected = true;
                 } else if (e instanceof common.MeasureBoundary) {

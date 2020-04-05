@@ -18,16 +18,16 @@
   },
   "homepage": "https://github.com/hbjpn/fumen2#readme",
   "devDependencies": {
-    "@babel/core": "^7.7.7",
-    "@babel/polyfill": "^7.7.0",
-    "@babel/preset-env": "^7.7.7",
-    "babel-loader": "^8.0.6",
+    "@babel/core": "^7.9.0",
+    "@babel/polyfill": "^7.8.7",
+    "@babel/preset-env": "^7.9.0",
+    "babel-loader": "^8.1.0",
     "copy-webpack-plugin": "^5.1.1",
     "eslint": "^6.8.0",
-    "eslint-loader": "^3.0.3",
+    "eslint-loader": "^3.0.4",
     "pixelmatch": "^5.1.0",
-    "puppeteer": "^2.0.0",
-    "webpack": "^4.41.5",
-    "webpack-cli": "^3.3.10"
+    "puppeteer": "^2.1.1",
+    "webpack": "^4.42.1",
+    "webpack-cli": "^3.3.11"
   }
 }

@@ -452,8 +452,24 @@ export class Parser {
             measure.elements.push(new common.MeasureBoundaryDblSimile());
 
         var loop_flg = true;
-        var atmark_detected = false;
-        var associated_chord = null;
+        //var atmark_detected = false;
+
+        var atmark_associated_elements = [];
+
+        var associator = function(elem_list, chord){
+            for(let ei=elem_list.length - 1; ei >= 0; --ei){
+                let elem = elem_list[ei];
+                if(elem instanceof common.Chord) break;
+                else if(elem instanceof common.Comment){
+                    elem.setCodeDependency(true);
+                    chord.setException(elem);
+                }else if(elem instanceof common.Lyric){
+                    elem.setCodeDependency(true);
+                    chord.setLyric(elem);                               
+                }
+            }
+        };
+
         while (loop_flg) {
             var r = this.nextToken(s);
             switch (r.type) {
@@ -462,39 +478,48 @@ export class Parser {
                     s = r.s;
                     break;
                 case TOKEN_STRING:
-                    measure.elements.push(new common.Chord(r.token));
+                    var chord = new common.Chord(r.token);
+
+                    if(atmark_associated_elements.length > 0){
+                        associator(atmark_associated_elements, chord);
+                        atmark_associated_elements = [];
+                    }
+
+                    measure.elements.push(chord);
                     s = r.s;
                     break;
                 case TOKEN_STRING_SQ:
-                    var comment = new common.Comment(r.token, atmark_detected);
+                    /*var comment = new common.Comment(r.token, atmark_detected);
+                    previous_comment = comment;
                     if (atmark_detected) {
                         associated_chord.setException(comment);
                         atmark_detected = false;
                         associated_chord = null;
-                    }
+                    }*/
+                    var comment = new common.Comment(r.token);
                     measure.elements.push(comment);
                     s = r.s;
                     break;
                 case TOKEN_STRING_GRAVE_ACCENT:
-                    var lyric = new common.Lyric(r.token, atmark_detected);
+                    /*var lyric = new common.Lyric(r.token, atmark_detected);
+                    previous_lyric = lyric;
                     if (atmark_detected) {
                         associated_chord.setLyric(lyric);
                         atmark_detected = false;
                         associated_chord = null;
-                    }
+                    }*/
+                    var lyric = new common.Lyric(r.token);
                     measure.elements.push(lyric);
                     s = r.s;
                     break;
                 case TOKEN_ATMARK:
-                    var a_chord = measure.elements[measure.elements.length - 1];
-                    if (!(a_chord instanceof common.Chord))
-                        this.onParseError("ATMARK_NOT_AFTER_CHORD_SYMBOL");
-                    associated_chord = a_chord;
-                    atmark_detected = true;
+                    // At mark is now an independent element which associate previous elements to the next elements of atmark.
+                    //atmark_detected = true;
+                    atmark_associated_elements.push(measure.elements[measure.elements.length-1]); // Remember the previous element
                     s = r.s;
                     break;
                 case TOKEN_WORD:
-                    // Analyze Rest symbol
+                    // Analyze Rest symbol firstly, if not it is chord.
                     var rr = this.parseRest(r.token, r.type, r.s);
                     if (rr.rest !== null) {
                         measure.elements.push(rr.rest);
@@ -506,7 +531,14 @@ export class Parser {
                 case TOKEN_SLASH:
                 case TOKEN_COLON:
                     r = this.parseChordSymbol(r.token, r.type, r.s);
+
+                    if(atmark_associated_elements.length > 0){
+                        associator(atmark_associated_elements, r.chord);
+                        atmark_associated_elements = [];
+                    }
+
                     measure.elements.push(r.chord);
+
                     s = r.s;
                     break;
                 case TOKEN_PERIOD:

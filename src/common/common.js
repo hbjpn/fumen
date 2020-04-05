@@ -911,17 +911,19 @@ export class Fine {
 }
 
 export class Comment {
-    constructor(comment, chorddep) {
+    constructor(comment, chorddep=false) {
         this.comment = comment;
         this.chorddep = chorddep; // Dependency for particular chord : true/false
     }
+    setCodeDependency(v){ this.chorddep = v; }
 }
 
 export class Lyric {
-    constructor(lyric, chorddep) {
+    constructor(lyric, chorddep=false) {
         this.lyric = lyric;
         this.chorddep = chorddep; // Dependency for particular chord : true/false
     }
+    setCodeDependency(v){ this.chorddep = v; }
 }
 
 

@@ -2682,7 +2682,7 @@ export class DefaultRenderer extends Renderer {
             var onbass_pos =
                 param.on_bass_style == "below" ?
                 x :
-                x + Math.max(upper_width, lower_width) + tensions_width;
+                x + lower_width;
 
             let on_bass_y_offset = 
                 param.on_bass_style == "below" ?
@@ -2736,6 +2736,9 @@ export class DefaultRenderer extends Renderer {
                     onbass_width += B * 0.2;
                 }
             }
+
+            if(param.on_bass_style != "below")
+                lower_width += onbass_width;
         }
 
 
@@ -2743,7 +2746,7 @@ export class DefaultRenderer extends Renderer {
         if(param.on_bass_style == "below" )
             width = Math.max(upper_width, lower_width, onbass_width) + tensions_width;
         else{
-            width = Math.max(upper_width, lower_width) + tensions_width + onbass_width;
+            width = Math.max(upper_width, lower_width) + tensions_width;
         }
 
         // Quantize with 0.25*B unit : Not so beneficial ?

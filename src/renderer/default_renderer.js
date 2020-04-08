@@ -56,7 +56,9 @@ var SR_RENDER_PARAM = {
     scale_if_overlap: 1, // 1 or 0
     on_bass_style: "right", // right|below
     on_bass_below_y_offset: 0,
-    background_color: "white" // null will be transparent
+    background_color: "white", // null will be transparent
+    row_gen_mode : "default", // constant_meas
+    row_gen_n_meas  : 4
 };
 
 // Simple renderer offsets
@@ -633,57 +635,93 @@ export class DefaultRenderer extends Renderer {
         let meas_row = [];
         let meas_row_rg_ids = [];
         let meas_row_block_ids = [];
-        for (let i = 0; i < track.reharsal_groups.length; ++i) {
-            let rg = track.reharsal_groups[i];
-            for (var bi = 0; bi < rg.blocks.length; ++bi) {
-                var block_measures = rg.blocks[bi];
-                for (var ml = 0; ml < block_measures.length; ++ml) {
-                    var m = block_measures[ml];
-                    if(m.raw_new_line){
+
+        if(param.row_gen_mode == "default"){
+            for (let i = 0; i < track.reharsal_groups.length; ++i) {
+                let rg = track.reharsal_groups[i];
+                for (var bi = 0; bi < rg.blocks.length; ++bi) {
+                    var block_measures = rg.blocks[bi];
+                    for (var ml = 0; ml < block_measures.length; ++ml) {
+                        var m = block_measures[ml];
+                        if(m.raw_new_line){
+                            meas_row_list.push({
+                                meas_row: meas_row,
+                                meas_row_rg_ids: meas_row_rg_ids,
+                                meas_row_block_ids: meas_row_block_ids
+                            });
+                            meas_row = [];
+                            meas_row_rg_ids = [];
+                            meas_row_block_ids = [];
+                        }
+                        meas_row.push(m);
+                        meas_row_rg_ids.push(i);
+                        meas_row_block_ids.push(accum_block_id);
+                    }
+                    if(meas_row.length > 0){
                         meas_row_list.push({
                             meas_row: meas_row,
                             meas_row_rg_ids: meas_row_rg_ids,
                             meas_row_block_ids: meas_row_block_ids
-                        });
+                        }); 
                         meas_row = [];
                         meas_row_rg_ids = [];
                         meas_row_block_ids = [];
                     }
-                    meas_row.push(m);
-                    meas_row_rg_ids.push(i);
-                    meas_row_block_ids.push(accum_block_id);
+                    accum_block_id++;
+                    
                 }
-                if(meas_row.length > 0){
-                    meas_row_list.push({
-                        meas_row: meas_row,
-                        meas_row_rg_ids: meas_row_rg_ids,
-                        meas_row_block_ids: meas_row_block_ids
-                    }); 
-                    meas_row = [];
-                    meas_row_rg_ids = [];
-                    meas_row_block_ids = [];
-                }
-                accum_block_id++;
-                
             }
-        }
-        // If there is inline reharsal group, then combine the last row of the 
-        // last reharsal group  and first row of the reharsal group
-        // tmp variable : shallow copy of meas_row_list
-        let meas_row_list_inv = meas_row_list.slice().reverse();
-        for (let i = 0; i < track.reharsal_groups.length; ++i) {
-            let rg = track.reharsal_groups[i];
-            if(rg.inline){
-                let dst_idx = meas_row_list_inv.findIndex(e=>{return e.meas_row_rg_ids.includes(i-1);});
-                dst_idx = meas_row_list.length - 1 - dst_idx; // Convert to index for non-inversed array
-                let src_idx = meas_row_list.findIndex(e=>{return e.meas_row_rg_ids.includes(i);});
-                let dst = meas_row_list[dst_idx];
-                let src = meas_row_list[src_idx];
-                dst.meas_row = dst.meas_row.concat(src.meas_row);
-                dst.meas_row_rg_ids = dst.meas_row_rg_ids.concat(src.meas_row_rg_ids);
-                dst.meas_row_block_ids = dst.meas_row_block_ids.concat(src.meas_row_block_ids);
-                meas_row_list.splice(src_idx, 1); // Delete the first row
-                meas_row_list_inv = meas_row_list.slice().reverse();
+            // If there is inline reharsal group, then combine the last row of the 
+            // last reharsal group  and first row of the reharsal group
+            // tmp variable : shallow copy of meas_row_list
+            let meas_row_list_inv = meas_row_list.slice().reverse();
+            for (let i = 0; i < track.reharsal_groups.length; ++i) {
+                let rg = track.reharsal_groups[i];
+                if(rg.inline){
+                    let dst_idx = meas_row_list_inv.findIndex(e=>{return e.meas_row_rg_ids.includes(i-1);});
+                    dst_idx = meas_row_list.length - 1 - dst_idx; // Convert to index for non-inversed array
+                    let src_idx = meas_row_list.findIndex(e=>{return e.meas_row_rg_ids.includes(i);});
+                    let dst = meas_row_list[dst_idx];
+                    let src = meas_row_list[src_idx];
+                    dst.meas_row = dst.meas_row.concat(src.meas_row);
+                    dst.meas_row_rg_ids = dst.meas_row_rg_ids.concat(src.meas_row_rg_ids);
+                    dst.meas_row_block_ids = dst.meas_row_block_ids.concat(src.meas_row_block_ids);
+                    meas_row_list.splice(src_idx, 1); // Delete the first row
+                    meas_row_list_inv = meas_row_list.slice().reverse();
+                }
+            }
+        }else if(param.row_gen_mode == "constant_n_meas"){
+            for (let i = 0; i < track.reharsal_groups.length; ++i) {
+                let rg = track.reharsal_groups[i];
+                for (let bi = 0; bi < rg.blocks.length; ++bi) {
+                    let block_measures = rg.blocks[bi];
+                    for (let ml = 0; ml < block_measures.length; ++ml) {
+                        let m = block_measures[ml];
+                        meas_row.push(m);
+                        meas_row_rg_ids.push(i);
+                        meas_row_block_ids.push(accum_block_id);
+                        if(meas_row.length == param.row_gen_n_meas){
+                            meas_row_list.push({
+                                meas_row: meas_row,
+                                meas_row_rg_ids: meas_row_rg_ids,
+                                meas_row_block_ids: meas_row_block_ids
+                            });
+                            meas_row = [];
+                            meas_row_rg_ids = [];
+                            meas_row_block_ids = [];
+                        }
+                    }
+                }
+            }
+            if(meas_row.length > 0){
+                meas_row_list.push({
+                    meas_row: meas_row,
+                    meas_row_rg_ids: meas_row_rg_ids,
+                    meas_row_block_ids: meas_row_block_ids
+                }); 
+                meas_row = [];
+                meas_row_rg_ids = [];
+                meas_row_block_ids = [];
             }
         }
 

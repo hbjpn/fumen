@@ -53,6 +53,8 @@ var SR_RENDER_PARAM = {
     optimize_type: 4, // 0 : Constant room for each flexible element. 1: Uniform ratio (propotional to each fixed width of flexible element), 2: Evenly division of measures(force), 3: Evenly division of measures as much as possible
     vertical_align: 1, // 1: Enable, 0: Disable
     vertical_align_intensity: 0.9, // Vertical align intensity 0:No align, 1:Always align
+    inner_vertical_align: 0, // 1: Enable, 0: Disable
+    inner_vertical_align_intensity: 1.0, // Vertical align intensity 0:No align, 1:Always align
     scale_if_overlap: 1, // 1 or 0
     on_bass_style: "right", // right|below
     on_bass_below_y_offset: 0,
@@ -581,6 +583,50 @@ export class DefaultRenderer extends Renderer {
                 if(act_num_grouped_rows <= 0){
                     throw "Something wrong with the code";
                 }
+            }
+        }
+
+        if(param.inner_vertical_align){
+            // Further align inside the measure
+            let row = 0;
+            while (row < reharsal_x_width_info.length){
+                let row_elements_list = reharsal_x_width_info[row][0];
+                let x_width_info = reharsal_x_width_info[row][1]; // For number of measures
+                row_elements_list.forEach((m,mi)=>{
+                    let ex = x_width_info[mi].all_fixed_width_details;
+                    let W = m.renderprop.measure_width; // Total measure width
+                    let L = m.renderprop.meas_num_flexible_rooms; // Num flex elements
+                    let flex_n = 0;
+                    let local_x = 0;
+                    let flex_x_cand  = new Array(L);
+                    let room_cand = new Array(L);
+                    let flex_ref_x = new Array(L);
+                    ex.forEach((exi, i)=>{
+                        if(exi.type == "fixed"){
+                            local_x += exi.f;
+                        }else{
+                            flex_ref_x[flex_n] = W / L * flex_n; // Reference position
+                            if(flex_n == 0){
+                                flex_x_cand[flex_n] = Math.max(local_x, flex_ref_x[flex_n]);
+                            }else{
+                                flex_x_cand[flex_n] = flex_ref_x[flex_n];
+                                room_cand[flex_n-1] = flex_x_cand[flex_n] - local_x;
+                            }
+                            local_x = flex_x_cand[flex_n] + exi.f;
+                            ++flex_n;
+                        }
+                    });
+                    room_cand[L-1] = W - local_x;
+                    // validation
+                    //console.log("Inner vertical vlaidation : " + (ex.map(e=>e.f).reduce((p,v)=>p+v)+room_cand.reduce((p,v)=>p+v)) + " vs " + W);
+                    let org_room = m.renderprop.room_per_elem;
+
+                    let alpha = param.inner_vertical_align_intensity;
+                    for(let l = 0; l < L; ++l){
+                        m.renderprop.room_per_elem[l] = alpha * room_cand[l] + (1 - alpha) * org_room[l];
+                    }
+                });
+                ++row;
             }
         }
     }
@@ -1144,6 +1190,7 @@ export class DefaultRenderer extends Renderer {
             let m = row_elements_list[ml];
             let meas_fixed_width = 0;
             var meas_num_flexible_rooms = 0;
+            var all_fixed_width_details = [];
             var elements = this.classifyElements(m);
             elements.header.forEach(e => {
                 if (e instanceof common.MeasureBoundary) {
@@ -1163,14 +1210,17 @@ export class DefaultRenderer extends Renderer {
                         false
                     );
                     meas_fixed_width += r.width;
+                    all_fixed_width_details.push({type:"fixed", f:r.width});
                     e.renderprop = { w: r.width };
                 } else if (e instanceof common.Time) {
                     meas_fixed_width += 10;
+                    all_fixed_width_details.push({type:"fixed", f:10});
                     e.renderprop = { w: 10 };
                 }
             });
 
             meas_fixed_width += param.header_body_margin;
+            all_fixed_width_details.push({type:"fixed",f:param.header_body_margin});
 
             var rberet = this.render_body_elements(
                 false, x, elements, 
@@ -1188,8 +1238,10 @@ export class DefaultRenderer extends Renderer {
             );
             meas_fixed_width += rberet.fixed_width;
             meas_num_flexible_rooms += rberet.num_flexible_rooms;
+            all_fixed_width_details = all_fixed_width_details.concat(rberet.fixed_width_details);
 
             meas_fixed_width += param.body_footer_margin;
+            all_fixed_width_details.push({type:"fixed",f:param.body_footer_margin});
 
             // Draw footer
             elements.footer.forEach(e => {
@@ -1215,6 +1267,7 @@ export class DefaultRenderer extends Renderer {
 
                     e.renderprop = { w: r.width };
                     meas_fixed_width += r.width;
+                    all_fixed_width_details.push({type:"fixed", f:r.width});
                     // eslint-disable-next-line no-empty
                 } else if (e instanceof common.DaCapo) {
                     // eslint-disable-next-line no-empty
@@ -1229,7 +1282,8 @@ export class DefaultRenderer extends Renderer {
             x_width_info.push({
                 meas_fixed_width:meas_fixed_width,
                 body_fixed_width: rberet.fixed_width,
-                body_fixed_width_details: rberet.fixed_width_details,
+                body_fixed_width_details: rberet.fixed_width_details.map(e=>e.f),
+                all_fixed_width_details: all_fixed_width_details,
                 meas_num_flexible_rooms:meas_num_flexible_rooms});
 
         }
@@ -1280,7 +1334,7 @@ export class DefaultRenderer extends Renderer {
                 x += (1 * param.base_font_size + m.renderprop.total_room);
             }else{
                 fixed_width += (1 * param.base_font_size);
-                fixed_width_details.push(1 * param.base_font_size);
+                fixed_width_details.push({type:"flex", f:1 * param.base_font_size});
                 num_flexible_rooms++;
             }
         }
@@ -1407,14 +1461,14 @@ export class DefaultRenderer extends Renderer {
                         e.renderprop.balken_element = balken_element;
                         rs_area_bounding_box.add_rect(r.bounding_box);
                         x += r.bounding_box.w;
-                        tmp_fixed_width_details.push(r.bounding_box.w);
+                        tmp_fixed_width_details.push({type:"flex",f:r.bounding_box.w});
                     });
                     let rs_area_width = rs_area_bounding_box.get().w;
                     element_group.renderprop.w = Math.max(rs_area_width, cr.width);
                     element_group.renderprop.rs_area_width = rs_area_width;
                     element_group.renderprop.based_on_rs_elem = (rs_area_width > cr.width);
                     fixed_width += element_group.renderprop.w;
-                    fixed_width_details = fixed_width_details.concat(rs_area_width > cr.width ? tmp_fixed_width_details : [cr.width] );
+                    fixed_width_details = fixed_width_details.concat(rs_area_width > cr.width ? tmp_fixed_width_details : [{type:"flex",f:cr.width}] );
                     num_flexible_rooms += (element_group.renderprop.based_on_rs_elem ? element_group.elems.length : 1);
                 }
 
@@ -1464,7 +1518,7 @@ export class DefaultRenderer extends Renderer {
                         else{
                             e.renderprop.w = cr.width;
                             fixed_width += e.renderprop.w;
-                            fixed_width_details.push(e.renderprop.w);
+                            fixed_width_details.push({type:"flex",f:e.renderprop.w});
                             num_flexible_rooms++;
                         }
 
@@ -1487,7 +1541,7 @@ export class DefaultRenderer extends Renderer {
                         else{
                             e.renderprop.w = cr.bounding_box.w;
                             fixed_width += e.renderprop.w;
-                            fixed_width_details.push(e.renderprop.w);
+                            fixed_width_details.push({type:"flex",f:e.renderprop.w});
                             num_flexible_rooms++;
                         }
                     } else if (e instanceof common.Simile) {
@@ -1509,7 +1563,7 @@ export class DefaultRenderer extends Renderer {
                         else{
                             e.renderprop.w = cr.width;
                             fixed_width += e.renderprop.w;
-                            fixed_width_details.push(e.renderprop.w);
+                            fixed_width_details.push({type:"flex",f:e.renderprop.w});
                             num_flexible_rooms++;
                         }
                     } else if (e instanceof common.Space) {
@@ -1522,7 +1576,7 @@ export class DefaultRenderer extends Renderer {
                                 param.base_font_size, "lt", 0.5*param.base_font_size, true, null); // width parameter needs to be aligned with chord rendering
                             e.renderprop.w = e.length * r.width;
                             fixed_width += e.renderprop.w;
-                            fixed_width_details.push(e.renderprop.w);
+                            fixed_width_details.push({type:"flex",f:e.renderprop.w});
                             num_flexible_rooms++;
                         }
                     }

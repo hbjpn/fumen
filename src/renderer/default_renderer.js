@@ -618,7 +618,15 @@ export class DefaultRenderer extends Renderer {
                     });
                     room_cand[L-1] = W - local_x;
                     // validation
-                    //console.log("Inner vertical vlaidation : " + (ex.map(e=>e.f).reduce((p,v)=>p+v)+room_cand.reduce((p,v)=>p+v)) + " vs " + W);
+                    // eslint-disable-next-line no-constant-condition
+                    if(true){
+                        console.log("Inner vertical vlaidation : ");
+                        console.log("Total measure width : " + (ex.map(e=>e.f).reduce((p,v)=>p+v)+room_cand.reduce((p,v)=>p+v) )+ " vs " + W);
+                        console.log("Total fixed width : " + ex.map(e=>e.f).reduce((p,v)=>p+v) + " vs " + m.renderprop.meas_fixed_width);
+                        console.log("Body fixed width : " + ex.filter(e=>e.type=="flex").map(e=>e.f).reduce((p,v)=>p+v) + " vs " + m.renderprop.body_fixed_width);
+                        console.log("Total room : " + room_cand.reduce((p,v)=>p+v) + " vs " + m.renderprop.total_room);
+                    }
+
                     let org_room = m.renderprop.room_per_elem;
 
                     let alpha = param.inner_vertical_align_intensity;

@@ -1326,6 +1326,34 @@ export class DefaultRenderer extends Renderer {
             console.log(m.renderprop.meas_fixed_width);
         }*/
 
+        function Scaler(canvas, alg, body_fixed_width, total_room){
+            this.canvas = canvas;
+            this.alg = alg;
+            this.body_fixed_width = body_fixed_width;
+            this.total_room = total_room;
+            this.current_scaling = 1.0;
+            this.first_time = true;
+        }
+        Scaler.prototype.scale = function(fixed_per_elem, room_per_elem){
+            if(this.alg == 0){
+                this.end();
+                this.current_scaling = (room_per_elem + fixed_per_elem)/fixed_per_elem;
+                this.cavas.getContext("2d").scale(this.current_scaling, 1);
+            }else if(this.alg == 1){
+                if(this.first_time){
+                    this.current_scaling = (this.body_fixed_width + this.total_room)/this.body_fixed_width;
+                    this.canvas.getContext("2d").scale(this.current_scaling, 1);
+                    this.first_time = false;
+                }
+            }
+            return this.current_scaling;
+        };
+        Scaler.prototype.end = function(){
+            this.cavas.getContext("2d").scale(1/this.current_scaling, 1);
+            this.current_scaling = 1.0;
+        };
+        var scaler = draw ? new Scaler(paper, param.scaling_type, m.renderprop.body_fixed_width, m.renderprop.total_room) : null;
+        
         if(draw && param.scale_if_overlap && m.renderprop.total_room < 0){
             let body_width = m.renderprop.body_fixed_width + m.renderprop.total_room;
             draw_scale = body_width / m.renderprop.body_fixed_width;

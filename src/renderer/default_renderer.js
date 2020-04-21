@@ -629,7 +629,39 @@ export class DefaultRenderer extends Renderer {
 
                     let org_room = m.renderprop.room_per_elem;
 
-                    let alpha = param.inner_vertical_align_intensity;
+                    // Determining optimum alpha
+                    let min_widened = 10000000;
+                    let max_narrowed = -1000000;
+                    for(let l = 0; l < L; ++l){
+                        let f = x_width_info[mi].body_fixed_width_details[l];
+                        let rorg = org_room[l];
+                        let rforce = room_cand[l];
+                        let diff = rforce - rorg;
+                        let Tc = param.inner_vertical_align_intensity;
+                        diff = Math.abs(diff) < 0.1 ? Math.sign(diff)*0.001 : diff; // To avoid 0 division
+                        let alpha_d = ((Tc - 1.0) * f - rorg) / diff;
+                        console.log("Inner vertical alignment : " + diff.toFixed(2) + "/" +alpha_d.toFixed(2));
+                        // To cater for 
+                        if(diff >= 0){
+                            // widended
+                            min_widened = Math.min(min_widened, alpha_d);
+                        }else{
+                            // narrowened
+                            max_narrowed = Math.max(max_narrowed, alpha_d);
+                        }
+                    }
+
+                    let alpha = 1.0;
+                    if(min_widened > max_narrowed){
+                        // Cannot not meet requirement for all elements, end up with alpha = 0.0 : Do nothing
+                        alpha = 0.0;
+                        console.log("Inner vertical alignment : not all meets requirement : alpha = " + alpha.toFixed(2));
+                    }else{
+                        alpha = Math.min(max_narrowed,1);  // TODO : 0.0 <= Is this <= 1.0 ?
+                        console.log("Inner vertical alignment : all meets requirement : alpha = " + alpha.toFixed(2));
+                    }
+
+                    //let alpha = param.inner_vertical_align_intensity;
                     for(let l = 0; l < L; ++l){
                         m.renderprop.room_per_elem[l] = alpha * room_cand[l] + (1 - alpha) * org_room[l];
                     }

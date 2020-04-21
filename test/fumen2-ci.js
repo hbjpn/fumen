@@ -104,6 +104,7 @@ let capture = (async(addr, fumenfile, headInfo) => {
         fs.mkdirSync(scdirname);
     }
     let scs = listScreenShortsForCommit(scdirname,tcname);
+    scs.filter((v,i)=>i>scs.length-10).forEach(s=>console.log(s.file));
     let prev_sc_file = null;
     if(scs.length >= 1){
         prev_sc_file = scs[scs.length-1];
@@ -111,14 +112,16 @@ let capture = (async(addr, fumenfile, headInfo) => {
 
     let datems = headInfo.time.getTime();
     let pngname = `${tcname}.${datems}.${headInfo.commit}.png`;
+    console.log(`head.commit=${headInfo.commit}, .time=${headInfo.time.getTime()}`);
 
     let numDiffPixels = 0;
     if(prev_sc_file && prev_sc_file.file == pngname){
         // Not yet comitted. In that case, the image is generated with the name indicating it is workingcopy
+        console.log("No commit after last commit. PNG generated with suffix workingcopy.");
         pngname = `${tcname}.workingcopy.${headInfo.commit}.png`;
     }
 
-    console.log(clips[0]);
+    //console.log(clips[0]);
     let scdir = path.join(path.dirname(fumenfile),scdirname);
     //outpath = path.join(outpath,`${tcname}.${i}.${datems}.${headInfo.commit}.png`);
     let head_full_path = path.join(scdir,pngname);

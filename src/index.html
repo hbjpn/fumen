@@ -4,8 +4,13 @@
     <meta charset="utf-8">
     <title>test</title>
     <script type="text/javascript" src="fumen2.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
     <script type="text/javascript">
-      function hoge(){
+      function draw(){
             var code = document.getElementById("code").value;
             var parser = new Fumen.Parser();
             var track = parser.parse(code);
@@ -35,7 +40,7 @@
       }
       function updated()
       {
-        hoge();
+        draw();
       }
     </script>
     <style>
@@ -44,47 +49,6 @@
   padding: 0px;
 }
 
-html {
-    height: 100%;
-}
-
-body {
-    height: 100%;
-}
-
-.div1 {
- float:left;
- width: 50%;
- height: 500px;
- background-color:azure;
- border: 0px black solid;
-}
-.div2 {
-float:right;
-width: 50%;
-height: 500px;
-background-color: blanchedalmond;
-border: 0px black solid;
-}
-
-.score_wrap, .param_wrap {
-
-}
-
-.main {
-height: 90%;
-min-height:200px;
-}
-
-.clearfix::after {
-  content: "";
-  display: block;
-  clear: both;
-}
-
-.header {
-  height: 20px;
-}
 
 #code{
     width: 90%;
@@ -103,16 +67,24 @@ min-height:200px;
    src: url('./assets/fonts/BravuraText.woff') format("woff");
 }
 
+textarea {
+  font-family: "Courier"
+}
+
     </style>
 </head>
 <body>
-  <div class="header">
-    <button onclick="hoge()">Render</button>
-  </div>
-  <div class="main clearfix">
-    <div class="div1">
-      <div class="code_wrap">
-        <textarea id="code" oninput="updated()">
+  <nav class="navbar navbar-dark bg-dark">
+    <a class="navbar-brand">Fumen</a>
+    <button class="btn btn-outline-success my-2 my-sm-0" onclick="draw()">Render</button>
+  </nav>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm">
+        <form>
+          <div class="form-group">
+            <label for="exampleFormControlTextarea1">Code</label>
+            <textarea class="form-control"  id="code" oninput="updated()" rows="3">
 %TITLE="Sample Piece"
 %SUB_TITLE="(Sub Title)"
 %ARTIST="Some artists"
@@ -160,23 +132,24 @@ min-height:200px;
 
 [Z]
 | C | Cm <Fine> | F | F7 <D.S.2> ||.
-                    
-          
-</textarea>  
-</div>
-<div class="param_wrap">
-  <textarea id="param">
-    {
-      "paper_width": 400,
-      "paper_height": 800
-    }
-  
-  </textarea>
-</div>
-</div>
-<div class="div2"  id="scores_area">
-</div>
-</div>
-
+            </textarea>
+          </div>
+          <div class="form-group">
+            <label for="exampleFormControlTextarea1">Code</label>
+            <textarea class="form-control"  id="param" oninput="updated()" rows="3">
+{
+  "paper_width": 400,
+  "paper_height": 800
+}
+            </textarea>
+          </div>
+        </form>
+      </div>
+      <div class="col-sm bg-secondary mx-auto">
+        <div class="div2"  id="scores_area">
+        </div>
+      </div>
+    </div> <!--row-->
+  </div> <!--container-->
   </body>
 </html>

@@ -132,10 +132,12 @@ let capture = (async(addr, fumenfile, headInfo) => {
     let diff_full_path = "";
     // Generate diff file if prev file is identified
     if(prev_sc_file){
+        console.log(`Taking diff between ${prev_sc_file.file} and ${pngname} for ${tcname}`);
         prev_full_path = path.join(scdir, prev_sc_file.file);
         diff_full_path = path.join(scdir, `${tcname}.diff.${headInfo.commit}-${prev_sc_file.commit}.png`);
         numDiffPixels = takediff(head_full_path, prev_full_path, diff_full_path);
     }else{
+        console.log(`This is the first screenshot for ${tcname}`);
         numDiffPixels = FIRST_SC;
     }
 

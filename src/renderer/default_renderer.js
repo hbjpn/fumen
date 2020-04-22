@@ -554,10 +554,22 @@ export class DefaultRenderer extends Renderer {
                         let mi_ref = getMeasRefIndex(mi, row_elements_list, num_meas);
                         if(mi_ref == null) continue;
                         let m = row_elements_list[mi_ref];
-                        let room_per_elem = (max_measure_widths[mi] - x_width_info[mi_ref].meas_fixed_width) /
-                            x_width_info[mi_ref].meas_num_flexible_rooms; 
-                        // TODO : To cater for the case of differnt room per elem inside the measure
-                        m.renderprop.room_per_elem = new Array(x_width_info[mi_ref].meas_num_flexible_rooms).fill(room_per_elem);
+                        let oldv = false;
+                        if(oldv){
+                            // This is no good appropach as all waste the decision in previous stage
+                            let room_per_elem = (max_measure_widths[mi] - x_width_info[mi_ref].meas_fixed_width) /
+                                x_width_info[mi_ref].meas_num_flexible_rooms; 
+                            
+                            m.renderprop.room_per_elem = new Array(x_width_info[mi_ref].meas_num_flexible_rooms).fill(room_per_elem);
+                        
+                        }else{
+                            // Constant offset approach
+                            let delta = (max_measure_widths[mi] - x_width_info[mi_ref].measure_width) /
+                                x_width_info[mi_ref].meas_num_flexible_rooms;
+
+                            m.renderprop.room_per_elem = m.renderprop.room_per_elem.map(r=>r+delta);
+                            
+                        }
                         m.renderprop.total_room = (max_measure_widths[mi] - x_width_info[mi_ref].meas_fixed_width);
                         m.renderprop.measure_width = max_measure_widths[mi];
                         m.renderprop.meas_fixed_width = x_width_info[mi_ref].meas_fixed_width; // Actually this is already set
@@ -1350,7 +1362,7 @@ export class DefaultRenderer extends Renderer {
         let fixed_width_details = []; // show be same as num_flexible_rooms
         let num_flexible_rooms = 0;
 
-        let draw_scale = 1;
+        //let draw_scale = 1;
 
         /*if(draw){
             console.log("Scaling : ");
@@ -1358,48 +1370,37 @@ export class DefaultRenderer extends Renderer {
             console.log(m.renderprop.meas_fixed_width);
         }*/
 
-        function Scaler(canvas, alg, body_fixed_width, total_room){
-            this.canvas = canvas;
-            this.alg = alg;
-            this.body_fixed_width = body_fixed_width;
-            this.total_room = total_room;
-            this.current_scaling = 1.0;
-            this.first_time = true;
-        }
-        Scaler.prototype.scale = function(fixed_per_elem, room_per_elem){
-            if(this.alg == 0){
-                this.end();
-                this.current_scaling = (room_per_elem + fixed_per_elem)/fixed_per_elem;
-                this.cavas.getContext("2d").scale(this.current_scaling, 1);
-            }else if(this.alg == 1){
-                if(this.first_time){
-                    this.current_scaling = (this.body_fixed_width + this.total_room)/this.body_fixed_width;
-                    this.canvas.getContext("2d").scale(this.current_scaling, 1);
-                    this.first_time = false;
-                }
-            }
-            return this.current_scaling;
+        var scale = function(fixed_per_elem, room_per_elem){
+            let draw_scale = (room_per_elem + fixed_per_elem)/fixed_per_elem;
+            var new_room_per_elem = draw_scale < 1 ? 0          : room_per_elem;
+            draw_scale       = draw_scale < 1 ? draw_scale : 1.0;
+            var elem_width = fixed_per_elem * draw_scale + new_room_per_elem;
+            paper.getContext("2d").scale(draw_scale, 1);
+            return [draw_scale, elem_width];
         };
-        Scaler.prototype.end = function(){
-            this.cavas.getContext("2d").scale(1/this.current_scaling, 1);
-            this.current_scaling = 1.0;
+
+        var unscale = function(draw_scale){
+            paper.getContext("2d").scale(1/draw_scale, 1);
         };
-        var scaler = draw ? new Scaler(paper, param.scaling_type, m.renderprop.body_fixed_width, m.renderprop.total_room) : null;
-        
-        if(draw && param.scale_if_overlap && m.renderprop.total_room < 0){
+        /*if(draw && param.scale_if_overlap && m.renderprop.total_room < 0){
             let body_width = m.renderprop.body_fixed_width + m.renderprop.total_room;
             draw_scale = body_width / m.renderprop.body_fixed_width;
             console.log("draw_scale = " + draw_scale);
             // and then for this case room_per_elem is 0 and scale fixed elemetns while keeping
             // total width.
             paper.getContext("2d").scale(draw_scale, 1);
-        }
+        }*/
 
         if (elements.body.length == 0) {
-            if(draw && draw_scale < 1){
+            /*if(draw && draw_scale < 1){
                 x += (1 * param.base_font_size * draw_scale + 0);
             }else if(draw){
                 x += (1 * param.base_font_size + m.renderprop.total_room);
+            }*/
+            if(draw){
+                let [draw_scale, elem_width] = scale(1 * param.base_font_size, m.renderprop.total_room);
+                x += elem_width;
+                unscale(draw_scale);
             }else{
                 fixed_width += (1 * param.base_font_size);
                 fixed_width_details.push({type:"flex", f:1 * param.base_font_size});
@@ -1415,6 +1416,41 @@ export class DefaultRenderer extends Renderer {
             // Draw Rythm Slashes, first
              if (yprof.rs.detected && body_grouping_info.all_has_length) {
 
+                let draw_scale = 1.0;
+                let room_for_rs_per_elem = 0;
+                let element_group_width = 0;
+
+                if(draw){
+                    let room_for_rs = 0;
+                    if(element_group.renderprop.based_on_rs_elem){
+                        // In case RS area elements has wider fixed width(in total) than that of first element
+                        // total room for rs by sum of rooms in this element group. total rooms cannnot be used as it is total in a measure
+                        // Even if non-uniform room per elem is specified and potentiialy have differnt scaling for each elemes
+                        // in RS area elements, we do not support such non-uniform rendering for now.
+                        // THen sum of all the room specifid and  re-distriute then by equal division.
+                        // Upon applying scaling, 
+                        for(let ei=0; ei<element_group.elems.length; ++ei)
+                            room_for_rs += m.renderprop.room_per_elem[this_group_start_index+ei];
+                        room_for_rs_per_elem = room_for_rs / element_group.elems.length; // TODO : Improve non constant div
+                        //element_group_width = element_group.renderprop.w + room_for_rs;
+
+                        [draw_scale, element_group_width] = scale(element_group.renderprop.w , room_for_rs);
+
+                        this_group_start_index += element_group.elems.length;
+                    }else{
+                        // In case the first element has wider fixed width than RS area elements
+                        room_for_rs = (element_group.renderprop.w + m.renderprop.room_per_elem[this_group_start_index]) 
+                            - element_group.renderprop.rs_area_width; 
+                        room_for_rs_per_elem = room_for_rs / element_group.elems.length;
+                        //element_group_width = element_group.renderprop.w + m.renderprop.room_per_elem[this_group_start_index];
+
+                        [draw_scale, element_group_width] = scale(element_group.renderprop.w , m.renderprop.room_per_elem[this_group_start_index]);
+                    
+                        this_group_start_index += 1;
+                    }
+
+
+                }
        
                 var e0 = element_group.elems[0];
                 let cr = null;
@@ -1463,11 +1499,15 @@ export class DefaultRenderer extends Renderer {
                 }
 
                 if(draw){
-                    let room_for_rs_per_elem = 0;
+                    /*let room_for_rs_per_elem = 0;
                     let element_group_width = 0;
                     if(element_group.renderprop.based_on_rs_elem){
                         // In case RS area elements has wider fixed width(in total) than that of first element
                         // total room for rs by sum of rooms in this element group. total rooms cannnot be used as it is total in a measure
+                        // Even if non-uniform room per elem is specified and potentiialy have differnt scaling for each elemes
+                        // in RS area elements, we do not support such non-uniform rendering for now.
+                        // THen sum of all the room specifid and  re-distriute then by equal division.
+                        // Upon applying scaling, 
                         let room_for_rs = 0;
                         for(let ei=0; ei<element_group.elems.length; ++ei)
                             room_for_rs += m.renderprop.room_per_elem[this_group_start_index+ei];
@@ -1483,7 +1523,7 @@ export class DefaultRenderer extends Renderer {
                         element_group_width = element_group.renderprop.w + m.renderprop.room_per_elem[this_group_start_index];
 
                         this_group_start_index += 1;
-                    }
+                    }*/
 
                     let g = this.render_rs_area(
                         x / draw_scale,
@@ -1504,19 +1544,26 @@ export class DefaultRenderer extends Renderer {
                         balken,
                         (gbei == body_grouping_info.groupedBodyElems.length-1)
                     );
-                    var rs_area_width = (g.x - x/draw_scale)*draw_scale;
+                    /*var rs_area_width = (g.x - x/draw_scale)*draw_scale;
 
                     // validation
                     if(Math.abs(rs_area_width - element_group_width) > 0.0001){
                         console.log("Whould be the same : " + [rs_area_width,element_group_width]);
                         //throw "Something wrong with RS area code drawing";
                     }
+                    */
 
+                    /*
                     if(draw_scale < 1){
                         x += element_group.renderprop.w * draw_scale + 0;
                     }else{
                         x += element_group_width;
-                    }
+                    }*/
+
+                    x += element_group_width;
+
+                    unscale(draw_scale);
+
                 }else{
                     let rs_area_bounding_box = new common.BoundingBox();
                     // Only try to esimate using non-flag-balken drawer
@@ -1543,6 +1590,11 @@ export class DefaultRenderer extends Renderer {
             } else{
                 element_group.elems.forEach((e,ei)=>{
                     if (e instanceof common.Chord) {
+
+                        let [draw_scale, elem_width] = [1.0, 0.0];
+                        if(draw) [draw_scale, elem_width] =
+                            scale(e.renderprop.w, m.renderprop.room_per_elem[this_group_start_index+ei]);
+                        
                         let cr = this.render_chord_simplified(
                             draw,
                             e,
@@ -1579,11 +1631,15 @@ export class DefaultRenderer extends Renderer {
                                 );
                             }
                         }
-                        if(draw && draw_scale<1){
+                        /*if(draw && draw_scale<1){
                             x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
                         }else if(draw)
                             x += ( e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index+ei]);
-                        else{
+                        */
+                       if(draw){
+                           x += elem_width;
+                           unscale(draw_scale);
+                       }else{
                             e.renderprop.w = cr.width;
                             fixed_width += e.renderprop.w;
                             fixed_width_details.push({type:"flex",f:e.renderprop.w});
@@ -1591,6 +1647,11 @@ export class DefaultRenderer extends Renderer {
                         }
 
                     } else if (e instanceof common.Rest) {
+
+                        let [draw_scale, elem_width] = [1.0, 0.0];
+                        if(draw) [draw_scale, elem_width] =
+                            scale(e.renderprop.w, m.renderprop.room_per_elem[this_group_start_index+ei]);
+
                         let cr = this.render_rest_plain(
                             e,
                             paper,
@@ -1602,17 +1663,26 @@ export class DefaultRenderer extends Renderer {
                             yprof.rs.detected ? param.rs_area_height : param.base_body_height,
                             param
                         );
-                        if(draw && draw_scale<1){
+                        /*if(draw && draw_scale<1){
                             x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
                         }else if(draw)
                             x += (e.renderprop.w +m.renderprop.room_per_elem[this_group_start_index+ei]); 
-                        else{
+                        */
+                        if(draw){
+                            x += elem_width;
+                            unscale(draw_scale);
+                        }else{
                             e.renderprop.w = cr.bounding_box.w;
                             fixed_width += e.renderprop.w;
                             fixed_width_details.push({type:"flex",f:e.renderprop.w});
                             num_flexible_rooms++;
                         }
                     } else if (e instanceof common.Simile) {
+
+                        let [draw_scale, elem_width] = [1.0, 0.0];
+                        if(draw) [draw_scale, elem_width] =
+                            scale(e.renderprop.w, m.renderprop.room_per_elem[this_group_start_index+ei]);
+                        
                         let cr = this.render_simile_mark_plain(
                             draw,
                             paper,
@@ -1624,22 +1694,34 @@ export class DefaultRenderer extends Renderer {
                             false,
                             "l"
                         );
-                        if(draw && draw_scale<1){
+                        /*if(draw && draw_scale<1){
                             x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
                         }else if(draw)
                             x += (e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index+ei]); 
-                        else{
+                        */
+                        if(draw){
+                            x += elem_width;
+                            unscale(draw_scale);
+                        }else{
                             e.renderprop.w = cr.width;
                             fixed_width += e.renderprop.w;
                             fixed_width_details.push({type:"flex",f:e.renderprop.w});
                             num_flexible_rooms++;
                         }
                     } else if (e instanceof common.Space) {
-                        if(draw && draw_scale<1){
+                        let [draw_scale, elem_width] = [1.0, 0.0];
+                        if(draw) [draw_scale, elem_width] =
+                            scale(e.renderprop.w, m.renderprop.room_per_elem[this_group_start_index+ei]);
+                        
+                        /*if(draw && draw_scale<1){
                             x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
                         }else if(draw)
                             x += (e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index+ei]); 
-                        else{
+                        */
+                        if(draw){
+                            x += elem_width;
+                            unscale(draw_scale);
+                        }else{
                             let r = graphic.CanvasText(paper, 0, 0, "M", 
                                 param.base_font_size, "lt", 0.5*param.base_font_size, true, null); // width parameter needs to be aligned with chord rendering
                             e.renderprop.w = e.length * r.width;
@@ -1654,9 +1736,9 @@ export class DefaultRenderer extends Renderer {
             }
         });
 
-        if(draw && draw_scale<1){
+        /*if(draw && draw_scale<1){
             paper.getContext("2d").scale(1/draw_scale, 1);
-        }
+        }*/
 
         return {x:x, fixed_width:fixed_width, num_flexible_rooms:num_flexible_rooms, fixed_width_details:fixed_width_details};
     }

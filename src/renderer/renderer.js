@@ -280,7 +280,7 @@ export class Renderer {
             // var barlen = 25;
             //var flagintv = 5;
 
-            let balken_element = e.renderprop.balken_element;
+            let balken_element = e.renderprop.balken_element; // this is corresponds to single flex element
 
             // Flush current groups
             if (
@@ -310,6 +310,8 @@ export class Renderer {
             
             music_context.pos_in_a_measure += balken_element.chord_length;
 
+            // This needed because we need to draw bars or balken etc... for some group of elements.
+            // Such bars or balken are drawn only when required elements are all collected.
             balken.groups.push({balken_element:balken_element,e:e,
                 org_x:x,org_room_for_rs_per_element:room_for_rs_per_element});
 

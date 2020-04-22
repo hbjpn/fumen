@@ -26,12 +26,16 @@
             var param_json = document.getElementById("param").value;
             var param = JSON.parse(param_json);
 
+            var canvas_count = 0;
             var canvas_provider = function(){
               var score_area = document.getElementById("scores_area");
               var new_canvas = document.createElement("canvas");
-              var hr = document.createElement("hr");
-              score_area.appendChild(hr);
+              if(canvas_count > 0){
+                var hr = document.createElement("hr");
+                score_area.appendChild(hr);
+              }
               score_area.appendChild(new_canvas);
+              ++canvas_count;
               return new_canvas;
             };
 
@@ -51,15 +55,15 @@
 
 
 #code{
-    width: 90%;
-    height: 250px;
-    padding: 10px;
+    /*width: 90%;*/
+    height: 350px;
+    /*padding: 10px;*/
 }
 
 #param{
-    width: 90%;
+    /*width: 90%;*/
     height: 250px;
-    padding: 10px;
+    /*padding: 10px;*/
 }
 
 @font-face {
@@ -135,7 +139,7 @@ textarea {
             </textarea>
           </div>
           <div class="form-group">
-            <label for="exampleFormControlTextarea1">Code</label>
+            <label for="exampleFormControlTextarea1">Param</label>
             <textarea class="form-control"  id="param" oninput="updated()" rows="3">
 {
   "paper_width": 400,

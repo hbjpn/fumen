@@ -54,7 +54,7 @@ let takediff = (img1path, img2path, diffpath) => {
     }
 };
 
-let capture = (async(addr, fumenfile, headInfo) => {
+let capture = (async(addr, fumenfile, headInfo, base_commit) => {
 	let tcname = path.parse(fumenfile).name;
 	let code = fs.readFileSync(fumenfile,"utf-8");
     //console.log(code);
@@ -103,10 +103,16 @@ let capture = (async(addr, fumenfile, headInfo) => {
     if (!fs.existsSync(scdirname)){
         fs.mkdirSync(scdirname);
     }
+    
     let scs = listScreenShortsForCommit(scdirname,tcname);
     scs.filter((v,i)=>i>scs.length-10).forEach(s=>console.log(s.file));
     let prev_sc_file = null;
-    if(scs.length >= 1){
+    if(base_commit){
+        prev_sc_file = scs.find(e=>e.commit == base_commit) || null;
+        if(prev_sc_file) console.log(`Base commit set to ${base_commit}`);
+        else console.log(`Base commmi ${base_commit} is not found. Set to head ommit`);
+    }
+    if(prev_sc_file == null && scs.length >= 1){
         prev_sc_file = scs[scs.length-1];
     }
 
@@ -164,6 +170,7 @@ report_html += "<table>";
 let dotest = async (headInfo)=>{
     const addr = process.argv[2];
     console.log(addr);
+    const base_commit = process.argv.length >= 4 ? process.argv[3] : null;
     const files = [
         "case1.fumen",
         "case2.fumen",
@@ -175,7 +182,7 @@ let dotest = async (headInfo)=>{
         "align.fumen"];
     const results = [];
     for(let i=0; i<files.length; ++i){
-        let r = await capture(addr,files[i], headInfo);
+        let r = await capture(addr,files[i], headInfo, base_commit);
         results.push(r.numDiffPixels);
         report_html += tablerowtag([
             files[i], r.numDiffPixels,

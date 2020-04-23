@@ -1436,9 +1436,10 @@ export class DefaultRenderer extends Renderer {
                 let draw_scale = 1.0;
                 let room_for_rs_per_elem = 0;
                 let element_group_width = 0;
+                let room_for_rs = 0;
 
                 if(draw){
-                    let room_for_rs = 0;
+
                     if(element_group.renderprop.based_on_rs_elem){
                         // In case RS area elements has wider fixed width(in total) than that of first element
                         // total room for rs by sum of rooms in this element group. total rooms cannnot be used as it is total in a measure
@@ -1451,7 +1452,10 @@ export class DefaultRenderer extends Renderer {
                         room_for_rs_per_elem = room_for_rs / element_group.elems.length; // TODO : Improve non constant div
                         //element_group_width = element_group.renderprop.w + room_for_rs;
 
-                        [draw_scale, element_group_width] = scale(element_group.renderprop.w , room_for_rs);
+                        // Scaling for chord area.
+                        //[draw_scale, element_group_width] = scale(element_group.renderprop.w , room_for_rs);
+                        [draw_scale, element_group_width] = scale(element_group.renderprop.cr_width , 
+                            element_group.renderprop.rs_area_width + room_for_rs - element_group.renderprop.cr_width);
 
                         this_group_start_index += element_group.elems.length;
                     }else{
@@ -1461,7 +1465,10 @@ export class DefaultRenderer extends Renderer {
                         room_for_rs_per_elem = room_for_rs / element_group.elems.length;
                         //element_group_width = element_group.renderprop.w + m.renderprop.room_per_elem[this_group_start_index];
 
-                        [draw_scale, element_group_width] = scale(element_group.renderprop.w , m.renderprop.room_per_elem[this_group_start_index]);
+                        //[draw_scale, element_group_width] = scale(element_group.renderprop.w , m.renderprop.room_per_elem[this_group_start_index]);
+
+                        [draw_scale, element_group_width] = scale(element_group.renderprop.cr_width , 
+                            m.renderprop.room_per_elem[this_group_start_index]);
                     
                         this_group_start_index += 1;
                     }
@@ -1542,6 +1549,13 @@ export class DefaultRenderer extends Renderer {
                         this_group_start_index += 1;
                     }*/
 
+                    unscale(draw_scale);
+                    
+                    [draw_scale, element_group_width] = scale(element_group.renderprop.rs_area_width,
+                        room_for_rs);
+                    
+                    // Scaling for RS area
+
                     let g = this.render_rs_area(
                         x / draw_scale,
                         draw_scale,
@@ -1604,6 +1618,7 @@ export class DefaultRenderer extends Renderer {
                         choice = param.master_elem_selection; // "rs" or "chord";
                     }
                     element_group.renderprop.w = choice == "rs"  ? rs_area_width : cr.width;
+                    element_group.renderprop.cr_width = cr.width;
                     element_group.renderprop.rs_area_width = rs_area_width;
                     element_group.renderprop.based_on_rs_elem = (choice == "rs");
                     fixed_width += element_group.renderprop.w;

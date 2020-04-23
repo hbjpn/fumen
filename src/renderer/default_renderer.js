@@ -55,6 +55,7 @@ var SR_RENDER_PARAM = {
     vertical_align_intensity: 0.9, // Vertical align intensity 0:No align, 1:Always align
     inner_vertical_align: 0, // 1: Enable, 0: Disable
     inner_vertical_align_intensity: 1.0, // Vertical align intensity 0:No align, 1:Always align
+    master_elem_selection : "default", // "chord" | "rs"
     scale_if_overlap: 1, // 1 or 0
     on_bass_style: "right", // right|below
     on_bass_below_y_offset: 0,
@@ -1595,12 +1596,19 @@ export class DefaultRenderer extends Renderer {
                         tmp_fixed_width_details.push({type:"flex",f:r.bounding_box.w});
                     });
                     let rs_area_width = rs_area_bounding_box.get().w;
-                    element_group.renderprop.w = Math.max(rs_area_width, cr.width);
+                    // To select which (chord or RS area element) to be selected as a elemng group 
+                    let choice = null;
+                    if(param.master_elem_selection == "default"){
+                        choice = rs_area_width > cr.width ? "rs" : "chord";
+                    }else{
+                        choice = param.master_elem_selection; // "rs" or "chord";
+                    }
+                    element_group.renderprop.w = choice == "rs"  ? rs_area_width : cr.width;
                     element_group.renderprop.rs_area_width = rs_area_width;
-                    element_group.renderprop.based_on_rs_elem = (rs_area_width > cr.width);
+                    element_group.renderprop.based_on_rs_elem = (choice == "rs");
                     fixed_width += element_group.renderprop.w;
-                    fixed_width_details = fixed_width_details.concat(rs_area_width > cr.width ? tmp_fixed_width_details : [{type:"flex",f:cr.width}] );
-                    num_flexible_rooms += (element_group.renderprop.based_on_rs_elem ? element_group.elems.length : 1);
+                    fixed_width_details = fixed_width_details.concat(choice == "rs" ? tmp_fixed_width_details : [{type:"flex",f:cr.width}] );
+                    num_flexible_rooms += (choice == "rs" ? element_group.elems.length : 1);
                 }
 
             } else{

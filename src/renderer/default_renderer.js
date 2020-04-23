@@ -1441,32 +1441,23 @@ export class DefaultRenderer extends Renderer {
                 if(draw){
 
                     if(element_group.renderprop.based_on_rs_elem){
-                        // In case RS area elements has wider fixed width(in total) than that of first element
-                        // total room for rs by sum of rooms in this element group. total rooms cannnot be used as it is total in a measure
-                        // Even if non-uniform room per elem is specified and potentiialy have differnt scaling for each elemes
-                        // in RS area elements, we do not support such non-uniform rendering for now.
-                        // THen sum of all the room specifid and  re-distriute then by equal division.
-                        // Upon applying scaling, 
+                        // Element group width is determined based on RS elements
                         for(let ei=0; ei<element_group.elems.length; ++ei)
                             room_for_rs += m.renderprop.room_per_elem[this_group_start_index+ei];
                         room_for_rs_per_elem = room_for_rs / element_group.elems.length; // TODO : Improve non constant div
-                        //element_group_width = element_group.renderprop.w + room_for_rs;
-
+                        
                         // Scaling for chord area.
-                        //[draw_scale, element_group_width] = scale(element_group.renderprop.w , room_for_rs);
                         [draw_scale, element_group_width] = scale(element_group.renderprop.cr_width , 
                             element_group.renderprop.rs_area_width + room_for_rs - element_group.renderprop.cr_width);
 
                         this_group_start_index += element_group.elems.length;
                     }else{
-                        // In case the first element has wider fixed width than RS area elements
+                        // Element group width is determined based on first chord element
                         room_for_rs = (element_group.renderprop.w + m.renderprop.room_per_elem[this_group_start_index]) 
                             - element_group.renderprop.rs_area_width; 
                         room_for_rs_per_elem = room_for_rs / element_group.elems.length;
-                        //element_group_width = element_group.renderprop.w + m.renderprop.room_per_elem[this_group_start_index];
-
-                        //[draw_scale, element_group_width] = scale(element_group.renderprop.w , m.renderprop.room_per_elem[this_group_start_index]);
-
+                        
+                        // Scaling for chord area.
                         [draw_scale, element_group_width] = scale(element_group.renderprop.cr_width , 
                             m.renderprop.room_per_elem[this_group_start_index]);
                     
@@ -1523,34 +1514,11 @@ export class DefaultRenderer extends Renderer {
                 }
 
                 if(draw){
-                    /*let room_for_rs_per_elem = 0;
-                    let element_group_width = 0;
-                    if(element_group.renderprop.based_on_rs_elem){
-                        // In case RS area elements has wider fixed width(in total) than that of first element
-                        // total room for rs by sum of rooms in this element group. total rooms cannnot be used as it is total in a measure
-                        // Even if non-uniform room per elem is specified and potentiialy have differnt scaling for each elemes
-                        // in RS area elements, we do not support such non-uniform rendering for now.
-                        // THen sum of all the room specifid and  re-distriute then by equal division.
-                        // Upon applying scaling, 
-                        let room_for_rs = 0;
-                        for(let ei=0; ei<element_group.elems.length; ++ei)
-                            room_for_rs += m.renderprop.room_per_elem[this_group_start_index+ei];
-                        room_for_rs_per_elem = room_for_rs / element_group.elems.length; // TODO : Improve non constant div
-                        element_group_width = element_group.renderprop.w + room_for_rs;
 
-                        this_group_start_index += element_group.elems.length;
-                    }else{
-                        // In case the first element has wider fixed width than RS area elements
-                        let room_for_rs = (element_group.renderprop.w + m.renderprop.room_per_elem[this_group_start_index]) 
-                            - element_group.renderprop.rs_area_width; 
-                        room_for_rs_per_elem = room_for_rs / element_group.elems.length;
-                        element_group_width = element_group.renderprop.w + m.renderprop.room_per_elem[this_group_start_index];
-
-                        this_group_start_index += 1;
-                    }*/
-
+                    // Unscale for chord area
                     unscale(draw_scale);
-                    
+
+                    // Scale for RS area
                     [draw_scale, element_group_width] = scale(element_group.renderprop.rs_area_width,
                         room_for_rs);
                     
@@ -1575,21 +1543,6 @@ export class DefaultRenderer extends Renderer {
                         balken,
                         (gbei == body_grouping_info.groupedBodyElems.length-1)
                     );
-                    /*var rs_area_width = (g.x - x/draw_scale)*draw_scale;
-
-                    // validation
-                    if(Math.abs(rs_area_width - element_group_width) > 0.0001){
-                        console.log("Whould be the same : " + [rs_area_width,element_group_width]);
-                        //throw "Something wrong with RS area code drawing";
-                    }
-                    */
-
-                    /*
-                    if(draw_scale < 1){
-                        x += element_group.renderprop.w * draw_scale + 0;
-                    }else{
-                        x += element_group_width;
-                    }*/
 
                     x += element_group_width;
 

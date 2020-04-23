@@ -611,7 +611,7 @@ export class DefaultRenderer extends Renderer {
                     let flex_n = 0;
                     let local_x = 0;
                     let flex_x_cand  = new Array(L);
-                    let room_cand = new Array(L);
+                    let room_force = new Array(L);
                     let flex_ref_x = new Array(L);
                     ex.forEach((exi, i)=>{
                         if(exi.type == "fixed"){
@@ -622,24 +622,39 @@ export class DefaultRenderer extends Renderer {
                                 flex_x_cand[flex_n] = Math.max(local_x, flex_ref_x[flex_n]);
                             }else{
                                 flex_x_cand[flex_n] = flex_ref_x[flex_n];
-                                room_cand[flex_n-1] = flex_x_cand[flex_n] - local_x;
+                                room_force[flex_n-1] = flex_x_cand[flex_n] - local_x;
                             }
                             local_x = flex_x_cand[flex_n] + exi.f;
                             ++flex_n;
                         }
                     });
-                    room_cand[L-1] = W - local_x;
+                    room_force[L-1] = W - local_x;
                     // validation
                     // eslint-disable-next-line no-constant-condition
-                    if(true){
+                    if(false){
                         console.log("Inner vertical vlaidation : ");
-                        console.log("Total measure width : " + (ex.map(e=>e.f).reduce((p,v)=>p+v)+room_cand.reduce((p,v)=>p+v) )+ " vs " + W);
+                        console.log("Total measure width : " + (ex.map(e=>e.f).reduce((p,v)=>p+v)+room_force.reduce((p,v)=>p+v) )+ " vs " + W);
                         console.log("Total fixed width : " + ex.map(e=>e.f).reduce((p,v)=>p+v) + " vs " + m.renderprop.meas_fixed_width);
                         console.log("Body fixed width : " + ex.filter(e=>e.type=="flex").map(e=>e.f).reduce((p,v)=>p+v) + " vs " + m.renderprop.body_fixed_width);
-                        console.log("Total room : " + room_cand.reduce((p,v)=>p+v) + " vs " + m.renderprop.total_room);
+                        console.log("Total room : " + room_force.reduce((p,v)=>p+v) + " vs " + m.renderprop.total_room);
                     }
 
                     let org_room = m.renderprop.room_per_elem;
+
+
+                    // Serach maximum compressed element after forncing
+                    let Tc_min = 1000000;
+                    let Tc_max = -1000000;
+                    for(let l = 0; l < L; ++l){
+                        let f = x_width_info[mi].body_fixed_width_details[l];
+                        let c = ( room_force[l] + f ) / f;
+                        Tc_min = Math.min(c, Tc_min);
+                        Tc_max = Math.max(c, Tc_max);
+                    }
+
+                    //let Tc = 1.0 - param.inner_vertical_align_intensity; 
+                    let Tc = param.inner_vertical_align_intensity * ( Tc_min - Tc_max ) + Tc_max;
+                    console.log("Tc_min = " + Tc_min + " Tc_max = " + Tc_max + " Tc = " + Tc);
 
                     // Determining optimum alpha
                     let min_widened = 10000000;
@@ -647,12 +662,11 @@ export class DefaultRenderer extends Renderer {
                     for(let l = 0; l < L; ++l){
                         let f = x_width_info[mi].body_fixed_width_details[l];
                         let rorg = org_room[l];
-                        let rforce = room_cand[l];
+                        let rforce = room_force[l];
                         let diff = rforce - rorg;
-                        let Tc = param.inner_vertical_align_intensity;
                         diff = Math.abs(diff) < 0.1 ? Math.sign(diff)*0.001 : diff; // To avoid 0 division
                         let alpha_d = ((Tc - 1.0) * f - rorg) / diff;
-                        console.log("Inner vertical alignment : " + diff.toFixed(2) + "/" +alpha_d.toFixed(2));
+                        //console.log("Inner vertical alignment : " + diff.toFixed(2) + "/" +alpha_d.toFixed(2));
                         // To cater for 
                         if(diff >= 0){
                             // widended
@@ -662,6 +676,8 @@ export class DefaultRenderer extends Renderer {
                             max_narrowed = Math.max(max_narrowed, alpha_d);
                         }
                     }
+
+                    console.log("Min widended alpha = " + min_widened + ", Max narrowened alpha = " + max_narrowed);
 
                     let alpha = 1.0;
                     if(min_widened > max_narrowed){
@@ -675,7 +691,7 @@ export class DefaultRenderer extends Renderer {
 
                     //let alpha = param.inner_vertical_align_intensity;
                     for(let l = 0; l < L; ++l){
-                        m.renderprop.room_per_elem[l] = alpha * room_cand[l] + (1 - alpha) * org_room[l];
+                        m.renderprop.room_per_elem[l] = alpha * room_force[l] + (1 - alpha) * org_room[l];
                     }
                 });
                 ++row;

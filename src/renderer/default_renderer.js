@@ -54,7 +54,7 @@ var SR_RENDER_PARAM = {
     vertical_align: 1, // 1: Enable, 0: Disable
     vertical_align_intensity: 0.9, // Vertical align intensity 0:No align, 1:Always align
     inner_vertical_align: 0, // 1: Enable, 0: Disable
-    inner_vertical_align_intensity: 1.0, // Vertical align intensity 0:No align, 1:Always align
+    inner_vertical_align_intensity: 0.5, // Vertical align intensity 0:No align, 0.5 : align if no compression, 1:Always align
     master_elem_selection : "default", // "chord" | "rs"
     scale_if_overlap: 1, // 1 or 0
     on_bass_style: "right", // right|below
@@ -362,7 +362,7 @@ export class DefaultRenderer extends Renderer {
         });
         if(reduced_meas_valid && row_elements_list[0].align == "right")
             row_elements_list[0].renderprop.left_margin = total_width - row_total_width;
-        console.log("alpha = " + alpha);
+        //console.log("alpha = " + alpha);
     }
 
     determine_rooms(param, reharsal_x_width_info){
@@ -431,7 +431,7 @@ export class DefaultRenderer extends Renderer {
             let row = 0;
             
             while (row < reharsal_x_width_info.length){
-                console.log("row :" + row);
+                //console.log("row :" + row);
                 let num_meas = reharsal_x_width_info[row][0].length;
 
                 // Group the rows with :
@@ -541,8 +541,8 @@ export class DefaultRenderer extends Renderer {
                 // Here rowdash means number of actually grouped rows
                 let act_num_grouped_rows = rowdash;
 
-                console.log("max_fixed_widths :");
-                console.log(max_measure_widths);
+                //console.log("max_fixed_widths :");
+                //console.log(max_measure_widths);
                
                 //let max_measure_widths = new Array(num_meas).fill(0);
                 // room per froom with maximum fixed with only
@@ -592,7 +592,7 @@ export class DefaultRenderer extends Renderer {
                 }
 
                 row += act_num_grouped_rows;
-                console.log("row updated : " + row + " / " + act_num_grouped_rows);
+                //console.log("row updated : " + row + " / " + act_num_grouped_rows);
                 if(act_num_grouped_rows <= 0){
                     throw "Something wrong with the code";
                 }
@@ -646,20 +646,35 @@ export class DefaultRenderer extends Renderer {
                     // Serach maximum compressed element after forncing
                     let Tc_min = 1000000;
                     let Tc_max = -1000000;
+                    let Tc_org_min = 1000000;
+                    let Tc_org_max = -1000000;
                     for(let l = 0; l < L; ++l){
                         let f = x_width_info[mi].body_fixed_width_details[l];
                         let c = ( room_force[l] + f ) / f;
                         Tc_min = Math.min(c, Tc_min);
                         Tc_max = Math.max(c, Tc_max);
+                        let corg = ( org_room[l] + f ) / f;
+                        Tc_org_min = Math.min(corg, Tc_org_min);
+                        Tc_org_max = Math.max(corg, Tc_org_max);
+                        
                     }
 
                     //let Tc = 1.0 - param.inner_vertical_align_intensity; 
-                    let Tc = param.inner_vertical_align_intensity * ( Tc_min - Tc_max ) + Tc_max;
-                    console.log("Tc_min = " + Tc_min + " Tc_max = " + Tc_max + " Tc = " + Tc);
+                    let HALF_INT_COMP = 1.0; // S
+                    let ZERO_INT_COMP = Math.max(Tc_max, Tc_org_max); // L
+                    //let Tc = HALF_INT_COMP * ( 1/param.inner_vertical_align_intensity - 1);
+                    let denom = (ZERO_INT_COMP - 2 * HALF_INT_COMP);
+                    let c = HALF_INT_COMP / denom;
+                    let b = -HALF_INT_COMP * ZERO_INT_COMP / denom;
+                    let a = ZERO_INT_COMP * HALF_INT_COMP * (ZERO_INT_COMP - HALF_INT_COMP) / denom / denom;
+                    let Tc = a/(Number(param.inner_vertical_align_intensity)+c)+b;
+                    //let Tc = param.inner_vertical_align_intensity * ( Tc_min - Tc_max ) + Tc_max;
+                    //console.log("Tc_min = " + Tc_min.toFixed(2) + " Tc_max = " + Tc_max.toFixed(2) + " Tc = " + Tc.toFixed(2));
+                    //console.log("Tc_org_min = " + Tc_org_min.toFixed(2) + " Tc_org_max = " + Tc_org_max.toFixed(2));
 
                     // Determining optimum alpha
-                    let min_widened = 10000000;
-                    let max_narrowed = -1000000;
+                    let max_widened = -10000000;
+                    let min_narrowed = 1000000;
                     for(let l = 0; l < L; ++l){
                         let f = x_width_info[mi].body_fixed_width_details[l];
                         let rorg = org_room[l];
@@ -671,28 +686,34 @@ export class DefaultRenderer extends Renderer {
                         // To cater for 
                         if(diff >= 0){
                             // widended
-                            min_widened = Math.min(min_widened, alpha_d);
+                            max_widened = Math.max(max_widened, alpha_d);
                         }else{
                             // narrowened
-                            max_narrowed = Math.max(max_narrowed, alpha_d);
+                            min_narrowed = Math.min(min_narrowed, alpha_d);
                         }
                     }
 
-                    console.log("Min widended alpha = " + min_widened + ", Max narrowened alpha = " + max_narrowed);
+                    //console.log("Max widended alpha = " + max_widened + ", Min narrowened alpha = " + min_narrowed);
 
                     let alpha = 1.0;
-                    if(min_widened > max_narrowed){
+                    if(max_widened > min_narrowed){
                         // Cannot not meet requirement for all elements, end up with alpha = 0.0 : Do nothing
                         alpha = 0.0;
                         console.log("Inner vertical alignment : not all meets requirement : alpha = " + alpha.toFixed(2));
                     }else{
-                        alpha = Math.min(max_narrowed,1);  // TODO : 0.0 <= Is this <= 1.0 ?
+                        //alpha = 1.0;
+                        alpha = Math.max(0, Math.min(min_narrowed, 1));
+                        //alpha = Math.max(0, Math.min(max_narrowed,1));  // TODO : 0.0 <= Is this <= 1.0 ?
                         console.log("Inner vertical alignment : all meets requirement : alpha = " + alpha.toFixed(2));
                     }
 
                     //let alpha = param.inner_vertical_align_intensity;
                     for(let l = 0; l < L; ++l){
                         m.renderprop.room_per_elem[l] = alpha * room_force[l] + (1 - alpha) * org_room[l];
+
+                        let c = (x_width_info[mi].body_fixed_width_details[l] + m.renderprop.room_per_elem[l]) /
+                            x_width_info[mi].body_fixed_width_details[l];
+                        //console.log("c["+l+"]="+c.toFixed(2));
                     }
                 });
                 ++row;

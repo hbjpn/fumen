@@ -164,7 +164,7 @@ export function GetCharProfile(fsize,fontfamily,bold,ratio,zoom) {
         if (!(memkey in G_memCanvasStore)) {
             let memCanvas = document.createElement("canvas");
             SetupHiDPICanvas(memCanvas, G_mem_Canvas_size[0], G_mem_Canvas_size[1], ratio, zoom);
-            console.log("Pixel ratio = " + ratio + " , zoom = " + zoom);
+            //console.log("Pixel ratio = " + ratio + " , zoom = " + zoom);
             G_memCanvasStore[memkey] = memCanvas;
         }
         yroom = JudgeTextYPosOffset(G_memCanvasStore[memkey], font); //bold, fontfamily, fsize);
@@ -411,7 +411,7 @@ function JudgeTextYPosOffset(canvas, font, code)/*bold, fontfamily, fontsize) */
     var top_room = 0;
     var bottom_room = 0;
 
-    console.log(imageData.width, imageData.height, data.length);
+    //console.log(imageData.width, imageData.height, data.length);
 
     var found_nonwhite = false;
     //console.log(imageData);
@@ -494,7 +494,7 @@ export function getFontSizeFromHeight(height, fontfamily, code, tol, opt, ratio,
     if (!(memkey in G_memCanvasStore)) {
         let memCanvas = document.createElement("canvas");
         SetupHiDPICanvas(memCanvas, G_mem_Canvas_size[0], G_mem_Canvas_size[1], ratio, zoom);
-        console.log("Pixel ratio = " + ratio, + " , Zoom = " + zoom);
+        //console.log("Pixel ratio = " + ratio, + " , Zoom = " + zoom);
         G_memCanvasStore[memkey] = memCanvas;
     }
 
@@ -509,8 +509,8 @@ export function getFontSizeFromHeight(height, fontfamily, code, tol, opt, ratio,
     if(!tol) tol=0.5;
     while(loop < maxLoop){
         var ret = JudgeTextYPosOffset(canvas_to_use, px + "px '"+fontfamily+"'", code);
-        console.log("px="+px+", target height="+height);
-        console.log(ret);
+        //console.log("px="+px+", target height="+height);
+        //console.log(ret);
         //var tol = 0.4;
         if(ret.height > height+tol){
             curHigh = px;
@@ -601,7 +601,7 @@ export class Bravura{
             function loaded(){
                 var tm1 = ctx1.measureText(text);
                 var tm2 = ctx2.measureText(text);
-                console.log("tm1:"+tm1.width+" tm2:"+tm2.width);
+                //console.log("tm1:"+tm1.width+" tm2:"+tm2.width);
                 return tm1.width != tm2.width;
             }
 

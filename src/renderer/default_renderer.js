@@ -53,7 +53,7 @@ var SR_RENDER_PARAM = {
     optimize_type: 4, // 0 : Constant room for each flexible element. 1: Uniform ratio (propotional to each fixed width of flexible element), 2: Evenly division of measures(force), 3: Evenly division of measures as much as possible
     vertical_align: 1, // 1: Enable, 0: Disable
     vertical_align_intensity: 0.9, // Vertical align intensity 0:No align, 1:Always align
-    inner_vertical_align: 0, // 1: Enable, 0: Disable
+    inner_vertical_align: 1, // 1: Enable, 0: Disable
     inner_vertical_align_intensity: 0.5, // Vertical align intensity 0:No align, 0.5 : align if no compression, 1:Always align
     master_elem_selection : "default", // "chord" | "rs"
     scale_if_overlap: 1, // 1 or 0

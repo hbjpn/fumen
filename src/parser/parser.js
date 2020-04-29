@@ -41,6 +41,7 @@ var TOKEN_EQUAL = 35;
 var TOKEN_STRING = 36; // String with double quote
 var TOKEN_STRING_SQ = 37; // String with single quote
 var TOKEN_STRING_GRAVE_ACCENT = 38; // String with grave accent '
+var TOKEN_STRING_HYPHEN = 39; // General string enclosed within hyphen
 var TOKEN_ATMARK = 40; // @
 var TOKEN_COLON = 41; // :
 var TOKEN_PERIOD = 42; // .
@@ -83,8 +84,10 @@ export class Parser {
             return { token: null, s: s, type: TOKEN_END, ss: skipped_spaces };
 
         // At first, plain string is analyzed irrespective of word_def.
-        if (s[0] == "\"" || s[0] == "'" || s[0] == "`") {
-            var quote = s[0];
+        var r = charStartsWithAmong(s, ["\"", "'", "`", "-"]);
+        //if (s[0] == "\"" || s[0] == "'" || s[0] == "`") {
+        if(r != null){
+            var quote = r.s; //s[0];
             var plain_str = "";
             s = s.substr(1);
             while (s.length > 0 && s[0] != quote) {
@@ -99,17 +102,12 @@ export class Parser {
             return {
                 token: plain_str,
                 s: s,
-                type:
-                    quote == "\""
-                        ? TOKEN_STRING
-                        : quote == "'"
-                        ? TOKEN_STRING_SQ
-                        : TOKEN_STRING_GRAVE_ACCENT,
+                type: [TOKEN_STRING, TOKEN_STRING_SQ, TOKEN_STRING_GRAVE_ACCENT,TOKEN_STRING_HYPHEN][r.index],
                 ss: skipped_spaces
             };
         }
 
-        var r = charStartsWithAmong(s, ["||:", "||.", "||", "|", "./|/."]);
+        r = charStartsWithAmong(s, ["||:", "||.", "||", "|", "./|/."]);
         if (r != null) {
             return {
                 token: r.s,
@@ -270,30 +268,6 @@ export class Parser {
         }
 
         return { loopIndicator: new common.LoopIndicator(indicators), s: s };
-    }
-
-    parseLongRestIndicator(trig_token_type, s) {
-        // prerequisite
-        //   trig_token_type = TOKEN_BRACKET_LW
-
-        var r = this.nextToken(s);
-        s = r.s;
-
-        if (r.type != TOKEN_WORD)
-            this.onParseError("ERROR_WHILE_PARSE_OMIT_INDICATOR");
-
-        let longrestlen = r.token;
-
-        r = this.nextToken(s);
-        s = r.s;
-
-        if (r.type != TOKEN_BRACKET_RW)
-            this.onParseError("ERROR_WHILE_PARSE_OMIT_INDICATOR");
-
-        return {
-            longRestIndicator: new common.LongRestIndicator(longrestlen),
-            s: s
-        };
     }
 
     parseTime(trig_token_type, s) {
@@ -472,6 +446,7 @@ export class Parser {
 
         while (loop_flg) {
             var r = this.nextToken(s);
+            var m = null;
             switch (r.type) {
                 case TOKEN_COMMA:
                     measure.elements.push(new common.Space(1));
@@ -510,6 +485,14 @@ export class Parser {
                     }*/
                     var lyric = new common.Lyric(r.token);
                     measure.elements.push(lyric);
+                    s = r.s;
+                    break;
+                case TOKEN_STRING_HYPHEN:
+                    m = r.token.match("^[0-9]+$");
+                    if(!m){
+                        this.onParseError("ERROR_WHILE_PARSE_LONG_REST");
+                    }
+                    measure.elements.push(new common.LongRestIndicator(parseInt(r.token)));
                     s = r.s;
                     break;
                 case TOKEN_ATMARK:
@@ -560,11 +543,6 @@ export class Parser {
                 case TOKEN_BRACKET_LS:
                     r = this.parseLoopIndicator(r.type, r.s);
                     measure.elements.push(r.loopIndicator);
-                    s = r.s;
-                    break;
-                case TOKEN_BRACKET_LW:
-                    r = this.parseLongRestIndicator(r.type, r.s);
-                    measure.elements.push(r.longRestIndicator);
                     s = r.s;
                     break;
                 case TOKEN_MB:

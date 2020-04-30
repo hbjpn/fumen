@@ -120,5 +120,9 @@ Measures are contents of a measur row. It consists of multiple measures bounded 
 ### Measure contents
 Various types of contents can be specified. Please refer to the following pages for details.
 
-- Chords
-- Repeat signs
+- [Chords](chord.md)
+- [Rests](rest.md)
+- [Repeat signs](repeat-sign.md)
+- [Time signs](time-sign.md)
+- [Texts](text.md)
+

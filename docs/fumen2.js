@@ -918,7 +918,7 @@ module.exports = !__webpack_require__(/*! ./_descriptors */ "./node_modules/core
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 module.exports = function (it) {
   return _typeof(it) === 'object' ? it !== null : typeof it === 'function';
@@ -2758,7 +2758,7 @@ module.exports = function isInteger(it) {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 module.exports = function (it) {
   return _typeof(it) === 'object' ? it !== null : typeof it === 'function';
@@ -3135,7 +3135,7 @@ module.exports = Math.sign || function sign(x) {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 var META = __webpack_require__(/*! ./_uid */ "./node_modules/core-js/modules/_uid.js")('meta');
 
@@ -3561,7 +3561,7 @@ exports.f = __webpack_require__(/*! ./_descriptors */ "./node_modules/core-js/mo
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 // fallback for IE11 buggy Object.getOwnPropertyNames with iframe and window
 var toIObject = __webpack_require__(/*! ./_to-iobject */ "./node_modules/core-js/modules/_to-iobject.js");
@@ -3977,7 +3977,7 @@ __webpack_require__(/*! ./_core */ "./node_modules/core-js/modules/_core.js").in
 "use strict";
 
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 var classof = __webpack_require__(/*! ./_classof */ "./node_modules/core-js/modules/_classof.js");
 
@@ -4709,7 +4709,7 @@ module.exports = function (it, S) {
 "use strict";
 
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 if (__webpack_require__(/*! ./_descriptors */ "./node_modules/core-js/modules/_descriptors.js")) {
   var LIBRARY = __webpack_require__(/*! ./_library */ "./node_modules/core-js/modules/_library.js");
@@ -7073,7 +7073,7 @@ var Base = $Number;
 var proto = $Number.prototype; // Opera ~12 has broken Object#toString
 
 var BROKEN_COF = cof(__webpack_require__(/*! ./_object-create */ "./node_modules/core-js/modules/_object-create.js")(proto)) == NUMBER;
-var TRIM = 'trim' in String.prototype; // 7.1.3 ToNumber(argument)
+var TRIM = ('trim' in String.prototype); // 7.1.3 ToNumber(argument)
 
 var toNumber = function toNumber(argument) {
   var it = toPrimitive(argument, false);
@@ -9740,7 +9740,7 @@ __webpack_require__(/*! ./_string-trim */ "./node_modules/core-js/modules/_strin
 "use strict";
  // ECMAScript 6 symbols shim
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 var global = __webpack_require__(/*! ./_global */ "./node_modules/core-js/modules/_global.js");
 
@@ -10840,7 +10840,7 @@ module.exports = __webpack_require__(/*! ../modules/_core */ "./node_modules/cor
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(module) {function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+/* WEBPACK VAR INJECTION */(function(module) {function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
@@ -10976,7 +10976,7 @@ var runtime = function (exports) {
     };
   };
 
-  function AsyncIterator(generator) {
+  function AsyncIterator(generator, PromiseImpl) {
     function invoke(method, arg, resolve, reject) {
       var record = tryCatch(generator[method], generator, arg);
 
@@ -10987,14 +10987,14 @@ var runtime = function (exports) {
         var value = result.value;
 
         if (value && _typeof(value) === "object" && hasOwn.call(value, "__await")) {
-          return Promise.resolve(value.__await).then(function (value) {
+          return PromiseImpl.resolve(value.__await).then(function (value) {
             invoke("next", value, resolve, reject);
           }, function (err) {
             invoke("throw", err, resolve, reject);
           });
         }
 
-        return Promise.resolve(value).then(function (unwrapped) {
+        return PromiseImpl.resolve(value).then(function (unwrapped) {
           // When a yielded Promise is resolved, its final value becomes
           // the .value of the Promise<{value,done}> result for the
           // current iteration.
@@ -11012,7 +11012,7 @@ var runtime = function (exports) {
 
     function enqueue(method, arg) {
       function callInvokeWithMethodAndArg() {
-        return new Promise(function (resolve, reject) {
+        return new PromiseImpl(function (resolve, reject) {
           invoke(method, arg, resolve, reject);
         });
       }
@@ -11049,8 +11049,9 @@ var runtime = function (exports) {
   // AsyncIterator objects; they just return a Promise for the value of
   // the final result produced by the iterator.
 
-  exports.async = function (innerFn, outerFn, self, tryLocsList) {
-    var iter = new AsyncIterator(wrap(innerFn, outerFn, self, tryLocsList));
+  exports.async = function (innerFn, outerFn, self, tryLocsList, PromiseImpl) {
+    if (PromiseImpl === void 0) PromiseImpl = Promise;
+    var iter = new AsyncIterator(wrap(innerFn, outerFn, self, tryLocsList), PromiseImpl);
     return exports.isGeneratorFunction(outerFn) ? iter // If outerFn is a generator, return the full iterator.
     : iter.next().then(function (result) {
       return result.done ? result.value : iter.next();
@@ -11628,11 +11629,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BoundingBox", function() { return BoundingBox; });
 /* harmony import */ var _babel_polyfill__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/polyfill */ "./node_modules/@babel/polyfill/lib/index.js");
 /* harmony import */ var _babel_polyfill__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_polyfill__WEBPACK_IMPORTED_MODULE_0__);
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _createSuper(Derived) { return function () { var Super = _getPrototypeOf(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
@@ -11679,9 +11684,7 @@ function myLog2(integer) {
   };
   return log2[integer];
 }
-var TaskQueue =
-/*#__PURE__*/
-function () {
+var TaskQueue = /*#__PURE__*/function () {
   function TaskQueue() {
     _classCallCheck(this, TaskQueue);
 
@@ -11732,9 +11735,7 @@ function () {
 //
 
 var the_task_queue = new TaskQueue();
-var Task =
-/*#__PURE__*/
-function () {
+var Task = /*#__PURE__*/function () {
   function Task(context, worker, task_type, queue) {
     _classCallCheck(this, Task);
 
@@ -11855,9 +11856,7 @@ function () {
 //
 
 var WHOLE_NOTE_LENGTH = 2 * 3 * 5 * 7 * 9 * 11 * 13 * 64;
-var Track =
-/*#__PURE__*/
-function () {
+var Track = /*#__PURE__*/function () {
   function Track() {
     _classCallCheck(this, Track);
 
@@ -12374,9 +12373,7 @@ function getTransposedKeyFromOffset(key, transpose, half_type) {
   return transposed_key;
 }
 
-var Chord =
-/*#__PURE__*/
-function () {
+var Chord = /*#__PURE__*/function () {
   function Chord(chord_str) {
     _classCallCheck(this, Chord);
 
@@ -12511,47 +12508,47 @@ var Time = function Time(numer, denom) {
 var MeasureBoundary = function MeasureBoundary() {
   _classCallCheck(this, MeasureBoundary);
 };
-var MeasureBoundaryMark =
-/*#__PURE__*/
-function (_MeasureBoundary) {
+var MeasureBoundaryMark = /*#__PURE__*/function (_MeasureBoundary) {
   _inherits(MeasureBoundaryMark, _MeasureBoundary);
+
+  var _super = _createSuper(MeasureBoundaryMark);
 
   function MeasureBoundaryMark(nline) {
     var _this;
 
     _classCallCheck(this, MeasureBoundaryMark);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(MeasureBoundaryMark).call(this));
+    _this = _super.call(this);
     _this.nline = nline;
     return _this;
   }
 
   return MeasureBoundaryMark;
 }(MeasureBoundary);
-var LoopBeginMark =
-/*#__PURE__*/
-function (_MeasureBoundary2) {
+var LoopBeginMark = /*#__PURE__*/function (_MeasureBoundary2) {
   _inherits(LoopBeginMark, _MeasureBoundary2);
+
+  var _super2 = _createSuper(LoopBeginMark);
 
   function LoopBeginMark() {
     _classCallCheck(this, LoopBeginMark);
 
-    return _possibleConstructorReturn(this, _getPrototypeOf(LoopBeginMark).call(this));
+    return _super2.call(this);
   }
 
   return LoopBeginMark;
 }(MeasureBoundary);
-var LoopEndMark =
-/*#__PURE__*/
-function (_MeasureBoundary3) {
+var LoopEndMark = /*#__PURE__*/function (_MeasureBoundary3) {
   _inherits(LoopEndMark, _MeasureBoundary3);
+
+  var _super3 = _createSuper(LoopEndMark);
 
   function LoopEndMark(param) {
     var _this2;
 
     _classCallCheck(this, LoopEndMark);
 
-    _this2 = _possibleConstructorReturn(this, _getPrototypeOf(LoopEndMark).call(this));
+    _this2 = _super3.call(this);
     _this2.times = param.times;
     _this2.ntimes = param.ntimes;
     return _this2;
@@ -12559,17 +12556,17 @@ function (_MeasureBoundary3) {
 
   return LoopEndMark;
 }(MeasureBoundary);
-var LoopBothMark =
-/*#__PURE__*/
-function (_MeasureBoundary4) {
+var LoopBothMark = /*#__PURE__*/function (_MeasureBoundary4) {
   _inherits(LoopBothMark, _MeasureBoundary4);
+
+  var _super4 = _createSuper(LoopBothMark);
 
   function LoopBothMark(param) {
     var _this3;
 
     _classCallCheck(this, LoopBothMark);
 
-    _this3 = _possibleConstructorReturn(this, _getPrototypeOf(LoopBothMark).call(this));
+    _this3 = _super4.call(this);
     _this3.times = param.times;
     _this3.ntimes = param.ntimes;
     return _this3;
@@ -12577,28 +12574,28 @@ function (_MeasureBoundary4) {
 
   return LoopBothMark;
 }(MeasureBoundary);
-var MeasureBoundaryFinMark =
-/*#__PURE__*/
-function (_MeasureBoundary5) {
+var MeasureBoundaryFinMark = /*#__PURE__*/function (_MeasureBoundary5) {
   _inherits(MeasureBoundaryFinMark, _MeasureBoundary5);
+
+  var _super5 = _createSuper(MeasureBoundaryFinMark);
 
   function MeasureBoundaryFinMark() {
     _classCallCheck(this, MeasureBoundaryFinMark);
 
-    return _possibleConstructorReturn(this, _getPrototypeOf(MeasureBoundaryFinMark).call(this));
+    return _super5.call(this);
   }
 
   return MeasureBoundaryFinMark;
 }(MeasureBoundary);
-var MeasureBoundaryDblSimile =
-/*#__PURE__*/
-function (_MeasureBoundary6) {
+var MeasureBoundaryDblSimile = /*#__PURE__*/function (_MeasureBoundary6) {
   _inherits(MeasureBoundaryDblSimile, _MeasureBoundary6);
+
+  var _super6 = _createSuper(MeasureBoundaryDblSimile);
 
   function MeasureBoundaryDblSimile() {
     _classCallCheck(this, MeasureBoundaryDblSimile);
 
-    return _possibleConstructorReturn(this, _getPrototypeOf(MeasureBoundaryDblSimile).call(this));
+    return _super6.call(this);
   }
 
   return MeasureBoundaryDblSimile;
@@ -12620,9 +12617,7 @@ function (_MeasureBoundary6) {
 */
 // Signs
 
-var DaCapo =
-/*#__PURE__*/
-function () {
+var DaCapo = /*#__PURE__*/function () {
   function DaCapo() {
     _classCallCheck(this, DaCapo);
   }
@@ -12636,9 +12631,7 @@ function () {
 
   return DaCapo;
 }();
-var DalSegno =
-/*#__PURE__*/
-function () {
+var DalSegno = /*#__PURE__*/function () {
   function DalSegno(number, al) {
     _classCallCheck(this, DalSegno);
 
@@ -12663,9 +12656,7 @@ var Segno = function Segno(number, opt) {
   this.number = number;
   this.opt = opt;
 };
-var Coda =
-/*#__PURE__*/
-function () {
+var Coda = /*#__PURE__*/function () {
   function Coda(number) {
     _classCallCheck(this, Coda);
 
@@ -12686,9 +12677,7 @@ var ToCoda = function ToCoda(number) {
 
   this.number = number;
 };
-var Fine =
-/*#__PURE__*/
-function () {
+var Fine = /*#__PURE__*/function () {
   function Fine() {
     _classCallCheck(this, Fine);
   }
@@ -12702,9 +12691,7 @@ function () {
 
   return Fine;
 }();
-var Comment =
-/*#__PURE__*/
-function () {
+var Comment = /*#__PURE__*/function () {
   function Comment(comment) {
     var chorddep = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
@@ -12723,9 +12710,7 @@ function () {
 
   return Comment;
 }();
-var Lyric =
-/*#__PURE__*/
-function () {
+var Lyric = /*#__PURE__*/function () {
   function Lyric(lyric) {
     var chorddep = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
@@ -12745,9 +12730,7 @@ function () {
   return Lyric;
 }(); // Utilities
 
-var BoundingBox =
-/*#__PURE__*/
-function () {
+var BoundingBox = /*#__PURE__*/function () {
   function BoundingBox() {
     _classCallCheck(this, BoundingBox);
 
@@ -12941,6 +12924,8 @@ var TOKEN_STRING_SQ = 37; // String with single quote
 
 var TOKEN_STRING_GRAVE_ACCENT = 38; // String with grave accent '
 
+var TOKEN_STRING_HYPHEN = 39; // General string enclosed within hyphen
+
 var TOKEN_ATMARK = 40; // @
 
 var TOKEN_COLON = 41; // :
@@ -12950,9 +12935,7 @@ var TOKEN_PERIOD = 42; // .
 var WORD_DEFINIITON_GENERAL = /^(\w[\w¥.,\-+#:]*)/;
 var WORD_DEFINITION_IN_REHARSAL_MARK = /^[^[\]]*/;
 var WORD_DEFINITION_CHORD_SYMBOL = /^[\w.,\-+#/():~]*/;
-var Parser =
-/*#__PURE__*/
-function () {
+var Parser = /*#__PURE__*/function () {
   function Parser(error_msg_callback) {
     _classCallCheck(this, Parser);
 
@@ -12998,8 +12981,11 @@ function () {
         ss: skipped_spaces
       }; // At first, plain string is analyzed irrespective of word_def.
 
-      if (s[0] == "\"" || s[0] == "'" || s[0] == "`") {
-        var quote = s[0];
+      var r = charStartsWithAmong(s, ["\"", "'", "`", "-"]); //if (s[0] == "\"" || s[0] == "'" || s[0] == "`") {
+
+      if (r != null) {
+        var quote = r.s; //s[0];
+
         var plain_str = "";
         s = s.substr(1);
 
@@ -13014,12 +13000,12 @@ function () {
         return {
           token: plain_str,
           s: s,
-          type: quote == "\"" ? TOKEN_STRING : quote == "'" ? TOKEN_STRING_SQ : TOKEN_STRING_GRAVE_ACCENT,
+          type: [TOKEN_STRING, TOKEN_STRING_SQ, TOKEN_STRING_GRAVE_ACCENT, TOKEN_STRING_HYPHEN][r.index],
           ss: skipped_spaces
         };
       }
 
-      var r = charStartsWithAmong(s, ["||:", "||.", "||", "|", "./|/."]);
+      r = charStartsWithAmong(s, ["||:", "||.", "||", "|", "./|/."]);
 
       if (r != null) {
         return {
@@ -13181,23 +13167,6 @@ function () {
 
       return {
         loopIndicator: new _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopIndicator"](indicators),
-        s: s
-      };
-    }
-  }, {
-    key: "parseLongRestIndicator",
-    value: function parseLongRestIndicator(trig_token_type, s) {
-      // prerequisite
-      //   trig_token_type = TOKEN_BRACKET_LW
-      var r = this.nextToken(s);
-      s = r.s;
-      if (r.type != TOKEN_WORD) this.onParseError("ERROR_WHILE_PARSE_OMIT_INDICATOR");
-      var longrestlen = r.token;
-      r = this.nextToken(s);
-      s = r.s;
-      if (r.type != TOKEN_BRACKET_RW) this.onParseError("ERROR_WHILE_PARSE_OMIT_INDICATOR");
-      return {
-        longRestIndicator: new _common_common__WEBPACK_IMPORTED_MODULE_1__["LongRestIndicator"](longrestlen),
         s: s
       };
     }
@@ -13371,6 +13340,7 @@ function () {
 
       while (loop_flg) {
         var r = this.nextToken(s);
+        var m = null;
 
         switch (r.type) {
           case TOKEN_COMMA:
@@ -13413,6 +13383,17 @@ function () {
             }*/
             var lyric = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Lyric"](r.token);
             measure.elements.push(lyric);
+            s = r.s;
+            break;
+
+          case TOKEN_STRING_HYPHEN:
+            m = r.token.match("^[0-9]+$");
+
+            if (!m) {
+              this.onParseError("ERROR_WHILE_PARSE_LONG_REST");
+            }
+
+            measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["LongRestIndicator"](parseInt(r.token)));
             s = r.s;
             break;
 
@@ -13472,12 +13453,6 @@ function () {
           case TOKEN_BRACKET_LS:
             r = this.parseLoopIndicator(r.type, r.s);
             measure.elements.push(r.loopIndicator);
-            s = r.s;
-            break;
-
-          case TOKEN_BRACKET_LW:
-            r = this.parseLongRestIndicator(r.type, r.s);
-            measure.elements.push(r.longRestIndicator);
             s = r.s;
             break;
 
@@ -13778,17 +13753,21 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _renderer__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./renderer */ "./src/renderer/renderer.js");
 /* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../common/common */ "./src/common/common.js");
 /* harmony import */ var _graphic__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./graphic */ "./src/renderer/graphic.js");
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 
-function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) { return; } var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(n); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return; var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
@@ -13798,9 +13777,13 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
+function _createSuper(Derived) { return function () { var Super = _getPrototypeOf(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
@@ -13893,19 +13876,28 @@ var SR_RENDER_PARAM = {
   // 1: Enable, 0: Disable
   vertical_align_intensity: 0.9,
   // Vertical align intensity 0:No align, 1:Always align
+  inner_vertical_align: 1,
+  // 1: Enable, 0: Disable
+  inner_vertical_align_intensity: 0.5,
+  // Vertical align intensity 0:No align, 0.5 : align if no compression, 1:Always align
+  master_elem_selection: "default",
+  // "chord" | "rs"
   scale_if_overlap: 1,
   // 1 or 0
   on_bass_style: "right",
   // right|below
   on_bass_below_y_offset: 0,
-  background_color: "white" // null will be transparent
-
+  background_color: "white",
+  // null will be transparent
+  row_gen_mode: "default",
+  // constant_meas
+  row_gen_n_meas: 4
 }; // Simple renderer offsets
 
-var DefaultRenderer =
-/*#__PURE__*/
-function (_Renderer) {
+var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
   _inherits(DefaultRenderer, _Renderer);
+
+  var _super = _createSuper(DefaultRenderer);
 
   function DefaultRenderer(canvas, param) {
     var _this;
@@ -13914,7 +13906,7 @@ function (_Renderer) {
 
     _classCallCheck(this, DefaultRenderer);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(DefaultRenderer).call(this));
+    _this = _super.call(this);
     _this.canvas = canvas;
     _this.memCanvas = null; // Canvas on memory used for screening
 
@@ -14167,8 +14159,7 @@ function (_Renderer) {
         e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
         row_total_width += x_width_info[mi].measure_width;
       });
-      if (reduced_meas_valid && row_elements_list[0].align == "right") row_elements_list[0].renderprop.left_margin = total_width - row_total_width;
-      console.log("alpha = " + alpha);
+      if (reduced_meas_valid && row_elements_list[0].align == "right") row_elements_list[0].renderprop.left_margin = total_width - row_total_width; //console.log("alpha = " + alpha);
     }
   }, {
     key: "determine_rooms",
@@ -14240,7 +14231,7 @@ function (_Renderer) {
         var _row = 0;
 
         while (_row < reharsal_x_width_info.length) {
-          console.log("row :" + _row);
+          //console.log("row :" + row);
           var _num_meas = reharsal_x_width_info[_row][0].length; // Group the rows with :
           //     1. the same number of measures from #row
           //     2. Having right align mark and having less than 1st row
@@ -14345,9 +14336,9 @@ function (_Renderer) {
           } // Here rowdash means number of actually grouped rows
 
 
-          var act_num_grouped_rows = _rowdash;
-          console.log("max_fixed_widths :");
-          console.log(max_measure_widths); //let max_measure_widths = new Array(num_meas).fill(0);
+          var act_num_grouped_rows = _rowdash; //console.log("max_fixed_widths :");
+          //console.log(max_measure_widths);
+          //let max_measure_widths = new Array(num_meas).fill(0);
           // room per froom with maximum fixed with only
           // Then, at last, calculate the rooms for each row and measure
 
@@ -14360,9 +14351,22 @@ function (_Renderer) {
 
               if (_mi_ref2 == null) continue;
               var m = _row_elements_list2[_mi_ref2];
-              var room_per_elem = (max_measure_widths[_mi3] - _x_width_info2[_mi_ref2].meas_fixed_width) / _x_width_info2[_mi_ref2].meas_num_flexible_rooms; // TODO : To cater for the case of differnt room per elem inside the measure
+              var oldv = false;
 
-              m.renderprop.room_per_elem = new Array(_x_width_info2[_mi_ref2].meas_num_flexible_rooms).fill(room_per_elem);
+              if (oldv) {
+                // This is no good appropach as all waste the decision in previous stage
+                var room_per_elem = (max_measure_widths[_mi3] - _x_width_info2[_mi_ref2].meas_fixed_width) / _x_width_info2[_mi_ref2].meas_num_flexible_rooms;
+                m.renderprop.room_per_elem = new Array(_x_width_info2[_mi_ref2].meas_num_flexible_rooms).fill(room_per_elem);
+              } else {
+                (function () {
+                  // Constant offset approach
+                  var delta = (max_measure_widths[_mi3] - _x_width_info2[_mi_ref2].measure_width) / _x_width_info2[_mi_ref2].meas_num_flexible_rooms;
+                  m.renderprop.room_per_elem = m.renderprop.room_per_elem.map(function (r) {
+                    return r + delta;
+                  });
+                })();
+              }
+
               m.renderprop.total_room = max_measure_widths[_mi3] - _x_width_info2[_mi_ref2].meas_fixed_width;
               m.renderprop.measure_width = max_measure_widths[_mi3];
               m.renderprop.meas_fixed_width = _x_width_info2[_mi_ref2].meas_fixed_width; // Actually this is already set
@@ -14388,12 +14392,138 @@ function (_Renderer) {
             }
           }
 
-          _row += act_num_grouped_rows;
-          console.log("row updated : " + _row + " / " + act_num_grouped_rows);
+          _row += act_num_grouped_rows; //console.log("row updated : " + row + " / " + act_num_grouped_rows);
 
           if (act_num_grouped_rows <= 0) {
             throw "Something wrong with the code";
           }
+        }
+      }
+
+      if (param.inner_vertical_align) {
+        // Further align inside the measure
+        var _row2 = 0;
+
+        var _loop = function _loop() {
+          var row_elements_list = reharsal_x_width_info[_row2][0];
+          var x_width_info = reharsal_x_width_info[_row2][1]; // For number of measures
+
+          row_elements_list.forEach(function (m, mi) {
+            var ex = x_width_info[mi].all_fixed_width_details;
+            var W = m.renderprop.measure_width; // Total measure width
+
+            var L = m.renderprop.meas_num_flexible_rooms; // Num flex elements
+
+            var flex_n = 0;
+            var local_x = 0;
+            var flex_x_cand = new Array(L);
+            var room_force = new Array(L);
+            var flex_ref_x = new Array(L);
+            ex.forEach(function (exi, i) {
+              if (exi.type == "fixed") {
+                local_x += exi.f;
+              } else {
+                flex_ref_x[flex_n] = W / L * flex_n; // Reference position
+
+                if (flex_n == 0) {
+                  flex_x_cand[flex_n] = Math.max(local_x, flex_ref_x[flex_n]);
+                } else {
+                  flex_x_cand[flex_n] = flex_ref_x[flex_n];
+                  room_force[flex_n - 1] = flex_x_cand[flex_n] - local_x;
+                }
+
+                local_x = flex_x_cand[flex_n] + exi.f;
+                ++flex_n;
+              }
+            });
+            room_force[L - 1] = W - local_x; // validation
+            // eslint-disable-next-line no-constant-condition
+
+            if (false) {}
+
+            var org_room = m.renderprop.room_per_elem; // Serach maximum compressed element after forncing
+
+            var Tc_min = 1000000;
+            var Tc_max = -1000000;
+            var Tc_org_min = 1000000;
+            var Tc_org_max = -1000000;
+
+            for (var l = 0; l < L; ++l) {
+              var f = x_width_info[mi].body_fixed_width_details[l];
+
+              var _c = (room_force[l] + f) / f;
+
+              Tc_min = Math.min(_c, Tc_min);
+              Tc_max = Math.max(_c, Tc_max);
+              var corg = (org_room[l] + f) / f;
+              Tc_org_min = Math.min(corg, Tc_org_min);
+              Tc_org_max = Math.max(corg, Tc_org_max);
+            } //let Tc = 1.0 - param.inner_vertical_align_intensity; 
+
+
+            var HALF_INT_COMP = 1.0; // S
+
+            var ZERO_INT_COMP = Math.max(Tc_max, Tc_org_max); // L
+            //let Tc = HALF_INT_COMP * ( 1/param.inner_vertical_align_intensity - 1);
+
+            var denom = ZERO_INT_COMP - 2 * HALF_INT_COMP;
+            var c = HALF_INT_COMP / denom;
+            var b = -HALF_INT_COMP * ZERO_INT_COMP / denom;
+            var a = ZERO_INT_COMP * HALF_INT_COMP * (ZERO_INT_COMP - HALF_INT_COMP) / denom / denom;
+            var Tc = a / (Number(param.inner_vertical_align_intensity) + c) + b; //let Tc = param.inner_vertical_align_intensity * ( Tc_min - Tc_max ) + Tc_max;
+            //console.log("Tc_min = " + Tc_min.toFixed(2) + " Tc_max = " + Tc_max.toFixed(2) + " Tc = " + Tc.toFixed(2));
+            //console.log("Tc_org_min = " + Tc_org_min.toFixed(2) + " Tc_org_max = " + Tc_org_max.toFixed(2));
+            // Determining optimum alpha
+
+            var max_widened = -10000000;
+            var min_narrowed = 1000000;
+
+            for (var _l = 0; _l < L; ++_l) {
+              var _f = x_width_info[mi].body_fixed_width_details[_l];
+              var rorg = org_room[_l];
+              var rforce = room_force[_l];
+              var diff = rforce - rorg;
+              diff = Math.abs(diff) < 0.1 ? Math.sign(diff) * 0.001 : diff; // To avoid 0 division
+
+              var alpha_d = ((Tc - 1.0) * _f - rorg) / diff; //console.log("Inner vertical alignment : " + diff.toFixed(2) + "/" +alpha_d.toFixed(2));
+              // To cater for 
+
+              if (diff >= 0) {
+                // widended
+                max_widened = Math.max(max_widened, alpha_d);
+              } else {
+                // narrowened
+                min_narrowed = Math.min(min_narrowed, alpha_d);
+              }
+            } //console.log("Max widended alpha = " + max_widened + ", Min narrowened alpha = " + min_narrowed);
+
+
+            var alpha = 1.0;
+
+            if (max_widened > min_narrowed) {
+              // Cannot not meet requirement for all elements, end up with alpha = 0.0 : Do nothing
+              alpha = 0.0;
+              console.log("Inner vertical alignment : not all meets requirement : alpha = " + alpha.toFixed(2));
+            } else {
+              //alpha = 1.0;
+              alpha = Math.max(0, Math.min(min_narrowed, 1)); //alpha = Math.max(0, Math.min(max_narrowed,1));  // TODO : 0.0 <= Is this <= 1.0 ?
+
+              console.log("Inner vertical alignment : all meets requirement : alpha = " + alpha.toFixed(2));
+            } //let alpha = param.inner_vertical_align_intensity;
+
+
+            for (var _l2 = 0; _l2 < L; ++_l2) {
+              m.renderprop.room_per_elem[_l2] = alpha * room_force[_l2] + (1 - alpha) * org_room[_l2];
+
+              var _c2 = (x_width_info[mi].body_fixed_width_details[_l2] + m.renderprop.room_per_elem[_l2]) / x_width_info[mi].body_fixed_width_details[_l2]; //console.log("c["+l+"]="+c.toFixed(2));
+
+            }
+          });
+          ++_row2;
+        };
+
+        while (_row2 < reharsal_x_width_info.length) {
+          _loop();
         }
       }
     }
@@ -14417,12 +14547,10 @@ function (_Renderer) {
   }, {
     key: "render_impl",
     value: function () {
-      var _render_impl = _asyncToGenerator(
-      /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee(track, param) {
+      var _render_impl = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(track, param) {
         var _this4 = this;
 
-        var global_macros, show_header, show_footer, origin, y_title_offset, y_subtitle_offset, y_artist_offset, x_offset, width, music_context, meas_row_list, accum_block_id, meas_row, meas_row_rg_ids, meas_row_block_ids, i, rg, bi, block_measures, ml, m, meas_row_list_inv, _loop, _i2, y_stacks, next_reharsal_group_index, yse, y_base_screening, dammy_music_context, current_accum_block_id, reharsal_x_width_info, pei, x, row_elements_list, _ml, _m2, elements, geret, yprof, x_width_info, canvas, score_height, y_base, ri, canvaslist, _pei, _row_elements_list4, ylimit, r;
+        var global_macros, show_header, show_footer, origin, y_title_offset, y_subtitle_offset, y_artist_offset, x_offset, width, music_context, meas_row_list, accum_block_id, meas_row, meas_row_rg_ids, meas_row_block_ids, i, rg, bi, block_measures, ml, m, meas_row_list_inv, _loop2, _i2, _i3, _rg, _bi, _block_measures, _ml, _m2, y_stacks, next_reharsal_group_index, yse, y_base_screening, dammy_music_context, current_accum_block_id, reharsal_x_width_info, pei, x, row_elements_list, _ml2, _m3, elements, geret, yprof, x_width_info, canvas, score_height, y_base, ri, canvaslist, _pei, _row_elements_list4, ylimit, r;
 
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
@@ -14465,16 +14593,33 @@ function (_Renderer) {
                 meas_row_rg_ids = [];
                 meas_row_block_ids = [];
 
-                for (i = 0; i < track.reharsal_groups.length; ++i) {
-                  rg = track.reharsal_groups[i];
+                if (param.row_gen_mode == "default") {
+                  for (i = 0; i < track.reharsal_groups.length; ++i) {
+                    rg = track.reharsal_groups[i];
 
-                  for (bi = 0; bi < rg.blocks.length; ++bi) {
-                    block_measures = rg.blocks[bi];
+                    for (bi = 0; bi < rg.blocks.length; ++bi) {
+                      block_measures = rg.blocks[bi];
 
-                    for (ml = 0; ml < block_measures.length; ++ml) {
-                      m = block_measures[ml];
+                      for (ml = 0; ml < block_measures.length; ++ml) {
+                        m = block_measures[ml];
 
-                      if (m.raw_new_line) {
+                        if (m.raw_new_line) {
+                          meas_row_list.push({
+                            meas_row: meas_row,
+                            meas_row_rg_ids: meas_row_rg_ids,
+                            meas_row_block_ids: meas_row_block_ids
+                          });
+                          meas_row = [];
+                          meas_row_rg_ids = [];
+                          meas_row_block_ids = [];
+                        }
+
+                        meas_row.push(m);
+                        meas_row_rg_ids.push(i);
+                        meas_row_block_ids.push(accum_block_id);
+                      }
+
+                      if (meas_row.length > 0) {
                         meas_row_list.push({
                           meas_row: meas_row,
                           meas_row_rg_ids: meas_row_rg_ids,
@@ -14485,56 +14630,78 @@ function (_Renderer) {
                         meas_row_block_ids = [];
                       }
 
-                      meas_row.push(m);
-                      meas_row_rg_ids.push(i);
-                      meas_row_block_ids.push(accum_block_id);
+                      accum_block_id++;
                     }
+                  } // If there is inline reharsal group, then combine the last row of the 
+                  // last reharsal group  and first row of the reharsal group
+                  // tmp variable : shallow copy of meas_row_list
 
-                    if (meas_row.length > 0) {
-                      meas_row_list.push({
-                        meas_row: meas_row,
-                        meas_row_rg_ids: meas_row_rg_ids,
-                        meas_row_block_ids: meas_row_block_ids
+
+                  meas_row_list_inv = meas_row_list.slice().reverse();
+
+                  _loop2 = function _loop2(_i2) {
+                    var rg = track.reharsal_groups[_i2];
+
+                    if (rg.inline) {
+                      var dst_idx = meas_row_list_inv.findIndex(function (e) {
+                        return e.meas_row_rg_ids.includes(_i2 - 1);
                       });
-                      meas_row = [];
-                      meas_row_rg_ids = [];
-                      meas_row_block_ids = [];
+                      dst_idx = meas_row_list.length - 1 - dst_idx; // Convert to index for non-inversed array
+
+                      var src_idx = meas_row_list.findIndex(function (e) {
+                        return e.meas_row_rg_ids.includes(_i2);
+                      });
+                      var dst = meas_row_list[dst_idx];
+                      var src = meas_row_list[src_idx];
+                      dst.meas_row = dst.meas_row.concat(src.meas_row);
+                      dst.meas_row_rg_ids = dst.meas_row_rg_ids.concat(src.meas_row_rg_ids);
+                      dst.meas_row_block_ids = dst.meas_row_block_ids.concat(src.meas_row_block_ids);
+                      meas_row_list.splice(src_idx, 1); // Delete the first row
+
+                      meas_row_list_inv = meas_row_list.slice().reverse();
                     }
+                  };
 
-                    accum_block_id++;
+                  for (_i2 = 0; _i2 < track.reharsal_groups.length; ++_i2) {
+                    _loop2(_i2);
                   }
-                } // If there is inline reharsal group, then combine the last row of the 
-                // last reharsal group  and first row of the reharsal group
-                // tmp variable : shallow copy of meas_row_list
+                } else if (param.row_gen_mode == "constant_n_meas") {
+                  for (_i3 = 0; _i3 < track.reharsal_groups.length; ++_i3) {
+                    _rg = track.reharsal_groups[_i3];
 
+                    for (_bi = 0; _bi < _rg.blocks.length; ++_bi) {
+                      _block_measures = _rg.blocks[_bi];
 
-                meas_row_list_inv = meas_row_list.slice().reverse();
+                      for (_ml = 0; _ml < _block_measures.length; ++_ml) {
+                        _m2 = _block_measures[_ml];
+                        meas_row.push(_m2);
+                        meas_row_rg_ids.push(_i3);
+                        meas_row_block_ids.push(accum_block_id);
 
-                _loop = function _loop(_i2) {
-                  var rg = track.reharsal_groups[_i2];
-
-                  if (rg.inline) {
-                    var dst_idx = meas_row_list_inv.findIndex(function (e) {
-                      return e.meas_row_rg_ids.includes(_i2 - 1);
-                    });
-                    dst_idx = meas_row_list.length - 1 - dst_idx; // Convert to index for non-inversed array
-
-                    var src_idx = meas_row_list.findIndex(function (e) {
-                      return e.meas_row_rg_ids.includes(_i2);
-                    });
-                    var dst = meas_row_list[dst_idx];
-                    var src = meas_row_list[src_idx];
-                    dst.meas_row = dst.meas_row.concat(src.meas_row);
-                    dst.meas_row_rg_ids = dst.meas_row_rg_ids.concat(src.meas_row_rg_ids);
-                    dst.meas_row_block_ids = dst.meas_row_block_ids.concat(src.meas_row_block_ids);
-                    meas_row_list.splice(src_idx, 1); // Delete the first row
-
-                    meas_row_list_inv = meas_row_list.slice().reverse();
+                        if (meas_row.length == param.row_gen_n_meas) {
+                          meas_row_list.push({
+                            meas_row: meas_row,
+                            meas_row_rg_ids: meas_row_rg_ids,
+                            meas_row_block_ids: meas_row_block_ids
+                          });
+                          meas_row = [];
+                          meas_row_rg_ids = [];
+                          meas_row_block_ids = [];
+                        }
+                      }
+                    }
                   }
-                };
 
-                for (_i2 = 0; _i2 < track.reharsal_groups.length; ++_i2) {
-                  _loop(_i2);
+                  if (meas_row.length > 0) {
+                    meas_row_list.push({
+                      meas_row: meas_row,
+                      meas_row_rg_ids: meas_row_rg_ids,
+                      meas_row_block_ids: meas_row_block_ids
+                    });
+                    meas_row = [];
+                    meas_row_rg_ids = [];
+                    meas_row_block_ids = [];
+                  }
                 } // Make y-strack elements, and mark the reharsal mark position
 
 
@@ -14564,8 +14731,8 @@ function (_Renderer) {
                   e.meas_row.forEach(function (m) {
                     if (!m.macros) return;
 
-                    for (var _i3 = 0, _Object$entries2 = Object.entries(m.macros); _i3 < _Object$entries2.length; _i3++) {
-                      var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i3], 2),
+                    for (var _i4 = 0, _Object$entries2 = Object.entries(m.macros); _i4 < _Object$entries2.length; _i4++) {
+                      var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i4], 2),
                           key = _Object$entries2$_i[0],
                           value = _Object$entries2$_i[1];
 
@@ -14628,20 +14795,20 @@ function (_Renderer) {
                 reharsal_x_width_info = [];
                 pei = 0;
 
-              case 31:
+              case 28:
                 if (!(pei < yse.length)) {
-                  _context.next = 46;
+                  _context.next = 43;
                   break;
                 }
 
                 if (!(yse[pei].type == "titles")) {
-                  _context.next = 34;
+                  _context.next = 31;
                   break;
                 }
 
-                return _context.abrupt("continue", 43);
+                return _context.abrupt("continue", 40);
 
-              case 34:
+              case 31:
                 x = yse[pei].param.x_offset; //if(yse[pei].rg_id != current_rg_block[0] || yse[pei].block_id != current_rg_block[1]){
 
                 if (!yse[pei].block_ids.includes(current_accum_block_id)) {
@@ -14655,14 +14822,14 @@ function (_Renderer) {
                 row_elements_list = yse[pei].cont; // Screening music contexts and determine grouping in body elements
                 // For each measure in this row
 
-                for (_ml = 0; _ml < row_elements_list.length; ++_ml) {
+                for (_ml2 = 0; _ml2 < row_elements_list.length; ++_ml2) {
                   // measure object
-                  _m2 = row_elements_list[_ml];
-                  elements = this.classifyElements(_m2); // Too much call of calssify elements.
+                  _m3 = row_elements_list[_ml2];
+                  elements = this.classifyElements(_m3); // Too much call of calssify elements.
                   // Grouping body elements which share the same balken
 
                   geret = this.grouping_body_elemnts_enh(elements.body);
-                  _m2.renderprop.body_grouping_info = geret;
+                  _m3.renderprop.body_grouping_info = geret;
                 } // y-screening is done in stage 2 as well : TODO : Make it once
                 // Do it in the dammy position y = 0;
 
@@ -14679,12 +14846,12 @@ function (_Renderer) {
                   this.determine_rooms(yse[pei].param, reharsal_x_width_info);
                 }
 
-              case 43:
+              case 40:
                 ++pei;
-                _context.next = 31;
+                _context.next = 28;
                 break;
 
-              case 46:
+              case 43:
                 y_base_screening += param.y_offset; // Here y_base_screening means the height of the total score if single page applied.
                 // ----------------------
                 // Stage 2 : Rendering
@@ -14693,17 +14860,17 @@ function (_Renderer) {
                 canvas = this.canvas;
 
                 if (!(canvas == null)) {
-                  _context.next = 52;
+                  _context.next = 49;
                   break;
                 }
 
-                _context.next = 51;
+                _context.next = 48;
                 return this.canvas_provider();
 
-              case 51:
+              case 48:
                 canvas = _context.sent;
 
-              case 52:
+              case 49:
                 _graphic__WEBPACK_IMPORTED_MODULE_3__["SetupHiDPICanvas"](canvas, this.param.paper_width / this.param.text_size, this.param.paper_height > 0 ? this.param.paper_height / this.param.text_size : y_base_screening, this.param.pixel_ratio, this.param.text_size);
                 score_height = (this.param.paper_height > 0 ? this.param.paper_height / this.param.text_size : y_base_screening) / param.nrow;
                 if (param.background_color) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasRect"](canvas, 0, 0, this.param.paper_width / this.param.text_size, this.param.paper_height > 0 ? this.param.paper_height / this.param.text_size : y_base_screening, param.background_color);
@@ -14734,23 +14901,23 @@ function (_Renderer) {
                 canvaslist = [canvas];
                 _pei = 0;
 
-              case 59:
+              case 56:
                 if (!(_pei < yse.length)) {
-                  _context.next = 86;
+                  _context.next = 83;
                   break;
                 }
 
                 if (!(yse[_pei].type == "titles")) {
-                  _context.next = 63;
+                  _context.next = 60;
                   break;
                 }
 
-                _context.next = 83;
+                _context.next = 80;
                 break;
 
-              case 63:
+              case 60:
                 if (!(yse[_pei].type == "meas")) {
-                  _context.next = 83;
+                  _context.next = 80;
                   break;
                 }
 
@@ -14759,50 +14926,50 @@ function (_Renderer) {
                 r = this.render_measure_row_simplified(x_offset, canvas, yse[_pei].macros, _row_elements_list4, yse[_pei].pm, yse[_pei].nm, y_base, yse[_pei].param, true, yse[_pei].macros.REHARSAL_MARK_POSITION == "Inner", ylimit, music_context);
 
                 if (r) {
-                  _context.next = 82;
+                  _context.next = 79;
                   break;
                 }
 
                 if (!(y_base == origin.y + yse[_pei].param.y_offset)) {
-                  _context.next = 72;
+                  _context.next = 69;
                   break;
                 }
 
                 throw "Paper height is too short to fit in single row";
 
-              case 72:
+              case 69:
                 y_base = origin.y + yse[_pei].param.y_offset;
 
-              case 73:
-                _context.next = 75;
+              case 70:
+                _context.next = 72;
                 return this.canvas_provider();
 
-              case 75:
+              case 72:
                 canvas = _context.sent;
                 canvaslist.push(canvas);
                 _graphic__WEBPACK_IMPORTED_MODULE_3__["SetupHiDPICanvas"](canvas, yse[_pei].param.paper_width / this.param.text_size, yse[_pei].param.paper_height / this.param.text_size, this.param.pixel_ratio, this.param.text_size);
                 if (param.background_color) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasRect"](canvas, 0, 0, this.param.paper_width / this.param.text_size, this.param.paper_height / this.param.text_size, param.background_color); // try again next page
 
                 _pei = _pei - 1;
-                _context.next = 83;
+                _context.next = 80;
                 break;
 
-              case 82:
+              case 79:
                 y_base = r.y_base;
 
-              case 83:
+              case 80:
                 ++_pei;
-                _context.next = 59;
+                _context.next = 56;
                 break;
 
-              case 86:
+              case 83:
                 if (show_footer) this.render_footer(canvaslist, global_macros.TITLE + "/" + global_macros.ARTIST, this.param.origin.y + score_height - this.param.y_footer_offset);
                 return _context.abrupt("return", {
                   pages: canvaslist.length,
                   height: score_height
                 });
 
-              case 88:
+              case 85:
               case "end":
                 return _context.stop();
             }
@@ -14877,7 +15044,7 @@ function (_Renderer) {
         for (var ei = 0; ei < m.elements.length; ++ei) {
           var e = m.elements[ei];
 
-          if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Coda"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Segno"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Comment"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["LoopIndicator"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["ToCoda"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DalSegno"]) {
+          if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Coda"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Segno"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Comment"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["LoopIndicator"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["ToCoda"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DalSegno"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DaCapo"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Fine"]) {
             yprof.mu.detected = true;
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["MeasureBoundary"]) {
             yprof.ml.detected = yprof.ml.detected || e.times != null && (e.ntimes || e.times != 2);
@@ -14936,7 +15103,7 @@ function (_Renderer) {
 
       var x_width_info = []; // for number of measures
 
-      var _loop2 = function _loop2(ml) {
+      var _loop3 = function _loop3(ml) {
         // Reset music context
         music_context.pos_in_a_measure = 0; // reset
         // TODO : consider key infomration
@@ -14948,6 +15115,7 @@ function (_Renderer) {
         var m = row_elements_list[ml];
         var meas_fixed_width = 0;
         meas_num_flexible_rooms = 0;
+        all_fixed_width_details = [];
         elements = _this5.classifyElements(m);
         elements.header.forEach(function (e) {
           if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["MeasureBoundary"]) {
@@ -14959,23 +15127,40 @@ function (_Renderer) {
             dammy_rs_area_height, param, false);
 
             meas_fixed_width += r.width;
+            all_fixed_width_details.push({
+              type: "fixed",
+              f: r.width
+            });
             e.renderprop = {
               w: r.width
             };
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Time"]) {
             meas_fixed_width += 10;
+            all_fixed_width_details.push({
+              type: "fixed",
+              f: 10
+            });
             e.renderprop = {
               w: 10
             };
           }
         });
         meas_fixed_width += param.header_body_margin;
+        all_fixed_width_details.push({
+          type: "fixed",
+          f: param.header_body_margin
+        });
         rberet = _this5.render_body_elements(false, x, elements, param, music_context, yprof, paper, 0, 0
         /*meas_start_x*/
         , m, 1, transpose, half_type, key, 0, 0);
         meas_fixed_width += rberet.fixed_width;
         meas_num_flexible_rooms += rberet.num_flexible_rooms;
-        meas_fixed_width += param.body_footer_margin; // Draw footer
+        all_fixed_width_details = all_fixed_width_details.concat(rberet.fixed_width_details);
+        meas_fixed_width += param.body_footer_margin;
+        all_fixed_width_details.push({
+          type: "fixed",
+          f: param.body_footer_margin
+        }); // Draw footer
 
         elements.footer.forEach(function (e) {
           if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["MeasureBoundary"]) {
@@ -14988,7 +15173,11 @@ function (_Renderer) {
             e.renderprop = {
               w: r.width
             };
-            meas_fixed_width += r.width; // eslint-disable-next-line no-empty
+            meas_fixed_width += r.width;
+            all_fixed_width_details.push({
+              type: "fixed",
+              f: r.width
+            }); // eslint-disable-next-line no-empty
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DaCapo"]) {// eslint-disable-next-line no-empty
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DalSegno"]) {// eslint-disable-next-line no-empty
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["ToCoda"]) {// eslint-disable-next-line no-empty
@@ -14997,17 +15186,21 @@ function (_Renderer) {
         x_width_info.push({
           meas_fixed_width: meas_fixed_width,
           body_fixed_width: rberet.fixed_width,
-          body_fixed_width_details: rberet.fixed_width_details,
+          body_fixed_width_details: rberet.fixed_width_details.map(function (e) {
+            return e.f;
+          }),
+          all_fixed_width_details: all_fixed_width_details,
           meas_num_flexible_rooms: meas_num_flexible_rooms
         });
       };
 
       for (var ml = 0; ml < row_elements_list.length; ++ml) {
         var meas_num_flexible_rooms;
+        var all_fixed_width_details;
         var elements;
         var rberet;
 
-        _loop2(ml);
+        _loop3(ml);
       }
 
       return x_width_info;
@@ -15020,31 +15213,56 @@ function (_Renderer) {
       var fixed_width = 0;
       var fixed_width_details = []; // show be same as num_flexible_rooms
 
-      var num_flexible_rooms = 0;
-      var draw_scale = 1;
+      var num_flexible_rooms = 0; //let draw_scale = 1;
+
       /*if(draw){
           console.log("Scaling : ");
           console.log(m.renderprop.measure_width);
           console.log(m.renderprop.meas_fixed_width);
       }*/
 
-      if (draw && param.scale_if_overlap && m.renderprop.total_room < 0) {
-        var body_width = m.renderprop.body_fixed_width + m.renderprop.total_room;
-        draw_scale = body_width / m.renderprop.body_fixed_width;
-        console.log("draw_scale = " + draw_scale); // and then for this case room_per_elem is 0 and scale fixed elemetns while keeping
-        // total width.
-
+      var scale = function scale(fixed_per_elem, room_per_elem) {
+        var draw_scale = (room_per_elem + fixed_per_elem) / fixed_per_elem;
+        var new_room_per_elem = draw_scale < 1 ? 0 : room_per_elem;
+        draw_scale = draw_scale < 1 ? draw_scale : 1.0;
+        var elem_width = fixed_per_elem * draw_scale + new_room_per_elem;
         paper.getContext("2d").scale(draw_scale, 1);
-      }
+        return [draw_scale, elem_width];
+      };
+
+      var unscale = function unscale(draw_scale) {
+        paper.getContext("2d").scale(1 / draw_scale, 1);
+      };
+      /*if(draw && param.scale_if_overlap && m.renderprop.total_room < 0){
+          let body_width = m.renderprop.body_fixed_width + m.renderprop.total_room;
+          draw_scale = body_width / m.renderprop.body_fixed_width;
+          console.log("draw_scale = " + draw_scale);
+          // and then for this case room_per_elem is 0 and scale fixed elemetns while keeping
+          // total width.
+          paper.getContext("2d").scale(draw_scale, 1);
+      }*/
+
 
       if (elements.body.length == 0) {
-        if (draw && draw_scale < 1) {
-          x += 1 * param.base_font_size * draw_scale + 0;
-        } else if (draw) {
-          x += 1 * param.base_font_size + m.renderprop.total_room;
+        /*if(draw && draw_scale < 1){
+            x += (1 * param.base_font_size * draw_scale + 0);
+        }else if(draw){
+            x += (1 * param.base_font_size + m.renderprop.total_room);
+        }*/
+        if (draw) {
+          var _scale = scale(1 * param.base_font_size, m.renderprop.total_room),
+              _scale2 = _slicedToArray(_scale, 2),
+              draw_scale = _scale2[0],
+              elem_width = _scale2[1];
+
+          x += elem_width;
+          unscale(draw_scale);
         } else {
           fixed_width += 1 * param.base_font_size;
-          fixed_width_details.push(1 * param.base_font_size);
+          fixed_width_details.push({
+            type: "flex",
+            f: 1 * param.base_font_size
+          });
           num_flexible_rooms++;
         }
       }
@@ -15055,21 +15273,58 @@ function (_Renderer) {
       body_grouping_info.groupedBodyElems.forEach(function (element_group, gbei) {
         // Draw Rythm Slashes, first
         if (yprof.rs.detected && body_grouping_info.all_has_length) {
+          var _draw_scale = 1.0;
+          var room_for_rs_per_elem = 0;
+          var element_group_width = 0;
+          var room_for_rs = 0;
+
+          if (draw) {
+            if (element_group.renderprop.based_on_rs_elem) {
+              // Element group width is determined based on RS elements
+              for (var ei = 0; ei < element_group.elems.length; ++ei) {
+                room_for_rs += m.renderprop.room_per_elem[this_group_start_index + ei];
+              }
+
+              room_for_rs_per_elem = room_for_rs / element_group.elems.length; // TODO : Improve non constant div
+              // Scaling for chord area.
+
+              var _scale3 = scale(element_group.renderprop.cr_width, element_group.renderprop.rs_area_width + room_for_rs - element_group.renderprop.cr_width);
+
+              var _scale4 = _slicedToArray(_scale3, 2);
+
+              _draw_scale = _scale4[0];
+              element_group_width = _scale4[1];
+              this_group_start_index += element_group.elems.length;
+            } else {
+              // Element group width is determined based on first chord element
+              room_for_rs = element_group.renderprop.w + m.renderprop.room_per_elem[this_group_start_index] - element_group.renderprop.rs_area_width;
+              room_for_rs_per_elem = room_for_rs / element_group.elems.length; // Scaling for chord area.
+
+              var _scale5 = scale(element_group.renderprop.cr_width, m.renderprop.room_per_elem[this_group_start_index]);
+
+              var _scale6 = _slicedToArray(_scale5, 2);
+
+              _draw_scale = _scale6[0];
+              element_group_width = _scale6[1];
+              this_group_start_index += 1;
+            }
+          }
+
           var e0 = element_group.elems[0];
           var cr = null;
 
           if (e0 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Chord"]) {
-            cr = _this6.render_chord_simplified(draw, e0, transpose, half_type, key, paper, x / draw_scale, yprof.body.y, param, C7_width);
+            cr = _this6.render_chord_simplified(draw, e0, transpose, half_type, key, paper, x / _draw_scale, yprof.body.y, param, C7_width);
 
             if (draw && e0.exceptinal_comment !== null) {
-              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / draw_scale, yprof.mu.y + yprof.mu.height, e0.exceptinal_comment.comment, param.base_font_size / 2, "lb");
+              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / _draw_scale, yprof.mu.y + yprof.mu.height, e0.exceptinal_comment.comment, param.base_font_size / 2, "lb");
             }
 
             if (draw && e0.lyric !== null) {
               var llist = e0.lyric.lyric.split("/");
 
               for (var li = 0; li < llist.length; ++li) {
-                _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / draw_scale, yprof.ml.y + li * param.ml_row_height, llist[li], param.base_font_size / 3, "lt");
+                _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / _draw_scale, yprof.ml.y + li * param.ml_row_height, llist[li], param.base_font_size / 3, "lt");
               }
             }
           } else {
@@ -15081,45 +15336,22 @@ function (_Renderer) {
           }
 
           if (draw) {
-            var room_for_rs_per_elem = 0;
-            var element_group_width = 0;
+            // Unscale for chord area
+            unscale(_draw_scale); // Scale for RS area
 
-            if (element_group.renderprop.based_on_rs_elem) {
-              // In case RS area elements has wider fixed width(in total) than that of first element
-              // total room for rs by sum of rooms in this element group. total rooms cannnot be used as it is total in a measure
-              var room_for_rs = 0;
+            var _scale7 = scale(element_group.renderprop.rs_area_width, room_for_rs);
 
-              for (var ei = 0; ei < element_group.elems.length; ++ei) {
-                room_for_rs += m.renderprop.room_per_elem[this_group_start_index + ei];
-              }
+            var _scale8 = _slicedToArray(_scale7, 2);
 
-              room_for_rs_per_elem = room_for_rs / element_group.elems.length; // TODO : Improve non constant div
+            _draw_scale = _scale8[0];
+            element_group_width = _scale8[1];
 
-              element_group_width = element_group.renderprop.w + room_for_rs;
-              this_group_start_index += element_group.elems.length;
-            } else {
-              // In case the first element has wider fixed width than RS area elements
-              var _room_for_rs = element_group.renderprop.w + m.renderprop.room_per_elem[this_group_start_index] - element_group.renderprop.rs_area_width;
+            // Scaling for RS area
+            var g = _this6.render_rs_area(x / _draw_scale, _draw_scale, element_group.elems, paper, yprof.rs.y, yprof.rs.height, meas_start_x, // NOTE : meas_start_x sould be irrespective of draw_scale.
+            draw, 0, 1.0, x_global_scale, music_context, m, param, _draw_scale < 1 ? 0 : room_for_rs_per_elem, balken, gbei == body_grouping_info.groupedBodyElems.length - 1);
 
-              room_for_rs_per_elem = _room_for_rs / element_group.elems.length;
-              element_group_width = element_group.renderprop.w + m.renderprop.room_per_elem[this_group_start_index];
-              this_group_start_index += 1;
-            }
-
-            var g = _this6.render_rs_area(x / draw_scale, draw_scale, element_group.elems, paper, yprof.rs.y, yprof.rs.height, meas_start_x, // NOTE : meas_start_x sould be irrespective of draw_scale.
-            draw, 0, 1.0, x_global_scale, music_context, m, param, draw_scale < 1 ? 0 : room_for_rs_per_elem, balken, gbei == body_grouping_info.groupedBodyElems.length - 1);
-
-            var rs_area_width = (g.x - x / draw_scale) * draw_scale; // validation
-
-            if (Math.abs(rs_area_width - element_group_width) > 0.0001) {
-              console.log("Whould be the same : " + [rs_area_width, element_group_width]); //throw "Something wrong with RS area code drawing";
-            }
-
-            if (draw_scale < 1) {
-              x += element_group.renderprop.w * draw_scale + 0;
-            } else {
-              x += element_group_width;
-            }
+            x += element_group_width;
+            unscale(_draw_scale);
           } else {
             var rs_area_bounding_box = new _common_common__WEBPACK_IMPORTED_MODULE_2__["BoundingBox"](); // Only try to esimate using non-flag-balken drawer
 
@@ -15132,72 +15364,176 @@ function (_Renderer) {
               e.renderprop.balken_element = balken_element;
               rs_area_bounding_box.add_rect(r.bounding_box);
               x += r.bounding_box.w;
-              tmp_fixed_width_details.push(r.bounding_box.w);
+              tmp_fixed_width_details.push({
+                type: "flex",
+                f: r.bounding_box.w
+              });
             });
-            var _rs_area_width = rs_area_bounding_box.get().w;
-            element_group.renderprop.w = Math.max(_rs_area_width, cr.width);
-            element_group.renderprop.rs_area_width = _rs_area_width;
-            element_group.renderprop.based_on_rs_elem = _rs_area_width > cr.width;
+            var rs_area_width = rs_area_bounding_box.get().w; // To select which (chord or RS area element) to be selected as a elemng group 
+
+            var choice = null;
+
+            if (param.master_elem_selection == "default") {
+              choice = rs_area_width > cr.width ? "rs" : "chord";
+            } else {
+              choice = param.master_elem_selection; // "rs" or "chord";
+            }
+
+            element_group.renderprop.w = choice == "rs" ? rs_area_width : cr.width;
+            element_group.renderprop.cr_width = cr.width;
+            element_group.renderprop.rs_area_width = rs_area_width;
+            element_group.renderprop.based_on_rs_elem = choice == "rs";
             fixed_width += element_group.renderprop.w;
-            fixed_width_details = fixed_width_details.concat(_rs_area_width > cr.width ? tmp_fixed_width_details : [cr.width]);
-            num_flexible_rooms += element_group.renderprop.based_on_rs_elem ? element_group.elems.length : 1;
+            fixed_width_details = fixed_width_details.concat(choice == "rs" ? tmp_fixed_width_details : [{
+              type: "flex",
+              f: cr.width
+            }]);
+            num_flexible_rooms += choice == "rs" ? element_group.elems.length : 1;
           }
         } else {
           element_group.elems.forEach(function (e, ei) {
             if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Chord"]) {
-              var _cr = _this6.render_chord_simplified(draw, e, transpose, half_type, key, paper, x / draw_scale, yprof.body.y, param, C7_width);
+              var _draw_scale2 = 1.0,
+                  _elem_width = 0.0;
+
+              if (draw) {
+                var _scale9 = scale(e.renderprop.w, m.renderprop.room_per_elem[this_group_start_index + ei]);
+
+                var _scale10 = _slicedToArray(_scale9, 2);
+
+                _draw_scale2 = _scale10[0];
+                _elem_width = _scale10[1];
+              }
+
+              var _cr = _this6.render_chord_simplified(draw, e, transpose, half_type, key, paper, x / _draw_scale2, yprof.body.y, param, C7_width);
 
               if (draw && e.exceptinal_comment !== null) {
-                _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / draw_scale, yprof.mu.y + yprof.mu.height, e.exceptinal_comment.comment, param.base_font_size / 2, "lb");
+                _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / _draw_scale2, yprof.mu.y + yprof.mu.height, e.exceptinal_comment.comment, param.base_font_size / 2, "lb");
               }
 
               if (draw && e.lyric !== null) {
                 var llist = e.lyric.lyric.split("/");
 
                 for (var li = 0; li < llist.length; ++li) {
-                  _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / draw_scale, yprof.ml.y + li * param.ml_row_height, llist[li], param.base_font_size / 3, "lt");
+                  _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / _draw_scale2, yprof.ml.y + li * param.ml_row_height, llist[li], param.base_font_size / 3, "lt");
                 }
               }
+              /*if(draw && draw_scale<1){
+                  x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
+              }else if(draw)
+                  x += ( e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index+ei]);
+              */
 
-              if (draw && draw_scale < 1) {
-                x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
-              } else if (draw) x += e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index + ei];else {
+
+              if (draw) {
+                x += _elem_width;
+                unscale(_draw_scale2);
+              } else {
                 e.renderprop.w = _cr.width;
                 fixed_width += e.renderprop.w;
-                fixed_width_details.push(e.renderprop.w);
+                fixed_width_details.push({
+                  type: "flex",
+                  f: e.renderprop.w
+                });
                 num_flexible_rooms++;
               }
             } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Rest"]) {
-              var _cr2 = _this6.render_rest_plain(e, paper, draw, x / draw_scale, y_body_or_rs_base, C7_width, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, param);
+              var _draw_scale3 = 1.0,
+                  _elem_width2 = 0.0;
 
-              if (draw && draw_scale < 1) {
-                x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
-              } else if (draw) x += e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index + ei];else {
+              if (draw) {
+                var _scale11 = scale(e.renderprop.w, m.renderprop.room_per_elem[this_group_start_index + ei]);
+
+                var _scale12 = _slicedToArray(_scale11, 2);
+
+                _draw_scale3 = _scale12[0];
+                _elem_width2 = _scale12[1];
+              }
+
+              var _cr2 = _this6.render_rest_plain(e, paper, draw, x / _draw_scale3, y_body_or_rs_base, C7_width, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, param);
+              /*if(draw && draw_scale<1){
+                  x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
+              }else if(draw)
+                  x += (e.renderprop.w +m.renderprop.room_per_elem[this_group_start_index+ei]); 
+              */
+
+
+              if (draw) {
+                x += _elem_width2;
+                unscale(_draw_scale3);
+              } else {
                 e.renderprop.w = _cr2.bounding_box.w;
                 fixed_width += e.renderprop.w;
-                fixed_width_details.push(e.renderprop.w);
+                fixed_width_details.push({
+                  type: "flex",
+                  f: e.renderprop.w
+                });
                 num_flexible_rooms++;
               }
             } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Simile"]) {
-              var _cr3 = _this6.render_simile_mark_plain(draw, paper, x / draw_scale, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, e.numslash, false, "l");
+              var _draw_scale4 = 1.0,
+                  _elem_width3 = 0.0;
 
-              if (draw && draw_scale < 1) {
-                x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
-              } else if (draw) x += e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index + ei];else {
+              if (draw) {
+                var _scale13 = scale(e.renderprop.w, m.renderprop.room_per_elem[this_group_start_index + ei]);
+
+                var _scale14 = _slicedToArray(_scale13, 2);
+
+                _draw_scale4 = _scale14[0];
+                _elem_width3 = _scale14[1];
+              }
+
+              var _cr3 = _this6.render_simile_mark_plain(draw, paper, x / _draw_scale4, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, e.numslash, false, "l");
+              /*if(draw && draw_scale<1){
+                  x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
+              }else if(draw)
+                  x += (e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index+ei]); 
+              */
+
+
+              if (draw) {
+                x += _elem_width3;
+                unscale(_draw_scale4);
+              } else {
                 e.renderprop.w = _cr3.width;
                 fixed_width += e.renderprop.w;
-                fixed_width_details.push(e.renderprop.w);
+                fixed_width_details.push({
+                  type: "flex",
+                  f: e.renderprop.w
+                });
                 num_flexible_rooms++;
               }
             } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Space"]) {
-              if (draw && draw_scale < 1) {
-                x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
-              } else if (draw) x += e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index + ei];else {
+              var _draw_scale5 = 1.0,
+                  _elem_width4 = 0.0;
+
+              if (draw) {
+                var _scale15 = scale(e.renderprop.w, m.renderprop.room_per_elem[this_group_start_index + ei]);
+
+                var _scale16 = _slicedToArray(_scale15, 2);
+
+                _draw_scale5 = _scale16[0];
+                _elem_width4 = _scale16[1];
+              }
+              /*if(draw && draw_scale<1){
+                  x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
+              }else if(draw)
+                  x += (e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index+ei]); 
+              */
+
+
+              if (draw) {
+                x += _elem_width4;
+                unscale(_draw_scale5);
+              } else {
                 var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, 0, 0, "M", param.base_font_size, "lt", 0.5 * param.base_font_size, true, null); // width parameter needs to be aligned with chord rendering
 
                 e.renderprop.w = e.length * r.width;
                 fixed_width += e.renderprop.w;
-                fixed_width_details.push(e.renderprop.w);
+                fixed_width_details.push({
+                  type: "flex",
+                  f: e.renderprop.w
+                });
                 num_flexible_rooms++;
               }
             }
@@ -15205,10 +15541,9 @@ function (_Renderer) {
           if (draw) this_group_start_index += element_group.elems.length; // This count should be same as num_flexible_rooms;
         }
       });
-
-      if (draw && draw_scale < 1) {
-        paper.getContext("2d").scale(1 / draw_scale, 1);
-      }
+      /*if(draw && draw_scale<1){
+          paper.getContext("2d").scale(1/draw_scale, 1);
+      }*/
 
       return {
         x: x,
@@ -15321,7 +15656,7 @@ function (_Renderer) {
       // For each measure in this row
 
 
-      var _loop3 = function _loop3(ml) {
+      var _loop4 = function _loop4(ml) {
         // measure object
         var m = row_elements_list[ml];
 
@@ -15606,7 +15941,7 @@ function (_Renderer) {
         var lx;
         var rx;
 
-        _loop3(ml);
+        _loop4(ml);
       } // measure loop
       // 0. Draw 5 lines
 
@@ -16011,7 +16346,7 @@ function (_Renderer) {
 
       if (onbass != null) {
         var on_bass_below_a_margin = param.on_bass_style == "below" ? 1 : 0;
-        var onbass_pos = param.on_bass_style == "below" ? x : x + Math.max(upper_width, lower_width) + tensions_width;
+        var onbass_pos = param.on_bass_style == "below" ? x : x + lower_width;
         var on_bass_y_offset = param.on_bass_style == "below" ? 0 : lower_onbass_y_offset;
 
         var _r19 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, onbass_pos, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, "/" + onbass[0], B * 0.45, param.on_bass_style == "below" ? "lt" : "lb", B * 0.5, !draw);
@@ -16027,11 +16362,13 @@ function (_Renderer) {
             onbass_width += B * 0.2;
           }
         }
+
+        if (param.on_bass_style != "below") lower_width += onbass_width;
       }
 
       var width = 0;
       if (param.on_bass_style == "below") width = Math.max(upper_width, lower_width, onbass_width) + tensions_width;else {
-        width = Math.max(upper_width, lower_width) + tensions_width + onbass_width;
+        width = Math.max(upper_width, lower_width) + tensions_width;
       } // Quantize with 0.25*B unit : Not so beneficial ?
       // width = Math.ceil(width / (B/4.0)) * (B/4.0);
 
@@ -16420,8 +16757,8 @@ function GetCharProfile(fsize, fontfamily, bold, ratio, zoom) {
 
     if (!(memkey in G_memCanvasStore)) {
       var memCanvas = document.createElement("canvas");
-      SetupHiDPICanvas(memCanvas, G_mem_Canvas_size[0], G_mem_Canvas_size[1], ratio, zoom);
-      console.log("Pixel ratio = " + ratio + " , zoom = " + zoom);
+      SetupHiDPICanvas(memCanvas, G_mem_Canvas_size[0], G_mem_Canvas_size[1], ratio, zoom); //console.log("Pixel ratio = " + ratio + " , zoom = " + zoom);
+
       G_memCanvasStore[memkey] = memCanvas;
     }
 
@@ -16648,8 +16985,8 @@ function JudgeTextYPosOffset(canvas, font, code)
 
   var data = imageData.data;
   var top_room = 0;
-  var bottom_room = 0;
-  console.log(imageData.width, imageData.height, data.length);
+  var bottom_room = 0; //console.log(imageData.width, imageData.height, data.length);
+
   var found_nonwhite = false; //console.log(imageData);
 
   var row;
@@ -16730,8 +17067,8 @@ function getFontSizeFromHeight(height, fontfamily, code, tol, opt, ratio, zoom) 
 
   if (!(memkey in G_memCanvasStore)) {
     var memCanvas = document.createElement("canvas");
-    SetupHiDPICanvas(memCanvas, G_mem_Canvas_size[0], G_mem_Canvas_size[1], ratio, zoom);
-    console.log("Pixel ratio = " + ratio, +" , Zoom = " + zoom);
+    SetupHiDPICanvas(memCanvas, G_mem_Canvas_size[0], G_mem_Canvas_size[1], ratio, zoom); //console.log("Pixel ratio = " + ratio, + " , Zoom = " + zoom);
+
     G_memCanvasStore[memkey] = memCanvas;
   }
 
@@ -16744,9 +17081,9 @@ function getFontSizeFromHeight(height, fontfamily, code, tol, opt, ratio, zoom) 
   if (!tol) tol = 0.5;
 
   while (loop < maxLoop) {
-    var ret = JudgeTextYPosOffset(canvas_to_use, px + "px '" + fontfamily + "'", code);
-    console.log("px=" + px + ", target height=" + height);
-    console.log(ret); //var tol = 0.4;
+    var ret = JudgeTextYPosOffset(canvas_to_use, px + "px '" + fontfamily + "'", code); //console.log("px="+px+", target height="+height);
+    //console.log(ret);
+    //var tol = 0.4;
 
     if (ret.height > height + tol) {
       curHigh = px;
@@ -16799,9 +17136,7 @@ function getBravuraInstance(fontfamily, woff_url, meta_json_url, glyphnames_json
   theBravura = new Bravura(fontfamily, woff_url, meta_json_url, glyphnames_json);
   return theBravura;
 }
-var Bravura =
-/*#__PURE__*/
-function () {
+var Bravura = /*#__PURE__*/function () {
   function Bravura(fontfamily, woff_url, meta_json_url, glyphnames_json) {
     _classCallCheck(this, Bravura);
 
@@ -16848,8 +17183,8 @@ function () {
       return new Promise(function (resolve, reject) {
         function loaded() {
           var tm1 = ctx1.measureText(text);
-          var tm2 = ctx2.measureText(text);
-          console.log("tm1:" + tm1.width + " tm2:" + tm2.width);
+          var tm2 = ctx2.measureText(text); //console.log("tm1:"+tm1.width+" tm2:"+tm2.width);
+
           return tm1.width != tm2.width;
         }
 
@@ -16946,9 +17281,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 
 
-var Renderer =
-/*#__PURE__*/
-function () {
+var Renderer = /*#__PURE__*/function () {
   function Renderer() {
     _classCallCheck(this, Renderer);
   }
@@ -17233,7 +17566,8 @@ function () {
         //var flagintv = 5;
 
 
-        var balken_element = e.renderprop.balken_element; // Flush current groups
+        var balken_element = e.renderprop.balken_element; // this is corresponds to single flex element
+        // Flush current groups
 
         if ((balken_element.chord_length >= _common_common__WEBPACK_IMPORTED_MODULE_1__["WHOLE_NOTE_LENGTH"] / 4 || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Rest"]) && balken.groups.length > 0) {
           var dbret = this.draw_rs_area_balkens( //draw, 
@@ -17243,7 +17577,9 @@ function () {
           x = dbret.x;
         }
 
-        music_context.pos_in_a_measure += balken_element.chord_length;
+        music_context.pos_in_a_measure += balken_element.chord_length; // This needed because we need to draw bars or balken etc... for some group of elements.
+        // Such bars or balken are drawn only when required elements are all collected.
+
         balken.groups.push({
           balken_element: balken_element,
           e: e,

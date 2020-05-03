@@ -9,28 +9,12 @@
     </style>
     <script type="text/javascript">
 
-var createSVG = function (charsvg, ex, em) {
-    var svgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    var pathEl = document.createElementNS("http://www.w3.org/2000/svg", "path");
-
-    pathEl.setAttribute('d', charsvg);
-    pathEl.setAttribute('transform', 'translate(0,' + em + ') scale(1, -1)')
-    pathEl.style.fill = 'currentColor';
-
-    svgEl.setAttribute('viewBox', '0 0 ' + (ex*1+256) + ' ' + (em*1+256)); //FIXME
-    svgEl.appendChild(pathEl);
-
-    return svgEl;
-}
-
 function getBBox(charsvg)
 {
     var svgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     var pathEl = document.createElementNS("http://www.w3.org/2000/svg", "path");
 
     pathEl.setAttribute('d', charsvg);
-    /*pathEl.setAttribute('transform', 'translate(0,' + em + ') scale(1, -1)')
-    pathEl.style.fill = 'currentColor';*/
 
     svgEl.setAttribute('viewBox', '0 0 1024 1024');
     svgEl.appendChild(pathEl);
@@ -64,9 +48,9 @@ function downloadAsSvg(svgdataurl)
 {
     const a = document.createElement('a');
     a.href = svgdataurl;
-    a.download = 'hoge.svg';
+    a.download = 'gen.svg';
     a.style.display = 'none';
-    document.body.appendChild(a); // ※ DOM が構築されてからでないとエラーになる
+    document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
 }
@@ -94,13 +78,6 @@ function loadAsImage(charsvg)
     });
 
     return p;
-}
-
-function initCanvas()
-{
-    //var canvas = document.getElementById("canvas");
-    //Fumen.SetupHiDPICanvas(canvas, 600, 600, 2, 1); // To configure global ratio, firstly call this.
-    //var ctx = canvas.getContext('2d');
 }
 
 function addCanvas(charsvg)
@@ -164,9 +141,6 @@ function loadSvgFont(txt) {
 function load(){
     const reader = new FileReader();
     reader.onload = function() {
-        // 内容表示
-        //alert(reader.result);
-        initCanvas();
         loadSvgFont(reader.result);
     };
 

@@ -59,7 +59,11 @@ module.exports = {
         {
           from: "src/fonts.html",
           to: "fonts.html",
-        },  
+        }, 
+        {
+          from: "src/font-make.html",
+          to: "font-make.html",
+        },   
       ],
     ),
   ]

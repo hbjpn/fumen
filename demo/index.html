@@ -23,16 +23,6 @@
               score_area.removeChild(score_area.firstChild);
             }
 
-            var param_json = document.getElementById("param").value;
-            var param = JSON.parse(param_json);
-
-            var range_value = document.getElementById("rangeinput").value;
-            param.inner_vertical_align_intensity = range_value;
-            document.getElementById("rangevalue").innerHTML = Number(range_value).toFixed(2);
-
-            var iva = document.getElementById("iva_check").checked;
-            param.inner_vertical_align = iva?1:0;
-
             var canvas_count = 0;
             var canvas_provider = function(){
               var score_area = document.getElementById("scores_area");
@@ -46,13 +36,20 @@
               return new_canvas;
             };
 
-            var renderer = new Fumen.DefaultRenderer(null, param, canvas_provider);
+            var renderer = new Fumen.DefaultRenderer(null, 
+              {
+                "paper_width":400,
+                "paper_height":600
+              }, 
+              canvas_provider);
             renderer.render(track);
       }
       function updated()
       {
         draw();
       }
+
+      window.addEventListener('load', updated);
     </script>
     <style>
 * {
@@ -80,28 +77,44 @@ textarea {
     </style>
 </head>
 <body>
-  <nav class="navbar navbar-dark bg-dark">
-    <a class="navbar-brand">Fumen</a>
-    <button class="btn btn-outline-success my-2 my-sm-0" onclick="draw()">Render</button>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">Fumen</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarText">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Documents</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Github</a>
+        </li>
+      </ul>
+    </div>
   </nav>
   <div class="container-fluid">
     <div class="row">
       <div class="col-sm">
-        <div class="accordion" id="accordionExample">
-          <div class="card">
-            <div class="card-header" id="headingOne">
-              <h5 class="mb-0">
-                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                  Code
-                </button>
-              </h5>
-            </div>
-        
-            <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
-              <div class="card-body">
-                <form>
-                  <div class="form-group">
-                    <textarea class="form-control"  id="code" oninput="updated()" rows="3">
+        <h1 class="my-3">Introduction</h1>
+        <p class="text-justify my-3">
+        Fumen is a markup language and rendering engine for music leadsheet creation with simple, easy and intuitive syntax, 
+        supporting various types of compoents used in popular music's leadsheet such as chord symbols, rhythm slashes, rest marks, 
+        repeat marks, reharsal marks, comments, lyrics.</p>
+        <p class="text-justify my-3">
+        Differnt from the other sheetmusic redenring softwares, Fumen is specialized for creating quick chord-name based leadsheets 
+        which is oftenly used in popular music contexts.
+        </p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm">
+        <!-- <form>
+          <div class="form-group"> -->
+            <textarea class="form-control"  id="code" oninput="updated()" rows="3">
 %TITLE="Sample Piece"
 %SUB_TITLE="(Sub Title)"
 %ARTIST="Some artists"
@@ -149,64 +162,12 @@ textarea {
 
 [Z]
 | C | Cm <Fine> | F | F7 <D.S.2> ||.
-                    </textarea>
-                  </div>
-                </form>
-        
-              </div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-header" id="headingTwo">
-              <h5 class="mb-0">
-                <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                  Param
-                </button>
-              </h5>
-            </div>
-            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
-              <div class="card-body">
-                <form>
-                  <div class="form-group">
-                    <textarea class="form-control"  id="param" oninput="updated()" rows="3">
-{
-  "paper_width": 400,
-  "paper_height": 800
-}
-                    </textarea>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-header" id="headingThree">
-              <h5 class="mb-0">
-                <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                  Ranges
-                </button>
-              </h5>
-            </div>
-            <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionExample">
-              <div class="card-body">
-                <form>
-                  <div class="form-group">
-                    <div class="custom-control custom-checkbox">
-                      <input type="checkbox" class="custom-control-input" id="iva_check" onchange="draw()">
-                      <label class="custom-control-label" for="iva_check">Inner Vertical Align</label>
-                    </div>
-                    <input type="range" class="custom-range" min="0" max="1" step="0.025" value="1" id="rangeinput" oninput="draw()">
-                    <span class="badge badge-secondary" id="rangevalue">0.5</span>
-                  </div>
-                </form>
-                
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+            </textarea>
+          <!-- </div>
+        </form> -->
+      </div>            
       <div class="col-sm bg-secondary mx-auto">
-        <div class="div2"  id="scores_area">
+        <div class="div2 mx-auto"  id="scores_area">
         </div>
       </div>
     </div> <!--row-->

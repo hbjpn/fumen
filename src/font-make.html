@@ -80,10 +80,24 @@ function loadAsImage(charsvg)
     return p;
 }
 
-function addCanvas(charsvg)
+function addCanvas(charsvg,glyphname)
 {
+    let box = document.createElement("div");
+    box.style = "float:left";
     let canvas = document.createElement("canvas");
-    document.getElementById("area").appendChild(canvas);
+    let pre = document.createElement("input");
+    let br = document.createElement("br");
+    let label = document.createElement("label");
+    label.innerHTML = glyphname;
+    label.style = "font-size:9px";
+    pre.setAttribute("type","checkbox");
+    pre.setAttribute("value",glyphname);
+    pre.setAttribute("id","id_"+glyphname);
+    box.appendChild(canvas);
+    box.appendChild(br);
+    box.appendChild(pre);
+    box.appendChild(label);
+    document.getElementById("area").appendChild(box);
     Fumen.SetupHiDPICanvas(canvas, 50, 50, 2, 1); // To configure global ratio, firstly call this.
     const ctx = canvas.getContext('2d');
 
@@ -131,7 +145,7 @@ function loadSvgFont(txt) {
             if (charsvg) {
                 //document.getElementById('svg-' + unicode).appendChild(createSVG(charsvg, ex, em));
                 console.log("Loading : " + n);
-                addCanvas(charsvg);
+                addCanvas(charsvg, charname);
             }
             if(n+1 >= showNum) break;
         }

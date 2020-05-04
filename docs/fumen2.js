@@ -13923,7 +13923,6 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       paper: null,
       region_id: 0
     };
-    _this.buravura = _graphic__WEBPACK_IMPORTED_MODULE_3__["getBravuraInstance"]("Bravura Text", "./assets/fonts/BravuraText.woff", "./assets/fonts/bravura_metadata.json", "./assets/fonts/glyphnames.json");
     return _this;
   }
 
@@ -13935,10 +13934,12 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       this.track = track; // Always works as asynchronously
       // Preload images, which is done asynchronously
 
-      var urls = ["assets/img/segno.svg", "assets/img/coda.svg", "assets/img/flat.svg", "assets/img/sharp.svg", "assets/img/natural.svg", "assets/img/rest1.svg", "assets/img/rest2.svg", "assets/img/rest4.svg", "assets/img/rest8.svg", "assets/img/w1note.svg", "assets/img/w2note.svg", "assets/img/bnote.svg", "assets/img/flag_f.svg", "assets/img/flag_i.svg"];
+      var urls = [//"assets/img/segno.svg",
+      //"assets/img/coda.svg",
+      "assets/img/flat.svg", "assets/img/sharp.svg", "assets/img/natural.svg", "assets/img/rest1.svg", "assets/img/rest2.svg", "assets/img/rest4.svg", "assets/img/rest8.svg", "assets/img/w1note.svg", "assets/img/w2note.svg", "assets/img/bnote.svg", "assets/img/flag_f.svg", "assets/img/flag_i.svg"];
       var param = this.param;
       return _graphic__WEBPACK_IMPORTED_MODULE_3__["PreloadImages"](urls).then(function () {
-        return _this2.buravura.ready();
+        return _graphic__WEBPACK_IMPORTED_MODULE_3__["PreloadJsonFont"]("assets/fonts/fumenfont.json");
       }).then(function () {
         return _this2.render_impl(track, param);
       });
@@ -15730,64 +15731,11 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Time"]) {
             var chord_str_height = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](param.base_font_size, null, false, paper.ratio, paper.zoom).height;
             var row_height = yprof.rs.detected ? param.rs_area_height : param.row_height;
-            var cont_height = yprof.rs.detected ? param.rs_area_height : chord_str_height; //var lineThickNessShift = 0.064; // Line tickness
-            //let fontSize = graphic.getFontSizeFromHeight(cont_height + lineThickNessShift*cont_height/4, 
-            //    "Bravura Text", String.fromCodePoint(0xE014)); // 5 line is baseline
-            //console.log("fontSize="+fontSize);
-
-            /*graphic.CanvasText(
-                paper,
-                x + e.renderprop.w / 2,
-                y_body_or_rs_base + row_height/2  - cont_height/2,
-                //e.numer,
-                String.fromCodePoint(0xE014),
-                fontSize,
-                "lt",
-                e.renderprop.w,
-                false,
-                {"fontfamily":"Bravura Text", "raw":true}
-            );*/
-
-            /*graphic.CanvasText(
-                paper,
-                x + e.renderprop.w / 2,
-                y_body_or_rs_base + row_height/2 - cont_height/2 - cont_height/4*3,
-                //e.numer,
-                String.fromCodePoint(0xE080+parseInt(e.numer)),
-                fontSize,
-                "lt",
-                e.renderprop.w,
-                false,
-                {"fontfamily":"Bravura Text", "raw":true}
-            );*/
-
-            _this7.buravura.put(paper, 0xE080 + parseInt(e.numer), cont_height / 4, x, y_body_or_rs_base + row_height / 2 - cont_height / 2 - cont_height / 4 * 3);
-            /*graphic.CanvasText(
-                paper,
-                x + e.renderprop.w / 2,
-                y_body_or_rs_base + row_height/2 - cont_height/2 - cont_height/4*1,
-                //e.denom,
-                String.fromCodePoint(0xE080+parseInt(e.denom)),
-                fontSize,
-                "rt",
-                e.renderprop.w,
-                false,
-                {"fontfamily":"Bravura Text", "raw":true}
-            );*/
-
-
-            _this7.buravura.put(paper, 0xE080 + parseInt(e.denom), cont_height / 4, x, y_body_or_rs_base + row_height / 2 - cont_height / 2 - cont_height / 4 * 1);
-            /*var ly = yprof.body.y + row_height / 2;
-            if (draw && !yprof.rs.detected)
-                graphic.CanvasLine(
-                    paper,
-                    x,
-                    ly,
-                    x + e.renderprop.w,
-                    ly
-                );*/
-
-
+            var cont_height = yprof.rs.detected ? param.rs_area_height : chord_str_height;
+            _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uniE08" + e.numer], // numbers
+            x, y_body_or_rs_base + row_height / 2, null, cont_height / 2, "lb", true);
+            _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uniE08" + e.denom], // numbers
+            x, y_body_or_rs_base + row_height / 2, null, cont_height / 2, "lt", true);
             x += e.renderprop.w;
           }
         });
@@ -15842,8 +15790,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
               rs_area_svg_groups.push(coda);
               */
             } else {
-              var _r6 = _this7.draw_coda_plain(paper, x, yprof.mu.y + yprof.mu.height, "rb", _e2, param.base_font_size); //paper.getContext("2d").drawImage(graphic.G_imgmap["assets/img/coda.svg"], x - 15, y_body_or_rs_base - 15, 15, 15);
-
+              var _r6 = _this7.draw_coda_plain(paper, x, yprof.mu.y + yprof.mu.height, "rb", _e2, param.base_font_size);
 
               _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x - _r6.width, yprof.mu.y + yprof.mu.height, "To", param.base_font_size / 2, "rb");
             }
@@ -15976,7 +15923,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           .drawImage(graphic.G_imgmap["assets/img/segno.svg"], lx, y, B / 3, B / 2);
       */
 
-      _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["assets/img/segno.svg"], lx, y, img_width, img_height, "lb", true);
+      _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uniE047"], //segno.svg
+      lx, y, img_width, img_height, "lb", true);
       lx += img_width;
 
       if (segno.number !== null) {
@@ -16016,30 +15964,13 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           coda.number, text_size, "rb");
           width += r.width;
         }
-        /*paper
-            .getContext("2d")
-            .drawImage(
-                graphic.G_imgmap["assets/img/coda.svg"],
-                x - width - B / 2,
-                img_y,
-                B / 2,
-                B / 2
-            );*/
 
-
-        _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["assets/img/coda.svg"], x - width, y, img_width, img_height, "rb", true);
+        _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uniE048"], //coda.svg
+        x - width, y, img_width, img_height, "rb", true);
         width += img_width;
       } else if (align[0] == "l") {
-        /*paper
-            .getContext("2d")
-            .drawImage(
-                graphic.G_imgmap["assets/img/coda.svg"],
-                x,
-                img_y,
-                img_width,
-                img_height
-            );*/
-        _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["assets/img/coda.svg"], x, y, img_width, img_height, "lb", true);
+        _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uniE048"], // coda.svg
+        x, y, img_width, img_height, "lb", true);
         width += img_width;
 
         if (coda.number !== null) {
@@ -16539,7 +16470,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 /*!*********************************!*\
   !*** ./src/renderer/graphic.js ***!
   \*********************************/
-/*! exports provided: CanvasRect, CanvasCircle, CanvasLine, CanvasPolygon, CanvasbBzierCurve, CanvasPath, fontDesc, GetCharProfile, CanvasText, CanvasTextWithBox, CanvasImage, svgLine, svgPath, svgArcBezie, GetPixelRatio, SetupHiDPICanvas, getFontSizeFromHeight, G_imgmap, PreloadImages, getBravuraInstance, Bravura */
+/*! exports provided: CanvasRect, CanvasCircle, CanvasLine, CanvasPolygon, CanvasbBzierCurve, CanvasPath, fontDesc, GetCharProfile, CanvasText, CanvasTextWithBox, CanvasImage, svgLine, svgPath, svgArcBezie, GetPixelRatio, SetupHiDPICanvas, getFontSizeFromHeight, G_imgmap, PreloadImages, PreloadJsonFont */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -16563,16 +16494,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getFontSizeFromHeight", function() { return getFontSizeFromHeight; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "G_imgmap", function() { return G_imgmap; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PreloadImages", function() { return PreloadImages; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getBravuraInstance", function() { return getBravuraInstance; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Bravura", function() { return Bravura; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PreloadJsonFont", function() { return PreloadJsonFont; });
 /* harmony import */ var _babel_polyfill__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/polyfill */ "./node_modules/@babel/polyfill/lib/index.js");
 /* harmony import */ var _babel_polyfill__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_polyfill__WEBPACK_IMPORTED_MODULE_0__);
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
 
 var G_memCanvasStore = {}; // refered by ratio&zoom
 //var G_memCanvas = null;
@@ -17130,131 +17054,55 @@ function PreloadImages(imageurls) {
     return result;
   });
 }
-var theBravura = null;
-function getBravuraInstance(fontfamily, woff_url, meta_json_url, glyphnames_json) {
-  if (theBravura) return theBravura;
-  theBravura = new Bravura(fontfamily, woff_url, meta_json_url, glyphnames_json);
-  return theBravura;
-}
-var Bravura = /*#__PURE__*/function () {
-  function Bravura(fontfamily, woff_url, meta_json_url, glyphnames_json) {
-    _classCallCheck(this, Bravura);
+function PreloadJsonFont(url) {
+  var getJSON = function getJSON(url) {
+    return new Promise(function (resolve, reject) {
+      var req = new XMLHttpRequest();
 
-    // fontfamily is "Bravura" or "Bravura Text" depending on the specified woff file.
-    // Currenly only "Bravura Text" works.
-    this.intervalToFontSizeMap = {};
-    this.codeToNameMap = {};
-    this.init_promise = this.init(fontfamily, woff_url, meta_json_url, glyphnames_json);
-  }
+      req.onreadystatechange = function () {
+        if (req.readyState == 4 && req.status == 200) {
+          var data = JSON.parse(req.responseText);
+          resolve(data);
+        }
+      };
 
-  _createClass(Bravura, [{
-    key: "getJSON",
-    value: function getJSON(url) {
-      return new Promise(function (resolve, reject) {
-        var req = new XMLHttpRequest();
+      req.open("GET", url, false);
+      req.send(null);
+    });
+  };
 
-        req.onreadystatechange = function () {
-          if (req.readyState == 4 && req.status == 200) {
-            var data = JSON.parse(req.responseText);
-            resolve(data);
-          }
+  return getJSON(url).then(function (fontData) {
+    var promises = [];
+
+    var _loop = function _loop(glyphname) {
+      var p = new Promise(function (resolve, reject) {
+        var img = new Image();
+        img.src = fontData[glyphname].dataURL;
+
+        img.onload = function () {
+          resolve({
+            img: img,
+            url: glyphname
+          });
         };
-
-        req.open("GET", url, false);
-        req.send(null);
       });
+      promises.push(p);
+    };
+
+    for (var glyphname in fontData) {
+      _loop(glyphname);
     }
-  }, {
-    key: "ready",
-    value: function ready() {
-      return this.init_promise;
+
+    return Promise.all(promises);
+  }).then(function (result) {
+    // make map with url
+    for (var ii = 0; ii < result.length; ++ii) {
+      G_imgmap[result[ii].url] = result[ii].img;
     }
-  }, {
-    key: "checkloaded",
-    value: function checkloaded() {
-      var c1 = document.createElement("canvas");
-      var c2 = c1.cloneNode(false);
-      var ctx1 = c1.getContext("2d");
-      var ctx2 = c2.getContext("2d");
-      ctx1.font = "normal 30px '" + this.fontfamily + "', serif";
-      ctx2.font = "normal 30px serif";
-      var text = String.fromCodePoint(0xE050); //"this is test text.";  // Gclef as a reference
 
-      return new Promise(function (resolve, reject) {
-        function loaded() {
-          var tm1 = ctx1.measureText(text);
-          var tm2 = ctx2.measureText(text); //console.log("tm1:"+tm1.width+" tm2:"+tm2.width);
-
-          return tm1.width != tm2.width;
-        }
-
-        var cnt = 0;
-
-        function checker() {
-          if (loaded()) {
-            resolve(true);
-          } else if (cnt >= 30) {
-            reject("Time out");
-          } else {
-            setTimeout(checker, 100);
-            cnt++;
-          }
-        }
-
-        checker();
-      });
-    }
-  }, {
-    key: "init",
-    value: function init(fontfamily, woff_url, meta_json_url, glyphnames_json) {
-      var _this = this;
-
-      this.fontfamily = fontfamily; // THis does not work in MS Edge
-      //var font = new FontFace(this.fontfamily, "url("+woff_url+")");
-      //var pf = font.load();
-
-      var pf = this.checkloaded(); //new Promise(function(resolve){ resolve(true); }); // Dammy promise
-
-      var pmeta = this.getJSON(meta_json_url);
-      var pg = this.getJSON(glyphnames_json); // From https://raw.githubusercontent.com/w3c/smufl/gh-pages/metadata/glyphnames.json
-
-      return Promise.all([pf, pmeta, pg]).then(function (rets) {
-        //document.fonts.add(font);
-        //console.log("Font loaded");
-        _this.metaData = rets[1];
-        _this.glyphnames = rets[2];
-
-        for (var key in _this.glyphnames) {
-          var codeInt = parseInt(_this.glyphnames[key].codepoint.replace("U+", "0x"));
-          _this.codeToNameMap[codeInt] = key;
-        }
-      });
-    }
-  }, {
-    key: "put",
-    value: function put(canvas, name_or_code, staff_interval_px, lx, ty) {
-      var code = name_or_code;
-      if (name_or_code instanceof String) code = parseInt(this.glyphnames[name].codepoint.replace("U+", "0x"));
-      var fontSize = null;
-      if (staff_interval_px in this.intervalToFontSizeMap) fontSize = this.intervalToFontSizeMap[staff_interval_px];else {
-        var lineThickNessShift = 0.064; // Line tickness
-
-        fontSize = getFontSizeFromHeight(staff_interval_px * 4 + lineThickNessShift * staff_interval_px, this.fontfamily, String.fromCodePoint(0xE014), null, null, canvas.ratio, canvas.zoom); // 5 line is baseline
-
-        this.intervalToFontSizeMap[staff_interval_px] = fontSize;
-      }
-      var ctx = canvas.getContext("2d");
-      ctx.save();
-      ctx.font = fontSize + "px '" + this.fontfamily + "'";
-      ctx.textAlign = "left";
-      ctx.textBaseline = "top";
-      ctx.fillText(String.fromCodePoint(code), lx, ty);
-      ctx.restore();
-    }
-  }]);
-
-  return Bravura;
-}();
+    return result;
+  });
+}
 
 /***/ }),
 

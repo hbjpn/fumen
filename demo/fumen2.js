@@ -15799,7 +15799,6 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             }
           } else if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Fine"]) {
             _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, repeat_mark_y_base, _e2.toString(), param.base_font_size / 2, "rb");
-            if (yprof.rs.detected) x += 15 * 4;
           } else {
             throw "Unkown instance of footer elements";
           }

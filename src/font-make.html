@@ -149,7 +149,7 @@ function loadSvgFont(txt) {
     var em = ff.getAttribute('units-per-em');
 
     src = '';
-    var showNum = 100;
+    var showNum = 5000;
     for (var n = 0; n < glyphs.length; n++) {
         var glyph = glyphs[n];
         if (glyph) {
@@ -188,6 +188,7 @@ function generate()
     var gs = document.getElementsByName("glyphsel");
 
     let textarea = document.createElement("textarea");
+    textarea.setAttribute("wrap","off");
 
     let obj = {};
 
@@ -200,7 +201,12 @@ function generate()
             let dataURL = svgdataurl(svgCont);  // base64 or utf-8 itself if needed
             //textarea.value += "<!-- glyph : "+glyphname+ " -->\n";
             //textarea.value += (dataUrl+"\n\n");
-            obj[glyphname] = {dataURL:dataURL,bbox:{x:0,y:0,width:bbox.width,height:bbox.height}};
+            let newGlyphName = glyphname; // TODO : Replace if needed
+            obj[glyphname] = {
+                dataURL:dataURL,
+                bbox:{x:0,y:0,width:bbox.width,height:bbox.height},
+                origName: glyphname
+            };
         }
     }
 

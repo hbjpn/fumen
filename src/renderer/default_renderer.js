@@ -103,7 +103,7 @@ export class DefaultRenderer extends Renderer {
         // Always works as asynchronously
         // Preload images, which is done asynchronously
         var urls = [
-            "assets/img/segno.svg",
+            //"assets/img/segno.svg",
             "assets/img/coda.svg",
             "assets/img/flat.svg",
             "assets/img/sharp.svg",
@@ -124,9 +124,9 @@ export class DefaultRenderer extends Renderer {
         .then( () => {
             return graphic.PreloadJsonFont("assets/fonts/fumenfont.json");
         })
-        .then( () => {
+        /*.then( () => {
             return this.buravura.ready();
-        }).then(()=>{
+        })*/.then(()=>{
             return this.render_impl(track, param);
         });
     }
@@ -2027,8 +2027,8 @@ export class DefaultRenderer extends Renderer {
                         false,
                         {"fontfamily":"Bravura Text", "raw":true}
                     );*/
-                    this.buravura.put(paper, 0xE080+parseInt(e.numer), cont_height/4, 
-                        x, y_body_or_rs_base + row_height/2 - cont_height/2 - cont_height/4*3);
+                    // this.buravura.put(paper, 0xE080+parseInt(e.numer), cont_height/4, 
+                    //     x, y_body_or_rs_base + row_height/2 - cont_height/2 - cont_height/4*3);
                     
                     /*graphic.CanvasText(
                         paper,
@@ -2042,8 +2042,8 @@ export class DefaultRenderer extends Renderer {
                         false,
                         {"fontfamily":"Bravura Text", "raw":true}
                     );*/
-                    this.buravura.put(paper, 0xE080+parseInt(e.denom), cont_height/4, 
-                        x, y_body_or_rs_base + row_height/2 - cont_height/2 - cont_height/4*1);
+                    // this.buravura.put(paper, 0xE080+parseInt(e.denom), cont_height/4, 
+                    //     x, y_body_or_rs_base + row_height/2 - cont_height/2 - cont_height/4*1);
 
                     /*var ly = yprof.body.y + row_height / 2;
                     if (draw && !yprof.rs.detected)
@@ -2054,6 +2054,23 @@ export class DefaultRenderer extends Renderer {
                             x + e.renderprop.w,
                             ly
                         );*/
+                    
+                    graphic.CanvasImage(paper, 
+                        graphic.G_imgmap["uniE08"+e.numer],// numbers
+                        x, 
+                        y_body_or_rs_base + row_height/2, 
+                        null, 
+                        cont_height/2,
+                        "lb",
+                        true);
+                    graphic.CanvasImage(paper, 
+                        graphic.G_imgmap["uniE08"+e.denom],// numbers
+                        x, 
+                        y_body_or_rs_base + row_height/2, 
+                        null, 
+                        cont_height/2,
+                        "lt",
+                        true);
                     x += e.renderprop.w;
                 }
             });
@@ -2325,7 +2342,7 @@ export class DefaultRenderer extends Renderer {
             .drawImage(graphic.G_imgmap["assets/img/segno.svg"], lx, y, B / 3, B / 2);
         */
         graphic.CanvasImage(paper, 
-            graphic.G_imgmap["assets/img/segno.svg"], 
+            graphic.G_imgmap["uniE047"], //segno.svg
             lx, 
             y, 
             img_width, 

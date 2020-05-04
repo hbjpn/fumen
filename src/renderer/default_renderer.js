@@ -120,7 +120,11 @@ export class DefaultRenderer extends Renderer {
             
         ];
         var param = this.param;
-        return graphic.PreloadImages(urls).then( () => {
+        return graphic.PreloadImages(urls)
+        .then( () => {
+            return graphic.PreloadJsonFont("assets/fonts/fumenfont.json");
+        })
+        .then( () => {
             return this.buravura.ready();
         }).then(()=>{
             return this.render_impl(track, param);

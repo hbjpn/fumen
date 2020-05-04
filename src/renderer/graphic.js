@@ -553,6 +553,46 @@ export function PreloadImages(imageurls) {
     });
 }
 
+export function PreloadJsonFont(url) {
+
+    var getJSON = function(url) {
+        return new Promise(function(resolve, reject){
+            var req = new XMLHttpRequest();		
+            req.onreadystatechange = function() {			
+                if(req.readyState == 4 && req.status == 200){
+                    var data = JSON.parse(req.responseText);	
+                    resolve(data);
+                }
+            };
+            req.open("GET", url, false);
+            req.send(null);
+        });
+    };
+
+    return getJSON(url)
+    .then(fontData=>{
+        let promises = [];
+        for(let glyphname in fontData){
+            let p = new Promise((resolve,reject)=>{
+                let img = new Image();
+                img.src = fontData[glyphname].dataURL;
+                img.onload = function() {
+                    resolve({ img: img, url: glyphname });
+                };
+            });
+            promises.push(p);
+        }
+        return Promise.all(promises);
+    })
+    .then((result)=>{
+        // make map with url
+        for (var ii = 0; ii < result.length; ++ii) {
+            G_imgmap[result[ii].url] = result[ii].img;
+        }
+        return result;
+    });
+}
+
 let theBravura = null;
 
 export function getBravuraInstance(fontfamily, woff_url, meta_json_url, glyphnames_json){

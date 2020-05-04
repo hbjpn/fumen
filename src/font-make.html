@@ -197,10 +197,10 @@ function generate()
             let charsvg = charsvglist[glyphname];
             let bbox = getBBox(charsvg);
             let svgCont = createSvgFile(charsvg, bbox, true, glyphname);
-            let dataUrl = svgdataurl(svgCont);  // base64 or utf-8 itself if needed
+            let dataURL = svgdataurl(svgCont);  // base64 or utf-8 itself if needed
             //textarea.value += "<!-- glyph : "+glyphname+ " -->\n";
             //textarea.value += (dataUrl+"\n\n");
-            obj[glyphname] = dataUrl;
+            obj[glyphname] = {dataURL:dataURL,bbox:{x:0,y:0,width:bbox.width,height:bbox.height}};
         }
     }
 

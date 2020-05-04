@@ -553,7 +553,16 @@ export function PreloadImages(imageurls) {
     });
 }
 
+var loadedJsonFonts = {};
+
 export function PreloadJsonFont(url) {
+
+    if(url in loadedJsonFonts){
+        // To eliminate multiple loads
+        return Promise.resolve();
+    }else{
+        loadedJsonFonts[url] = true;
+    }
 
     var getJSON = function(url) {
         return new Promise(function(resolve, reject){

@@ -98,9 +98,9 @@ export class DefaultRenderer extends Renderer {
         var urls = [
             //"assets/img/segno.svg",
             //"assets/img/coda.svg",
-            "assets/img/flat.svg",
-            "assets/img/sharp.svg",
-            "assets/img/natural.svg",
+            //"assets/img/flat.svg",
+            //"assets/img/sharp.svg",
+            //"assets/img/natural.svg",
             "assets/img/rest1.svg",
             "assets/img/rest2.svg",
             "assets/img/rest4.svg",
@@ -2636,7 +2636,7 @@ export class DefaultRenderer extends Renderer {
                     if (draw){
                         graphic.CanvasImage(
                             canvas,
-                            graphic.G_imgmap["assets/img/flat.svg"],
+                            graphic.G_imgmap["uni266D"], // flat.svg
                             x + upper_width,
                             y + param.row_height/2 + chord_offset_on_bass + upper_tension_y_offset,
                             acc_width,
@@ -2648,7 +2648,7 @@ export class DefaultRenderer extends Renderer {
                     if (draw){
                         graphic.CanvasImage(
                             canvas,
-                            graphic.G_imgmap["assets/img/sharp.svg"],
+                            graphic.G_imgmap["uni266F"], // sharp.svg
                             x + upper_width,
                             y + param.row_height/2 + chord_offset_on_bass + upper_tension_y_offset,
                             acc_width,
@@ -2808,7 +2808,7 @@ export class DefaultRenderer extends Renderer {
                 if (e.type == "b") {
                     if (draw){
                         graphic.CanvasImage(canvas,
-                            graphic.G_imgmap["assets/img/flat.svg"],
+                            graphic.G_imgmap["uni266D"], // flat.svg,
                             x + tensions_pos + tensions_width,
                             y + param.row_height/2 + chord_offset_on_bass + upper_tension_y_offset,
                             B * 0.2,
@@ -2820,7 +2820,7 @@ export class DefaultRenderer extends Renderer {
                 } else if (e.type == "#") {
                     if (draw){
                         graphic.CanvasImage(canvas,
-                            graphic.G_imgmap["assets/img/sharp.svg"],
+                            graphic.G_imgmap["uni266F"], //sharp.svg"],
                             x + tensions_pos + tensions_width,
                             y + param.row_height/2 + chord_offset_on_bass + upper_tension_y_offset,
                             B * 0.2,
@@ -2900,7 +2900,7 @@ export class DefaultRenderer extends Renderer {
                 if (onbass[1] == "b") {
                     if (draw)
                         graphic.CanvasImage(canvas, 
-                            graphic.G_imgmap["assets/img/flat.svg"], 
+                            graphic.G_imgmap["uni266D"], // flat.svg
                             onbass_pos + onbass_width, 
                             y + param.row_height/2 + rootCharHeight/2
                              + chord_offset_on_bass
@@ -2915,7 +2915,7 @@ export class DefaultRenderer extends Renderer {
                 } else {
                     if (draw)
                         graphic.CanvasImage(canvas, 
-                            graphic.G_imgmap["assets/img/sharp.svg"], 
+                            graphic.G_imgmap["uni266F"], // sharp.svg 
                             onbass_pos + onbass_width, 
                             y + param.row_height/2 + rootCharHeight/2 
                                 + chord_offset_on_bass

@@ -93,7 +93,7 @@ function loadAsImage(charsvg)
 
 var charsvglist = {};
 
-function addCanvas(charsvg,glyphname)
+function addCanvas(charsvg,glyphname,fontFamily)
 {
     let box = document.createElement("div");
     box.style = "float:left";
@@ -115,7 +115,7 @@ function addCanvas(charsvg,glyphname)
     Fumen.SetupHiDPICanvas(canvas, 50, 50, 2, 1); // To configure global ratio, firstly call this.
     const ctx = canvas.getContext('2d');
 
-    charsvglist[glyphname] = charsvg;
+    charsvglist[glyphname] = {charsvg:charsvg,fontFamily:fontFamily};
 
 
     loadAsImage(charsvg)
@@ -150,6 +150,10 @@ function loadSvgFont(txt) {
 
     src = '';
     var showNum = 5000;
+    console.log("Num gryphs = " + glyphs.length);
+    let r = confirm("Number of glyphs = " + glyphs.length + ". Do you continue ?");
+    if(!r) return;
+
     for (var n = 0; n < glyphs.length; n++) {
         var glyph = glyphs[n];
         if (glyph) {
@@ -161,7 +165,7 @@ function loadSvgFont(txt) {
             if (charsvg) {
                 //document.getElementById('svg-' + unicode).appendChild(createSVG(charsvg, ex, em));
                 console.log("Loading : " + n);
-                addCanvas(charsvg, charname);
+                addCanvas(charsvg, charname, fontFamily);
             }
             if(n+1 >= showNum) break;
         }
@@ -195,7 +199,8 @@ function generate()
     for( var i = 0; i < gs.length; i++  ){
         if(gs[i].checked){
             let glyphname = gs[i].value;
-            let charsvg = charsvglist[glyphname];
+            let charsvg = charsvglist[glyphname].charsvg;
+            let origFontfamily = charsvglist[glyphname].fontFamily;
             let bbox = getBBox(charsvg);
             let svgCont = createSvgFile(charsvg, bbox, true, glyphname);
             let dataURL = svgdataurl(svgCont);  // base64 or utf-8 itself if needed
@@ -205,7 +210,8 @@ function generate()
             obj[glyphname] = {
                 dataURL:dataURL,
                 bbox:{x:0,y:0,width:bbox.width,height:bbox.height},
-                origName: glyphname
+                origName: glyphname,
+                origFont: origFontfamily
             };
         }
     }

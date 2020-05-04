@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>test</title>
+    <script type="text/javascript" src="fumen2.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+    <script type="text/javascript">
+      function draw(){
+            var code = document.getElementById("code").value;
+            var parser = new Fumen.Parser();
+            var track = parser.parse(code);
+            if(!track){
+              return;
+            }
+
+            var score_area = document.getElementById("scores_area");
+            while (score_area.firstChild) {
+              score_area.removeChild(score_area.firstChild);
+            }
+
+            var param_json = document.getElementById("param").value;
+            var param = JSON.parse(param_json);
+
+            var range_value = document.getElementById("rangeinput").value;
+            param.inner_vertical_align_intensity = range_value;
+            document.getElementById("rangevalue").innerHTML = Number(range_value).toFixed(2);
+
+            var iva = document.getElementById("iva_check").checked;
+            param.inner_vertical_align = iva?1:0;
+
+            var canvas_count = 0;
+            var canvas_provider = function(){
+              var score_area = document.getElementById("scores_area");
+              var new_canvas = document.createElement("canvas");
+              if(canvas_count > 0){
+                var hr = document.createElement("hr");
+                score_area.appendChild(hr);
+              }
+              score_area.appendChild(new_canvas);
+              ++canvas_count;
+              return new_canvas;
+            };
+
+            var renderer = new Fumen.DefaultRenderer(null, param, canvas_provider);
+            renderer.render(track);
+      }
+      function updated()
+      {
+        draw();
+      }
+    </script>
+    <style>
+* {
+  margin: 0px;
+  padding: 0px;
+}
+
+
+#code{
+    /*width: 90%;*/
+    height: 350px;
+    /*padding: 10px;*/
+}
+
+#param{
+    /*width: 90%;*/
+    height: 250px;
+    /*padding: 10px;*/
+}
+
+textarea {
+  font-family: "Courier"
+}
+
+    </style>
+</head>
+<body>
+  <nav class="navbar navbar-dark bg-dark">
+    <a class="navbar-brand">Fumen</a>
+    <button class="btn btn-outline-success my-2 my-sm-0" onclick="draw()">Render</button>
+  </nav>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm">
+        <div class="accordion" id="accordionExample">
+          <div class="card">
+            <div class="card-header" id="headingOne">
+              <h5 class="mb-0">
+                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                  Code
+                </button>
+              </h5>
+            </div>
+        
+            <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
+              <div class="card-body">
+                <form>
+                  <div class="form-group">
+                    <textarea class="form-control"  id="code" oninput="updated()" rows="3">
+%TITLE="Sample Piece"
+%SUB_TITLE="(Sub Title)"
+%ARTIST="Some artists"
+
+[Intro]
+
+| (4/4) <S> C  | AM7 | C7 | Csus | Cm | Cm7 | CmM7 | 
+| Cdim | Cadd9 | Cm9 | C7+5-9#11 | Cm11 | C13 | 
+| C7#11 | Cm(-5) | C69 || C/D F/G |
+
+[A]
+||: A | B | C | D |
+|   F | G | [1.] A | C  :|| [2.] C | D <to Coda>|
+
+[B]
+||: C | G :||:x4 A | B :||xX
+| (2/4) C | (4/4) G | C | G <D.S. al Coda> |
+
+[C]
+| <Coda> F | Fm | F/G | Fm/Ab |
+
+[D]
+| <S2 straight> A A7 | F#m:2. F7:4~  | F7:2 Bb:8 Bb:8 Bb:4 <to Coda2> | C:2 :4. :8~ | :2 r:4 D:4~ |
+| (8/4) D:2_3 :2_3 :2_3 r:1 | (4/4) Bb:4 r:2. | E#7:2 r:4 r:8 r:16 r:16 | -4- |
+
+[E]
+| A ||: B | C :||: D | E :|| F |
+
+[F]
+|  -4- | A7 D7 | '(Break after Segno #2)' A ||
+
+
+[G]
+| InvalidChord "Double quoted string" 'Single quoted string' Am7 Bm7@'text on chord' Cm7|
+
+[H]
+||: (4/4) <S3 with repeat> 'Vocal start' C:4  @`Hoge/Pofu/Peke` B:2. @`FugaFuga` | A C | [1.] Bm7-5:2 B7:2 :|| [2.] C:2 F:2 |A | B | C | D |
+
+[J]
+| C:((C3,E3,G3,B3):4) :((D3,F#3,A3):4) :((A3,C#3):8) :((B3,D3):8) Eb:((Eb4,Bb3):4~) | D:((Eb4,Bb3):2) r:8 r:16 E:((F3,D3):16~) | E:((F3,D3):2) | E:((F3,D3):2) Am11:((A3):8_3) :((A3):8_3) :((A3):8_3) A13:((E3):8_3) :((F#3):8_3) :((G#3):8_3) |
+| E:((E3):4_3) :((F#3):4_3) :((G#3):4_3) :((A3):4_3) :((B3):4_3) :((C#4):4_3) |
+
+[K]
+| <Coda2> A | Bm7-5 Cm7 ./. | ./. | .//. | ./|/. |
+
+[Z]
+| C | Cm <Fine> | F | F7 <D.S.2> ||.
+                    </textarea>
+                  </div>
+                </form>
+        
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header" id="headingTwo">
+              <h5 class="mb-0">
+                <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                  Param
+                </button>
+              </h5>
+            </div>
+            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
+              <div class="card-body">
+                <form>
+                  <div class="form-group">
+                    <textarea class="form-control"  id="param" oninput="updated()" rows="3">
+{
+  "paper_width": 400,
+  "paper_height": 800
+}
+                    </textarea>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header" id="headingThree">
+              <h5 class="mb-0">
+                <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                  Ranges
+                </button>
+              </h5>
+            </div>
+            <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionExample">
+              <div class="card-body">
+                <form>
+                  <div class="form-group">
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" class="custom-control-input" id="iva_check" onchange="draw()">
+                      <label class="custom-control-label" for="iva_check">Inner Vertical Align</label>
+                    </div>
+                    <input type="range" class="custom-range" min="0" max="1" step="0.025" value="1" id="rangeinput" oninput="draw()">
+                    <span class="badge badge-secondary" id="rangevalue">0.5</span>
+                  </div>
+                </form>
+                
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm bg-secondary mx-auto">
+        <div class="div2"  id="scores_area">
+        </div>
+      </div>
+    </div> <!--row-->
+  </div> <!--container-->
+  </body>
+</html>

@@ -97,7 +97,7 @@ export class DefaultRenderer extends Renderer {
         // Preload images, which is done asynchronously
         var urls = [
             //"assets/img/segno.svg",
-            "assets/img/coda.svg",
+            //"assets/img/coda.svg",
             "assets/img/flat.svg",
             "assets/img/sharp.svg",
             "assets/img/natural.svg",
@@ -2114,7 +2114,6 @@ export class DefaultRenderer extends Renderer {
                             e,
                             param.base_font_size
                         );
-                        //paper.getContext("2d").drawImage(graphic.G_imgmap["assets/img/coda.svg"], x - 15, y_body_or_rs_base - 15, 15, 15);
                         graphic.CanvasText(
                             paper,
                             x - r.width,
@@ -2337,17 +2336,8 @@ export class DefaultRenderer extends Renderer {
                 );
                 width += r.width;
             }
-            /*paper
-                .getContext("2d")
-                .drawImage(
-                    graphic.G_imgmap["assets/img/coda.svg"],
-                    x - width - B / 2,
-                    img_y,
-                    B / 2,
-                    B / 2
-                );*/
             graphic.CanvasImage(paper, 
-                graphic.G_imgmap["assets/img/coda.svg"], 
+                graphic.G_imgmap["uniE048"],  //coda.svg
                 x - width, 
                 y, 
                 img_width, 
@@ -2356,17 +2346,8 @@ export class DefaultRenderer extends Renderer {
                 true);
             width += img_width;
         } else if (align[0] == "l") {
-            /*paper
-                .getContext("2d")
-                .drawImage(
-                    graphic.G_imgmap["assets/img/coda.svg"],
-                    x,
-                    img_y,
-                    img_width,
-                    img_height
-                );*/
             graphic.CanvasImage(paper, 
-                graphic.G_imgmap["assets/img/coda.svg"], 
+                graphic.G_imgmap["uniE048"],  // coda.svg
                 x , 
                 y, 
                 img_width, 

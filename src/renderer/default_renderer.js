@@ -88,13 +88,6 @@ export class DefaultRenderer extends Renderer {
             paper: null,
             region_id: 0
         };
-
-        this.buravura = graphic.getBravuraInstance(
-            "Bravura Text",
-            "./assets/fonts/BravuraText.woff",
-            "./assets/fonts/bravura_metadata.json",
-            "./assets/fonts/glyphnames.json"
-        );
     }
 
     render(track, async_mode, progress_cb) {
@@ -124,9 +117,7 @@ export class DefaultRenderer extends Renderer {
         .then( () => {
             return graphic.PreloadJsonFont("assets/fonts/fumenfont.json");
         })
-        /*.then( () => {
-            return this.buravura.ready();
-        })*/.then(()=>{
+        .then(()=>{
             return this.render_impl(track, param);
         });
     }
@@ -1999,61 +1990,6 @@ export class DefaultRenderer extends Renderer {
                         param.base_font_size, null, false, paper.ratio, paper.zoom).height;
                     let row_height = yprof.rs.detected ?param.rs_area_height : param.row_height;
                     let cont_height = yprof.rs.detected ?param.rs_area_height : chord_str_height;
-                    //var lineThickNessShift = 0.064; // Line tickness
-                    //let fontSize = graphic.getFontSizeFromHeight(cont_height + lineThickNessShift*cont_height/4, 
-                    //    "Bravura Text", String.fromCodePoint(0xE014)); // 5 line is baseline
-                    //console.log("fontSize="+fontSize);
-                    /*graphic.CanvasText(
-                        paper,
-                        x + e.renderprop.w / 2,
-                        y_body_or_rs_base + row_height/2  - cont_height/2,
-                        //e.numer,
-                        String.fromCodePoint(0xE014),
-                        fontSize,
-                        "lt",
-                        e.renderprop.w,
-                        false,
-                        {"fontfamily":"Bravura Text", "raw":true}
-                    );*/
-                    /*graphic.CanvasText(
-                        paper,
-                        x + e.renderprop.w / 2,
-                        y_body_or_rs_base + row_height/2 - cont_height/2 - cont_height/4*3,
-                        //e.numer,
-                        String.fromCodePoint(0xE080+parseInt(e.numer)),
-                        fontSize,
-                        "lt",
-                        e.renderprop.w,
-                        false,
-                        {"fontfamily":"Bravura Text", "raw":true}
-                    );*/
-                    // this.buravura.put(paper, 0xE080+parseInt(e.numer), cont_height/4, 
-                    //     x, y_body_or_rs_base + row_height/2 - cont_height/2 - cont_height/4*3);
-                    
-                    /*graphic.CanvasText(
-                        paper,
-                        x + e.renderprop.w / 2,
-                        y_body_or_rs_base + row_height/2 - cont_height/2 - cont_height/4*1,
-                        //e.denom,
-                        String.fromCodePoint(0xE080+parseInt(e.denom)),
-                        fontSize,
-                        "rt",
-                        e.renderprop.w,
-                        false,
-                        {"fontfamily":"Bravura Text", "raw":true}
-                    );*/
-                    // this.buravura.put(paper, 0xE080+parseInt(e.denom), cont_height/4, 
-                    //     x, y_body_or_rs_base + row_height/2 - cont_height/2 - cont_height/4*1);
-
-                    /*var ly = yprof.body.y + row_height / 2;
-                    if (draw && !yprof.rs.detected)
-                        graphic.CanvasLine(
-                            paper,
-                            x,
-                            ly,
-                            x + e.renderprop.w,
-                            ly
-                        );*/
                     
                     graphic.CanvasImage(paper, 
                         graphic.G_imgmap["uniE08"+e.numer],// numbers

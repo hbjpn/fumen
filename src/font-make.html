@@ -28,12 +28,16 @@ function getBBox(charsvg)
     return bbox;
 }
 
-function createSvgFile(charsvg, bbox)
+function createSvgFile(charsvg, bbox, addXmlHeader=true, id=null)
 {
-    var svgFileCont = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>';
-    svgFileCont += '<svg xmlns="http://www.w3.org/2000/svg" version="1.1"\
-        width="'+bbox.width+'" height="'+bbox.height+'\
-        " viewBox="'+bbox.x+' '+(-bbox.height-bbox.y)+' '+bbox.width+' '+bbox.height+'">'; // View box start position is inverted as y scale = -1 applies. (The image is inverted against y=0)
+    addXmlHeader = addXmlHeader || false;
+    var svgFileCont = '';
+    if(addXmlHeader) svgFileCont += '<?xml version="1.0" encoding="UTF-8" standalone="no"?>';
+    svgFileCont += '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" ';
+    svgFileCont += 'width="'+bbox.width+'" height="'+bbox.height+'" ';
+    svgFileCont += 'viewBox="'+bbox.x+' '+(-bbox.height-bbox.y)+' '+bbox.width+' '+bbox.height+'" ';
+    if(id) svgFileCont += 'id="'+id+'" ';
+    svgFileCont += '>'; // View box start position is inverted as y scale = -1 applies. (The image is inverted against y=0)
     var path = '<path\
     d="'+charsvg+'"\
     id="path0"\
@@ -56,16 +60,23 @@ function downloadAsSvg(svgdataurl)
 }
 
 
-function svgdataurl(svgfilecont){
-    var dataurl = "data:image/svg+xml;utf8,";
-    dataurl += svgfilecont;
+function svgdataurl(svgfilecont, base64=true){
+
+    var dataurl = '';
+    if(base64){
+        dataurl = "data:image/svg+xml;base64,";
+        dataurl += btoa(svgfilecont);
+    }else{
+        dataurl = "data:image/svg+xml;utf-8,";
+        dataurl += svgfilecont;
+    }
     return dataurl;
 }
 
 function loadAsImage(charsvg)
 {
     let bbox = getBBox(charsvg);
-    let svgCont = createSvgFile(charsvg, bbox);
+    let svgCont = createSvgFile(charsvg, bbox, true, null);
     let svgDataUrl = svgdataurl(svgCont);
     //downloadAsSvg(svgDataUrl);
 
@@ -80,26 +91,31 @@ function loadAsImage(charsvg)
     return p;
 }
 
+var charsvglist = {};
+
 function addCanvas(charsvg,glyphname)
 {
     let box = document.createElement("div");
     box.style = "float:left";
     let canvas = document.createElement("canvas");
-    let pre = document.createElement("input");
+    let checkbox = document.createElement("input");
     let br = document.createElement("br");
     let label = document.createElement("label");
     label.innerHTML = glyphname;
     label.style = "font-size:9px";
-    pre.setAttribute("type","checkbox");
-    pre.setAttribute("value",glyphname);
-    pre.setAttribute("id","id_"+glyphname);
+    checkbox.setAttribute("type","checkbox");
+    checkbox.setAttribute("value",glyphname);
+    checkbox.setAttribute("id","id_"+glyphname);
+    checkbox.setAttribute("name","glyphsel");
     box.appendChild(canvas);
     box.appendChild(br);
-    box.appendChild(pre);
+    box.appendChild(checkbox);
     box.appendChild(label);
     document.getElementById("area").appendChild(box);
     Fumen.SetupHiDPICanvas(canvas, 50, 50, 2, 1); // To configure global ratio, firstly call this.
     const ctx = canvas.getContext('2d');
+
+    charsvglist[glyphname] = charsvg;
 
 
     loadAsImage(charsvg)
@@ -133,7 +149,7 @@ function loadSvgFont(txt) {
     var em = ff.getAttribute('units-per-em');
 
     src = '';
-    var showNum = 10000;
+    var showNum = 100;
     for (var n = 0; n < glyphs.length; n++) {
         var glyph = glyphs[n];
         if (glyph) {
@@ -167,10 +183,41 @@ function load(){
     input.click();
 }
 
+function generate()
+{
+    var gs = document.getElementsByName("glyphsel");
+
+    let textarea = document.createElement("textarea");
+
+    let obj = {};
+
+    for( var i = 0; i < gs.length; i++  ){
+        if(gs[i].checked){
+            let glyphname = gs[i].value;
+            let charsvg = charsvglist[glyphname];
+            let bbox = getBBox(charsvg);
+            let svgCont = createSvgFile(charsvg, bbox, true, glyphname);
+            let dataUrl = svgdataurl(svgCont);  // base64 or utf-8 itself if needed
+            //textarea.value += "<!-- glyph : "+glyphname+ " -->\n";
+            //textarea.value += (dataUrl+"\n\n");
+            obj[glyphname] = dataUrl;
+        }
+    }
+
+    textarea.value = JSON.stringify(obj, null, "\t");
+
+    
+    let area = document.getElementById("area");
+
+    document.body.insertBefore(textarea, area);
+
+}
+
     </script>
 </head>
 <body>
     <button onclick="load()">Open</button>
+    <button onclick="generate()">Generate SVG set</button>
     <div id="area"></div>
 </body>
 </html>

@@ -2132,7 +2132,6 @@ export class DefaultRenderer extends Renderer {
                         param.base_font_size / 2,
                         "rb"
                     );
-                    if (yprof.rs.detected) x += 15 * 4;
                 } else {
                     throw "Unkown instance of footer elements";
                 }

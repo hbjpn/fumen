@@ -108,13 +108,14 @@ Measures are contents of a measur row. It consists of multiple measures bounded 
 | \|\|:   | Start of repeat |
 | :\|\|   | End of repeat |
 | :\|\|:  | End and start of repeat |
+| ./\|/.  | Boundary with overlapping Simile mark |
 
 <!-- fumen:start -->
 %SHOW_HEADER="NO"
 %SHOW_FOOTER="NO"
 
 [A]
-| A || B ||: C :||: D :|| E ||.
+| A || B ||: C :||: D :|| E  ./|/. ||.
 <!-- fumen:end -->
 
 ### Measure contents

@@ -29,4 +29,7 @@ extra_javascript:
 plugins:
     - mkdocs_fumen
 site_dir: '../docs'
+google_analytics:
+  - UA-165626899-1
+  - auto
 

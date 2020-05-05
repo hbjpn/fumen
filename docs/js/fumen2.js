@@ -15129,13 +15129,14 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
               w: r.width
             };
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Time"]) {
-            meas_fixed_width += 10;
+            var w = 12;
+            meas_fixed_width += w;
             all_fixed_width_details.push({
               type: "fixed",
-              f: 10
+              f: w
             });
             e.renderprop = {
-              w: 10
+              w: w
             };
           }
         });
@@ -15721,10 +15722,11 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             var chord_str_height = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](param.base_font_size, null, false, paper.ratio, paper.zoom).height;
             var row_height = yprof.rs.detected ? param.rs_area_height : param.row_height;
             var cont_height = yprof.rs.detected ? param.rs_area_height : chord_str_height;
+            var left_margin = 2;
             _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uniE08" + e.numer], // numbers
-            x, y_body_or_rs_base + row_height / 2, null, cont_height / 2, "lb", true);
+            x + left_margin, y_body_or_rs_base + row_height / 2, null, cont_height / 2, "lb", true);
             _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uniE08" + e.denom], // numbers
-            x, y_body_or_rs_base + row_height / 2, null, cont_height / 2, "lt", true);
+            x + left_margin, y_body_or_rs_base + row_height / 2, null, cont_height / 2, "lt", true);
             x += e.renderprop.w;
           }
         });

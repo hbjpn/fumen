@@ -55,10 +55,6 @@ module.exports = {
         {
           from: "src/view.html",
           to: "view.html",
-        },  
-        {
-          from: "src/fonts.html",
-          to: "fonts.html",
         }, 
         {
           from: "src/font-make.html",

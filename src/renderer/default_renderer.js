@@ -1277,9 +1277,10 @@ export class DefaultRenderer extends Renderer {
                     all_fixed_width_details.push({type:"fixed", f:r.width});
                     e.renderprop = { w: r.width };
                 } else if (e instanceof common.Time) {
-                    meas_fixed_width += 10;
-                    all_fixed_width_details.push({type:"fixed", f:10});
-                    e.renderprop = { w: 10 };
+                    let w = 12;
+                    meas_fixed_width += w;
+                    all_fixed_width_details.push({type:"fixed", f:w});
+                    e.renderprop = { w: w };
                 }
             });
 
@@ -1966,10 +1967,11 @@ export class DefaultRenderer extends Renderer {
                         param.base_font_size, null, false, paper.ratio, paper.zoom).height;
                     let row_height = yprof.rs.detected ?param.rs_area_height : param.row_height;
                     let cont_height = yprof.rs.detected ?param.rs_area_height : chord_str_height;
+                    let left_margin = 2;
                     
                     graphic.CanvasImage(paper, 
                         graphic.G_imgmap["uniE08"+e.numer],// numbers
-                        x, 
+                        x + left_margin, 
                         y_body_or_rs_base + row_height/2, 
                         null, 
                         cont_height/2,
@@ -1977,7 +1979,7 @@ export class DefaultRenderer extends Renderer {
                         true);
                     graphic.CanvasImage(paper, 
                         graphic.G_imgmap["uniE08"+e.denom],// numbers
-                        x, 
+                        x + left_margin, 
                         y_body_or_rs_base + row_height/2, 
                         null, 
                         cont_height/2,

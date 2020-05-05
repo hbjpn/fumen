@@ -101,10 +101,10 @@ export class DefaultRenderer extends Renderer {
             //"assets/img/flat.svg",
             //"assets/img/sharp.svg",
             //"assets/img/natural.svg",
-            "assets/img/rest1.svg",
-            "assets/img/rest2.svg",
-            "assets/img/rest4.svg",
-            "assets/img/rest8.svg",
+            //"assets/img/rest1.svg",
+            //"assets/img/rest2.svg",
+            //"assets/img/rest4.svg",
+            //"assets/img/rest8.svg",
             //"assets/img/w1note.svg",
             //"assets/img/w2note.svg",
             //"assets/img/bnote.svg",
@@ -2399,13 +2399,13 @@ export class DefaultRenderer extends Renderer {
     ) {
         let _5i = base_body_height / 4; 
         var yoffsets = {
-            1: -_5i,
-            2: (-_5i / 6) * 4,
+            1: -_5i - 0.5, // 0.5 is subpixel adjustment
+            2: (-_5i / 6) * 4 + 0.5,
             4: -_5i * 1.5,
-            8: -_5i,
-            16: 0,
-            32: 0,
-            64: _5i
+            8: -_5i + 0.5,
+            16: 0   + 0.5,
+            32: 0   + 0.5,
+            64: _5i + 0.5
         };
         var heights = {
             1: (_5i / 6) * 4,
@@ -2445,7 +2445,9 @@ export class DefaultRenderer extends Renderer {
         }
 
         if(draw){
-            var img = graphic.G_imgmap["assets/img/rest" + (rd <= 4 ? rd : 8) + ".svg"];
+            let namemap = {1:"uniE4F4", 2:"uniE4F5", 4:"uniE4E5", 8:"uniE4E6"};
+            var img = graphic.G_imgmap[namemap[(rd <= 4 ? rd : 8)]];
+            //var img = graphic.G_imgmap["assets/img/rest" + (rd <= 4 ? rd : 8) + ".svg"];
             var s = img.height / heights[rd];
             if (rd <= 4) {
                 ctx.drawImage(

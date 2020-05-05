@@ -9,6 +9,7 @@
         padding: 10px;
         font-size: 14px;
         font-family: 'Courier New', Courier, monospace;
+        resize: vertical;
 }
 .score_area {
         text-align: center;

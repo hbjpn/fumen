@@ -9,6 +9,10 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 function draw(textarea){
+
+    textarea.style.height = "";
+    textarea.style.height = textarea.scrollHeight + 0 + "px";
+    
     var code = textarea.value;
     var parser = new Fumen.Parser();
     var track = parser.parse(code);
@@ -30,9 +34,5 @@ function draw(textarea){
       paper_height:0,
       text_size: Math.min(1, (w*0.9)/380)
     });
-    renderer.render(track)
-    .then(function(r){
-        textarea.style.height = "";
-        textarea.style.height = textarea.scrollHeight + 0 + "px";
-    });
+    renderer.render(track);
 }

@@ -559,16 +559,14 @@
 <li>Footer</li>
 </ul>
 <p>Following is the example fumen source having title of "Hello" and artist name "World", and 2 reharsal marks of A and B.</p>
-<p><div class='fumenbox'><textarea class='fumencode'>
-%TITLE="Hello"
+<p><div class='fumenbox'><textarea class='fumencode'>%TITLE="Hello"
 %ARTIST="World"
 
 [A]
 | A | B | C | D |
 
 [B]
-| E | F | G | A |
-</textarea><div class='score_area'></div></div></p>
+| E | F | G | A |</textarea><div class='score_area'></div></div></p>
 <h2 id="reharsal-group">Reharsal Group</h2>
 <p>Strings enclosed with square brackets outside the measures means a reharsal group name. Following the reharsal group mark, one or more of measures are specified as a contents belongs to that reharsal group.</p>
 <p>The normal reharal group should have at least one empty row between the end of previous measure. If no empty row is inserted, the reharsal group is tagged with in-line reharsal group.</p>
@@ -576,8 +574,7 @@
 <p>In the default renderer :
 - in-line reharsal mark and its first measure row is rendered in the same row of the last row of previous reharsal group.
 - Reharsal group mark with empty name is not rendered.</p>
-<p><div class='fumenbox'><textarea class='fumencode'>
-%SHOW_HEADER="NO"
+<p><div class='fumenbox'><textarea class='fumencode'>%SHOW_HEADER="NO"
 %SHOW_FOOTER="NO"
 
 
@@ -589,13 +586,11 @@
 | A | C | F | G | A | 
 
 []
-| A | B | C | D | E |
-</textarea><div class='score_area'></div></div></p>
+| A | B | C | D | E |</textarea><div class='score_area'></div></div></p>
 <h2 id="block">Block</h2>
 <p>Set of measures with continuous rows (i.e. seprately by single linebreak) inside a reharsal group are grouped as a "block". Two or more of line breaks between measures means the measure rows above and below line breaks will belong to differnt blocks.</p>
 <p>How to render differnt blocks is up to each renderer implementation. In the default renderer, block is treated as a unit to apply the rendering optimization process. For example, the default renderending try to  vertically align the measure boundaries as much as possible for better readability, but only among the measure rows within a single block. Hence, the measures in differnt blocks may have differnt measure boudnary positions.</p>
-<p><div class='fumenbox'><textarea class='fumencode'>
-%SHOW_HEADER="NO"
+<p><div class='fumenbox'><textarea class='fumencode'>%SHOW_HEADER="NO"
 %SHOW_FOOTER="NO"
 
 [A]
@@ -605,8 +600,7 @@
 [B]
 | A | B | C | D |
 
-| A B C D E F G | B | C | D |
-</textarea><div class='score_area'></div></div></p>
+| A B C D E F G | B | C | D |</textarea><div class='score_area'></div></div></p>
 <h2 id="measure-row">Measure row</h2>
 <p>Set of measures specified in the single line in the mark down code is called as a measure row. Block consists of one or more of measure rows.</p>
 <p>Treatment of "measure row" in the rendering is up to renderer implementation. In the default renderer, just simply render a single measure row in the mark down as a single row in the rendered image. One implmentation may ignore the measure row(i.e. ignore single line break in the block) and adopt its own strategy to determine number of measures rendered in the singel row.</p>
@@ -636,16 +630,13 @@
 </table>
 <p>This is to indicate the renderer to rendere the measure row by fill out in a total wide, by aligning to leftside or aligning to right side. Details on the outcome of rendering due to these marks are up to renderer implemenation. </p>
 <p>In the default renderer, left align and right align marks are only valid when the number of measures in the nearest upper row without alignment mark have more measures in the measure row. </p>
-<p><div class='fumenbox'><textarea class='fumencode'>
-%SHOW_HEADER="NO"
+<p><div class='fumenbox'><textarea class='fumencode'>%SHOW_HEADER="NO"
 %SHOW_FOOTER="NO"
 
 [A]
 ||: A | B |[1.] C | D :||
 >|[2.] A | B ||
-<|| A | B | C |
-
-</textarea><div class='score_area'></div></div></p>
+<|| A | B | C |</textarea><div class='score_area'></div></div></p>
 <h2 id="measure">Measure</h2>
 <p>Measures are contents of a measur row. It consists of multiple measures bounded by measure boundary marks. </p>
 <h3 id="measure-boundary">Measure boundary</h3>
@@ -687,13 +678,11 @@
 </tr>
 </tbody>
 </table>
-<p><div class='fumenbox'><textarea class='fumencode'>
-%SHOW_HEADER="NO"
+<p><div class='fumenbox'><textarea class='fumencode'>%SHOW_HEADER="NO"
 %SHOW_FOOTER="NO"
 
 [A]
-| A || B ||: C :||: D :|| E  ./|/. ||.
-</textarea><div class='score_area'></div></div></p>
+| A || B ||: C :||: D :|| E  ./|/. ||.</textarea><div class='score_area'></div></div></p>
 <h3 id="measure-contents">Measure contents</h3>
 <p>Various types of contents can be specified. Please refer to the following pages for details.</p>
 <ul>

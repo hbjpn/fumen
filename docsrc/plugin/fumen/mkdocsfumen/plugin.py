@@ -39,6 +39,7 @@ logging.basicConfig(filename='/Users/baba/fumenlog.log', level=logging.DEBUG)
 
 def repl(m):
     s = m.groups()[0]
+    s = s.strip()
     return "FUMENSTART"+base64.b64encode(s.encode()).decode()+"FUMENEND"
 
 def derepl(m):

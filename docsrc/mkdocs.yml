@@ -17,4 +17,10 @@ nav:
 theme:
     name: material
 extra_css:
-    - 'extra.css'
+    - 'css/extra.css'
+extra_javascript:
+    - js/fumen2.js
+    - js/index.js
+plugins:
+    - mkdocs_fumen
+

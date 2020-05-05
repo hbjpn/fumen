@@ -1,14 +1,18 @@
-/* Custom styles to override MkDocs defaults and enhance theme */
-
-/* Unordered list <ul> symbols:
- * - level 2 is hollow circle
- * - level 3 is filled square
- * - ul default is filled disc (bullet)
- */
-ul ul {
-        list-style-type:  circle;
+.fumenbox {
+        margin: 0px;
+        padding: 0px;
 }
 
-ul ul ul {
-        list-style-type:  square;
+.fumencode {
+        width: 100%;
+        border-radius: 4px;
+        padding: 10px;
+        font-size: 14px;
+        font-family: 'Courier New', Courier, monospace;
+}
+.score_area {
+        text-align: center;
+        background-color: lightgray;
+        padding: 10px;
+        box-shadow:0px 0px 8px 3px #ccc inset;
 }

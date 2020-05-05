@@ -15799,14 +15799,14 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           var _e3 = elements.measure_wide[_ei2];
 
           if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["LoopIndicator"]) {
-            oy = 10;
+            oy = 12;
             ly = yprof.body.y - 2 - oy;
             sx = meas_start_x_actual_boundary;
             fx = meas_start_x + (meas_end_x - meas_start_x) * 0.7;
             _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, sx, ly, sx, ly + oy);
             _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, sx, ly, fx, ly);
             s = _e3.indicators.join(",");
-            _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, sx + 2, ly, s, param.base_font_size / 3, "lt");
+            _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, sx + 2, ly + oy / 2, s, param.base_font_size / 3, "lm");
           } else if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["LongRestIndicator"]) {
             var height = yprof.rs.detected ? param.rs_area_height : param.row_height;
 

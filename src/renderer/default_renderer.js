@@ -2123,7 +2123,7 @@ export class DefaultRenderer extends Renderer {
             for (let ei = 0; ei < elements.measure_wide.length; ++ei) {
                 let e = elements.measure_wide[ei];
                 if (e instanceof common.LoopIndicator) {
-                    var oy = 10;
+                    var oy = 12;
                     var ly = yprof.body.y - 2 - oy;
                     var sx = meas_start_x_actual_boundary;
                     var fx = meas_start_x + (meas_end_x - meas_start_x) * 0.7;
@@ -2133,10 +2133,10 @@ export class DefaultRenderer extends Renderer {
                     graphic.CanvasText(
                         paper,
                         sx + 2,
-                        ly,
+                        ly + oy/2,
                         s,
                         param.base_font_size / 3,
-                        "lt"
+                        "lm"
                     );
                 } else if (e instanceof common.LongRestIndicator) {
                     let height = yprof.rs.detected ? param.rs_area_height : param.row_height;

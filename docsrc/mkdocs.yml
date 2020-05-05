@@ -1,4 +1,6 @@
 site_name: Fumen
+site_url: https://hbjpn.github.io/fumen2/
+repo_url: https://github.com/hbjpn/fumen2/
 nav:
     - Home: 'index.md'
     - Markdown:

@@ -1100,31 +1100,20 @@ export class Renderer {
             let bar_x = balken.groups[0].balken_element.notes_coord.x[0][upper_flag?2:1];
             let d = balken.groups[0].balken_element.note_value;
             let numflag = common.myLog2(parseInt(d)) - 2;
-            for (let fi = 0; fi < numflag; ++fi) {
 
-
-                let url = "assets/img/"+(upper_flag ? "flag_f.svg" : "flag_i.svg");
+            // 8 and 16 the has same length of vertical bars
+            // 32 and uppper will have longer bars of which delta is corresponding to (Num flags - 2)
+            if(numflag >= 1){
+                let x_adj = -0.5; // subpixel adjustment
+                let barlen_delta = Math.max(0, (numflag-2) * 5); // "5" is magic number adjusted for this paticular font
+                let flag_w = _5lines_intv * 1.1; // Normalize by width. Unfortunately, it is not easy to normalize with height as the rule is not clear. "1.1" is magic number.
+                let url = "flag_"+(upper_flag?"f":"i")+numflag; // for now numflags <= 4
                 graphic.CanvasImage(paper, graphic.G_imgmap[url],
-                    bar_x,
+                    bar_x + x_adj,
                     slope * bar_x +
                         intercept +
-                        (upper_flag ? 1 + fi * 6 : -1 - fi * 6),
-                    null, null, "l"+(upper_flag?"t":"b"));
-                
-                // Additional vertical line
-
-
-                // eslint-disable-next-line no-constant-condition
-                if(false){
-                    graphic.CanvasLine(paper,
-                        bar_x,
-                        slope * bar_x + intercept,
-                        bar_x,
-                        slope * bar_x +
-                            intercept +
-                            (upper_flag ? -8 : 8),
-                        {width:1});
-                }
+                        (upper_flag ? -barlen_delta : barlen_delta),
+                    flag_w, null, "l"+(upper_flag?"t":"b"));
             }
         }
 

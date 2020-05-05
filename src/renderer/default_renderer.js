@@ -90,33 +90,12 @@ export class DefaultRenderer extends Renderer {
         };
     }
 
-    render(track, async_mode, progress_cb) {
+    render(track) {
         this.track = track;
 
-        // Always works as asynchronously
-        // Preload images, which is done asynchronously
-        var urls = [
-            //"assets/img/segno.svg",
-            //"assets/img/coda.svg",
-            //"assets/img/flat.svg",
-            //"assets/img/sharp.svg",
-            //"assets/img/natural.svg",
-            //"assets/img/rest1.svg",
-            //"assets/img/rest2.svg",
-            //"assets/img/rest4.svg",
-            //"assets/img/rest8.svg",
-            //"assets/img/w1note.svg",
-            //"assets/img/w2note.svg",
-            //"assets/img/bnote.svg",
-            "assets/img/flag_f.svg",
-            "assets/img/flag_i.svg",
-            
-        ];
         var param = this.param;
-        return graphic.PreloadImages(urls)
-        .then( () => {
-            return graphic.PreloadJsonFont();
-        })
+        
+        return graphic.PreloadJsonFont()
         .then(()=>{
             return this.render_impl(track, param);
         });

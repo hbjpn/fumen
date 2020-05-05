@@ -105,9 +105,9 @@ export class DefaultRenderer extends Renderer {
             "assets/img/rest2.svg",
             "assets/img/rest4.svg",
             "assets/img/rest8.svg",
-            "assets/img/w1note.svg",
-            "assets/img/w2note.svg",
-            "assets/img/bnote.svg",
+            //"assets/img/w1note.svg",
+            //"assets/img/w2note.svg",
+            //"assets/img/bnote.svg",
             "assets/img/flag_f.svg",
             "assets/img/flag_i.svg",
             

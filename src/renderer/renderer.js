@@ -517,16 +517,16 @@ export class Renderer {
                 // eslint-disable-next-line no-empty
                 if (d == "0") {
                 } else if (d == "1") {
-                    r = graphic.CanvasImage(paper, graphic.G_imgmap["assets/img/w1note.svg"],
+                    r = graphic.CanvasImage(paper, graphic.G_imgmap["uniE0A2"], //w1note
                         note_x_center, y, null, _5lines_intv, "lm", draw);
                     
                 } else if (d == "2") {
 
-                    r = graphic.CanvasImage(paper, graphic.G_imgmap["assets/img/w2note.svg"],
+                    r = graphic.CanvasImage(paper, graphic.G_imgmap["uniE0A3"], //w2note
                     note_x_center, y, null, _5lines_intv, "lm", draw);
                 } else {
 
-                    r = graphic.CanvasImage(paper, graphic.G_imgmap["assets/img/bnote.svg"],
+                    r = graphic.CanvasImage(paper, graphic.G_imgmap["uniE0A4"], // bnote
                     note_x_center, y, null, _5lines_intv, "lm", draw);
                 }
 

@@ -960,7 +960,7 @@ export class DefaultRenderer extends Renderer {
            // y-screening is done in stage 2 as well : TODO : Make it once
            // Do it in the dammy position y = 0;
            var yprof = this.screening_y_areas(
-               row_elements_list, 0, yse[pei].param, yse[pei].macros.STAFF, 
+               row_elements_list, 0, yse[pei].param, yse[pei].macros.SHOW_STAFF, 
                yse[pei].macros.REHARSAL_MARK_POSITION == "Inner");
             
             // yprof.end.y means the row total height
@@ -1125,7 +1125,7 @@ export class DefaultRenderer extends Renderer {
         };
     }
 
-    screening_y_areas(row_elements_list, y_base, param, staff, 
+    screening_y_areas(row_elements_list, y_base, param, show_staff, 
         inner_reharsal_mark){
 
         var ycomps = ["rm", "mu","body","rs","ml","irm","end"];
@@ -1142,7 +1142,7 @@ export class DefaultRenderer extends Renderer {
         var lyric_rows = 0;
 
         //var draw_5line = false;
-        if (staff == "ON") {
+        if (show_staff == "YES") {
             yprof.rs.detected = true; 
         }
 
@@ -1183,7 +1183,7 @@ export class DefaultRenderer extends Renderer {
                 }
             }
         }
-        if (staff == "OFF") {
+        if (show_staff == "NO") {
             yprof.rs.detected = false;
         }
 
@@ -1808,18 +1808,15 @@ export class DefaultRenderer extends Renderer {
         var transpose = macros.TRANSPOSE;
         var half_type = macros.KEY_TYPE;
         var key = macros.KEY;
-        var staff = macros.STAFF;
+        var show_staff = macros.SHOW_STAFF;
 
         /* Reference reserved width for empty measures or chord symbol without base names*/
         var C7_width = 20;
 
-        if (staff == "ON") {
-            // rs_area_detected = true; // Fix me : Not supported in simplified renderer
-        }
         // interval of 5 lines
         var _5lines_intv = param.rs_area_height / (5 - 1);
 
-        var yprof = this.screening_y_areas(row_elements_list, y_base, param, staff, 
+        var yprof = this.screening_y_areas(row_elements_list, y_base, param, show_staff, 
             inner_reharsal_mark);
 
         var y_next_base = yprof.end.y;

@@ -8,7 +8,7 @@ let MACRO_DEFAULT = {
     "ARTIST" : "NO ARTIST",
     "SHOW_HEADER": "YES",
     "SHOW_FOOTER": "YES",
-    "STAFF": "AUTO",
+    "SHOW_STAFF": "AUTO",
     "TRANSPOSE" : 0,
     "KEY": "C",
     "KEY_TYPE" : "AUTO",

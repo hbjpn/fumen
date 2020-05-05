@@ -1,4 +1,5 @@
 import "@babel/polyfill";
+import * as fonts from "./fonts";
 
 var G_memCanvasStore = {}; // refered by ratio&zoom
 //var G_memCanvas = null;
@@ -553,46 +554,30 @@ export function PreloadImages(imageurls) {
     });
 }
 
-var loadedJsonFonts = {};
+var embedFontLoaded = false;
 
-export function PreloadJsonFont(url) {
+export function PreloadJsonFont() {
 
-    if(url in loadedJsonFonts){
+    if(embedFontLoaded){
         // To eliminate multiple loads
         return Promise.resolve();
     }else{
-        loadedJsonFonts[url] = true;
+        embedFontLoaded = true;
     }
 
-    var getJSON = function(url) {
-        return new Promise(function(resolve, reject){
-            var req = new XMLHttpRequest();		
-            req.onreadystatechange = function() {			
-                if(req.readyState == 4 && req.status == 200){
-                    var data = JSON.parse(req.responseText);	
-                    resolve(data);
-                }
+    let promises = [];
+    for(let glyphname in fonts.fontData){
+        let p = new Promise((resolve,reject)=>{
+            let img = new Image();
+            img.src = fonts.fontData[glyphname].dataURL;
+            img.onload = function() {
+                resolve({ img: img, url: glyphname });
             };
-            req.open("GET", url, false);
-            req.send(null);
         });
-    };
-
-    return getJSON(url)
-    .then(fontData=>{
-        let promises = [];
-        for(let glyphname in fontData){
-            let p = new Promise((resolve,reject)=>{
-                let img = new Image();
-                img.src = fontData[glyphname].dataURL;
-                img.onload = function() {
-                    resolve({ img: img, url: glyphname });
-                };
-            });
-            promises.push(p);
-        }
-        return Promise.all(promises);
-    })
+        promises.push(p);
+    }
+    
+    return Promise.all(promises)
     .then((result)=>{
         // make map with url
         for (var ii = 0; ii < result.length; ++ii) {

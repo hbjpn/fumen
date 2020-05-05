@@ -115,7 +115,7 @@ export class DefaultRenderer extends Renderer {
         var param = this.param;
         return graphic.PreloadImages(urls)
         .then( () => {
-            return graphic.PreloadJsonFont("assets/fonts/fumenfont.json");
+            return graphic.PreloadJsonFont();
         })
         .then(()=>{
             return this.render_impl(track, param);

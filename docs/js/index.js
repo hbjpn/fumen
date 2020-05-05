@@ -32,6 +32,7 @@ function draw(textarea){
     });
     renderer.render(track)
     .then(function(r){
-        textarea.style.height = r.height + "px";
+        textarea.style.height = "";
+        textarea.style.height = textarea.scrollHeight + 0 + "px";
     });
 }

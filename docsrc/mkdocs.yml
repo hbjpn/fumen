@@ -16,3 +16,5 @@ nav:
       - 'API Reference': 'api.md'
 theme:
     name: material
+extra_css:
+    - 'extra.css'

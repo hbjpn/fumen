@@ -1,10 +1,11 @@
 # Structure
 Basic fumen mark down source has following components :
-1. Header
-  - Title 
-  - Artist
-2. One or more of Reharsal groups and their contents(measures)
-3. Footer
+
+* Header
+    * Title 
+    * Artist
+* One or more of [Reharsal groups](#reharsal-group) and their contents(measures)
+* Footer
 
 Following is the example fumen source having title of "Hello" and artist name "World", and 2 reharsal marks of A and B.
 

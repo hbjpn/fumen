@@ -23,4 +23,5 @@ extra_javascript:
     - js/index.js
 plugins:
     - mkdocs_fumen
+site_dir: '../docs'
 

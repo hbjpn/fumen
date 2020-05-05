@@ -554,15 +554,13 @@ export function PreloadImages(imageurls) {
     });
 }
 
-var embedFontLoaded = false;
+var embedFontPromise = null;
 
 export function PreloadJsonFont() {
 
-    if(embedFontLoaded){
+    if(embedFontPromise){
         // To eliminate multiple loads
-        return Promise.resolve();
-    }else{
-        embedFontLoaded = true;
+        return embedFontPromise;
     }
 
     let promises = [];
@@ -577,7 +575,7 @@ export function PreloadJsonFont() {
         promises.push(p);
     }
     
-    return Promise.all(promises)
+    embedFontPromise = Promise.all(promises)
     .then((result)=>{
         // make map with url
         for (var ii = 0; ii < result.length; ++ii) {
@@ -585,4 +583,6 @@ export function PreloadJsonFont() {
         }
         return result;
     });
+
+    return embedFontPromise;
 }

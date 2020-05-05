@@ -17453,13 +17453,11 @@ function PreloadImages(imageurls) {
     return result;
   });
 }
-var embedFontLoaded = false;
+var embedFontPromise = null;
 function PreloadJsonFont() {
-  if (embedFontLoaded) {
+  if (embedFontPromise) {
     // To eliminate multiple loads
-    return Promise.resolve();
-  } else {
-    embedFontLoaded = true;
+    return embedFontPromise;
   }
 
   var promises = [];
@@ -17483,7 +17481,7 @@ function PreloadJsonFont() {
     _loop(glyphname);
   }
 
-  return Promise.all(promises).then(function (result) {
+  embedFontPromise = Promise.all(promises).then(function (result) {
     // make map with url
     for (var ii = 0; ii < result.length; ++ii) {
       G_imgmap[result[ii].url] = result[ii].img;
@@ -17491,6 +17489,7 @@ function PreloadJsonFont() {
 
     return result;
   });
+  return embedFontPromise;
 }
 
 /***/ }),

@@ -23,7 +23,13 @@ function draw(textarea){
     let canvas = document.createElement("canvas");
     score_area.appendChild(canvas);
 
-    var renderer = new Fumen.DefaultRenderer(canvas, {paper_width:380, paper_height:0});
+    let w = score_area.clientWidth;
+
+    var renderer = new Fumen.DefaultRenderer(canvas, {
+      paper_width:Math.min(380,w*0.9),
+      paper_height:0,
+      text_size: Math.min(1, (w*0.9)/380)
+    });
     renderer.render(track)
     .then(function(r){
         textarea.style.height = r.height + "px";

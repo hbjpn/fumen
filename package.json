@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "webpack",
+    "build": "webpack; cp dist/fumen2.js* ./docsrc/docs/js/; cd docsrc; mkdocs build;",
     "watch": "webpack -d --devtool eval-source-map --watch"
   },
   "repository": {

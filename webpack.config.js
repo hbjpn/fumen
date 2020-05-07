@@ -1,5 +1,10 @@
 const path = require('path');
+const webpack = require('webpack');
+const pjson = require("./package.json");
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const fs = require("fs");
+const lic = fs.readFileSync('./LICENSE.txt', 'utf8');
+const ofl = fs.readFileSync('./OFL.txt', 'utf8');
 
 module.exports = {
   // mode: "production",
@@ -62,5 +67,22 @@ module.exports = {
         },   
       ],
     ),
+    new webpack.BannerPlugin({
+      banner: `
+/*!
+${pjson.name} v${pjson.version}
+
+The ${pjson.license} License (${pjson.license})
+
+${lic}
+
+
+** Musical font parts are provided under OFL lisence **
+
+${ofl}
+*/
+`,
+      raw: true
+    })
   ]
 };

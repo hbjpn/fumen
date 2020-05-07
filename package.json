@@ -1,6 +1,6 @@
 {
   "name": "fumen",
-  "version": "1.0.0",
+  "version": "2.0.0Beta",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -11,8 +11,8 @@
     "type": "git",
     "url": "git+https://github.com/hbjpn/fumen.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Hiroyuki Baba",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/hbjpn/fumen/issues"
   },
@@ -29,7 +29,7 @@
     "now": "^18.0.0",
     "pixelmatch": "^5.1.0",
     "puppeteer": "^2.1.1",
-    "webpack": "^4.42.1",
+    "webpack": "^4.43.0",
     "webpack-cli": "^3.3.11"
   }
 }

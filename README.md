@@ -36,3 +36,8 @@ var renderer = new Fumen.DefaultRenderer(canvas);
 // Render it !
 renderer.render(track);
 ```
+
+## License
+MIT
+
+Fonts are under SIL open font license found in OLF.txt.

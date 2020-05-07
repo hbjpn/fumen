@@ -1,47 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url>
-     <loc>https://hbjpn.github.io/fumen2/</loc>
-     <lastmod>2020-05-06</lastmod>
+     <loc>https://hbjpn.github.io/fumen/</loc>
+     <lastmod>2020-05-07</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
-     <loc>https://hbjpn.github.io/fumen2/structure/</loc>
-     <lastmod>2020-05-06</lastmod>
+     <loc>https://hbjpn.github.io/fumen/structure/</loc>
+     <lastmod>2020-05-07</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
-     <loc>https://hbjpn.github.io/fumen2/chord/</loc>
-     <lastmod>2020-05-06</lastmod>
+     <loc>https://hbjpn.github.io/fumen/chord/</loc>
+     <lastmod>2020-05-07</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
-     <loc>https://hbjpn.github.io/fumen2/rest/</loc>
-     <lastmod>2020-05-06</lastmod>
+     <loc>https://hbjpn.github.io/fumen/rest/</loc>
+     <lastmod>2020-05-07</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
-     <loc>https://hbjpn.github.io/fumen2/duration-indicator/</loc>
-     <lastmod>2020-05-06</lastmod>
+     <loc>https://hbjpn.github.io/fumen/duration-indicator/</loc>
+     <lastmod>2020-05-07</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
-     <loc>https://hbjpn.github.io/fumen2/repeat-sign/</loc>
-     <lastmod>2020-05-06</lastmod>
+     <loc>https://hbjpn.github.io/fumen/repeat-sign/</loc>
+     <lastmod>2020-05-07</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
-     <loc>https://hbjpn.github.io/fumen2/time-sign/</loc>
-     <lastmod>2020-05-06</lastmod>
+     <loc>https://hbjpn.github.io/fumen/time-sign/</loc>
+     <lastmod>2020-05-07</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
-     <loc>https://hbjpn.github.io/fumen2/text/</loc>
-     <lastmod>2020-05-06</lastmod>
+     <loc>https://hbjpn.github.io/fumen/text/</loc>
+     <lastmod>2020-05-07</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
-     <loc>https://hbjpn.github.io/fumen2/variable/</loc>
-     <lastmod>2020-05-06</lastmod>
+     <loc>https://hbjpn.github.io/fumen/variable/</loc>
+     <lastmod>2020-05-07</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
-     <loc>https://hbjpn.github.io/fumen2/transpose/</loc>
-     <lastmod>2020-05-06</lastmod>
+     <loc>https://hbjpn.github.io/fumen/transpose/</loc>
+     <lastmod>2020-05-07</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
-     <loc>https://hbjpn.github.io/fumen2/api/</loc>
-     <lastmod>2020-05-06</lastmod>
+     <loc>https://hbjpn.github.io/fumen/api/</loc>
+     <lastmod>2020-05-07</lastmod>
      <changefreq>daily</changefreq>
     </url>
 </urlset>

@@ -11659,7 +11659,7 @@ var MACRO_DEFAULT = {
   "ARTIST": "NO ARTIST",
   "SHOW_HEADER": "YES",
   "SHOW_FOOTER": "YES",
-  "STAFF": "AUTO",
+  "SHOW_STAFF": "AUTO",
   "TRANSPOSE": 0,
   "KEY": "C",
   "KEY_TYPE": "AUTO"
@@ -14828,7 +14828,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 // Do it in the dammy position y = 0;
 
 
-                yprof = this.screening_y_areas(row_elements_list, 0, yse[pei].param, yse[pei].macros.STAFF, yse[pei].macros.REHARSAL_MARK_POSITION == "Inner"); // yprof.end.y means the row total height
+                yprof = this.screening_y_areas(row_elements_list, 0, yse[pei].param, yse[pei].macros.SHOW_STAFF, yse[pei].macros.REHARSAL_MARK_POSITION == "Inner"); // yprof.end.y means the row total height
 
                 y_base_screening += yprof.end.y; // Screening x elements and determine the rendering policy for x-axis.
 
@@ -14979,7 +14979,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
     }()
   }, {
     key: "screening_y_areas",
-    value: function screening_y_areas(row_elements_list, y_base, param, staff, inner_reharsal_mark) {
+    value: function screening_y_areas(row_elements_list, y_base, param, show_staff, inner_reharsal_mark) {
       var ycomps = ["rm", "mu", "body", "rs", "ml", "irm", "end"];
       var yprof = {
         rm: {
@@ -15023,7 +15023,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       };
       var lyric_rows = 0; //var draw_5line = false;
 
-      if (staff == "ON") {
+      if (show_staff == "YES") {
         yprof.rs.detected = true;
       } // Screening of y-axis areas
 
@@ -15051,7 +15051,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         }
       }
 
-      if (staff == "OFF") {
+      if (show_staff == "NO") {
         yprof.rs.detected = false;
       }
 
@@ -15129,13 +15129,14 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
               w: r.width
             };
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Time"]) {
-            meas_fixed_width += 10;
+            var w = 12;
+            meas_fixed_width += w;
             all_fixed_width_details.push({
               type: "fixed",
-              f: 10
+              f: w
             });
             e.renderprop = {
-              w: 10
+              w: w
             };
           }
         });
@@ -15612,18 +15613,14 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       var transpose = macros.TRANSPOSE;
       var half_type = macros.KEY_TYPE;
       var key = macros.KEY;
-      var staff = macros.STAFF;
+      var show_staff = macros.SHOW_STAFF;
       /* Reference reserved width for empty measures or chord symbol without base names*/
 
-      var C7_width = 20;
-
-      if (staff == "ON") {} // rs_area_detected = true; // Fix me : Not supported in simplified renderer
-      // interval of 5 lines
-
+      var C7_width = 20; // interval of 5 lines
 
       var _5lines_intv = param.rs_area_height / (5 - 1);
 
-      var yprof = this.screening_y_areas(row_elements_list, y_base, param, staff, inner_reharsal_mark);
+      var yprof = this.screening_y_areas(row_elements_list, y_base, param, show_staff, inner_reharsal_mark);
       var y_next_base = yprof.end.y;
       var y_body_or_rs_base = yprof.rs.detected ? yprof.rs.y : yprof.body.y;
       var repeat_mark_y_base = yprof.rs.detected ? yprof.rs.y - param.repeat_mark_y_margin : yprof.mu.y + yprof.mu.height; // if ylimit is specified, and drawing region surpass that limit, do not render
@@ -15725,10 +15722,11 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             var chord_str_height = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](param.base_font_size, null, false, paper.ratio, paper.zoom).height;
             var row_height = yprof.rs.detected ? param.rs_area_height : param.row_height;
             var cont_height = yprof.rs.detected ? param.rs_area_height : chord_str_height;
+            var left_margin = 2;
             _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uniE08" + e.numer], // numbers
-            x, y_body_or_rs_base + row_height / 2, null, cont_height / 2, "lb", true);
+            x + left_margin, y_body_or_rs_base + row_height / 2, null, cont_height / 2, "lb", true);
             _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uniE08" + e.denom], // numbers
-            x, y_body_or_rs_base + row_height / 2, null, cont_height / 2, "lt", true);
+            x + left_margin, y_body_or_rs_base + row_height / 2, null, cont_height / 2, "lt", true);
             x += e.renderprop.w;
           }
         });
@@ -15801,14 +15799,14 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           var _e3 = elements.measure_wide[_ei2];
 
           if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["LoopIndicator"]) {
-            oy = 10;
+            oy = 12;
             ly = yprof.body.y - 2 - oy;
             sx = meas_start_x_actual_boundary;
             fx = meas_start_x + (meas_end_x - meas_start_x) * 0.7;
             _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, sx, ly, sx, ly + oy);
             _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, sx, ly, fx, ly);
             s = _e3.indicators.join(",");
-            _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, sx + 2, ly, s, param.base_font_size / 3, "lt");
+            _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, sx + 2, ly + oy / 2, s, param.base_font_size / 3, "lm");
           } else if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["LongRestIndicator"]) {
             var height = yprof.rs.detected ? param.rs_area_height : param.row_height;
 
@@ -17457,13 +17455,11 @@ function PreloadImages(imageurls) {
     return result;
   });
 }
-var embedFontLoaded = false;
+var embedFontPromise = null;
 function PreloadJsonFont() {
-  if (embedFontLoaded) {
+  if (embedFontPromise) {
     // To eliminate multiple loads
-    return Promise.resolve();
-  } else {
-    embedFontLoaded = true;
+    return embedFontPromise;
   }
 
   var promises = [];
@@ -17487,7 +17483,7 @@ function PreloadJsonFont() {
     _loop(glyphname);
   }
 
-  return Promise.all(promises).then(function (result) {
+  embedFontPromise = Promise.all(promises).then(function (result) {
     // make map with url
     for (var ii = 0; ii < result.length; ++ii) {
       G_imgmap[result[ii].url] = result[ii].img;
@@ -17495,6 +17491,7 @@ function PreloadJsonFont() {
 
     return result;
   });
+  return embedFontPromise;
 }
 
 /***/ }),
@@ -18485,4 +18482,4 @@ var Renderer = /*#__PURE__*/function () {
 
 /******/ });
 });
-//# sourceMappingURL=fumen2.js.map
+//# sourceMappingURL=fumen.js.map

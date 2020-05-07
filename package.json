@@ -1,22 +1,22 @@
 {
-  "name": "fumen2",
+  "name": "fumen",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "webpack; cp dist/fumen2.js* ./docsrc/docs/js/; cd docsrc; mkdocs build;",
+    "build": "webpack; cp dist/fumen.js* ./docsrc/docs/js/; cd docsrc; mkdocs build;",
     "watch": "webpack -d --devtool eval-source-map --watch"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hbjpn/fumen2.git"
+    "url": "git+https://github.com/hbjpn/fumen.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/hbjpn/fumen2/issues"
+    "url": "https://github.com/hbjpn/fumen/issues"
   },
-  "homepage": "https://github.com/hbjpn/fumen2#readme",
+  "homepage": "https://github.com/hbjpn/fumen#readme",
   "devDependencies": {
     "@babel/core": "^7.9.0",
     "@babel/polyfill": "^7.8.7",

@@ -10,7 +10,7 @@ module.exports = {
   entry: "./src/index.js",
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'fumen2.js',
+    filename: 'fumen.js',
     library: "Fumen",
     libraryTarget: 'umd'
   },

@@ -24,7 +24,7 @@ theme:
 extra_css:
     - 'css/extra.css'
 extra_javascript:
-    - js/fumen2.js
+    - js/fumen.js
     - js/index.js
 plugins:
     - mkdocs_fumen

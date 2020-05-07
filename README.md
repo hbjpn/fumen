@@ -31,10 +31,7 @@ var track = p.parse(code);
 var canvas = document.getElementById("canvas");
 
 // Maker a renderer object.
-var renderer = new Fumen.Renderer(canvas, {
-			paper_width:600,
-			paper_height:800
-               });
+var renderer = new Fumen.DefaultRenderer(canvas);
 
 // Render it !
 renderer.render(track);

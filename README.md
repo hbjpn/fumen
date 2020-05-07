@@ -28,12 +28,12 @@ var p = new Fumen.Parser();
 var track = p.parse(code);
 
 // Target canvas element
-var canvas = document.getElementById("#canvas");
+var canvas = document.getElementById("canvas");
 
 // Maker a renderer object.
 var renderer = new Fumen.Renderer(canvas, {
-					paper_width:600,
-					paper_height:800
+			paper_width:600,
+			paper_height:800
                });
 
 // Render it !

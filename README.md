@@ -10,9 +10,9 @@ This is Fumen2 which is a re-creationg of Fumen to improve the rendering times a
 
 * HTML
 
-Just import fumen2.js. No other depending modules !
+Just import fumen.js. No other depending modules !
 ```html
-    <script type="text/javascript" src="fumen2.js"></script>
+    <script type="text/javascript" src="fumen.js"></script>
 ```
 
 * Javascript

@@ -13719,7 +13719,7 @@ var Parser = /*#__PURE__*/function () {
           track.reharsal_groups.push(currentReharsalGroup);
           currentReharsalGroup = null;
         } // If same reharsal mark appears, preceeding one is applied
-        // NOET : This is abandoned in fumen2 as it does not provide a benefit but cause confusion.
+        // NOET : This is abandoned in fumen v2 as it does not provide a benefit but cause confusion.
         // eslint-disable-next-line no-constant-condition
 
 

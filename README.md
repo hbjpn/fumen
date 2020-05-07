@@ -5,3 +5,37 @@ Fumen is a markup language and rendering engine for music leadsheet creation wit
 Differnt from the other sheetmusic redenring softwares, Fumen is **specialized for creating quick chord-name based leadsheets** which is oftenly used in popular music contexts.
 
 This is Fumen2 which is a re-creationg of Fumen to improve the rendering times and to improve flexibility of rendering result to support various types of devices(desktop, smarphones etc).
+
+## Quick start
+
+* HTML
+
+Just import fumen2.js. No other depending modules !
+```html
+    <script type="text/javascript" src="fumen2.js"></script>
+```
+
+* Javascript
+
+Reneder a code for canvas element of which id is "canvas".
+
+```javascript
+
+// Make a parser object. 
+var p = new Fumen.Parser();
+
+// Parse fumen markdown texts
+var track = p.parse(code);
+
+// Target canvas element
+var canvas = document.getElementById("#canvas");
+
+// Maker a renderer object.
+var renderer = new Fumen.Renderer(canvas, {
+					paper_width:600,
+					paper_height:800
+               });
+
+// Render it !
+renderer.render(track);
+```

@@ -1,3 +1,8 @@
+/**
+ * @module Fumen
+ */
+
+
 import "@babel/polyfill";
 import { Renderer } from "./renderer";
 import * as common from "../common/common";
@@ -67,7 +72,23 @@ var SR_RENDER_PARAM = {
 // Simple renderer offsets
 
 
+
+/**
+ * Callback function when new canvas is requested by renderer.
+ * @global
+ * @callback canvasProvider
+ * @return {(HTMLElement|Promise<HTMLElement>)} HTML canvas element
+ */
+
 export class DefaultRenderer extends Renderer {
+
+    /**
+     * Default Renderer class for HTML canvas element
+     * @param {(HTMLElement|canvasProvider)} canvas - HTML canvas element to draw the image. Or, callback function which returns HTML canvas element.
+     * @param {Object} param - Parameter for the rednering
+     * @param {int} param.paper_width - Width of the paper
+     * @param {int} param.paper_height - Height of the paper. If 0 is specified, the paper height is paper height is adjusted with its contents.
+     */
     constructor(canvas, param, canvas_provider=null) {
         super();
 
@@ -90,6 +111,10 @@ export class DefaultRenderer extends Renderer {
         };
     }
 
+    /**
+     * Render the track
+     * @param {Track} track - Track object passed from Parser.parse function 
+     */
     render(track) {
         this.track = track;
 
@@ -2929,6 +2954,7 @@ export class DefaultRenderer extends Renderer {
 
     /**
      * Draw boundary
+     * @private
      * @param side : 'begin' or 'end' of boundary for current measure
      * @param e0 : Boundary element: 0
      *             - 'end' boundary if the previous measure when <side> is 'begin'

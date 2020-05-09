@@ -18,7 +18,8 @@ nav:
       - Transpose : 'transpose.md'
 
     - 'API':
-      - 'API Reference': 'api.md'
+      - 'Quick Start': 'api.md'
+      - 'Reference': 'api_reference.md'
 theme:
     name: material
 extra_css:

@@ -1,3 +1,7 @@
+/**
+ * @module Fumen
+ */
+
 import "@babel/polyfill";
 import * as common from "../common/common";
 
@@ -51,6 +55,9 @@ var WORD_DEFINITION_IN_REHARSAL_MARK = /^[^[\]]*/;
 var WORD_DEFINITION_CHORD_SYMBOL = /^[\w.,\-+#/():~]*/;
 
 export class Parser {
+    /**
+     * Parser class for fumen markdown code
+     */
     constructor(error_msg_callback) {
         this.context = { line: 0, char: 0 };
         this.error_msg_callback = error_msg_callback;
@@ -671,10 +678,15 @@ export class Parser {
         return headers;
     }
 
-    parse(s) {
+
+    /**
+     * Parse the fumen markdown code
+     * @param {String} code Markdown code
+     */
+    parse(code) {
         try{
-            s = s.replace(/\r\n/g, "\n");
-            s = s.replace(/\r/g, "\n");
+            code = code.replace(/\r\n/g, "\n");
+            code = code.replace(/\r/g, "\n");
             var r = null;
             var loop_cnt = 0;
 
@@ -691,7 +703,7 @@ export class Parser {
 
             // eslint-disable-next-line no-constant-condition
             while (true) {
-                r = this.nextToken(s);
+                r = this.nextToken(code);
                 //console.log(r);
                 if (r.type == TOKEN_END) break;
 
@@ -785,7 +797,7 @@ export class Parser {
                     console.log(r.token);
                     this.onParseError("ERROR_WHILE_PARSE_MOST_OUTSIDER");
                 }
-                s = r.s;
+                code = r.s;
                 loop_cnt++;
                 if (loop_cnt >= 1000) break;
             }

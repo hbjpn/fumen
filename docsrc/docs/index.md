@@ -4,6 +4,11 @@ Fumen is a markup language and rendering engine for music leadsheet creation wit
 
 Differnt from the other sheetmusic redenring softwares, Fumen is **specialized for creating quick chord-name based leadsheets** which is oftenly used in popular music contexts.
 
+
+## Example
+
+###  Someday My Prince Will Come / Frank Churchill [Public Doamin]
+
 <!-- fumen:start -->
 %TITLE="Someday My Prince Will Come"
 %ARTIST="Frank Churchill"

@@ -43,7 +43,7 @@ var SR_RENDER_PARAM = {
     artist_font_size        : 14, // 
     base_font_size          : 28, // Chord symbol font size
 
-    // Row Settings
+    // Row Settings 
     row_height          : 28, // Basic height of the measure when no rs, mu and ml area is drawn
     base_body_height    : 28, // Height in body area (not applicable for RS area) used for simile and rest rendering. Recommended to keep this value irrespective of row_height.
     row_margin          : 4, // Margin between next y_base and lower edge of Measure Lower Area
@@ -51,15 +51,24 @@ var SR_RENDER_PARAM = {
     rm_area_height      : 15, // Reharsal Mark Area
     mu_area_height      : 15, // Measure Upper Area ( Repeat signs area )
     ml_row_height       : 10, // Measure Lower Area ( Lyrics etc.. )
-    below_mu_area_margin: 2, // Margin between MU and chord
-    above_rs_area_margin: 0, // Margin between chord and rythm slash
-    below_rs_area_margin: 10, // Margin below chord and rhthm slash
-    above_ml_area_margin: 0, // Margin between (chord/rythm slash) and measure lower(lyrics etc) rea
+
+    rm_margin_top       : 0, // Margin between MU and chord
+    rm_margin_bottom    : 0, // Margin between MU and chord
+    mu_margin_top       : 0, // Margin between MU and chord
+    mu_margin_bottom    : 2, // Margin between MU and chord
+    margin_top          : 0, // Margin between MU and chord
+    margin_bottom       : 0, // Margin between MU and chord
+    rs_margin_top       : 0, // Margin between chord and rythm slash
+    rs_margin_bottom    : 10, // Margin below chord and rhthm slash
+    ml_margin_top       : 0, // Margin between (chord/rythm slash) and measure lower(lyrics etc) rea
+    ml_margin_bottom    : 0, // Margin between (chord/rythm slash) and measure lower(lyrics etc) rea
+
     repeat_mark_y_margin: 2, // RS are upper/bootom and Repeat Marks( DalSegno, DaCapo, Fine, xX ) y margin in case RS are is shown.
     xtimes_mark_y_margin: 2, // Margin between body/RS are and "(x times)" mark.
     header_body_margin  : 2, // Margin between header and body (x-direction)
     body_footer_margin  : 2, // Margin between body and footer (x-direction)
     rs_elem_min_room    : 5, // Minimum room after RS area elements in x-direction
+
     repeat_mark_font: {
         "font-family": "Times New Roman",
         "font-style": "italic",
@@ -1171,11 +1180,11 @@ export class DefaultRenderer extends Renderer {
 
         var ycomps = ["rm", "mu","body","rs","ml","irm","end"];
         var yprof = {
-            rm:    {detected:false, height: param.rm_area_height, margin:[0, 0]}, // Rhearsal mark if any
-            mu:    {detected:false, height: param.mu_area_height, margin:[0, param.below_mu_area_margin]},
-            body:  {detected:true,  height: param.row_height,     margin:[0, 0]},
-            rs:    {detected:false, height: param.rs_area_height, margin:[param.above_rs_area_margin, param.below_rs_area_margin]},
-            ml:    {detected:false, height: param.ml_row_height,  margin:[param.above_ml_area_margin, 0]},
+            rm:    {detected:false, height: param.rm_area_height, margin:[param.rm_margin_top,  param.rm_margin_bottom]}, // Rhearsal mark if any
+            mu:    {detected:false, height: param.mu_area_height, margin:[param.mu_margin_top,  param.mu_margin_bottom]},
+            body:  {detected:true,  height: param.row_height,     margin:[param.margin_top,     param.margin_bottom]},
+            rs:    {detected:false, height: param.rs_area_height, margin:[param.rs_margin_top,  param.rs_margin_bottom]},
+            ml:    {detected:false, height: param.ml_row_height,  margin:[param.ml_margin_top,  param.ml_margin_bottom]},
             irm:   {detected:true,  height: param.row_margin,     margin:[0, 0]}, // Virtual row represeinting fixed inter-row margin
             end:   {detected:true,  height: 0,                    margin:[0, 0]} // Vitrual row representing start of end of row = start of next row
         };

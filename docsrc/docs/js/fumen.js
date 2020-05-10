@@ -13964,7 +13964,15 @@ var SR_RENDER_PARAM = {
   // Without header
   x_offset: 10,
   y_footer_offset: 10,
-  // Row Settings
+  // Font size settings
+  reharsal_mark_font_size: 12,
+  title_font_size: 14,
+  subtitle_font_size: 12,
+  artist_font_size: 14,
+  // 
+  base_font_size: 28,
+  // Chord symbol font size
+  // Row Settings 
   row_height: 28,
   // Basic height of the measure when no rs, mu and ml area is drawn
   base_body_height: 28,
@@ -13979,13 +13987,25 @@ var SR_RENDER_PARAM = {
   // Measure Upper Area ( Repeat signs area )
   ml_row_height: 10,
   // Measure Lower Area ( Lyrics etc.. )
-  below_mu_area_margin: 2,
+  rm_margin_top: 0,
   // Margin between MU and chord
-  above_rs_area_margin: 0,
+  rm_margin_bottom: 0,
+  // Margin between MU and chord
+  mu_margin_top: 0,
+  // Margin between MU and chord
+  mu_margin_bottom: 2,
+  // Margin between MU and chord
+  margin_top: 0,
+  // Margin between MU and chord
+  margin_bottom: 0,
+  // Margin between MU and chord
+  rs_margin_top: 0,
   // Margin between chord and rythm slash
-  below_rs_area_margin: 10,
+  rs_margin_bottom: 10,
   // Margin below chord and rhthm slash
-  above_ml_area_margin: 0,
+  ml_margin_top: 0,
+  // Margin between (chord/rythm slash) and measure lower(lyrics etc) rea
+  ml_margin_bottom: 0,
   // Margin between (chord/rythm slash) and measure lower(lyrics etc) rea
   repeat_mark_y_margin: 2,
   // RS are upper/bootom and Repeat Marks( DalSegno, DaCapo, Fine, xX ) y margin in case RS are is shown.
@@ -14002,14 +14022,6 @@ var SR_RENDER_PARAM = {
     "font-style": "italic",
     "font-weight": "bold"
   },
-  // Font size settings
-  reharsal_mark_font_size: 12,
-  title_font_size: 14,
-  subtitle_font_size: 12,
-  artist_font_size: 14,
-  // 
-  base_font_size: 28,
-  // Chord symbol font size
   // Note rendering settings
   balken_width: 3,
   note_bar_length: 24 / 4 * 3.5,
@@ -15152,28 +15164,28 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         rm: {
           detected: false,
           height: param.rm_area_height,
-          margin: [0, 0]
+          margin: [param.rm_margin_top, param.rm_margin_bottom]
         },
         // Rhearsal mark if any
         mu: {
           detected: false,
           height: param.mu_area_height,
-          margin: [0, param.below_mu_area_margin]
+          margin: [param.mu_margin_top, param.mu_margin_bottom]
         },
         body: {
           detected: true,
           height: param.row_height,
-          margin: [0, 0]
+          margin: [param.margin_top, param.margin_bottom]
         },
         rs: {
           detected: false,
           height: param.rs_area_height,
-          margin: [param.above_rs_area_margin, param.below_rs_area_margin]
+          margin: [param.rs_margin_top, param.rs_margin_bottom]
         },
         ml: {
           detected: false,
           height: param.ml_row_height,
-          margin: [param.above_ml_area_margin, 0]
+          margin: [param.ml_margin_top, param.ml_margin_bottom]
         },
         irm: {
           detected: true,

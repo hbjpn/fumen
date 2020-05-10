@@ -142,6 +142,13 @@ export class DefaultRenderer extends Renderer {
         for (let key in param) {
             this.param[key] = common.deepcopy(param[key]);
         }
+        
+        // Determine offset values in case some are omitted
+        this.param.y_offset_top    =  this.param.y_offset_top    || this.param.y_offset;
+        this.param.y_offset_bottom =  this.param.y_offset_bottom || this.param.y_offset;
+        this.param.x_offset_left   =  this.param.x_offset_left   || this.param.x_offset;
+        this.param.x_offset_right  =  this.param.x_offset_right  || this.param.x_offset;
+        
         this.track = null;
 
         this.context = {
@@ -404,7 +411,7 @@ export class DefaultRenderer extends Renderer {
     }
 
     determine_rooms(param, reharsal_x_width_info){
-        let total_width = param.paper_width / this.param.text_size - 2*param.x_offset;
+        let total_width = param.paper_width / this.param.text_size - (param.x_offset_left + param.x_offset_right);
 
         let field_sum = function(arr,field){
             return arr.reduce( (acc,e)=>{ let obj={}; obj[field]=acc[field]+e[field]; return obj;} )[field];
@@ -784,8 +791,9 @@ export class DefaultRenderer extends Renderer {
         var y_title_offset = origin.y + param.y_title_offset;
         var y_subtitle_offset = origin.y + param.y_subtitle_offset;
         var y_artist_offset = origin.y + param.y_artist_offset;
-        var x_offset = origin.x + param.x_offset;
-        var width = param.paper_width / this.param.text_size / param.ncol - param.x_offset * 2;
+        var x_offset = origin.x + param.x_offset_left;
+        var width = param.paper_width / this.param.text_size / param.ncol
+            - ( param.x_offset_left + param.x_offset_right );
 
         // Music context
         var music_context = {
@@ -981,7 +989,7 @@ export class DefaultRenderer extends Renderer {
         if(show_header){
             y_base_screening += param.y_first_page_offset;
         }else{
-            y_base_screening += param.y_offset;
+            y_base_screening += param.y_offset_top;
         }
 
         let dammy_music_context = common.deepcopy(music_context); // Maybe not required ?
@@ -994,7 +1002,7 @@ export class DefaultRenderer extends Renderer {
 
             if (yse[pei].type == "titles") continue;
 
-            let x = yse[pei].param.x_offset;
+            let x = yse[pei].param.x_offset_left;
 
             //if(yse[pei].rg_id != current_rg_block[0] || yse[pei].block_id != current_rg_block[1]){
             if(!yse[pei].block_ids.includes(current_accum_block_id)){
@@ -1049,7 +1057,7 @@ export class DefaultRenderer extends Renderer {
                this.determine_rooms(yse[pei].param, reharsal_x_width_info);
            }
        }
-       y_base_screening += param.y_offset; // Here y_base_screening means the height of the total score if single page applied.
+       y_base_screening += param.y_offset_bottom; // Here y_base_screening means the height of the total score if single page applied.
 
         // ----------------------
         // Stage 2 : Rendering
@@ -1115,7 +1123,7 @@ export class DefaultRenderer extends Renderer {
             y_stacks.push({ type: "titles", height: param.y_first_page_offset });
             y_base += param.y_first_page_offset;
         }else{
-            y_base += param.y_offset;
+            y_base += param.y_offset_top;
         }
 
 
@@ -1130,7 +1138,7 @@ export class DefaultRenderer extends Renderer {
                 let row_elements_list = yse[pei].cont;
                 
                 let ylimit = this.canvas_provider != null
-                    ? score_height - yse[pei].param.y_offset
+                    ? score_height - yse[pei].param.y_offset_bottom
                     : null;
                 
                 let r = this.render_measure_row_simplified(
@@ -1149,10 +1157,10 @@ export class DefaultRenderer extends Renderer {
                 );
                 if (!r) {
                     // Paper height is too low and even single row is not fit in
-                    if(y_base == origin.y + yse[pei].param.y_offset){
+                    if(y_base == origin.y + yse[pei].param.y_offset_top){
                         throw "Paper height is too short to fit in single row";
                     }else{
-                        y_base = origin.y + yse[pei].param.y_offset;
+                        y_base = origin.y + yse[pei].param.y_offset_top;
                     }
 
                     canvas = await this.canvas_provider();
@@ -1298,7 +1306,7 @@ export class DefaultRenderer extends Renderer {
         var half_type = macros.KEY_TYPE;
         var key = macros.KEY;
 
-        var total_width = param.paper_width / param.text_size - 2 * param.x_offset;
+        var total_width = param.paper_width / param.text_size - (param.x_offset_left + param.x_offset_right);
 
         let dammy_rs_area_height = 24; // any value is ok
 

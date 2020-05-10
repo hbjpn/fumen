@@ -14104,8 +14104,13 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
     for (var _key in param) {
       _this.param[_key] = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](param[_key]);
-    }
+    } // Determine offset values in case some are omitted
 
+
+    _this.param.y_offset_top = _this.param.y_offset_top || _this.param.y_offset;
+    _this.param.y_offset_bottom = _this.param.y_offset_bottom || _this.param.y_offset;
+    _this.param.x_offset_left = _this.param.x_offset_left || _this.param.x_offset;
+    _this.param.x_offset_right = _this.param.x_offset_right || _this.param.x_offset;
     _this.track = null;
     _this.context = {
       paper: null,
@@ -14351,7 +14356,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
   }, {
     key: "determine_rooms",
     value: function determine_rooms(param, reharsal_x_width_info) {
-      var total_width = param.paper_width / this.param.text_size - 2 * param.x_offset;
+      var total_width = param.paper_width / this.param.text_size - (param.x_offset_left + param.x_offset_right);
 
       var field_sum = function field_sum(arr, field) {
         return arr.reduce(function (acc, e) {
@@ -14756,8 +14761,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 y_title_offset = origin.y + param.y_title_offset;
                 y_subtitle_offset = origin.y + param.y_subtitle_offset;
                 y_artist_offset = origin.y + param.y_artist_offset;
-                x_offset = origin.x + param.x_offset;
-                width = param.paper_width / this.param.text_size / param.ncol - param.x_offset * 2; // Music context
+                x_offset = origin.x + param.x_offset_left;
+                width = param.paper_width / this.param.text_size / param.ncol - (param.x_offset_left + param.x_offset_right); // Music context
 
                 music_context = {
                   accidental_info: {},
@@ -14973,7 +14978,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 if (show_header) {
                   y_base_screening += param.y_first_page_offset;
                 } else {
-                  y_base_screening += param.y_offset;
+                  y_base_screening += param.y_offset_top;
                 }
 
                 dammy_music_context = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](music_context); // Maybe not required ?
@@ -14996,7 +15001,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 return _context.abrupt("continue", 40);
 
               case 31:
-                x = yse[pei].param.x_offset; //if(yse[pei].rg_id != current_rg_block[0] || yse[pei].block_id != current_rg_block[1]){
+                x = yse[pei].param.x_offset_left; //if(yse[pei].rg_id != current_rg_block[0] || yse[pei].block_id != current_rg_block[1]){
 
                 if (!yse[pei].block_ids.includes(current_accum_block_id)) {
                   // Per block optimization
@@ -15039,7 +15044,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 break;
 
               case 43:
-                y_base_screening += param.y_offset; // Here y_base_screening means the height of the total score if single page applied.
+                y_base_screening += param.y_offset_bottom; // Here y_base_screening means the height of the total score if single page applied.
                 // ----------------------
                 // Stage 2 : Rendering
                 // ----------------------
@@ -15082,7 +15087,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                   });
                   y_base += param.y_first_page_offset;
                 } else {
-                  y_base += param.y_offset;
+                  y_base += param.y_offset_top;
                 }
 
                 canvaslist = [canvas];
@@ -15109,7 +15114,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 }
 
                 _row_elements_list4 = yse[_pei].cont;
-                ylimit = this.canvas_provider != null ? score_height - yse[_pei].param.y_offset : null;
+                ylimit = this.canvas_provider != null ? score_height - yse[_pei].param.y_offset_bottom : null;
                 r = this.render_measure_row_simplified(x_offset, canvas, yse[_pei].macros, _row_elements_list4, yse[_pei].pm, yse[_pei].nm, y_base, yse[_pei].param, true, yse[_pei].macros.REHARSAL_MARK_POSITION == "Inner", ylimit, music_context);
 
                 if (r) {
@@ -15117,7 +15122,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                   break;
                 }
 
-                if (!(y_base == origin.y + yse[_pei].param.y_offset)) {
+                if (!(y_base == origin.y + yse[_pei].param.y_offset_top)) {
                   _context.next = 69;
                   break;
                 }
@@ -15125,7 +15130,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 throw "Paper height is too short to fit in single row";
 
               case 69:
-                y_base = origin.y + yse[_pei].param.y_offset;
+                y_base = origin.y + yse[_pei].param.y_offset_top;
 
               case 70:
                 _context.next = 72;
@@ -15284,7 +15289,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       var transpose = macros.TRANSPOSE;
       var half_type = macros.KEY_TYPE;
       var key = macros.KEY;
-      var total_width = param.paper_width / param.text_size - 2 * param.x_offset;
+      var total_width = param.paper_width / param.text_size - (param.x_offset_left + param.x_offset_right);
       var dammy_rs_area_height = 24; // any value is ok
       // Determine the width of each measure
 

@@ -1,3 +1,120 @@
+
+/*!
+fumen v2.0.0Beta
+
+The MIT License (MIT)
+
+Copyright (c) 2020 Hiroyuki Baba
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+** Musical font parts are provided under OFL lisence **
+
+Copyright © 2015, Steinberg Media Technologies GmbH (http://www.steinberg.net/),
+with Reserved Font Name "Bravura".
+
+Copyright © 2020, Hiroyuki Baba (hiroyuki.baba.jp@gmail.com),
+with Reserved Font Name "Fumen".
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+This license is copied below, and is also available with a FAQ at:
+http://scripts.sil.org/OFL
+
+
+-----------------------------------------------------------
+SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
+-----------------------------------------------------------
+
+PREAMBLE
+The goals of the Open Font License (OFL) are to stimulate worldwide
+development of collaborative font projects, to support the font creation
+efforts of academic and linguistic communities, and to provide a free and
+open framework in which fonts may be shared and improved in partnership
+with others.
+
+The OFL allows the licensed fonts to be used, studied, modified and
+redistributed freely as long as they are not sold by themselves. The
+fonts, including any derivative works, can be bundled, embedded, 
+redistributed and/or sold with any software provided that any reserved
+names are not used by derivative works. The fonts and derivatives,
+however, cannot be released under any other type of license. The
+requirement for fonts to remain under this license does not apply
+to any document created using the fonts or their derivatives.
+
+DEFINITIONS
+"Font Software" refers to the set of files released by the Copyright
+Holder(s) under this license and clearly marked as such. This may
+include source files, build scripts and documentation.
+
+"Reserved Font Name" refers to any names specified as such after the
+copyright statement(s).
+
+"Original Version" refers to the collection of Font Software components as
+distributed by the Copyright Holder(s).
+
+"Modified Version" refers to any derivative made by adding to, deleting,
+or substituting -- in part or in whole -- any of the components of the
+Original Version, by changing formats or by porting the Font Software to a
+new environment.
+
+"Author" refers to any designer, engineer, programmer, technical
+writer or other person who contributed to the Font Software.
+
+PERMISSION & CONDITIONS
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of the Font Software, to use, study, copy, merge, embed, modify,
+redistribute, and sell modified and unmodified copies of the Font
+Software, subject to the following conditions:
+
+1) Neither the Font Software nor any of its individual components,
+in Original or Modified Versions, may be sold by itself.
+
+2) Original or Modified Versions of the Font Software may be bundled,
+redistributed and/or sold with any software, provided that each copy
+contains the above copyright notice and this license. These can be
+included either as stand-alone text files, human-readable headers or
+in the appropriate machine-readable metadata fields within text or
+binary files as long as those fields can be easily viewed by the user.
+
+3) No Modified Version of the Font Software may use the Reserved Font
+Name(s) unless explicit written permission is granted by the corresponding
+Copyright Holder. This restriction only applies to the primary font name as
+presented to the users.
+
+4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font
+Software shall not be used to promote, endorse or advertise any
+Modified Version, except to acknowledge the contribution(s) of the
+Copyright Holder(s) and the Author(s) or with their explicit written
+permission.
+
+5) The Font Software, modified or unmodified, in part or in whole,
+must be distributed entirely under this license, and must not be
+distributed under any other license. The requirement for fonts to
+remain under this license does not apply to any document created
+using the Font Software.
+
+TERMINATION
+This license becomes null and void if any of the above conditions are
+not met.
+
+DISCLAIMER
+THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
+OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
+DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
+OTHER DEALINGS IN THE FONT SOFTWARE.
+
+*/
+
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -12850,6 +12967,9 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
+/**
+ * @module Fumen
+ */
 
 
 
@@ -12936,6 +13056,9 @@ var WORD_DEFINIITON_GENERAL = /^(\w[\w¥.,\-+#:]*)/;
 var WORD_DEFINITION_IN_REHARSAL_MARK = /^[^[\]]*/;
 var WORD_DEFINITION_CHORD_SYMBOL = /^[\w.,\-+#/():~]*/;
 var Parser = /*#__PURE__*/function () {
+  /**
+   * Parser class for fumen markdown code
+   */
   function Parser(error_msg_callback) {
     _classCallCheck(this, Parser);
 
@@ -13614,12 +13737,17 @@ var Parser = /*#__PURE__*/function () {
 
       return headers;
     }
+    /**
+     * Parse the fumen markdown code
+     * @param {String} code Markdown code
+     */
+
   }, {
     key: "parse",
-    value: function parse(s) {
+    value: function parse(code) {
       try {
-        s = s.replace(/\r\n/g, "\n");
-        s = s.replace(/\r/g, "\n");
+        code = code.replace(/\r\n/g, "\n");
+        code = code.replace(/\r/g, "\n");
         var r = null;
         var loop_cnt = 0;
         var track = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Track"]();
@@ -13632,7 +13760,7 @@ var Parser = /*#__PURE__*/function () {
         }; // eslint-disable-next-line no-constant-condition
 
         while (true) {
-          r = this.nextToken(s); //console.log(r);
+          r = this.nextToken(code); //console.log(r);
 
           if (r.type == TOKEN_END) break;
 
@@ -13710,7 +13838,7 @@ var Parser = /*#__PURE__*/function () {
             this.onParseError("ERROR_WHILE_PARSE_MOST_OUTSIDER");
           }
 
-          s = r.s;
+          code = r.s;
           loop_cnt++;
           if (loop_cnt >= 1000) break;
         }
@@ -13719,7 +13847,7 @@ var Parser = /*#__PURE__*/function () {
           track.reharsal_groups.push(currentReharsalGroup);
           currentReharsalGroup = null;
         } // If same reharsal mark appears, preceeding one is applied
-        // NOET : This is abandoned in fumen2 as it does not provide a benefit but cause confusion.
+        // NOET : This is abandoned in fumen v2 as it does not provide a benefit but cause confusion.
         // eslint-disable-next-line no-constant-condition
 
 
@@ -13791,10 +13919,22 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
+/**
+ * @module Fumen
+ */
 
 
 
  //import { getGlobalMacros, getMacros } from "../parser/parser";
+
+/**
+ * @typedef RenderParam
+ * @global
+ * @description An Object to specify prameters for rendering engine
+ * @property {Number} [paper_width=120] Width of the paper
+ * @property {Number} [paper_height=(96 * 297) / 25.4] Height of the paper. If 0 is specified, the paper height is fit to its contents.
+ * @property {float} [text_size=1.0] Text size as a ratio to default size. 0.9 means 10% smaller than default size.
+ */
 
 var SR_RENDER_PARAM = {
   origin: {
@@ -13892,22 +14032,39 @@ var SR_RENDER_PARAM = {
   row_gen_mode: "default",
   // constant_meas
   row_gen_n_meas: 4
-}; // Simple renderer offsets
+};
+/**
+ * Callback function when new canvas is requested by renderer.
+ * @global
+ * @callback canvasProvider
+ * @return {(HTMLElement|Promise<HTMLElement>)} HTML canvas element
+ */
 
 var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
   _inherits(DefaultRenderer, _Renderer);
 
   var _super = _createSuper(DefaultRenderer);
 
+  /**
+   * Default Renderer class for HTML canvas element
+   * @param {(HTMLElement|canvasProvider)} canvas - HTML canvas element to draw the image. Or, callback function which returns HTML canvas element.
+   * @param {RenderParam} param - Parameter for the rednering
+   */
   function DefaultRenderer(canvas, param) {
     var _this;
-
-    var canvas_provider = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
 
     _classCallCheck(this, DefaultRenderer);
 
     _this = _super.call(this);
-    _this.canvas = canvas;
+
+    if (typeof canvas == "function") {
+      _this.canvas_provider = canvas;
+      _this.canvas = null;
+    } else {
+      _this.canvas = canvas;
+      _this.canvas_provider = null;
+    }
+
     _this.memCanvas = null; // Canvas on memory used for screening
 
     _this.param = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](SR_RENDER_PARAM); // Default parameters
@@ -13917,7 +14074,6 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       _this.param[key] = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](param[key]);
     }
 
-    _this.canvas_provider = canvas_provider;
     _this.track = null;
     _this.context = {
       paper: null,
@@ -13925,6 +14081,11 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
     };
     return _this;
   }
+  /**
+   * Render the track
+   * @param {Track} track - Track object passed from Parser.parse function 
+   */
+
 
   _createClass(DefaultRenderer, [{
     key: "render",
@@ -16313,6 +16474,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
     }
     /**
      * Draw boundary
+     * @private
      * @param side : 'begin' or 'end' of boundary for current measure
      * @param e0 : Boundary element: 0
      *             - 'end' boundary if the previous measure when <side> is 'begin'
@@ -16480,9 +16642,16 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "fontData", function() { return fontData; });
-/**
- * FoumenFonts enmbeded in the javascript sourcecodes as svg DataURL.
- * User font-make.html to generalte SVG DataURL from svg fonts like Bravura.
+/* -----------------------------------------------------------------------------
+ * Backround and acknowledgements
+ * -----------------------------------------------------------------------------
+ * Fumen font is a modified version of Bravura font provided from 
+ * Steinberg Media Technologies GmbH (http://www.steinberg.net/). 
+ * Fumen font is generated by extracting some of the glyphs from 
+ * Bravura font and is enmbeded directly in the form javascript 
+ * sourcecode including a SVG dataURL. 
+ * Use font-make.html to generate the following codes from svg font file.
+ * -----------------------------------------------------------------------------
  */
 var fontData = {
   "uni266D": {

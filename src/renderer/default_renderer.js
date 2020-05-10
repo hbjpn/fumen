@@ -36,6 +36,13 @@ var SR_RENDER_PARAM = {
     x_offset            : 10,
     y_footer_offset     : 10,
 
+    // Font size settings
+    reharsal_mark_font_size : 12,
+    title_font_size         : 14,
+    subtitle_font_size      : 12,
+    artist_font_size        : 14, // 
+    base_font_size          : 28, // Chord symbol font size
+
     // Row Settings
     row_height          : 28, // Basic height of the measure when no rs, mu and ml area is drawn
     base_body_height    : 28, // Height in body area (not applicable for RS area) used for simile and rest rendering. Recommended to keep this value irrespective of row_height.
@@ -58,13 +65,6 @@ var SR_RENDER_PARAM = {
         "font-style": "italic",
         "font-weight": "bold"
     },
-
-    // Font size settings
-    reharsal_mark_font_size : 12,
-    title_font_size         : 14,
-    subtitle_font_size      : 12,
-    artist_font_size        : 14, // 
-    base_font_size          : 28, // Chord symbol font size
 
     // Note rendering settings
     balken_width            : 3,

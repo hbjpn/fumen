@@ -9,6 +9,14 @@ import * as common from "../common/common";
 import * as graphic from "./graphic";
 //import { getGlobalMacros, getMacros } from "../parser/parser";
 
+/**
+ * @typedef RenderParam
+ * @global
+ * @description An Object to specify prameters for rendering engine
+ * @property {Number} [paper_width=120] Width of the paper
+ * @property {Number} [paper_height=(96 * 297) / 25.4] Height of the paper. If 0 is specified, the paper height is fit to its contents.
+ * @property {float} [text_size=1.0] Text size as a ratio to default size. 0.9 means 10% smaller than default size.
+ */
 var SR_RENDER_PARAM = {
     origin: { x: 0, y: 0 },
     y_title_offset: 2,
@@ -69,10 +77,6 @@ var SR_RENDER_PARAM = {
     row_gen_n_meas  : 4
 };
 
-// Simple renderer offsets
-
-
-
 /**
  * Callback function when new canvas is requested by renderer.
  * @global
@@ -85,14 +89,19 @@ export class DefaultRenderer extends Renderer {
     /**
      * Default Renderer class for HTML canvas element
      * @param {(HTMLElement|canvasProvider)} canvas - HTML canvas element to draw the image. Or, callback function which returns HTML canvas element.
-     * @param {Object} param - Parameter for the rednering
-     * @param {int} param.paper_width - Width of the paper
-     * @param {int} param.paper_height - Height of the paper. If 0 is specified, the paper height is paper height is adjusted with its contents.
+     * @param {RenderParam} param - Parameter for the rednering
      */
-    constructor(canvas, param, canvas_provider=null) {
+    constructor(canvas, param) {
         super();
 
-        this.canvas = canvas;
+        if(typeof(canvas)=="function"){
+            this.canvas_provider = canvas;
+            this.canvas = null;
+        }else{
+            this.canvas = canvas;
+            this.canvas_provider = null;    
+        }
+
         this.memCanvas = null; // Canvas on memory used for screening
 
         this.param = common.deepcopy(SR_RENDER_PARAM); // Default parameters
@@ -100,8 +109,6 @@ export class DefaultRenderer extends Renderer {
         for (let key in param) {
             this.param[key] = common.deepcopy(param[key]);
         }
-
-        this.canvas_provider = canvas_provider;
 
         this.track = null;
 

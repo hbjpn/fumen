@@ -12967,6 +12967,9 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
+/**
+ * @module Fumen
+ */
 
 
 
@@ -13053,6 +13056,9 @@ var WORD_DEFINIITON_GENERAL = /^(\w[\w¥.,\-+#:]*)/;
 var WORD_DEFINITION_IN_REHARSAL_MARK = /^[^[\]]*/;
 var WORD_DEFINITION_CHORD_SYMBOL = /^[\w.,\-+#/():~]*/;
 var Parser = /*#__PURE__*/function () {
+  /**
+   * Parser class for fumen markdown code
+   */
   function Parser(error_msg_callback) {
     _classCallCheck(this, Parser);
 
@@ -13731,12 +13737,17 @@ var Parser = /*#__PURE__*/function () {
 
       return headers;
     }
+    /**
+     * Parse the fumen markdown code
+     * @param {String} code Markdown code
+     */
+
   }, {
     key: "parse",
-    value: function parse(s) {
+    value: function parse(code) {
       try {
-        s = s.replace(/\r\n/g, "\n");
-        s = s.replace(/\r/g, "\n");
+        code = code.replace(/\r\n/g, "\n");
+        code = code.replace(/\r/g, "\n");
         var r = null;
         var loop_cnt = 0;
         var track = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Track"]();
@@ -13749,7 +13760,7 @@ var Parser = /*#__PURE__*/function () {
         }; // eslint-disable-next-line no-constant-condition
 
         while (true) {
-          r = this.nextToken(s); //console.log(r);
+          r = this.nextToken(code); //console.log(r);
 
           if (r.type == TOKEN_END) break;
 
@@ -13827,7 +13838,7 @@ var Parser = /*#__PURE__*/function () {
             this.onParseError("ERROR_WHILE_PARSE_MOST_OUTSIDER");
           }
 
-          s = r.s;
+          code = r.s;
           loop_cnt++;
           if (loop_cnt >= 1000) break;
         }
@@ -13908,10 +13919,22 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
+/**
+ * @module Fumen
+ */
 
 
 
  //import { getGlobalMacros, getMacros } from "../parser/parser";
+
+/**
+ * @typedef RenderParam
+ * @global
+ * @description An Object to specify prameters for rendering engine
+ * @property {Number} [paper_width=120] Width of the paper
+ * @property {Number} [paper_height=(96 * 297) / 25.4] Height of the paper. If 0 is specified, the paper height is fit to its contents.
+ * @property {float} [text_size=1.0] Text size as a ratio to default size. 0.9 means 10% smaller than default size.
+ */
 
 var SR_RENDER_PARAM = {
   origin: {
@@ -14009,22 +14032,39 @@ var SR_RENDER_PARAM = {
   row_gen_mode: "default",
   // constant_meas
   row_gen_n_meas: 4
-}; // Simple renderer offsets
+};
+/**
+ * Callback function when new canvas is requested by renderer.
+ * @global
+ * @callback canvasProvider
+ * @return {(HTMLElement|Promise<HTMLElement>)} HTML canvas element
+ */
 
 var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
   _inherits(DefaultRenderer, _Renderer);
 
   var _super = _createSuper(DefaultRenderer);
 
+  /**
+   * Default Renderer class for HTML canvas element
+   * @param {(HTMLElement|canvasProvider)} canvas - HTML canvas element to draw the image. Or, callback function which returns HTML canvas element.
+   * @param {RenderParam} param - Parameter for the rednering
+   */
   function DefaultRenderer(canvas, param) {
     var _this;
-
-    var canvas_provider = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
 
     _classCallCheck(this, DefaultRenderer);
 
     _this = _super.call(this);
-    _this.canvas = canvas;
+
+    if (typeof canvas == "function") {
+      _this.canvas_provider = canvas;
+      _this.canvas = null;
+    } else {
+      _this.canvas = canvas;
+      _this.canvas_provider = null;
+    }
+
     _this.memCanvas = null; // Canvas on memory used for screening
 
     _this.param = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](SR_RENDER_PARAM); // Default parameters
@@ -14034,7 +14074,6 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       _this.param[key] = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](param[key]);
     }
 
-    _this.canvas_provider = canvas_provider;
     _this.track = null;
     _this.context = {
       paper: null,
@@ -14042,6 +14081,11 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
     };
     return _this;
   }
+  /**
+   * Render the track
+   * @param {Track} track - Track object passed from Parser.parse function 
+   */
+
 
   _createClass(DefaultRenderer, [{
     key: "render",
@@ -16430,6 +16474,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
     }
     /**
      * Draw boundary
+     * @private
      * @param side : 'begin' or 'end' of boundary for current measure
      * @param e0 : Boundary element: 0
      *             - 'end' boundary if the previous measure when <side> is 'begin'

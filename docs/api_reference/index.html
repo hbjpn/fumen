@@ -1,0 +1,1097 @@
+
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Markup language and rendering engine for music leadsheet creation with simple, easy and intuitive syntax, supporting various types of compoents used in popular music's leadsheet such as chord symbols, rhythm slashes, rest marks, repeat marks, reharsal marks, comments, lyrics.">
+      
+      
+        <link rel="canonical" href="https://hbjpn.github.io/fumen/api_reference/">
+      
+      
+      <link rel="shortcut icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.1, mkdocs-material-5.1.5">
+    
+    
+      
+        <title>Reference - Fumen</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.df84b5fe.min.css">
+      
+      
+    
+    
+    
+      
+        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>body,input{font-family:"Roboto",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono",SFMono-Regular,Consolas,Menlo,monospace}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="../css/extra.css">
+    
+    
+      
+        
+<link rel="preconnect dns-prefetch" href="https://www.google-analytics.com">
+<script>window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga("create","UA-165626899-1","auto"),ga("set","anonymizeIp",!0),ga("send","pageview"),document.addEventListener("DOMContentLoaded",function(){document.forms.search&&document.forms.search.query.addEventListener("blur",function(){if(this.value){var e=document.location.pathname;ga("send","pageview",e+"?q="+this.value)}})}),document.addEventListener("DOMContentSwitch",function(){ga("send","pageview")})</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+      
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#modules" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid" aria-label="Header">
+    <a href="https://hbjpn.github.io/fumen/" title="Fumen" class="md-header-nav__button md-logo" aria-label="Fumen">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header-nav__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header-nav__title" data-md-component="header-title">
+      
+        <div class="md-header-nav__ellipsis">
+          <span class="md-header-nav__topic md-ellipsis">
+            Fumen
+          </span>
+          <span class="md-header-nav__topic md-ellipsis">
+            
+              Reference
+            
+          </span>
+        </div>
+      
+    </div>
+    
+    
+      <div class="md-header-nav__source">
+        
+<a href="https://github.com/hbjpn/fumen/" title="Go to repository" class="md-source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 00-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 01-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 000 40.81l195.61 195.6a28.86 28.86 0 0040.8 0l194.69-194.69a28.86 28.86 0 000-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+        
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="https://hbjpn.github.io/fumen/" title="Fumen" class="md-nav__button md-logo" aria-label="Fumen">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    Fumen
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/hbjpn/fumen/" title="Go to repository" class="md-source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 00-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 01-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 000 40.81l195.61 195.6a28.86 28.86 0 0040.8 0l194.69-194.69a28.86 28.86 0 000-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href=".." title="Home" class="md-nav__link">
+      Home
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2">
+    
+    <label class="md-nav__link" for="nav-2">
+      Markdown
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59 16.58L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.42z"/></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Markdown" data-md-level="1">
+      <label class="md-nav__title" for="nav-2">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+        </span>
+        Markdown
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../structure/" title="Structure" class="md-nav__link">
+      Structure
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../chord/" title="Chords" class="md-nav__link">
+      Chords
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../rest/" title="Rests" class="md-nav__link">
+      Rests
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../duration-indicator/" title="Duration Indicator" class="md-nav__link">
+      Duration Indicator
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../repeat-sign/" title="Repeat Signs" class="md-nav__link">
+      Repeat Signs
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../time-sign/" title="Time Signs" class="md-nav__link">
+      Time Signs
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../text/" title="Text" class="md-nav__link">
+      Text
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../variable/" title="Variables" class="md-nav__link">
+      Variables
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../transpose/" title="Transpose" class="md-nav__link">
+      Transpose
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3" checked>
+    
+    <label class="md-nav__link" for="nav-3">
+      API
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59 16.58L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.42z"/></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="API" data-md-level="1">
+      <label class="md-nav__title" for="nav-3">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+        </span>
+        API
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../api/" title="Quick Start" class="md-nav__link">
+      Quick Start
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        Reference
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 9h14V7H3v2m0 4h14v-2H3v2m0 4h14v-2H3v2m16 0h2v-2h-2v2m0-10v2h2V7h-2m0 6h2v-2h-2v2z"/></svg>
+        </span>
+      </label>
+    
+    <a href="./" title="Reference" class="md-nav__link md-nav__link--active">
+      Reference
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#modules" class="md-nav__link">
+    Modules
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#typedefs" class="md-nav__link">
+    Typedefs
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fumen" class="md-nav__link">
+    Fumen
+  </a>
+  
+    <nav class="md-nav" aria-label="Fumen">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fumenparser" class="md-nav__link">
+    Fumen.Parser
+  </a>
+  
+    <nav class="md-nav" aria-label="Fumen.Parser">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-exportsparser" class="md-nav__link">
+    new exports.Parser()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parserparsecode" class="md-nav__link">
+    parser.parse(code)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fumendefaultrenderer" class="md-nav__link">
+    Fumen.DefaultRenderer
+  </a>
+  
+    <nav class="md-nav" aria-label="Fumen.DefaultRenderer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-exportsdefaultrenderercanvas-param" class="md-nav__link">
+    new exports.DefaultRenderer(canvas, param)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defaultrendererrendertrack" class="md-nav__link">
+    defaultRenderer.render(track)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fumen_1" class="md-nav__link">
+    Fumen
+  </a>
+  
+    <nav class="md-nav" aria-label="Fumen">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fumenparser_1" class="md-nav__link">
+    Fumen.Parser
+  </a>
+  
+    <nav class="md-nav" aria-label="Fumen.Parser">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-exportsparser_1" class="md-nav__link">
+    new exports.Parser()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parserparsecode_1" class="md-nav__link">
+    parser.parse(code)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fumendefaultrenderer_1" class="md-nav__link">
+    Fumen.DefaultRenderer
+  </a>
+  
+    <nav class="md-nav" aria-label="Fumen.DefaultRenderer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-exportsdefaultrenderercanvas-param_1" class="md-nav__link">
+    new exports.DefaultRenderer(canvas, param)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defaultrendererrendertrack_1" class="md-nav__link">
+    defaultRenderer.render(track)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#renderparam" class="md-nav__link">
+    RenderParam
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#canvasprovider-htmlelement-promisehtmlelement" class="md-nav__link">
+    canvasProvider ⇒ HTMLElement | Promise.&lt;HTMLElement&gt;
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#modules" class="md-nav__link">
+    Modules
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#typedefs" class="md-nav__link">
+    Typedefs
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fumen" class="md-nav__link">
+    Fumen
+  </a>
+  
+    <nav class="md-nav" aria-label="Fumen">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fumenparser" class="md-nav__link">
+    Fumen.Parser
+  </a>
+  
+    <nav class="md-nav" aria-label="Fumen.Parser">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-exportsparser" class="md-nav__link">
+    new exports.Parser()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parserparsecode" class="md-nav__link">
+    parser.parse(code)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fumendefaultrenderer" class="md-nav__link">
+    Fumen.DefaultRenderer
+  </a>
+  
+    <nav class="md-nav" aria-label="Fumen.DefaultRenderer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-exportsdefaultrenderercanvas-param" class="md-nav__link">
+    new exports.DefaultRenderer(canvas, param)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defaultrendererrendertrack" class="md-nav__link">
+    defaultRenderer.render(track)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fumen_1" class="md-nav__link">
+    Fumen
+  </a>
+  
+    <nav class="md-nav" aria-label="Fumen">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fumenparser_1" class="md-nav__link">
+    Fumen.Parser
+  </a>
+  
+    <nav class="md-nav" aria-label="Fumen.Parser">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-exportsparser_1" class="md-nav__link">
+    new exports.Parser()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parserparsecode_1" class="md-nav__link">
+    parser.parse(code)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fumendefaultrenderer_1" class="md-nav__link">
+    Fumen.DefaultRenderer
+  </a>
+  
+    <nav class="md-nav" aria-label="Fumen.DefaultRenderer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-exportsdefaultrenderercanvas-param_1" class="md-nav__link">
+    new exports.DefaultRenderer(canvas, param)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defaultrendererrendertrack_1" class="md-nav__link">
+    defaultRenderer.render(track)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#renderparam" class="md-nav__link">
+    RenderParam
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#canvasprovider-htmlelement-promisehtmlelement" class="md-nav__link">
+    canvasProvider ⇒ HTMLElement | Promise.&lt;HTMLElement&gt;
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/hbjpn/fumen/edit/master/docs/api_reference.md" title="Edit this page" class="md-content__button md-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+                  </a>
+                
+                
+                  
+                
+                
+                  <h1>Reference</h1>
+                
+                <h2 id="modules">Modules</h2>
+<dl>
+<dt><a href="#module_Fumen">Fumen</a></dt>
+<dd></dd>
+<dt><a href="#module_Fumen">Fumen</a></dt>
+<dd></dd>
+</dl>
+
+<h2 id="typedefs">Typedefs</h2>
+<dl>
+<dt><a href="#RenderParam">RenderParam</a></dt>
+<dd><p>An Object to specify prameters for rendering engine</p>
+</dd>
+<dt><a href="#canvasProvider">canvasProvider</a> ⇒ <code>HTMLElement</code> | <code>Promise.&lt;HTMLElement&gt;</code></dt>
+<dd><p>Callback function when new canvas is requested by renderer.</p>
+</dd>
+</dl>
+
+<p><a name="module_Fumen"></a></p>
+<h2 id="fumen">Fumen</h2>
+<ul>
+<li><a href="#module_Fumen">Fumen</a><ul>
+<li><a href="#module_Fumen.Parser">.Parser</a><ul>
+<li><a href="#new_module_Fumen.Parser_new">new exports.Parser()</a></li>
+<li><a href="#module_Fumen.Parser+parse">.parse(code)</a></li>
+</ul>
+</li>
+<li><a href="#module_Fumen.DefaultRenderer">.DefaultRenderer</a><ul>
+<li><a href="#new_module_Fumen.DefaultRenderer_new">new exports.DefaultRenderer(canvas, param)</a></li>
+<li><a href="#module_Fumen.DefaultRenderer+render">.render(track)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p><a name="module_Fumen.Parser"></a></p>
+<h3 id="fumenparser">Fumen.Parser</h3>
+<p><strong>Kind</strong>: static class of <a href="#module_Fumen"><code>Fumen</code></a>  </p>
+<ul>
+<li><a href="#module_Fumen.Parser">.Parser</a><ul>
+<li><a href="#new_module_Fumen.Parser_new">new exports.Parser()</a></li>
+<li><a href="#module_Fumen.Parser+parse">.parse(code)</a></li>
+</ul>
+</li>
+</ul>
+<p><a name="new_module_Fumen.Parser_new"></a></p>
+<h4 id="new-exportsparser">new exports.Parser()</h4>
+<p>Parser class for fumen markdown code</p>
+<p><a name="module_Fumen.Parser+parse"></a></p>
+<h4 id="parserparsecode">parser.parse(code)</h4>
+<p>Parse the fumen markdown code</p>
+<p><strong>Kind</strong>: instance method of <a href="#module_Fumen.Parser"><code>Parser</code></a>  </p>
+<table>
+<thead>
+<tr>
+<th>Param</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>code</td>
+<td><code>String</code></td>
+<td>Markdown code</td>
+</tr>
+</tbody>
+</table>
+<p><a name="module_Fumen.DefaultRenderer"></a></p>
+<h3 id="fumendefaultrenderer">Fumen.DefaultRenderer</h3>
+<p><strong>Kind</strong>: static class of <a href="#module_Fumen"><code>Fumen</code></a>  </p>
+<ul>
+<li><a href="#module_Fumen.DefaultRenderer">.DefaultRenderer</a><ul>
+<li><a href="#new_module_Fumen.DefaultRenderer_new">new exports.DefaultRenderer(canvas, param)</a></li>
+<li><a href="#module_Fumen.DefaultRenderer+render">.render(track)</a></li>
+</ul>
+</li>
+</ul>
+<p><a name="new_module_Fumen.DefaultRenderer_new"></a></p>
+<h4 id="new-exportsdefaultrenderercanvas-param">new exports.DefaultRenderer(canvas, param)</h4>
+<p>Default Renderer class for HTML canvas element</p>
+<table>
+<thead>
+<tr>
+<th>Param</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>canvas</td>
+<td><code>HTMLElement</code> | <a href="#canvasProvider"><code>canvasProvider</code></a></td>
+<td>HTML canvas element to draw the image. Or, callback function which returns HTML canvas element.</td>
+</tr>
+<tr>
+<td>param</td>
+<td><a href="#RenderParam"><code>RenderParam</code></a></td>
+<td>Parameter for the rednering</td>
+</tr>
+</tbody>
+</table>
+<p><a name="module_Fumen.DefaultRenderer+render"></a></p>
+<h4 id="defaultrendererrendertrack">defaultRenderer.render(track)</h4>
+<p>Render the track</p>
+<p><strong>Kind</strong>: instance method of <a href="#module_Fumen.DefaultRenderer"><code>DefaultRenderer</code></a>  </p>
+<table>
+<thead>
+<tr>
+<th>Param</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>track</td>
+<td><code>Track</code></td>
+<td>Track object passed from Parser.parse function</td>
+</tr>
+</tbody>
+</table>
+<p><a name="module_Fumen"></a></p>
+<h2 id="fumen_1">Fumen</h2>
+<ul>
+<li><a href="#module_Fumen">Fumen</a><ul>
+<li><a href="#module_Fumen.Parser">.Parser</a><ul>
+<li><a href="#new_module_Fumen.Parser_new">new exports.Parser()</a></li>
+<li><a href="#module_Fumen.Parser+parse">.parse(code)</a></li>
+</ul>
+</li>
+<li><a href="#module_Fumen.DefaultRenderer">.DefaultRenderer</a><ul>
+<li><a href="#new_module_Fumen.DefaultRenderer_new">new exports.DefaultRenderer(canvas, param)</a></li>
+<li><a href="#module_Fumen.DefaultRenderer+render">.render(track)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p><a name="module_Fumen.Parser"></a></p>
+<h3 id="fumenparser_1">Fumen.Parser</h3>
+<p><strong>Kind</strong>: static class of <a href="#module_Fumen"><code>Fumen</code></a>  </p>
+<ul>
+<li><a href="#module_Fumen.Parser">.Parser</a><ul>
+<li><a href="#new_module_Fumen.Parser_new">new exports.Parser()</a></li>
+<li><a href="#module_Fumen.Parser+parse">.parse(code)</a></li>
+</ul>
+</li>
+</ul>
+<p><a name="new_module_Fumen.Parser_new"></a></p>
+<h4 id="new-exportsparser_1">new exports.Parser()</h4>
+<p>Parser class for fumen markdown code</p>
+<p><a name="module_Fumen.Parser+parse"></a></p>
+<h4 id="parserparsecode_1">parser.parse(code)</h4>
+<p>Parse the fumen markdown code</p>
+<p><strong>Kind</strong>: instance method of <a href="#module_Fumen.Parser"><code>Parser</code></a>  </p>
+<table>
+<thead>
+<tr>
+<th>Param</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>code</td>
+<td><code>String</code></td>
+<td>Markdown code</td>
+</tr>
+</tbody>
+</table>
+<p><a name="module_Fumen.DefaultRenderer"></a></p>
+<h3 id="fumendefaultrenderer_1">Fumen.DefaultRenderer</h3>
+<p><strong>Kind</strong>: static class of <a href="#module_Fumen"><code>Fumen</code></a>  </p>
+<ul>
+<li><a href="#module_Fumen.DefaultRenderer">.DefaultRenderer</a><ul>
+<li><a href="#new_module_Fumen.DefaultRenderer_new">new exports.DefaultRenderer(canvas, param)</a></li>
+<li><a href="#module_Fumen.DefaultRenderer+render">.render(track)</a></li>
+</ul>
+</li>
+</ul>
+<p><a name="new_module_Fumen.DefaultRenderer_new"></a></p>
+<h4 id="new-exportsdefaultrenderercanvas-param_1">new exports.DefaultRenderer(canvas, param)</h4>
+<p>Default Renderer class for HTML canvas element</p>
+<table>
+<thead>
+<tr>
+<th>Param</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>canvas</td>
+<td><code>HTMLElement</code> | <a href="#canvasProvider"><code>canvasProvider</code></a></td>
+<td>HTML canvas element to draw the image. Or, callback function which returns HTML canvas element.</td>
+</tr>
+<tr>
+<td>param</td>
+<td><a href="#RenderParam"><code>RenderParam</code></a></td>
+<td>Parameter for the rednering</td>
+</tr>
+</tbody>
+</table>
+<p><a name="module_Fumen.DefaultRenderer+render"></a></p>
+<h4 id="defaultrendererrendertrack_1">defaultRenderer.render(track)</h4>
+<p>Render the track</p>
+<p><strong>Kind</strong>: instance method of <a href="#module_Fumen.DefaultRenderer"><code>DefaultRenderer</code></a>  </p>
+<table>
+<thead>
+<tr>
+<th>Param</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>track</td>
+<td><code>Track</code></td>
+<td>Track object passed from Parser.parse function</td>
+</tr>
+</tbody>
+</table>
+<p><a name="RenderParam"></a></p>
+<h2 id="renderparam">RenderParam</h2>
+<p>An Object to specify prameters for rendering engine</p>
+<p><strong>Kind</strong>: global typedef<br />
+<strong>Properties</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>[paper_width]</td>
+<td><code>Number</code></td>
+<td><code>120</code></td>
+<td>Width of the paper</td>
+</tr>
+<tr>
+<td>[paper_height]</td>
+<td><code>Number</code></td>
+<td><code>(96 * 297) / 25.4</code></td>
+<td>Height of the paper. If 0 is specified, the paper height is fit to its contents.</td>
+</tr>
+<tr>
+<td>[text_size]</td>
+<td><code>float</code></td>
+<td><code>1.0</code></td>
+<td>Text size as a ratio to default size. 0.9 means 10% smaller than default size.</td>
+</tr>
+</tbody>
+</table>
+<p><a name="canvasProvider"></a></p>
+<h2 id="canvasprovider-htmlelement-promisehtmlelement">canvasProvider ⇒ <code>HTMLElement</code> | <code>Promise.&lt;HTMLElement&gt;</code></h2>
+<p>Callback function when new canvas is requested by renderer.</p>
+<p><strong>Kind</strong>: global typedef<br />
+<strong>Returns</strong>: <code>HTMLElement</code> | <code>Promise.&lt;HTMLElement&gt;</code> - HTML canvas element  </p>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid" aria-label="Footer">
+        
+          <a href="../api/" title="Quick Start" class="md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-footer-nav__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+            </div>
+            <div class="md-footer-nav__title">
+              <div class="md-ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                Quick Start
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../assets/javascripts/vendor.83fe6e3c.min.js"></script>
+      <script src="../assets/javascripts/bundle.7e1cb91c.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+      
+      <script>
+        app = initialize({
+          base: "..",
+          features: [],
+          search: Object.assign({
+            worker: "../assets/javascripts/worker/search.37585f48.min.js"
+          }, typeof search !== "undefined" && search)
+        })
+      </script>
+      
+        <script src="../js/fumen.js"></script>
+      
+        <script src="../js/index.js"></script>
+      
+    
+  </body>
+</html>

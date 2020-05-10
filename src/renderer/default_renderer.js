@@ -18,6 +18,20 @@ import * as presets from "./presets";
  * @property {Number} [paper_width=375] Width of the paper
  * @property {Number} [paper_height=667] Height of the paper. If 0 is specified, the paper height is fit to its contents.
  * @property {float} [text_size=1.0] Text size as a ratio to default size. 0.9 means 10% smaller than default size.
+ * @property {int} [base_font_size] Font size of the chord symbols.
+ * @property {int} [title_font_size] Title font size
+ * @property {int} [artist_font_size] Artist font size
+ * @property {int} [x_offset] Margin of the left and right side of the paper.
+ * @property {int} [x_offset_left] Margin of the right side of the paper.
+ * @property {int} [x_offset_right] Margin of the left side of the paper.
+ * @property {int} [y_offset] Margin of the top and bottom side of the paper.
+ * @property {int} [y_offset_top=null] Margin of top side of the paper. In case header is drawn, this does not apply.
+ * @property {int} [y_offset_bottom=null] Margin of top side of the paper. In case header is drawn, this does not apply
+ * @property {int} [y_header_margin] Margin of the top y when header is shown (normally, firstpage)
+ * @property {int} [y_title_offset] Top offset for title
+ * @property {int} [y_subtitle_offset] Top offset for sub-title
+ * @property {int} [y_artist_offset] Top offset for artist row
+ * @property {int} [y_footer_offset] Bottom offset for footer
  */
 var SR_RENDER_PARAM = {
     // Paper setting
@@ -33,8 +47,8 @@ var SR_RENDER_PARAM = {
     y_title_offset      : 2,
     y_subtitle_offset   : 16,
     y_artist_offset     : 16,
-    y_first_page_offset : 30, // With header
-    y_offset            : 10, // Without header
+    y_header_margin     : 4, // Margin between header and first row
+    y_offset            : 10,  // Without header
     x_offset            : 10,
     y_footer_offset     : 10,
 
@@ -776,6 +790,53 @@ export class DefaultRenderer extends Renderer {
         }
     }
 
+    drawheader(canvas, stage, x_offset, width, param, global_macros){
+        var max_header_height = 0;
+
+        // Title
+        var ri = graphic.CanvasText(
+            canvas,
+            x_offset + width / 2,
+            param.y_title_offset,
+            global_macros.TITLE,
+            param.title_font_size,
+            "ct",
+            null, stage==1, {"bold":true}
+        );
+
+        max_header_height = Math.max(max_header_height, param.y_title_offset + ri.height);
+
+        // Sub Title
+        if (global_macros.SUB_TITLE != ""){
+            ri = graphic.CanvasText(
+                canvas,
+                x_offset + width / 2,
+                param.y_subtitle_offset,
+                global_macros.SUB_TITLE,
+                param.subtitle_font_size,
+                "ct",
+                null, stage==1, {"bold":false}
+            );
+
+            max_header_height = Math.max(max_header_height, param.y_subtitle_offset + ri.height);
+        }
+
+        // Artist
+        ri = graphic.CanvasText(
+            canvas,
+            x_offset + width,
+            param.y_artist_offset,
+            global_macros.ARTIST,
+            param.artist_font_size,
+            "rt",
+            null, stage==1, {"bold":false}
+        );
+
+        max_header_height = Math.max(max_header_height, param.y_artist_offset + ri.height);
+
+        return max_header_height;
+    }
+
     async render_impl(track, param) {
         var global_macros = track.macros; //getGlobalMacros(track);
 
@@ -987,7 +1048,9 @@ export class DefaultRenderer extends Renderer {
 
         let y_base_screening = origin.y;
         if(show_header){
-            y_base_screening += param.y_first_page_offset;
+            let headerHeight = this.drawheader(this.memCanvas, 1, x_offset, width, param, global_macros);
+            y_base_screening += headerHeight;
+            y_base_screening += param.y_header_margin;
         }else{
             y_base_screening += param.y_offset_top;
         }
@@ -1074,7 +1137,8 @@ export class DefaultRenderer extends Renderer {
             this.param.text_size
         );
 
-        var score_height = (this.param.paper_height > 0 ? this.param.paper_height/this.param.text_size : y_base_screening)
+        var score_height = (this.param.paper_height > 0 ? 
+            this.param.paper_height/this.param.text_size : y_base_screening)
             / param.nrow;
 
         if(param.background_color)
@@ -1086,6 +1150,10 @@ export class DefaultRenderer extends Renderer {
         var y_base = origin.y;
 
         if(show_header){
+
+            /*
+            var max_header_height = 0;
+
             // Title
             var ri = graphic.CanvasText(
                 canvas,
@@ -1097,9 +1165,11 @@ export class DefaultRenderer extends Renderer {
                 null, false, {"bold":true}
             );
 
+            max_header_height = Math.max(max_header_height, y_title_offset + ri.height);
+
             // Sub Title
-            if (global_macros.SUB_TITLE != "")
-                graphic.CanvasText(
+            if (global_macros.SUB_TITLE != ""){
+                ri = graphic.CanvasText(
                     canvas,
                     x_offset + width / 2,
                     y_subtitle_offset,
@@ -1109,8 +1179,11 @@ export class DefaultRenderer extends Renderer {
                     null, false, {"bold":false}
                 );
 
+                max_header_height = Math.max(max_header_height, y_title_offset + ri.height);
+            }
+
             // Artist
-            graphic.CanvasText(
+            ri = graphic.CanvasText(
                 canvas,
                 x_offset + width,
                 y_artist_offset,
@@ -1120,8 +1193,12 @@ export class DefaultRenderer extends Renderer {
                 null, false, {"bold":false}
             );
 
-            y_stacks.push({ type: "titles", height: param.y_first_page_offset });
-            y_base += param.y_first_page_offset;
+            max_header_height = Math.max(max_header_height, y_title_offset + ri.height);
+            */
+
+            var max_header_height = this.drawheader(canvas, 2, x_offset, width, param, global_macros);
+            y_stacks.push({ type: "titles", height: (max_header_height + param.y_header_margin) });
+            y_base += (max_header_height + param.y_header_margin);
         }else{
             y_base += param.y_offset_top;
         }

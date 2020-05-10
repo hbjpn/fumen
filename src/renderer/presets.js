@@ -11,7 +11,7 @@ export var A4 = {
     y_first_page_offset : 120, // With header
     y_offset            : 50, // Without header
     x_offset            : 50,
-    y_footer_offset      : 30,
+    y_footer_offset     : 30,
 
     title_font_size         : 24,
     subtitle_font_size      : 20,
@@ -22,3 +22,29 @@ export var A4 = {
     
 };
 
+export var Mobile = {
+    // Paper setting
+    paper_width     : 375, // iPhone 8 etc, the top share as of 2020
+    paper_height    : 667, // iPhone 8 etc, , the top share as of 2020
+    text_size       : 1.0, // total canvas size will be [paper_width * text_size, paper_height*text_size]. NOTE that even the canvas size is scaled with text_size, any coordinate unit/size infomation inside the renderer stays the same and no need to be conscious about text_size value.
+    pixel_ratio     : 2, // integer. null : use system default, this is not configurable in source as it is memoried in global variable.
+    ncol            : 1, // Number of columns of score inside the paper
+    nrow            : 1, // Number of rows of score inside the paper
+    origin          : { x: 0, y: 0 },
+
+    // Papaer Margins
+    y_title_offset      : 2,
+    y_subtitle_offset   : 16,
+    y_artist_offset     : 16,
+    y_first_page_offset : 30, // With header
+    y_offset            : 10, // Without header
+    x_offset            : 10,
+    y_footer_offset     : 10,
+
+    // Font size settings
+    reharsal_mark_font_size : 12,
+    title_font_size         : 14,
+    subtitle_font_size      : 12,
+    artist_font_size        : 14, // 
+    base_font_size          : 28, // Chord symbol font size
+};

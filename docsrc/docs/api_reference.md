@@ -85,6 +85,20 @@ An Object to specify prameters for rendering engine
 | [paper_width] | <code>Number</code> | <code>375</code> | Width of the paper |
 | [paper_height] | <code>Number</code> | <code>667</code> | Height of the paper. If 0 is specified, the paper height is fit to its contents. |
 | [text_size] | <code>float</code> | <code>1.0</code> | Text size as a ratio to default size. 0.9 means 10% smaller than default size. |
+| [base_font_size] | <code>int</code> |  | Font size of the chord symbols. |
+| [title_font_size] | <code>int</code> |  | Title font size |
+| [artist_font_size] | <code>int</code> |  | Artist font size |
+| [x_offset] | <code>int</code> |  | Margin of the left and right side of the paper. |
+| [x_offset_left] | <code>int</code> |  | Margin of the right side of the paper. |
+| [x_offset_right] | <code>int</code> |  | Margin of the left side of the paper. |
+| [y_offset] | <code>int</code> |  | Margin of the top and bottom side of the paper. |
+| [y_offset_top] | <code>int</code> | <code></code> | Margin of top side of the paper. In case header is drawn, this does not apply. |
+| [y_offset_bottom] | <code>int</code> | <code></code> | Margin of top side of the paper. In case header is drawn, this does not apply |
+| [y_header_margin] | <code>int</code> |  | Margin of the top y when header is shown (normally, firstpage) |
+| [y_title_offset] | <code>int</code> |  | Top offset for title |
+| [y_subtitle_offset] | <code>int</code> |  | Top offset for sub-title |
+| [y_artist_offset] | <code>int</code> |  | Top offset for artist row |
+| [y_footer_offset] | <code>int</code> |  | Bottom offset for footer |
 
 <a name="canvasProvider"></a>
 

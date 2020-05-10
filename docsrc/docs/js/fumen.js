@@ -13936,6 +13936,20 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
  * @property {Number} [paper_width=375] Width of the paper
  * @property {Number} [paper_height=667] Height of the paper. If 0 is specified, the paper height is fit to its contents.
  * @property {float} [text_size=1.0] Text size as a ratio to default size. 0.9 means 10% smaller than default size.
+ * @property {int} [base_font_size] Font size of the chord symbols.
+ * @property {int} [title_font_size] Title font size
+ * @property {int} [artist_font_size] Artist font size
+ * @property {int} [x_offset] Margin of the left and right side of the paper.
+ * @property {int} [x_offset_left] Margin of the right side of the paper.
+ * @property {int} [x_offset_right] Margin of the left side of the paper.
+ * @property {int} [y_offset] Margin of the top and bottom side of the paper.
+ * @property {int} [y_offset_top=null] Margin of top side of the paper. In case header is drawn, this does not apply.
+ * @property {int} [y_offset_bottom=null] Margin of top side of the paper. In case header is drawn, this does not apply
+ * @property {int} [y_header_margin] Margin of the top y when header is shown (normally, firstpage)
+ * @property {int} [y_title_offset] Top offset for title
+ * @property {int} [y_subtitle_offset] Top offset for sub-title
+ * @property {int} [y_artist_offset] Top offset for artist row
+ * @property {int} [y_footer_offset] Bottom offset for footer
  */
 
 var SR_RENDER_PARAM = {
@@ -13960,8 +13974,8 @@ var SR_RENDER_PARAM = {
   y_title_offset: 2,
   y_subtitle_offset: 16,
   y_artist_offset: 16,
-  y_first_page_offset: 30,
-  // With header
+  y_header_margin: 4,
+  // Margin between header and first row
   y_offset: 10,
   // Without header
   x_offset: 10,
@@ -14737,12 +14751,36 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       }
     }
   }, {
+    key: "drawheader",
+    value: function drawheader(canvas, stage, x_offset, width, param, global_macros) {
+      var max_header_height = 0; // Title
+
+      var ri = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width / 2, param.y_title_offset, global_macros.TITLE, param.title_font_size, "ct", null, stage == 1, {
+        "bold": true
+      });
+      max_header_height = Math.max(max_header_height, param.y_title_offset + ri.height); // Sub Title
+
+      if (global_macros.SUB_TITLE != "") {
+        ri = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width / 2, param.y_subtitle_offset, global_macros.SUB_TITLE, param.subtitle_font_size, "ct", null, stage == 1, {
+          "bold": false
+        });
+        max_header_height = Math.max(max_header_height, param.y_subtitle_offset + ri.height);
+      } // Artist
+
+
+      ri = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width, param.y_artist_offset, global_macros.ARTIST, param.artist_font_size, "rt", null, stage == 1, {
+        "bold": false
+      });
+      max_header_height = Math.max(max_header_height, param.y_artist_offset + ri.height);
+      return max_header_height;
+    }
+  }, {
     key: "render_impl",
     value: function () {
       var _render_impl = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(track, param) {
         var _this4 = this;
 
-        var global_macros, show_header, show_footer, origin, y_title_offset, y_subtitle_offset, y_artist_offset, x_offset, width, music_context, meas_row_list, accum_block_id, meas_row, meas_row_rg_ids, meas_row_block_ids, i, rg, bi, block_measures, ml, m, meas_row_list_inv, _loop2, _i2, _i3, _rg, _bi, _block_measures, _ml, _m2, y_stacks, next_reharsal_group_index, yse, y_base_screening, dammy_music_context, current_accum_block_id, reharsal_x_width_info, pei, x, row_elements_list, _ml2, _m3, elements, geret, yprof, x_width_info, canvas, score_height, y_base, ri, canvaslist, _pei, _row_elements_list4, ylimit, r;
+        var global_macros, show_header, show_footer, origin, y_title_offset, y_subtitle_offset, y_artist_offset, x_offset, width, music_context, meas_row_list, accum_block_id, meas_row, meas_row_rg_ids, meas_row_block_ids, i, rg, bi, block_measures, ml, m, meas_row_list_inv, _loop2, _i2, _i3, _rg, _bi, _block_measures, _ml, _m2, y_stacks, next_reharsal_group_index, yse, y_base_screening, headerHeight, dammy_music_context, current_accum_block_id, reharsal_x_width_info, pei, x, row_elements_list, _ml2, _m3, elements, geret, yprof, x_width_info, canvas, score_height, y_base, max_header_height, canvaslist, _pei, _row_elements_list4, ylimit, r;
 
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
@@ -14976,7 +15014,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 y_base_screening = origin.y;
 
                 if (show_header) {
-                  y_base_screening += param.y_first_page_offset;
+                  headerHeight = this.drawheader(this.memCanvas, 1, x_offset, width, param, global_macros);
+                  y_base_screening += headerHeight;
+                  y_base_screening += param.y_header_margin;
                 } else {
                   y_base_screening += param.y_offset_top;
                 }
@@ -15069,23 +15109,50 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 y_base = origin.y;
 
                 if (show_header) {
-                  // Title
-                  ri = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width / 2, y_title_offset, global_macros.TITLE, param.title_font_size, "ct", null, false, {
-                    "bold": true
-                  }); // Sub Title
-
-                  if (global_macros.SUB_TITLE != "") _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width / 2, y_subtitle_offset, global_macros.SUB_TITLE, param.subtitle_font_size, "ct", null, false, {
-                    "bold": false
-                  }); // Artist
-
-                  _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width, y_artist_offset, global_macros.ARTIST, param.artist_font_size, "rt", null, false, {
-                    "bold": false
-                  });
+                  /*
+                  var max_header_height = 0;
+                   // Title
+                  var ri = graphic.CanvasText(
+                      canvas,
+                      x_offset + width / 2,
+                      y_title_offset,
+                      global_macros.TITLE,
+                      param.title_font_size,
+                      "ct",
+                      null, false, {"bold":true}
+                  );
+                   max_header_height = Math.max(max_header_height, y_title_offset + ri.height);
+                   // Sub Title
+                  if (global_macros.SUB_TITLE != ""){
+                      ri = graphic.CanvasText(
+                          canvas,
+                          x_offset + width / 2,
+                          y_subtitle_offset,
+                          global_macros.SUB_TITLE,
+                          param.subtitle_font_size,
+                          "ct",
+                          null, false, {"bold":false}
+                      );
+                       max_header_height = Math.max(max_header_height, y_title_offset + ri.height);
+                  }
+                   // Artist
+                  ri = graphic.CanvasText(
+                      canvas,
+                      x_offset + width,
+                      y_artist_offset,
+                      global_macros.ARTIST,
+                      param.artist_font_size,
+                      "rt",
+                      null, false, {"bold":false}
+                  );
+                   max_header_height = Math.max(max_header_height, y_title_offset + ri.height);
+                  */
+                  max_header_height = this.drawheader(canvas, 2, x_offset, width, param, global_macros);
                   y_stacks.push({
                     type: "titles",
-                    height: param.y_first_page_offset
+                    height: max_header_height + param.y_header_margin
                   });
-                  y_base += param.y_first_page_offset;
+                  y_base += max_header_height + param.y_header_margin;
                 } else {
                   y_base += param.y_offset_top;
                 }
@@ -17706,12 +17773,13 @@ function PreloadJsonFont() {
 /*!*********************************!*\
   !*** ./src/renderer/presets.js ***!
   \*********************************/
-/*! exports provided: A4 */
+/*! exports provided: A4, Mobile */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "A4", function() { return A4; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Mobile", function() { return Mobile; });
 /**
  * Desktop settings (difference from default)
  */
@@ -17734,6 +17802,43 @@ var A4 = {
   artist_font_size: 20,
   reharsal_mark_font_size: 18,
   rm_area_height: 24 // Reharsal Mark Area
+
+};
+var Mobile = {
+  // Paper setting
+  paper_width: 375,
+  // iPhone 8 etc, the top share as of 2020
+  paper_height: 667,
+  // iPhone 8 etc, , the top share as of 2020
+  text_size: 1.0,
+  // total canvas size will be [paper_width * text_size, paper_height*text_size]. NOTE that even the canvas size is scaled with text_size, any coordinate unit/size infomation inside the renderer stays the same and no need to be conscious about text_size value.
+  pixel_ratio: 2,
+  // integer. null : use system default, this is not configurable in source as it is memoried in global variable.
+  ncol: 1,
+  // Number of columns of score inside the paper
+  nrow: 1,
+  // Number of rows of score inside the paper
+  origin: {
+    x: 0,
+    y: 0
+  },
+  // Papaer Margins
+  y_title_offset: 2,
+  y_subtitle_offset: 16,
+  y_artist_offset: 16,
+  y_first_page_offset: 30,
+  // With header
+  y_offset: 10,
+  // Without header
+  x_offset: 10,
+  y_footer_offset: 10,
+  // Font size settings
+  reharsal_mark_font_size: 12,
+  title_font_size: 14,
+  subtitle_font_size: 12,
+  artist_font_size: 14,
+  // 
+  base_font_size: 28 // Chord symbol font size
 
 };
 

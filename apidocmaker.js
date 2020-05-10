@@ -18,6 +18,18 @@ function removeLineBetween(lines, startregex, endregex, start_min_occur=0)
     return newlines;
 }
 
+function sub(lines, regex, replstr)
+{
+    let newlines = [];
+    lines.forEach(l=>{
+        if(l.match(regex)){
+            l = l.replace(regex, replstr);
+        }
+        newlines.push(l);
+    });
+    return newlines;
+}
+
 function repl(md){
     // Remove modules
     let reconst_md = "";
@@ -29,6 +41,8 @@ function repl(md){
     mdl = removeLineBetween(mdl, 
         "## Modules", 
         "<a name=\"module_Fumen\"></a>");
+    
+    mdl = sub(mdl, "exports.", "");
 
     md = mdl.join("\n");
 

@@ -1,6 +1,4 @@
-# APIs
-
-## Quick Start
+# Quick Start
 ```javascript
     var code = ... ;
     var canvas = document.getElementById("canvas");

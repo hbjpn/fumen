@@ -18,7 +18,7 @@ nav:
       - Transpose : 'transpose.md'
 
     - 'API':
-      - 'Quick Start': 'api.md'
+      - 'Quick Start': 'api_quick_start.md'
       - 'Reference': 'api_reference.md'
 theme:
     name: material

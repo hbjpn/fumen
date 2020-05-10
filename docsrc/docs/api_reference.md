@@ -82,8 +82,8 @@ An Object to specify prameters for rendering engine
 
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
-| [paper_width] | <code>Number</code> | <code>120</code> | Width of the paper |
-| [paper_height] | <code>Number</code> | <code>(96 * 297) / 25.4</code> | Height of the paper. If 0 is specified, the paper height is fit to its contents. |
+| [paper_width] | <code>Number</code> | <code>375</code> | Width of the paper |
+| [paper_height] | <code>Number</code> | <code>667</code> | Height of the paper. If 0 is specified, the paper height is fit to its contents. |
 | [text_size] | <code>float</code> | <code>1.0</code> | Text size as a ratio to default size. 0.9 means 10% smaller than default size. |
 
 <a name="canvasProvider"></a>

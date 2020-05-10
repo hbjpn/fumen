@@ -15,8 +15,8 @@ import * as presets from "./presets";
  * @typedef RenderParam
  * @global
  * @description An Object to specify prameters for rendering engine
- * @property {Number} [paper_width=120] Width of the paper
- * @property {Number} [paper_height=(96 * 297) / 25.4] Height of the paper. If 0 is specified, the paper height is fit to its contents.
+ * @property {Number} [paper_width=375] Width of the paper
+ * @property {Number} [paper_height=667] Height of the paper. If 0 is specified, the paper height is fit to its contents.
  * @property {float} [text_size=1.0] Text size as a ratio to default size. 0.9 means 10% smaller than default size.
  */
 var SR_RENDER_PARAM = {

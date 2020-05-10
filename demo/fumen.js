@@ -13937,10 +13937,24 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
  */
 
 var SR_RENDER_PARAM = {
+  // Paper setting
+  paper_width: 96 * 210 / 25.4,
+  // 96dpi * A4_width[mm] / 25.4[mm/inche], total canvas width = paper_width, internal paper width is paper_width/text_size
+  paper_height: 96 * 297 / 25.4,
+  // 96dpi * A4_height[mm] / 25.4[mm/inche], total canvas height = paper_height. internal paper height is paper_height/text_size
+  text_size: 1.0,
+  // total canvas size will be [paper_width * text_size, paper_height*text_size]. NOTE that even the canvas size is scaled with text_size, any coordinate unit/size infomation inside the renderer stays the same and no need to be conscious about text_size value.
+  pixel_ratio: 2,
+  // integer. null : use system default, this is not configurable in source as it is memoried in global variable.
+  ncol: 1,
+  // Number of columns of score inside the paper
+  nrow: 1,
+  // Number of rows of score inside the paper
   origin: {
     x: 0,
     y: 0
   },
+  // Papaer Margins
   y_title_offset: 2,
   y_subtitle_offset: 16,
   y_artist_offset: 16,
@@ -13950,7 +13964,7 @@ var SR_RENDER_PARAM = {
   // Without header
   x_offset: 10,
   y_footer_offset: 10,
-  min_measure_width: 100,
+  // Row Settings
   row_height: 28,
   // Basic height of the measure when no rs, mu and ml area is drawn
   base_body_height: 28,
@@ -13983,33 +13997,25 @@ var SR_RENDER_PARAM = {
   // Margin between body and footer (x-direction)
   rs_elem_min_room: 5,
   // Minimum room after RS area elements in x-direction
-  max_scaling: 1.2,
-  paper_width: 96 * 210 / 25.4,
-  // 96dpi * A4_width[mm] / 25.4[mm/inche], total canvas width = paper_width, internal paper width is paper_width/text_size
-  paper_height: 96 * 297 / 25.4,
-  // 96dpi * A4_height[mm] / 25.4[mm/inche], total canvas height = paper_height. internal paper height is paper_height/text_size
-  text_size: 1.0,
-  // total canvas size will be [paper_width * text_size, paper_height*text_size]. NOTE that even the canvas size is scaled with text_size, any coordinate unit/size infomation inside the renderer stays the same and no need to be conscious about text_size value.
-  pixel_ratio: 2,
-  // integer. null : use system default, this is not configurable in source as it is memoried in global variable.
-  ncol: 1,
-  // Number of columns of score inside the paper
-  nrow: 1,
-  // Number of rows of score inside the paper
   repeat_mark_font: {
     "font-family": "Times New Roman",
     "font-style": "italic",
     "font-weight": "bold"
   },
+  // Font size settings
   reharsal_mark_font_size: 12,
   title_font_size: 14,
   subtitle_font_size: 12,
   artist_font_size: 14,
+  // 
   base_font_size: 28,
+  // Chord symbol font size
+  // Note rendering settings
   balken_width: 3,
   note_bar_length: 24 / 4 * 3.5,
   // 3.5 times of interval is the conventional length
   note_flag_interval: 5,
+  // Rendering optimization settings
   optimize_type: 4,
   // 0 : Constant room for each flexible element. 1: Uniform ratio (propotional to each fixed width of flexible element), 2: Evenly division of measures(force), 3: Evenly division of measures as much as possible
   vertical_align: 1,
@@ -14030,7 +14036,7 @@ var SR_RENDER_PARAM = {
   background_color: "white",
   // null will be transparent
   row_gen_mode: "default",
-  // constant_meas
+  // "dfault" | "constant_meas"
   row_gen_n_meas: 4
 };
 /**

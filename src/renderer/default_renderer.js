@@ -7,6 +7,8 @@ import "@babel/polyfill";
 import { Renderer } from "./renderer";
 import * as common from "../common/common";
 import * as graphic from "./graphic";
+import * as presets from "./presets";
+
 //import { getGlobalMacros, getMacros } from "../parser/parser";
 
 /**
@@ -44,6 +46,7 @@ var SR_RENDER_PARAM = {
     base_font_size          : 28, // Chord symbol font size
 
     // Row Settings 
+    /// Vertical settings
     row_height          : 28, // Basic height of the measure when no rs, mu and ml area is drawn
     base_body_height    : 28, // Height in body area (not applicable for RS area) used for simile and rest rendering. Recommended to keep this value irrespective of row_height.
     row_margin          : 4, // Margin between next y_base and lower edge of Measure Lower Area
@@ -65,9 +68,10 @@ var SR_RENDER_PARAM = {
 
     repeat_mark_y_margin: 2, // RS are upper/bootom and Repeat Marks( DalSegno, DaCapo, Fine, xX ) y margin in case RS are is shown.
     xtimes_mark_y_margin: 2, // Margin between body/RS are and "(x times)" mark.
+
+    // Horizontal settings
     header_body_margin  : 2, // Margin between header and body (x-direction)
     body_footer_margin  : 2, // Margin between body and footer (x-direction)
-    rs_elem_min_room    : 5, // Minimum room after RS area elements in x-direction
 
     repeat_mark_font: {
         "font-family": "Times New Roman",
@@ -75,10 +79,15 @@ var SR_RENDER_PARAM = {
         "font-weight": "bold"
     },
 
-    // Note rendering settings
+    // Chord settings
+    on_bass_style           : "right", // right|below
+    on_bass_below_y_offset  : 0,
+    
+    // Rhythm Shalsh / Notes rendering settings
     balken_width            : 3,
     note_bar_length         : 24/4*3.5, // 3.5 times of interval is the conventional length
     note_flag_interval      : 5,
+    rs_elem_min_room        : 5, // Minimum room after RS area elements in x-direction
 
     // Rendering optimization settings
     optimize_type                   : 4, // 0 : Constant room for each flexible element. 1: Uniform ratio (propotional to each fixed width of flexible element), 2: Evenly division of measures(force), 3: Evenly division of measures as much as possible
@@ -88,8 +97,6 @@ var SR_RENDER_PARAM = {
     inner_vertical_align_intensity  : 0.5, // Vertical align intensity 0:No align, 0.5 : align if no compression, 1:Always align
     master_elem_selection           : "default", // "chord" | "rs"
     scale_if_overlap                : 1, // 1 or 0
-    on_bass_style                   : "right", // right|below
-    on_bass_below_y_offset          : 0,
     background_color                : "white", // null will be transparent
     row_gen_mode                    : "default", // "dfault" | "constant_meas"
     row_gen_n_meas                  : 4
@@ -123,11 +130,18 @@ export class DefaultRenderer extends Renderer {
         this.memCanvas = null; // Canvas on memory used for screening
 
         this.param = common.deepcopy(SR_RENDER_PARAM); // Default parameters
+
+        // Overwrite with preset if specified
+        if("preset" in param){
+            let preset = param.preset;
+            for (let key in presets[preset]) {
+                this.param[key] = common.deepcopy(presets[preset][key]);
+            }
+        }
         // Overwrite
         for (let key in param) {
             this.param[key] = common.deepcopy(param[key]);
         }
-
         this.track = null;
 
         this.context = {

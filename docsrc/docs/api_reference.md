@@ -66,6 +66,12 @@ Render the track
 | --- | --- | --- |
 | track | <code>Track</code> | Track object passed from Parser.parse function |
 
+<a name="A4"></a>
+
+## A4
+Desktop settings (difference from default)
+
+**Kind**: global variable  
 <a name="RenderParam"></a>
 
 ## RenderParam

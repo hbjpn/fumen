@@ -13881,6 +13881,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _renderer__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./renderer */ "./src/renderer/renderer.js");
 /* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../common/common */ "./src/common/common.js");
 /* harmony import */ var _graphic__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./graphic */ "./src/renderer/graphic.js");
+/* harmony import */ var _presets__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./presets */ "./src/renderer/presets.js");
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
@@ -13922,6 +13923,7 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 /**
  * @module Fumen
  */
+
 
 
 
@@ -13973,6 +13975,7 @@ var SR_RENDER_PARAM = {
   base_font_size: 28,
   // Chord symbol font size
   // Row Settings 
+  /// Vertical settings
   row_height: 28,
   // Basic height of the measure when no rs, mu and ml area is drawn
   base_body_height: 28,
@@ -14011,22 +14014,27 @@ var SR_RENDER_PARAM = {
   // RS are upper/bootom and Repeat Marks( DalSegno, DaCapo, Fine, xX ) y margin in case RS are is shown.
   xtimes_mark_y_margin: 2,
   // Margin between body/RS are and "(x times)" mark.
+  // Horizontal settings
   header_body_margin: 2,
   // Margin between header and body (x-direction)
   body_footer_margin: 2,
   // Margin between body and footer (x-direction)
-  rs_elem_min_room: 5,
-  // Minimum room after RS area elements in x-direction
   repeat_mark_font: {
     "font-family": "Times New Roman",
     "font-style": "italic",
     "font-weight": "bold"
   },
-  // Note rendering settings
+  // Chord settings
+  on_bass_style: "right",
+  // right|below
+  on_bass_below_y_offset: 0,
+  // Rhythm Shalsh / Notes rendering settings
   balken_width: 3,
   note_bar_length: 24 / 4 * 3.5,
   // 3.5 times of interval is the conventional length
   note_flag_interval: 5,
+  rs_elem_min_room: 5,
+  // Minimum room after RS area elements in x-direction
   // Rendering optimization settings
   optimize_type: 4,
   // 0 : Constant room for each flexible element. 1: Uniform ratio (propotional to each fixed width of flexible element), 2: Evenly division of measures(force), 3: Evenly division of measures as much as possible
@@ -14042,9 +14050,6 @@ var SR_RENDER_PARAM = {
   // "chord" | "rs"
   scale_if_overlap: 1,
   // 1 or 0
-  on_bass_style: "right",
-  // right|below
-  on_bass_below_y_offset: 0,
   background_color: "white",
   // null will be transparent
   row_gen_mode: "default",
@@ -14086,10 +14091,19 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
     _this.memCanvas = null; // Canvas on memory used for screening
 
     _this.param = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](SR_RENDER_PARAM); // Default parameters
-    // Overwrite
+    // Overwrite with preset if specified
 
-    for (var key in param) {
-      _this.param[key] = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](param[key]);
+    if ("preset" in param) {
+      var preset = param.preset;
+
+      for (var key in _presets__WEBPACK_IMPORTED_MODULE_4__[preset]) {
+        _this.param[key] = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](_presets__WEBPACK_IMPORTED_MODULE_4__[preset][key]);
+      }
+    } // Overwrite
+
+
+    for (var _key in param) {
+      _this.param[_key] = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](param[_key]);
     }
 
     _this.track = null;
@@ -17680,6 +17694,43 @@ function PreloadJsonFont() {
   });
   return embedFontPromise;
 }
+
+/***/ }),
+
+/***/ "./src/renderer/presets.js":
+/*!*********************************!*\
+  !*** ./src/renderer/presets.js ***!
+  \*********************************/
+/*! exports provided: A4 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "A4", function() { return A4; });
+/**
+ * Desktop settings (difference from default)
+ */
+var A4 = {
+  paper_width: 96 * 210 / 25.4,
+  // 96dpi * A4_width[mm] / 25.4[mm/inche], total canvas width = paper_width, internal paper width is paper_width/text_size
+  paper_height: 96 * 297 / 25.4,
+  // 96dpi * A4_height[mm] / 25.4[mm/inche], total canvas height = paper_height. internal paper height is paper_height/text_size
+  y_title_offset: 50,
+  y_subtitle_offset: 70,
+  y_artist_offset: 90,
+  y_first_page_offset: 120,
+  // With header
+  y_offset: 50,
+  // Without header
+  x_offset: 50,
+  y_footer_offset: 30,
+  title_font_size: 24,
+  subtitle_font_size: 20,
+  artist_font_size: 20,
+  reharsal_mark_font_size: 18,
+  rm_area_height: 24 // Reharsal Mark Area
+
+};
 
 /***/ }),
 

@@ -6,3 +6,6 @@ node apidocmaker.js > docsrc/docs/api_reference.md
 cd docsrc
 mkdocs build
 cd ..
+
+cp -r docsrc/playground ./docs/
+

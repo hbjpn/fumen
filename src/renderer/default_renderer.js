@@ -44,13 +44,13 @@ var SR_RENDER_PARAM = {
     origin          : { x: 0, y: 0 },
 
     // Papaer Margins
-    y_title_offset      : 2,
-    y_subtitle_offset   : 16,
-    y_artist_offset     : 16,
-    y_header_margin     : 4, // Margin between header and first row
+    y_title_offset      : 5,
+    y_subtitle_offset   : 19,
+    y_artist_offset     : 19,
+    y_header_margin     : 0, // Margin between header and first row
     y_offset            : 10,  // Without header
     x_offset            : 10,
-    y_footer_offset     : 10,
+    y_footer_offset     : 15,
 
     // Font size settings
     reharsal_mark_font_size : 12,
@@ -1121,7 +1121,7 @@ export class DefaultRenderer extends Renderer {
            }
        }
        y_base_screening += param.y_offset_bottom; // Here y_base_screening means the height of the total score if single page applied.
-
+       if(show_footer) y_base_screening += param.y_footer_offset;
         // ----------------------
         // Stage 2 : Rendering
         // ----------------------
@@ -1215,7 +1215,7 @@ export class DefaultRenderer extends Renderer {
                 let row_elements_list = yse[pei].cont;
                 
                 let ylimit = this.canvas_provider != null
-                    ? score_height - yse[pei].param.y_offset_bottom
+                    ? score_height - yse[pei].param.y_offset_bottom - (show_footer ? yse[pei].param.y_footer_offset : 0)
                     : null;
                 
                 let r = this.render_measure_row_simplified(

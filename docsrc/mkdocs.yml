@@ -20,7 +20,7 @@ nav:
     - 'API':
       - 'Quick Start': 'api_quick_start.md'
       - 'Reference': 'api_reference.md'
-    - 'Playground': '/playground/'
+    - 'Playground': '/fumen/playground/'
 theme:
     name: material
 extra_css:

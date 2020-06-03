@@ -47,7 +47,7 @@ var SR_RENDER_PARAM = {
     y_title_offset      : 5,
     y_subtitle_offset   : 19,
     y_artist_offset     : 19,
-    y_header_margin     : 0, // Margin between header and first row
+    y_header_margin     : 2, // Margin between header and first row
     y_offset            : 10,  // Without header
     x_offset            : 10,
     y_footer_offset     : 15,

@@ -629,15 +629,22 @@ export class DefaultRenderer extends Renderer {
                         let mi_ref = getMeasRefIndex(mi, row_elements_list, num_meas);
                         if(mi_ref == null) continue;
                         let m = row_elements_list[mi_ref];
-                        let oldv = false;
-                        if(oldv){
-                            // This is no good appropach as all waste the decision in previous stage
+                        let intra_meas_room_dist = 1;
+                        if(intra_meas_room_dist==0){
+                            // Type 0 : This is no good appropach as all waste the decision in previous stage
                             let room_per_elem = (max_measure_widths[mi] - x_width_info[mi_ref].meas_fixed_width) /
                                 x_width_info[mi_ref].meas_num_flexible_rooms; 
                             
                             m.renderprop.room_per_elem = new Array(x_width_info[mi_ref].meas_num_flexible_rooms).fill(room_per_elem);
-                        
-                        }else{
+                        }else if(intra_meas_room_dist==1){
+                            // Type 1 : Proportional to fixed width
+                            let delta_total_room = (max_measure_widths[mi] - x_width_info[mi_ref].measure_width);
+
+                            m.renderprop.room_per_elem = m.renderprop.room_per_elem.map((r,ii)=>{
+                                let f_ratio = x_width_info[mi_ref].body_fixed_width_details[ii] / x_width_info[mi_ref].body_fixed_width;
+                                return r + delta_total_room * f_ratio;
+                            });
+                        }else if(intra_meas_room_dist==2){
                             // Constant offset approach
                             let delta = (max_measure_widths[mi] - x_width_info[mi_ref].measure_width) /
                                 x_width_info[mi_ref].meas_num_flexible_rooms;

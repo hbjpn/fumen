@@ -14053,7 +14053,7 @@ var SR_RENDER_PARAM = {
   optimize_type: 4,
   // 0 : Constant room for each flexible element. 1: Uniform ratio (propotional to each fixed width of flexible element), 2: Evenly division of measures(force), 3: Evenly division of measures as much as possible
   opt2_room_dist: 1,
-  // Room per elem assignment type for type 2. 0 : constant room, 1 : uniform ratio
+  // Room per elem assignment type for type 2. 0 : constant room, 1 : uniform ratio. Applicable for type2 and type4. 
   vertical_align: 1,
   // 1: Enable, 0: Disable
   vertical_align_intensity: 0.9,
@@ -14568,53 +14568,67 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           // room per froom with maximum fixed with only
           // Then, at last, calculate the rooms for each row and measure
 
-          for (_rowdash = 0; _rowdash < act_num_grouped_rows; ++_rowdash) {
-            var _x_width_info2 = same_nmeas_row_group[_rowdash][1];
-            var _row_elements_list2 = same_nmeas_row_group[_rowdash][0];
+          var _loop = function _loop() {
+            var x_width_info = same_nmeas_row_group[_rowdash][1];
+            var row_elements_list = same_nmeas_row_group[_rowdash][0];
 
-            for (var _mi3 = 0; _mi3 < _num_meas; ++_mi3) {
-              var _mi_ref2 = getMeasRefIndex(_mi3, _row_elements_list2, _num_meas);
+            var _loop2 = function _loop2(_mi4) {
+              var mi_ref = getMeasRefIndex(_mi4, row_elements_list, _num_meas);
+              if (mi_ref == null) return "continue";
+              var m = row_elements_list[mi_ref];
+              var intra_meas_room_dist = 1;
 
-              if (_mi_ref2 == null) continue;
-              var m = _row_elements_list2[_mi_ref2];
-              var oldv = false;
-
-              if (oldv) {
-                // This is no good appropach as all waste the decision in previous stage
-                var room_per_elem = (max_measure_widths[_mi3] - _x_width_info2[_mi_ref2].meas_fixed_width) / _x_width_info2[_mi_ref2].meas_num_flexible_rooms;
-                m.renderprop.room_per_elem = new Array(_x_width_info2[_mi_ref2].meas_num_flexible_rooms).fill(room_per_elem);
-              } else {
-                (function () {
-                  // Constant offset approach
-                  var delta = (max_measure_widths[_mi3] - _x_width_info2[_mi_ref2].measure_width) / _x_width_info2[_mi_ref2].meas_num_flexible_rooms;
-                  m.renderprop.room_per_elem = m.renderprop.room_per_elem.map(function (r) {
-                    return r + delta;
-                  });
-                })();
+              if (intra_meas_room_dist == 0) {
+                // Type 0 : This is no good appropach as all waste the decision in previous stage
+                var room_per_elem = (max_measure_widths[_mi4] - x_width_info[mi_ref].meas_fixed_width) / x_width_info[mi_ref].meas_num_flexible_rooms;
+                m.renderprop.room_per_elem = new Array(x_width_info[mi_ref].meas_num_flexible_rooms).fill(room_per_elem);
+              } else if (intra_meas_room_dist == 1) {
+                // Type 1 : Proportional to fixed width
+                var delta_total_room = max_measure_widths[_mi4] - x_width_info[mi_ref].measure_width;
+                m.renderprop.room_per_elem = m.renderprop.room_per_elem.map(function (r, ii) {
+                  var f_ratio = x_width_info[mi_ref].body_fixed_width_details[ii] / x_width_info[mi_ref].body_fixed_width;
+                  return r + delta_total_room * f_ratio;
+                });
+              } else if (intra_meas_room_dist == 2) {
+                // Constant offset approach
+                var delta = (max_measure_widths[_mi4] - x_width_info[mi_ref].measure_width) / x_width_info[mi_ref].meas_num_flexible_rooms;
+                m.renderprop.room_per_elem = m.renderprop.room_per_elem.map(function (r) {
+                  return r + delta;
+                });
               }
 
-              m.renderprop.total_room = max_measure_widths[_mi3] - _x_width_info2[_mi_ref2].meas_fixed_width;
-              m.renderprop.measure_width = max_measure_widths[_mi3];
-              m.renderprop.meas_fixed_width = _x_width_info2[_mi_ref2].meas_fixed_width; // Actually this is already set
+              m.renderprop.total_room = max_measure_widths[_mi4] - x_width_info[mi_ref].meas_fixed_width;
+              m.renderprop.measure_width = max_measure_widths[_mi4];
+              m.renderprop.meas_fixed_width = x_width_info[mi_ref].meas_fixed_width; // Actually this is already set
 
-              m.renderprop.body_fixed_width = _x_width_info2[_mi_ref2].body_fixed_width;
-              m.renderprop.meas_num_flexible_rooms = _x_width_info2[_mi_ref2].meas_num_flexible_rooms;
+              m.renderprop.body_fixed_width = x_width_info[mi_ref].body_fixed_width;
+              m.renderprop.meas_num_flexible_rooms = x_width_info[mi_ref].meas_num_flexible_rooms;
+            };
+
+            for (var _mi4 = 0; _mi4 < _num_meas; ++_mi4) {
+              var _ret = _loop2(_mi4);
+
+              if (_ret === "continue") continue;
             }
+          };
+
+          for (_rowdash = 0; _rowdash < act_num_grouped_rows; ++_rowdash) {
+            _loop();
           } // Set left margin in case it is needed.
 
 
           for (_rowdash = 0; _rowdash < act_num_grouped_rows; ++_rowdash) {
-            var _row_elements_list3 = same_nmeas_row_group[_rowdash][0];
+            var _row_elements_list2 = same_nmeas_row_group[_rowdash][0];
             var row_total_width = 0;
 
-            for (var _mi4 = 0; _mi4 < _row_elements_list3.length; ++_mi4) {
-              row_total_width += max_measure_widths[_mi4 + (max_measure_widths.length - _row_elements_list3.length)];
+            for (var _mi3 = 0; _mi3 < _row_elements_list2.length; ++_mi3) {
+              row_total_width += max_measure_widths[_mi3 + (max_measure_widths.length - _row_elements_list2.length)];
             }
 
-            var _m = _row_elements_list3[0];
+            var m = _row_elements_list2[0];
 
-            if (_m.align == "right") {
-              _m.renderprop.left_margin = total_width - row_total_width;
+            if (m.align == "right") {
+              m.renderprop.left_margin = total_width - row_total_width;
             }
           }
 
@@ -14630,7 +14644,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         // Further align inside the measure
         var _row2 = 0;
 
-        var _loop = function _loop() {
+        var _loop3 = function _loop3() {
           var row_elements_list = reharsal_x_width_info[_row2][0];
           var x_width_info = reharsal_x_width_info[_row2][1]; // For number of measures
 
@@ -14749,7 +14763,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         };
 
         while (_row2 < reharsal_x_width_info.length) {
-          _loop();
+          _loop3();
         }
       }
     }
@@ -14800,7 +14814,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       var _render_impl = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(track, param) {
         var _this4 = this;
 
-        var global_macros, show_header, show_footer, origin, y_title_offset, y_subtitle_offset, y_artist_offset, x_offset, width, music_context, meas_row_list, accum_block_id, meas_row, meas_row_rg_ids, meas_row_block_ids, i, rg, bi, block_measures, ml, m, meas_row_list_inv, _loop2, _i2, _i3, _rg, _bi, _block_measures, _ml, _m2, y_stacks, next_reharsal_group_index, yse, y_base_screening, headerHeight, dammy_music_context, current_accum_block_id, reharsal_x_width_info, pei, x, row_elements_list, _ml2, _m3, elements, geret, yprof, x_width_info, canvas, score_height, y_base, max_header_height, canvaslist, _pei, _row_elements_list4, ylimit, r;
+        var global_macros, show_header, show_footer, origin, y_title_offset, y_subtitle_offset, y_artist_offset, x_offset, width, music_context, meas_row_list, accum_block_id, meas_row, meas_row_rg_ids, meas_row_block_ids, i, rg, bi, block_measures, ml, m, meas_row_list_inv, _loop4, _i2, _i3, _rg, _bi, _block_measures, _ml, _m, y_stacks, next_reharsal_group_index, yse, y_base_screening, headerHeight, dammy_music_context, current_accum_block_id, reharsal_x_width_info, pei, x, row_elements_list, _ml2, _m2, elements, geret, yprof, x_width_info, canvas, score_height, y_base, max_header_height, canvaslist, _pei, _row_elements_list3, ylimit, r;
 
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
@@ -14889,7 +14903,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
                   meas_row_list_inv = meas_row_list.slice().reverse();
 
-                  _loop2 = function _loop2(_i2) {
+                  _loop4 = function _loop4(_i2) {
                     var rg = track.reharsal_groups[_i2];
 
                     if (rg.inline) {
@@ -14913,7 +14927,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                   };
 
                   for (_i2 = 0; _i2 < track.reharsal_groups.length; ++_i2) {
-                    _loop2(_i2);
+                    _loop4(_i2);
                   }
                 } else if (param.row_gen_mode == "constant_n_meas") {
                   for (_i3 = 0; _i3 < track.reharsal_groups.length; ++_i3) {
@@ -14923,8 +14937,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                       _block_measures = _rg.blocks[_bi];
 
                       for (_ml = 0; _ml < _block_measures.length; ++_ml) {
-                        _m2 = _block_measures[_ml];
-                        meas_row.push(_m2);
+                        _m = _block_measures[_ml];
+                        meas_row.push(_m);
                         meas_row_rg_ids.push(_i3);
                         meas_row_block_ids.push(accum_block_id);
 
@@ -15076,12 +15090,12 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
                 for (_ml2 = 0; _ml2 < row_elements_list.length; ++_ml2) {
                   // measure object
-                  _m3 = row_elements_list[_ml2];
-                  elements = this.classifyElements(_m3); // Too much call of calssify elements.
+                  _m2 = row_elements_list[_ml2];
+                  elements = this.classifyElements(_m2); // Too much call of calssify elements.
                   // Grouping body elements which share the same balken
 
                   geret = this.grouping_body_elemnts_enh(elements.body);
-                  _m3.renderprop.body_grouping_info = geret;
+                  _m2.renderprop.body_grouping_info = geret;
                 } // y-screening is done in stage 2 as well : TODO : Make it once
                 // Do it in the dammy position y = 0;
 
@@ -15201,9 +15215,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                   break;
                 }
 
-                _row_elements_list4 = yse[_pei].cont;
+                _row_elements_list3 = yse[_pei].cont;
                 ylimit = this.canvas_provider != null ? score_height - yse[_pei].param.y_offset_bottom - (show_footer ? yse[_pei].param.y_footer_offset : 0) : null;
-                r = this.render_measure_row_simplified(x_offset, canvas, yse[_pei].macros, _row_elements_list4, yse[_pei].pm, yse[_pei].nm, y_base, yse[_pei].param, true, yse[_pei].macros.REHARSAL_MARK_POSITION == "Inner", ylimit, music_context);
+                r = this.render_measure_row_simplified(x_offset, canvas, yse[_pei].macros, _row_elements_list3, yse[_pei].pm, yse[_pei].nm, y_base, yse[_pei].param, true, yse[_pei].macros.REHARSAL_MARK_POSITION == "Inner", ylimit, music_context);
 
                 if (r) {
                   _context.next = 80;
@@ -15383,7 +15397,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
       var x_width_info = []; // for number of measures
 
-      var _loop3 = function _loop3(ml) {
+      var _loop5 = function _loop5(ml) {
         // Reset music context
         music_context.pos_in_a_measure = 0; // reset
         // TODO : consider key infomration
@@ -15481,7 +15495,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         var elements;
         var rberet;
 
-        _loop3(ml);
+        _loop5(ml);
       }
 
       return x_width_info;
@@ -15933,7 +15947,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       // For each measure in this row
 
 
-      var _loop4 = function _loop4(ml) {
+      var _loop6 = function _loop6(ml) {
         // measure object
         var m = row_elements_list[ml];
 
@@ -16140,7 +16154,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         var lx;
         var rx;
 
-        _loop4(ml);
+        _loop6(ml);
       } // measure loop
       // 0. Draw 5 lines
 

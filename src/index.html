@@ -26,10 +26,15 @@
             var param_json = document.getElementById("param").value;
             var param = JSON.parse(param_json);
 
-            var range_value = document.getElementById("rangeinput").value;
-            param.inner_vertical_align_intensity = range_value;
-            document.getElementById("rangevalue").innerHTML = Number(range_value).toFixed(2);
+            var va_val = document.getElementById("va_input").value;
+            param.vertical_align_intensity = Number(va_val);
+            document.getElementById("va_value").innerHTML = Number(va_val).toFixed(2);
+            var va = document.getElementById("va_check").checked;
+            param.vertical_align = va?1:0;
 
+            var iva_val = document.getElementById("iva_input").value;
+            param.inner_vertical_align_intensity = Number(iva_val);
+            document.getElementById("iva_value").innerHTML = Number(iva_val).toFixed(2);
             var iva = document.getElementById("iva_check").checked;
             param.inner_vertical_align = iva?1:0;
 
@@ -192,11 +197,19 @@ textarea {
                 <form>
                   <div class="form-group">
                     <div class="custom-control custom-checkbox">
+                      <input type="checkbox" class="custom-control-input" id="va_check" onchange="draw()">
+                      <label class="custom-control-label" for="va_check">Vertical Align</label>
+                    </div>
+                    <input type="range" class="custom-range" min="0" max="1" step="0.025" value="1" id="va_input" oninput="draw()">
+                    <span class="badge badge-secondary" id="va_value">0.5</span>
+                  </div>
+                  <div class="form-group">
+                    <div class="custom-control custom-checkbox">
                       <input type="checkbox" class="custom-control-input" id="iva_check" onchange="draw()">
                       <label class="custom-control-label" for="iva_check">Inner Vertical Align</label>
                     </div>
-                    <input type="range" class="custom-range" min="0" max="1" step="0.025" value="1" id="rangeinput" oninput="draw()">
-                    <span class="badge badge-secondary" id="rangevalue">0.5</span>
+                    <input type="range" class="custom-range" min="0" max="1" step="0.025" value="1" id="iva_input" oninput="draw()">
+                    <span class="badge badge-secondary" id="iva_value">0.5</span>
                   </div>
                 </form>
                 

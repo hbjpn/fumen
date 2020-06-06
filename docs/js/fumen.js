@@ -14052,6 +14052,8 @@ var SR_RENDER_PARAM = {
   // Rendering optimization settings
   optimize_type: 4,
   // 0 : Constant room for each flexible element. 1: Uniform ratio (propotional to each fixed width of flexible element), 2: Evenly division of measures(force), 3: Evenly division of measures as much as possible
+  opt2_room_dist: 1,
+  // Room per elem assignment type for type 2. 0 : constant room, 1 : uniform ratio
   vertical_align: 1,
   // 1: Enable, 0: Disable
   vertical_align_intensity: 0.9,
@@ -14252,13 +14254,25 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
     }
   }, {
     key: "optimize_type2",
-    value: function optimize_type2(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid) {
+    value: function optimize_type2(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid, room_per_elem_dist) {
       // Equal division
       var room_per_meas_even_meas = this.room_per_meas_for_equal_divison(x_width_info, total_width, num_meas, num_meas_to_consider);
       row_elements_list.forEach(function (e, mi) {
-        var room_per_elem = room_per_meas_even_meas[mi] / x_width_info[mi].meas_num_flexible_rooms;
-        e.renderprop.room_per_elem = new Array(x_width_info[mi].meas_num_flexible_rooms).fill(room_per_elem);
-        e.renderprop.total_room = room_per_elem * x_width_info[mi].meas_num_flexible_rooms;
+        if (room_per_elem_dist == 0) {
+          // type 2_0
+          var room_per_elem = room_per_meas_even_meas[mi] / x_width_info[mi].meas_num_flexible_rooms;
+          e.renderprop.room_per_elem = new Array(x_width_info[mi].meas_num_flexible_rooms).fill(room_per_elem);
+        } else if (room_per_elem_dist == 1) {
+          // type 2_1
+          e.renderprop.room_per_elem = new Array(x_width_info[mi].meas_num_flexible_rooms);
+          var Sk = room_per_meas_even_meas[mi] / x_width_info[mi].body_fixed_width + 1.0;
+
+          for (var ife = 0; ife < x_width_info[mi].meas_num_flexible_rooms; ++ife) {
+            e.renderprop.room_per_elem[ife] = (Sk - 1.0) * x_width_info[mi].body_fixed_width_details[ife];
+          }
+        }
+
+        e.renderprop.total_room = room_per_meas_even_meas[mi];
         x_width_info[mi].measure_width = e.renderprop.total_room + x_width_info[mi].meas_fixed_width;
         e.renderprop.measure_width = x_width_info[mi].measure_width;
         e.renderprop.meas_fixed_width = x_width_info[mi].meas_fixed_width;
@@ -14316,7 +14330,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
     }
   }, {
     key: "optimize_type4",
-    value: function optimize_type4(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid) {
+    value: function optimize_type4(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid, opt2_room_dist) {
       // https://docs.google.com/document/d/1oPmUvAF6-KTsQrEovYJgMZSDqlztp4pL-XVs8uee7A4/edit?usp=sharing
       // Here alpha=1 case is filtered at the first IF statement, then we only consider the case
       // where room when optimize_type = 0 is positive.
@@ -14352,7 +14366,13 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
         for (var ii = 0; ii < x_width_info[mi].meas_num_flexible_rooms; ++ii) {
           var f_ratio = x_width_info[mi].body_fixed_width_details[ii] / x_width_info[mi].body_fixed_width;
-          room_per_elem[ii] = alpha * R1 * f_ratio + (1 - alpha) * R2 / x_width_info[mi].meas_num_flexible_rooms;
+
+          if (opt2_room_dist == 0) {
+            room_per_elem[ii] = alpha * R1 * f_ratio + (1 - alpha) * R2 / x_width_info[mi].meas_num_flexible_rooms;
+          } else if (opt2_room_dist == 1) {
+            room_per_elem[ii] = alpha * R1 * f_ratio + (1 - alpha) * R2 * f_ratio;
+          }
+
           room_per_meas += room_per_elem[ii];
         }
 
@@ -14418,15 +14438,15 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           row++;
         } else if (param.optimize_type == 2) {
           // Equal division
-          this.optimize_type2(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid);
+          this.optimize_type2(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid, param.opt2_room_dist);
           row++;
         } else if (param.optimize_type == 3) {
-          // Combination of 2 and 0(fallback option when negative total room)
+          // Combination of 2_0 and 0(fallback option when negative total room)
           this.optimize_type3(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid);
           row++;
         } else if (param.optimize_type == 4) {
-          // Combination of 2 and 1(fallback option when negative total room)
-          this.optimize_type4(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid);
+          // Combination of 2_0|2_1 and 1(fallback option when negative total room)
+          this.optimize_type4(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid, param.opt2_room_dist);
           row++;
         } else {
           throw "Invalid optimize type";

@@ -16024,33 +16024,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           } else if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DalSegno"]) {
             _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, repeat_mark_y_base, _e2.toString(), param.base_font_size / 2, "rb");
           } else if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["ToCoda"]) {
-            if (yprof.rs.detected) {
-              /*
-              var text = raphaelText(
-                  paper,
-                  x,
-                  y_body_or_rs_base,
-                  "To",
-                  param.base_font_size / 2,
-                  "lb"
-              ).attr(param.repeat_mark_font);
-              x += text.getBBox().width + 5;
-              rs_area_svg_groups.push(text);
-              var coda = draw_coda(
-                  paper,
-                  x,
-                  y_body_or_rs_base,
-                  "lb",
-                  e
-              );
-              x += coda.getBBox().width;
-              rs_area_svg_groups.push(coda);
-              */
-            } else {
-              var _r6 = _this7.draw_coda_plain(paper, x, yprof.mu.y + yprof.mu.height, "rb", _e2, param.base_font_size);
+            var _r6 = _this7.draw_coda_plain(paper, x, repeat_mark_y_base, "rb", _e2, param.base_font_size);
 
-              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x - _r6.width, yprof.mu.y + yprof.mu.height, "To", param.base_font_size / 2, "rb");
-            }
+            _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x - _r6.width, repeat_mark_y_base, "To", param.base_font_size / 2, "rb");
           } else if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Fine"]) {
             _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, repeat_mark_y_base, _e2.toString(), param.base_font_size / 2, "rb");
           } else {

@@ -2210,46 +2210,22 @@ export class DefaultRenderer extends Renderer {
                         "rb"
                     );
                 } else if (e instanceof common.ToCoda) {
-                    if (yprof.rs.detected) {
-                        /*
-                        var text = raphaelText(
-                            paper,
-                            x,
-                            y_body_or_rs_base,
-                            "To",
-                            param.base_font_size / 2,
-                            "lb"
-                        ).attr(param.repeat_mark_font);
-                        x += text.getBBox().width + 5;
-                        rs_area_svg_groups.push(text);
-                        var coda = draw_coda(
-                            paper,
-                            x,
-                            y_body_or_rs_base,
-                            "lb",
-                            e
-                        );
-                        x += coda.getBBox().width;
-						rs_area_svg_groups.push(coda);
-						*/
-                    } else {
-                        let r = this.draw_coda_plain(
-                            paper,
-                            x,
-                            yprof.mu.y + yprof.mu.height,
-                            "rb",
-                            e,
-                            param.base_font_size
-                        );
-                        graphic.CanvasText(
-                            paper,
-                            x - r.width,
-                            yprof.mu.y + yprof.mu.height,
-                            "To",
-                            param.base_font_size / 2,
-                            "rb"
-                        );
-                    }
+                    let r = this.draw_coda_plain(
+                        paper,
+                        x,
+                        repeat_mark_y_base,
+                        "rb",
+                        e,
+                        param.base_font_size
+                    );
+                    graphic.CanvasText(
+                        paper,
+                        x - r.width,
+                        repeat_mark_y_base,
+                        "To",
+                        param.base_font_size / 2,
+                        "rb"
+                    );
                 } else if (e instanceof common.Fine) {
                     graphic.CanvasText(
                         paper,

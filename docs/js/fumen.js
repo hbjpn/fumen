@@ -16424,6 +16424,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
       var char_width_scale = 0.7;
       var main_char_width = 0.7;
+      var space_char_width = 0.3;
 
       if (root) {
         _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x, y + param.row_height / 2 + chord_offset_on_bass, root[0], B, "lm", B * char_width_scale, !draw);
@@ -16450,8 +16451,14 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             upper_width += acc_width;
           }
         }
-      } else {} // No root but only bass
-      // Half diminish is firstly rendered
+      } else {
+        // No root but only bass
+        // Add space to eliminate the conbination with previous chord
+        if (param.on_bass_style != "below") {
+          upper_width = B * space_char_width;
+          lower_width = B * space_char_width;
+        }
+      } // Half diminish is firstly rendered
 
 
       if (ce._halfdim_exists) {

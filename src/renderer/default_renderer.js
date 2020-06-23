@@ -2741,6 +2741,7 @@ export class DefaultRenderer extends Renderer {
         // A little bit of compressing the default character width will absorb such a difference. Here *0.9 is used. 
         var char_width_scale = 0.7;
         var main_char_width = 0.7; 
+        var space_char_width = 0.3;
 
         if (root) {
             graphic.CanvasText(
@@ -2786,6 +2787,11 @@ export class DefaultRenderer extends Renderer {
             }
         } else {
             // No root but only bass
+            // Add space to eliminate the conbination with previous chord
+            if(param.on_bass_style != "below"){
+                upper_width = B * space_char_width;
+                lower_width = B * space_char_width;
+            }
         }
 
         // Half diminish is firstly rendered

@@ -1144,6 +1144,11 @@ export class DefaultRenderer extends Renderer {
        }
        y_base_screening += param.y_offset_bottom; // Here y_base_screening means the height of the total score if single page applied.
        if(show_footer) y_base_screening += param.y_footer_offset;
+
+       // Release memCanvas
+       graphic.ReleaseCanvas(this.memCanvas);
+       this.memCanvas = null;
+       
         // ----------------------
         // Stage 2 : Rendering
         // ----------------------

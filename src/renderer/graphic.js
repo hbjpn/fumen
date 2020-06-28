@@ -527,6 +527,14 @@ export function getFontSizeFromHeight(height, fontfamily, code, tol, opt, ratio,
     return px;
 }
 
+export function ReleaseCanvas(canvas){
+    // To eliminate memory leak, explictly resize to 0.
+    canvas.width = 0;
+    canvas.height = 0;
+    canvas.style.width = "0px";
+    canvas.style.height = "0px";
+}
+
 export var G_imgmap = {};
 
 export function PreloadImages(imageurls) {

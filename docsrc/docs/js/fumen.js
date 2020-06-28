@@ -15120,24 +15120,27 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
               case 43:
                 y_base_screening += param.y_offset_bottom; // Here y_base_screening means the height of the total score if single page applied.
 
-                if (show_footer) y_base_screening += param.y_footer_offset; // ----------------------
+                if (show_footer) y_base_screening += param.y_footer_offset; // Release memCanvas
+
+                _graphic__WEBPACK_IMPORTED_MODULE_3__["ReleaseCanvas"](this.memCanvas);
+                this.memCanvas = null; // ----------------------
                 // Stage 2 : Rendering
                 // ----------------------
 
                 canvas = this.canvas;
 
                 if (!(canvas == null)) {
-                  _context.next = 50;
+                  _context.next = 52;
                   break;
                 }
 
-                _context.next = 49;
+                _context.next = 51;
                 return this.canvas_provider();
 
-              case 49:
+              case 51:
                 canvas = _context.sent;
 
-              case 50:
+              case 52:
                 _graphic__WEBPACK_IMPORTED_MODULE_3__["SetupHiDPICanvas"](canvas, this.param.paper_width / this.param.text_size, this.param.paper_height > 0 ? this.param.paper_height / this.param.text_size : y_base_screening, this.param.pixel_ratio, this.param.text_size);
                 score_height = (this.param.paper_height > 0 ? this.param.paper_height / this.param.text_size : y_base_screening) / param.nrow;
                 if (param.background_color) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasRect"](canvas, 0, 0, this.param.paper_width / this.param.text_size, this.param.paper_height > 0 ? this.param.paper_height / this.param.text_size : y_base_screening, param.background_color);
@@ -15195,23 +15198,23 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 canvaslist = [canvas];
                 _pei = 0;
 
-              case 57:
+              case 59:
                 if (!(_pei < yse.length)) {
-                  _context.next = 84;
+                  _context.next = 86;
                   break;
                 }
 
                 if (!(yse[_pei].type == "titles")) {
-                  _context.next = 61;
+                  _context.next = 63;
                   break;
                 }
 
-                _context.next = 81;
+                _context.next = 83;
                 break;
 
-              case 61:
+              case 63:
                 if (!(yse[_pei].type == "meas")) {
-                  _context.next = 81;
+                  _context.next = 83;
                   break;
                 }
 
@@ -15220,50 +15223,50 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 r = this.render_measure_row_simplified(x_offset, canvas, yse[_pei].macros, _row_elements_list3, yse[_pei].pm, yse[_pei].nm, y_base, yse[_pei].param, true, yse[_pei].macros.REHARSAL_MARK_POSITION == "Inner", ylimit, music_context);
 
                 if (r) {
-                  _context.next = 80;
+                  _context.next = 82;
                   break;
                 }
 
                 if (!(y_base == origin.y + yse[_pei].param.y_offset_top)) {
-                  _context.next = 70;
+                  _context.next = 72;
                   break;
                 }
 
                 throw "Paper height is too short to fit in single row";
 
-              case 70:
+              case 72:
                 y_base = origin.y + yse[_pei].param.y_offset_top;
 
-              case 71:
-                _context.next = 73;
+              case 73:
+                _context.next = 75;
                 return this.canvas_provider();
 
-              case 73:
+              case 75:
                 canvas = _context.sent;
                 canvaslist.push(canvas);
                 _graphic__WEBPACK_IMPORTED_MODULE_3__["SetupHiDPICanvas"](canvas, yse[_pei].param.paper_width / this.param.text_size, yse[_pei].param.paper_height / this.param.text_size, this.param.pixel_ratio, this.param.text_size);
                 if (param.background_color) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasRect"](canvas, 0, 0, this.param.paper_width / this.param.text_size, this.param.paper_height / this.param.text_size, param.background_color); // try again next page
 
                 _pei = _pei - 1;
-                _context.next = 81;
+                _context.next = 83;
                 break;
 
-              case 80:
+              case 82:
                 y_base = r.y_base;
 
-              case 81:
+              case 83:
                 ++_pei;
-                _context.next = 57;
+                _context.next = 59;
                 break;
 
-              case 84:
+              case 86:
                 if (show_footer) this.render_footer(canvaslist, global_macros.TITLE + "/" + global_macros.ARTIST, this.param.origin.y + score_height - this.param.y_footer_offset);
                 return _context.abrupt("return", {
                   pages: canvaslist.length,
                   height: score_height
                 });
 
-              case 86:
+              case 88:
               case "end":
                 return _context.stop();
             }
@@ -17160,7 +17163,7 @@ var fontData = {
 /*!*********************************!*\
   !*** ./src/renderer/graphic.js ***!
   \*********************************/
-/*! exports provided: CanvasRect, CanvasCircle, CanvasLine, CanvasPolygon, CanvasbBzierCurve, CanvasPath, fontDesc, GetCharProfile, CanvasText, CanvasTextWithBox, CanvasImage, svgLine, svgPath, svgArcBezie, GetPixelRatio, SetupHiDPICanvas, getFontSizeFromHeight, G_imgmap, PreloadImages, PreloadJsonFont */
+/*! exports provided: CanvasRect, CanvasCircle, CanvasLine, CanvasPolygon, CanvasbBzierCurve, CanvasPath, fontDesc, GetCharProfile, CanvasText, CanvasTextWithBox, CanvasImage, svgLine, svgPath, svgArcBezie, GetPixelRatio, SetupHiDPICanvas, getFontSizeFromHeight, ReleaseCanvas, G_imgmap, PreloadImages, PreloadJsonFont */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -17182,6 +17185,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GetPixelRatio", function() { return GetPixelRatio; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SetupHiDPICanvas", function() { return SetupHiDPICanvas; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getFontSizeFromHeight", function() { return getFontSizeFromHeight; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ReleaseCanvas", function() { return ReleaseCanvas; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "G_imgmap", function() { return G_imgmap; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PreloadImages", function() { return PreloadImages; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PreloadJsonFont", function() { return PreloadJsonFont; });
@@ -17715,6 +17719,13 @@ function getFontSizeFromHeight(height, fontfamily, code, tol, opt, ratio, zoom) 
   }
 
   return px;
+}
+function ReleaseCanvas(canvas) {
+  // To eliminate memory leak, explictly resize to 0.
+  canvas.width = 0;
+  canvas.height = 0;
+  canvas.style.width = "0px";
+  canvas.style.height = "0px";
 }
 var G_imgmap = {};
 function PreloadImages(imageurls) {

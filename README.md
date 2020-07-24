@@ -37,6 +37,9 @@ var renderer = new Fumen.DefaultRenderer(canvas);
 renderer.render(track);
 ```
 
+## Documentation
+https://hbjpn.github.io/fumen/
+
 ## License
 MIT
 

@@ -1,6 +1,7 @@
 node_modules/
 dist/
 materials/
+release/
 .DS_Sotre
 test/screenshot
 report.html

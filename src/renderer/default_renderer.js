@@ -1551,20 +1551,33 @@ export class DefaultRenderer extends Renderer {
         let fixed_width_details = []; // show be same as num_flexible_rooms
         let num_flexible_rooms = 0;
 
-        //let draw_scale = 1;
+        /**
+         * Explanation for scaling policy
+         * In fumen, x-axis scaling is applied when there is no enough space to an element fit in without compressing it.
+         * In case scaling is applied by getnContext("2d").scale funcation, developer should aware followings :
+         *    1) The absolute position needs to be modified according to the applied scaling factor. 
+         *       For example, scaling of 0.25 applied, to draw something at point 100 on the screen, you need to 
+         *       draw it at 100/0.25 = 400. 
+         *    2) Once scaling apply, you "don't" need to concious about how much of compression/widening is required 
+         *       when to draw a grlyph. The system automatically scale it while your can write as if there is no scaling apply.
+         *       That means no need to care about scaling in its drawing code.
+         *       However, your need to be careful about the absolute point (see 1) if the actual position drawn is important.
+         *       You don't need to be concious about the relative positions.
+         *    3) Treatment of x-positions with differnt scalings.
+         *       Length of W drawn with scaling S is corresponds to the length of W*S when no scaling applied or on screen length.
+         *       The arithmetic opration of positions or widths should be always done among those scaling is not applied.
+         *    4) Inter-connected drawing of elements with differnt scaling applies. e.g. balkens, ties.
+         *       This is kind of the most difficult part. Rdnering engine needs to be concious about the difference.
+         *       For the balken case, the fundamenta question is which scaling should be taken as a baseline ? 
+         *       If balken needs to be drawn e.g. S=0.5 and S=1.0
+         */
 
-        /*if(draw){
-            console.log("Scaling : ");
-            console.log(m.renderprop.measure_width);
-            console.log(m.renderprop.meas_fixed_width);
-        }*/
-
-        var scale = function(fixed_per_elem, room_per_elem){
+        var scale = function(fixed_per_elem, room_per_elem, only_estm = false){
             let draw_scale = (room_per_elem + fixed_per_elem)/fixed_per_elem;
             var new_room_per_elem = draw_scale < 1 ? 0          : room_per_elem;
             draw_scale       = draw_scale < 1 ? draw_scale : 1.0;
             var elem_width = fixed_per_elem * draw_scale + new_room_per_elem;
-            paper.getContext("2d").scale(draw_scale, 1);
+            if(!only_estm) paper.getContext("2d").scale(draw_scale, 1);
             return [draw_scale, elem_width];
         };
 
@@ -1691,13 +1704,14 @@ export class DefaultRenderer extends Renderer {
                     unscale(draw_scale);
 
                     // Scale for RS area
-                    [draw_scale, element_group_width] = scale(element_group.renderprop.rs_area_width,
-                        room_for_rs);
+                    // Estimation only and actual scaling will be done in the render_rs_area function and its callee
+                    [draw_scale, element_group_width] = scale(
+                        element_group.renderprop.rs_area_width,
+                        room_for_rs, 
+                        true); // Only estimation actual scaing not apply
                     
-                    // Scaling for RS area
-
                     let g = this.render_rs_area(
-                        x / draw_scale,
+                        x, // does not scale, all the scaing things are processed inside this function
                         draw_scale,
                         element_group.elems,
                         paper,
@@ -1711,14 +1725,14 @@ export class DefaultRenderer extends Renderer {
                         music_context,
                         m,
                         param,
-                        (draw_scale < 1 ? 0 : room_for_rs_per_elem),
+                        (draw_scale < 1 ? 0 : room_for_rs_per_elem), // on-screen coordinate
                         balken,
                         (gbei == body_grouping_info.groupedBodyElems.length-1)
                     );
 
                     x += element_group_width;
 
-                    unscale(draw_scale);
+                    // unscale(draw_scale); // No need to unscale as all the scaling procedure is enclosed in the above function
 
                 }else{
                     let rs_area_bounding_box = new common.BoundingBox();

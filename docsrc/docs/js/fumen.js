@@ -15511,20 +15511,35 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       var fixed_width = 0;
       var fixed_width_details = []; // show be same as num_flexible_rooms
 
-      var num_flexible_rooms = 0; //let draw_scale = 1;
-
-      /*if(draw){
-          console.log("Scaling : ");
-          console.log(m.renderprop.measure_width);
-          console.log(m.renderprop.meas_fixed_width);
-      }*/
+      var num_flexible_rooms = 0;
+      /**
+       * Explanation for scaling policy
+       * In fumen, x-axis scaling is applied when there is no enough space to an element fit in without compressing it.
+       * In case scaling is applied by getnContext("2d").scale funcation, developer should aware followings :
+       *    1) The absolute position needs to be modified according to the applied scaling factor. 
+       *       For example, scaling of 0.25 applied, to draw something at point 100 on the screen, you need to 
+       *       draw it at 100/0.25 = 400. 
+       *    2) Once scaling apply, you "don't" need to concious about how much of compression/widening is required 
+       *       when to draw a grlyph. The system automatically scale it while your can write as if there is no scaling apply.
+       *       That means no need to care about scaling in its drawing code.
+       *       However, your need to be careful about the absolute point (see 1) if the actual position drawn is important.
+       *       You don't need to be concious about the relative positions.
+       *    3) Treatment of x-positions with differnt scalings.
+       *       Length of W drawn with scaling S is corresponds to the length of W*S when no scaling applied or on screen length.
+       *       The arithmetic opration of positions or widths should be always done among those scaling is not applied.
+       *    4) Inter-connected drawing of elements with differnt scaling applies. e.g. balkens, ties.
+       *       This is kind of the most difficult part. Rdnering engine needs to be concious about the difference.
+       *       For the balken case, the fundamenta question is which scaling should be taken as a baseline ? 
+       *       If balken needs to be drawn e.g. S=0.5 and S=1.0
+       */
 
       var scale = function scale(fixed_per_elem, room_per_elem) {
+        var only_estm = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
         var draw_scale = (room_per_elem + fixed_per_elem) / fixed_per_elem;
         var new_room_per_elem = draw_scale < 1 ? 0 : room_per_elem;
         draw_scale = draw_scale < 1 ? draw_scale : 1.0;
         var elem_width = fixed_per_elem * draw_scale + new_room_per_elem;
-        paper.getContext("2d").scale(draw_scale, 1);
+        if (!only_estm) paper.getContext("2d").scale(draw_scale, 1);
         return [draw_scale, elem_width];
       };
 
@@ -15636,20 +15651,22 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           if (draw) {
             // Unscale for chord area
             unscale(_draw_scale); // Scale for RS area
+            // Estimation only and actual scaling will be done in the render_rs_area function and its callee
 
-            var _scale7 = scale(element_group.renderprop.rs_area_width, room_for_rs);
+            var _scale7 = scale(element_group.renderprop.rs_area_width, room_for_rs, true);
 
             var _scale8 = _slicedToArray(_scale7, 2);
 
             _draw_scale = _scale8[0];
             element_group_width = _scale8[1];
 
-            // Scaling for RS area
-            var g = _this6.render_rs_area(x / _draw_scale, _draw_scale, element_group.elems, paper, yprof.rs.y, yprof.rs.height, meas_start_x, // NOTE : meas_start_x sould be irrespective of draw_scale.
-            draw, 0, 1.0, x_global_scale, music_context, m, param, _draw_scale < 1 ? 0 : room_for_rs_per_elem, balken, gbei == body_grouping_info.groupedBodyElems.length - 1);
+            // Only estimation actual scaing not apply
+            var g = _this6.render_rs_area(x, // does not scale, all the scaing things are processed inside this function
+            _draw_scale, element_group.elems, paper, yprof.rs.y, yprof.rs.height, meas_start_x, // NOTE : meas_start_x sould be irrespective of draw_scale.
+            draw, 0, 1.0, x_global_scale, music_context, m, param, _draw_scale < 1 ? 0 : room_for_rs_per_elem, // on-screen coordinate
+            balken, gbei == body_grouping_info.groupedBodyElems.length - 1);
 
-            x += element_group_width;
-            unscale(_draw_scale);
+            x += element_group_width; // unscale(draw_scale); // No need to unscale as all the scaling procedure is enclosed in the above function
           } else {
             var rs_area_bounding_box = new _common_common__WEBPACK_IMPORTED_MODULE_2__["BoundingBox"](); // Only try to esimate using non-flag-balken drawer
 
@@ -18160,8 +18177,10 @@ var Renderer = /*#__PURE__*/function () {
     }
   }, {
     key: "render_rs_area",
-    value: function render_rs_area(x, draw_scale, // note this is used for remember the draw_scale applied for tie rendering. other x axis coordinates given by already scaled.
-    elems, paper, rs_y_base, row_height, meas_start_x, draw, chord_space, body_scaling, x_global_scale, music_context, meas, param, room_for_rs_per_element, balken, is_last_body_elem_group_in_a_measure) {
+    value: function render_rs_area(x, // This represents screen position and scaling is not considered
+    draw_scale, // scaling applied fro this elements. 
+    elems, paper, rs_y_base, row_height, meas_start_x, draw, chord_space, body_scaling, x_global_scale, music_context, meas, param, room_for_rs_per_element, // room per element in RS are for set of elemes. This is on-screen coordinates. Already considred scaling impact.
+    balken, is_last_body_elem_group_in_a_measure) {
       // chords is list of chords for each chord object has .renderprop.x property
       // All elements shall have length indicators
       // var balken_width = "3px";
@@ -18199,6 +18218,7 @@ var Renderer = /*#__PURE__*/function () {
           balken_element: balken_element,
           e: e,
           org_x: x,
+          org_draw_scale: draw_scale,
           org_room_for_rs_per_element: room_for_rs_per_element
         });
 
@@ -18340,6 +18360,11 @@ var Renderer = /*#__PURE__*/function () {
         balken_element.renderprop.note_x_center = x;
 
         if (draw) {
+          // notes_coord.x : 
+          //   0 : Left side of note including accidentals
+          //   1 : Left side of note
+          //   2 : Right side of note
+          //   3 : Right side of note including dots
           balken_element.notes_coord.x.push([x, x, x + ret.bounding_box.w, x + ret.bounding_box.w]);
         }
       } else if (balken_element.type == "notes") {
@@ -18438,6 +18463,11 @@ var Renderer = /*#__PURE__*/function () {
         bounding_box.add_rect(_r.bounding_box);
 
         if (draw) {
+          // notes_coord.x : 
+          //   0 : Left side of note including accidentals
+          //   1 : Left side of note
+          //   2 : Right side of note
+          //   3 : Right side of note including dots
           balken_element.notes_coord.x.push([x, x, x + _r.bounding_box.w, x + _r.bounding_box.w]);
         }
       } else if (balken_element.type == "space") {
@@ -18458,7 +18488,10 @@ var Renderer = /*#__PURE__*/function () {
     key: "draw_rs_area_balkens",
     value: function draw_rs_area_balkens( //draw, 
     //x,
-    draw_scale, paper, group, balken, rs_y_base, row_height, meas_start_x, body_scaling, x_global_scale, music_context, meas, param) {
+    draw_scale, // This is the draw scale of latest element, coudl be differnt from draw scale of old eleents in registred bolken groups
+    paper, group, balken, rs_y_base, row_height, meas_start_x, body_scaling, x_global_scale, music_context, meas, param) {
+      var _this = this;
+
       // Evaluate the flag direction(up or down) by the center of the y-axis position of all the notes/slashes
       // Not called with draw=false
       var draw = true;
@@ -18547,24 +18580,43 @@ var Renderer = /*#__PURE__*/function () {
 
       center_y = Math.floor(center_y / cnt_y);
       var upper_flag = center_y > rs_y_base + _5lines_intv * 2;
-      var x = balken.groups[0].org_x; // 2. Draw notes and slashes without bars, flags and balkens
+      var x = balken.groups[0].org_x; // on screen position, no scaling applied
+      // 2. Draw notes and slashes without bars, flags and balkens
 
-      for (var _gbi3 = 0; _gbi3 < balken.groups.length; ++_gbi3) {
-        //var x = balken.groups[gbi].notes_coord[0];
-        var _e2 = balken.groups[_gbi3].e;
+      var _loop = function _loop(_gbi3) {
+        var this_elem_draw_scale = balken.groups[_gbi3].org_draw_scale;
+        var e = balken.groups[_gbi3].e;
         var balken_element = balken.groups[_gbi3].balken_element;
-        var _ys = balken_element.notes_coord.y;
-        var d = balken_element.note_value;
-        var wo_flags = this.draw_rs_area_without_flag_balken(draw, paper, param, _e2, balken_element, x, rs_y_base, row_height);
+        var ys = balken_element.notes_coord.y;
+        d = balken_element.note_value;
+        paper.getContext("2d").scale(this_elem_draw_scale, 1); // Here all the output and set value by following funtion will be that with scaling apply.
+        // To use the values which the followign functio generates, apply "* this_elem_draw_scale".
+
+        var wo_flags = _this.draw_rs_area_without_flag_balken(draw, paper, param, e, balken_element, x / this_elem_draw_scale, rs_y_base, row_height);
+
+        paper.getContext("2d").scale(1.0 / this_elem_draw_scale, 1); // ----
+        // Convert output to on-screen coordinates
+        // -----
+
+        wo_flags.bounding_box.x *= this_elem_draw_scale;
+        wo_flags.bounding_box.w *= this_elem_draw_scale;
+
+        for (var ncc = 0; ncc < balken_element.notes_coord.x.length; ++ncc) {
+          balken_element.notes_coord.x[ncc] = balken_element.notes_coord.x[ncc].map(function (x) {
+            return x * this_elem_draw_scale;
+          });
+        }
+
         var xs = balken_element.notes_coord.x;
 
-        if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Chord"]) {
+        if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Chord"]) {
           if (music_context.tie_info.rs_prev_has_tie) {
+            // NOTE : Tie is always drawn with on-screen coordinates, no scaling apply
             // Draw tie line
-            var prev_coord = music_context.tie_info.rs_prev_coord;
-            var psm = music_context.tie_info.rs_prev_meas; // Check the consistency.
+            prev_coord = music_context.tie_info.rs_prev_coord;
+            psm = music_context.tie_info.rs_prev_meas; // Check the consistency.
 
-            if (prev_coord.y.length != _ys.length) {
+            if (prev_coord.y.length != ys.length) {
               throw "INVALID TIE NOTATION";
             }
 
@@ -18594,15 +18646,14 @@ var Renderer = /*#__PURE__*/function () {
               }
             }
 
-            for (var _ci = 0; _ci < _ys.length; ++_ci) {
-              var y = _ys[_ci];
-              var prev_draw_scale = music_context.tie_info.rs_prev_draw_scale;
+            for (var _ci = 0; _ci < ys.length; ++_ci) {
+              var y = ys[_ci]; //let prev_draw_scale = music_context.tie_info.rs_prev_draw_scale;
 
               if (y != prev_coord.y[_ci]) {
                 // Crossing measure row. Previous RS mark could be on another page.
                 // Make sure to create curve on the paper on which previous RS is drawn.
-                var brace_points = [[prev_coord.x[_ci][3] * prev_draw_scale + sdx, prev_coord.y[_ci] + _dy2], [prev_coord.x[_ci][3] * prev_draw_scale + sdx, prev_coord.y[_ci] - round + _dy2], [psm.renderprop.meas_end_x + 20, prev_coord.y[_ci] - round + _dy2], [psm.renderprop.meas_end_x + 20, prev_coord.y[_ci] + _dy2]];
-                var clip_rect = [prev_coord.x[_ci][3] * prev_draw_scale + sdx, prev_coord.y[_ci] - 50, psm.renderprop.meas_end_x - (prev_coord.x[_ci][3] * prev_draw_scale + sdx) + 5, 100];
+                brace_points = [[prev_coord.x[_ci][3] + sdx, prev_coord.y[_ci] + _dy2], [prev_coord.x[_ci][3] + sdx, prev_coord.y[_ci] - round + _dy2], [psm.renderprop.meas_end_x + 20, prev_coord.y[_ci] - round + _dy2], [psm.renderprop.meas_end_x + 20, prev_coord.y[_ci] + _dy2]];
+                var clip_rect = [prev_coord.x[_ci][3] + sdx, prev_coord.y[_ci] - 50, psm.renderprop.meas_end_x - (prev_coord.x[_ci][3] + sdx) + 5, 100];
                 console.group("Tie");
                 console.log(brace_points);
                 console.log(clip_rect);
@@ -18610,24 +18661,26 @@ var Renderer = /*#__PURE__*/function () {
                 // then temporaryly deactivate scaling.
                 // In case of differnt paper, such paper shall already be reverted back to scaling=1, 
                 // no need to do anything.
+                // Update : 2020 09 03 : No need to apply scaing as all the coordinates are normalized
+                //                       to on-screen coordinates
+                //if(paper == music_context.tie_info.rs_prev_tie_paper)
+                //    music_context.tie_info.rs_prev_tie_paper.getContext("2d").scale(1.0/draw_scale, 1.0);
 
-                if (paper == music_context.tie_info.rs_prev_tie_paper) music_context.tie_info.rs_prev_tie_paper.getContext("2d").scale(1.0 / draw_scale, 1.0);
                 _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasbBzierCurve"](music_context.tie_info.rs_prev_tie_paper, brace_points, false, false, {
                   "clip-rect": clip_rect
-                });
-                if (paper == music_context.tie_info.rs_prev_tie_paper) music_context.tie_info.rs_prev_tie_paper.getContext("2d").scale(draw_scale, 1.0);
-                brace_points = [[meas_start_x - 20, y + _dy2], [meas_start_x - 20, y - round + _dy2], [xs[_ci][0] * draw_scale + edx, y - round + _dy2], [xs[_ci][0] * draw_scale + edx, y + _dy2]];
-                clip_rect = [meas_start_x - 5, y - 50, x * draw_scale - (meas_start_x - 5), 100];
-                paper.getContext("2d").scale(1.0 / draw_scale, 1.0);
+                }); //if(paper == music_context.tie_info.rs_prev_tie_paper)
+                //    music_context.tie_info.rs_prev_tie_paper.getContext("2d").scale(draw_scale, 1.0);
+
+                brace_points = [[meas_start_x - 20, y + _dy2], [meas_start_x - 20, y - round + _dy2], [xs[_ci][0] + edx, y - round + _dy2], [xs[_ci][0] + edx, y + _dy2]];
+                clip_rect = [meas_start_x - 5, y - 50, x - (meas_start_x - 5), 100]; //paper.getContext("2d").scale(1.0/draw_scale, 1.0);
+
                 _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasbBzierCurve"](paper, brace_points, false, false, {
                   "clip-rect": clip_rect
-                });
-                paper.getContext("2d").scale(draw_scale, 1.0);
+                }); //paper.getContext("2d").scale(draw_scale, 1.0);
               } else {
-                var _brace_points = [[prev_coord.x[_ci][3] * prev_draw_scale + sdx, prev_coord.y[_ci] + _dy2], [prev_coord.x[_ci][3] * prev_draw_scale + sdx, prev_coord.y[_ci] - round + _dy2], [xs[_ci][0] * draw_scale + edx, y - round + _dy2], [xs[_ci][0] * draw_scale + edx, y + _dy2]];
-                paper.getContext("2d").scale(1.0 / draw_scale, 1.0);
-                _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasbBzierCurve"](paper, _brace_points, false, false);
-                paper.getContext("2d").scale(draw_scale, 1.0);
+                var _brace_points = [[prev_coord.x[_ci][3] + sdx, prev_coord.y[_ci] + _dy2], [prev_coord.x[_ci][3] + sdx, prev_coord.y[_ci] - round + _dy2], [xs[_ci][0] + edx, y - round + _dy2], [xs[_ci][0] + edx, y + _dy2]]; //paper.getContext("2d").scale(1.0/draw_scale, 1.0);
+
+                _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasbBzierCurve"](paper, _brace_points, false, false); //paper.getContext("2d").scale(draw_scale, 1.0);
               }
             }
           }
@@ -18639,10 +18692,20 @@ var Renderer = /*#__PURE__*/function () {
           music_context.tie_info.rs_prev_meas = meas;
         }
 
-        _e2.renderprop.x = x;
+        e.renderprop.x = x;
         balken_element.renderprop.x = x; // Here is the only update of x
+        //   * org_room_for_rs_per_element is with on-screen coordinates. In case scaling apply, this value is already set to 0.
 
         x += wo_flags.bounding_box.w + balken.groups[_gbi3].org_room_for_rs_per_element; // TODO : FIXME to cater for actual width of components
+      };
+
+      for (var _gbi3 = 0; _gbi3 < balken.groups.length; ++_gbi3) {
+        var d;
+        var prev_coord;
+        var psm;
+        var brace_points;
+
+        _loop(_gbi3);
       } // 3. Determine the flag intercept and slope
       // From here other than slash and notes are not reuiqred.
 
@@ -18669,17 +18732,18 @@ var Renderer = /*#__PURE__*/function () {
         slope = 1.0; // any value is OK
       }
 
-      var intercept = (upper_flag ? min_y - param.note_bar_length : max_y + param.note_bar_length) - slope * (upper_flag ? x_at_min_y : x_at_max_y); // 4. Draw bars, flags
+      var intercept = (upper_flag ? min_y - param.note_bar_length : max_y + param.note_bar_length) - slope * (upper_flag ? x_at_min_y : x_at_max_y); // 4. Draw vertical bars
 
       for (var gbi = 0; gbi < balken.groups.length; ++gbi) {
-        var _ys2 = balken.groups[gbi].balken_element.notes_coord.y;
-        var _xs = balken.groups[gbi].balken_element.notes_coord.x;
+        // Currnetly, not apply scaling for vertical line and line width 1 always set to 1
+        var _ys = balken.groups[gbi].balken_element.notes_coord.y;
+        var xs = balken.groups[gbi].balken_element.notes_coord.x;
 
         if (balken.groups[gbi].balken_element.type == "slash") {
-          var bar_x = upper_flag ? _xs[0][2] : _xs[0][1]; // eslint-disable-next-line no-empty
+          var bar_x = upper_flag ? xs[0][2] : xs[0][1]; // eslint-disable-next-line no-empty
 
           if (d == "0" || d == "1") {} else {
-            _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasLine"](paper, bar_x, _ys2[0] + 3, bar_x, slope * bar_x + intercept, {
+            _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasLine"](paper, bar_x, _ys[0] + 3, bar_x, slope * bar_x + intercept, {
               width: 1
             });
           } //bar_flag_group.push(o);
@@ -18687,9 +18751,9 @@ var Renderer = /*#__PURE__*/function () {
         } else if (balken.groups[gbi].balken_element.type == "notes") {
           // eslint-disable-next-line no-empty
           if (d == "0" || d == "1") {} else {
-            var _bar_x = upper_flag ? _xs[0][2] : _xs[0][1];
+            var _bar_x = upper_flag ? xs[0][2] : xs[0][1];
 
-            var y0 = upper_flag ? Math.max.apply(null, _ys2) : Math.min.apply(null, _ys2); // Draw the basic vertical line. For the note with standalone flag(s), some additional length will be added when to draw flags.
+            var y0 = upper_flag ? Math.max.apply(null, _ys) : Math.min.apply(null, _ys); // Draw the basic vertical line. For the note with standalone flag(s), some additional length will be added when to draw flags.
 
             _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasLine"](paper, _bar_x, y0, _bar_x, slope * _bar_x + intercept, {
               width: 1
@@ -18702,6 +18766,7 @@ var Renderer = /*#__PURE__*/function () {
 
 
       if (balken.groups.length >= 2) {
+        // Inter-element balkens, no scaling apply (even for single balken)
         // Draw flag for balken
         // Common balken
         if (balken.groups[0].balken_element.note_value >= 8) {
@@ -18765,7 +18830,9 @@ var Renderer = /*#__PURE__*/function () {
           }
         }
       } else if (balken.groups.length == 1 && (balken.groups[0].balken_element.type == "slash" || balken.groups[0].balken_element.type == "notes")) {
-        // Normal drawing of flags
+        // This is sigle flag/balken, then scaling apply. This is the only case we apply the scaling
+        var this_elem_draw_scale = balken.groups[0].org_draw_scale; // Normal drawing of flags
+
         var _bar_x2 = balken.groups[0].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
         var _d = balken.groups[0].balken_element.note_value;
 
@@ -18782,7 +18849,11 @@ var Renderer = /*#__PURE__*/function () {
 
           var url = "flag_" + (upper_flag ? "f" : "i") + _numflag; // for now numflags <= 4
 
-          _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_2__["G_imgmap"][url], _bar_x2 + x_adj, slope * _bar_x2 + intercept + (upper_flag ? -barlen_delta : barlen_delta), flag_w, null, "l" + (upper_flag ? "t" : "b"));
+          paper.getContext("2d").scale(this_elem_draw_scale, 1.0);
+          _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_2__["G_imgmap"][url], (_bar_x2 + x_adj) / this_elem_draw_scale, slope * _bar_x2 + intercept + (upper_flag ? -barlen_delta : barlen_delta), // y coordinates kep the same, then no need to apply scaling
+          flag_w, // No need to apply "/this_elem_draw_scale" otherwise no compression apply :).
+          null, "l" + (upper_flag ? "t" : "b"));
+          paper.getContext("2d").scale(1.0 / this_elem_draw_scale, 1.0);
         }
       }
 

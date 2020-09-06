@@ -240,8 +240,8 @@ export class Renderer {
     }
     
     render_rs_area(
-        x,
-        draw_scale, // note this is used for remember the draw_scale applied for tie rendering. other x axis coordinates given by already scaled.
+        x,          // This represents screen position and scaling is not considered
+        draw_scale, // scaling applied fro this elements. 
         elems,
         paper,
         rs_y_base,
@@ -254,7 +254,7 @@ export class Renderer {
         music_context,
         meas,
         param,
-        room_for_rs_per_element,
+        room_for_rs_per_element, // room per element in RS are for set of elemes. This is on-screen coordinates. Already considred scaling impact.
         balken,
         is_last_body_elem_group_in_a_measure
     ) {
@@ -313,7 +313,7 @@ export class Renderer {
             // This needed because we need to draw bars or balken etc... for some group of elements.
             // Such bars or balken are drawn only when required elements are all collected.
             balken.groups.push({balken_element:balken_element,e:e,
-                org_x:x,org_room_for_rs_per_element:room_for_rs_per_element});
+                org_x:x,org_draw_scale:draw_scale,org_room_for_rs_per_element:room_for_rs_per_element});
 
             if (
                 e instanceof common.Rest ||
@@ -492,6 +492,11 @@ export class Renderer {
             bounding_box.add_rect(ret.bounding_box);
             balken_element.renderprop.note_x_center = x;
             if(draw){
+                // notes_coord.x : 
+                //   0 : Left side of note including accidentals
+                //   1 : Left side of note
+                //   2 : Right side of note
+                //   3 : Right side of note including dots
                 balken_element.notes_coord.x
                     .push([x, x, x + ret.bounding_box.w, x + ret.bounding_box.w]);
             }
@@ -617,6 +622,11 @@ export class Renderer {
             bounding_box.add_rect(r.bounding_box);
 
             if(draw){
+                // notes_coord.x : 
+                //   0 : Left side of note including accidentals
+                //   1 : Left side of note
+                //   2 : Right side of note
+                //   3 : Right side of note including dots
                 balken_element.notes_coord.x
                     .push([x, x, x + r.bounding_box.w, x + r.bounding_box.w,]);
             }
@@ -638,7 +648,7 @@ export class Renderer {
     draw_rs_area_balkens(
         //draw, 
         //x,
-        draw_scale,
+        draw_scale, // This is the draw scale of latest element, coudl be differnt from draw scale of old eleents in registred bolken groups
         paper,
         group,
         balken,
@@ -736,24 +746,41 @@ export class Renderer {
         center_y = Math.floor(center_y / cnt_y);
         var upper_flag = center_y > rs_y_base + _5lines_intv * 2;
 
-        let x = balken.groups[0].org_x;
+        let x = balken.groups[0].org_x; // on screen position, no scaling applied
 
         // 2. Draw notes and slashes without bars, flags and balkens
         for (let gbi = 0; gbi < balken.groups.length; ++gbi) {
-            //var x = balken.groups[gbi].notes_coord[0];
+            let this_elem_draw_scale = balken.groups[gbi].org_draw_scale;
+
             let e = balken.groups[gbi].e;
             let balken_element = balken.groups[gbi].balken_element;
             let ys = balken_element.notes_coord.y;
 
             var d = balken_element.note_value;
 
+            paper.getContext("2d").scale(this_elem_draw_scale, 1);
+            // Here all the output and set value by following funtion will be that with scaling apply.
+            // To use the values which the followign functio generates, apply "* this_elem_draw_scale".
             let wo_flags = this.draw_rs_area_without_flag_balken(draw, paper, param, e,
-                balken_element, x, rs_y_base, row_height);
+                balken_element, x/this_elem_draw_scale, rs_y_base, row_height);
+            paper.getContext("2d").scale(1.0/this_elem_draw_scale, 1);
+
+            // ----
+            // Convert output to on-screen coordinates
+            // -----
+            wo_flags.bounding_box.x *= this_elem_draw_scale;
+            wo_flags.bounding_box.w *= this_elem_draw_scale;
+            for(let ncc = 0; ncc < balken_element.notes_coord.x.length; ++ncc){
+                balken_element.notes_coord.x[ncc] = balken_element.notes_coord.x[ncc].map(x => x*this_elem_draw_scale);
+            }
+
 
             let xs = balken_element.notes_coord.x;
 
             if( e instanceof common.Chord){
                 if (music_context.tie_info.rs_prev_has_tie) {
+                    // NOTE : Tie is always drawn with on-screen coordinates, no scaling apply
+
                     // Draw tie line
                     var prev_coord = music_context.tie_info.rs_prev_coord;
                     var psm = music_context.tie_info.rs_prev_meas;
@@ -791,23 +818,23 @@ export class Renderer {
 
                     for (let ci = 0; ci < ys.length; ++ci) {
                         let y = ys[ci];
-                        let prev_draw_scale = music_context.tie_info.rs_prev_draw_scale;
+                        //let prev_draw_scale = music_context.tie_info.rs_prev_draw_scale;
 
                         if (y != prev_coord.y[ci]) {
 
                             // Crossing measure row. Previous RS mark could be on another page.
                             // Make sure to create curve on the paper on which previous RS is drawn.
                             var brace_points = [
-                                [prev_coord.x[ci][3] * prev_draw_scale + sdx, prev_coord.y[ci] + dy],
-                                [prev_coord.x[ci][3] * prev_draw_scale + sdx, prev_coord.y[ci] - round + dy],
+                                [prev_coord.x[ci][3] + sdx, prev_coord.y[ci] + dy],
+                                [prev_coord.x[ci][3] + sdx, prev_coord.y[ci] - round + dy],
                                 [psm.renderprop.meas_end_x + 20, prev_coord.y[ci] - round + dy],
                                 [psm.renderprop.meas_end_x + 20, prev_coord.y[ci] + dy]
                             ];
 
                             let clip_rect = [
-                                prev_coord.x[ci][3] * prev_draw_scale +sdx, 
+                                prev_coord.x[ci][3] +sdx, 
                                 (prev_coord.y[ci] - 50), 
-                                (psm.renderprop.meas_end_x - (prev_coord.x[ci][3] * prev_draw_scale + sdx)  + 5),
+                                (psm.renderprop.meas_end_x - (prev_coord.x[ci][3] + sdx)  + 5),
                                 100];
 
                             console.group("Tie");
@@ -819,46 +846,48 @@ export class Renderer {
                             // then temporaryly deactivate scaling.
                             // In case of differnt paper, such paper shall already be reverted back to scaling=1, 
                             // no need to do anything.
-                            if(paper == music_context.tie_info.rs_prev_tie_paper)
-                                music_context.tie_info.rs_prev_tie_paper.getContext("2d").scale(1.0/draw_scale, 1.0);
+                            // Update : 2020 09 03 : No need to apply scaing as all the coordinates are normalized
+                            //                       to on-screen coordinates
+                            //if(paper == music_context.tie_info.rs_prev_tie_paper)
+                            //    music_context.tie_info.rs_prev_tie_paper.getContext("2d").scale(1.0/draw_scale, 1.0);
 
                             graphic.CanvasbBzierCurve(music_context.tie_info.rs_prev_tie_paper,
                                 brace_points, false, false, 
                                 {"clip-rect":clip_rect});
 
-                            if(paper == music_context.tie_info.rs_prev_tie_paper)
-                                music_context.tie_info.rs_prev_tie_paper.getContext("2d").scale(draw_scale, 1.0);
+                            //if(paper == music_context.tie_info.rs_prev_tie_paper)
+                            //    music_context.tie_info.rs_prev_tie_paper.getContext("2d").scale(draw_scale, 1.0);
 
                             brace_points = [
                                 [meas_start_x - 20, y + dy],
                                 [meas_start_x - 20, y - round + dy],
-                                [xs[ci][0] * draw_scale + edx, y - round + dy],
-                                [xs[ci][0] * draw_scale + edx, y + dy]
+                                [xs[ci][0] + edx, y - round + dy],
+                                [xs[ci][0] + edx, y + dy]
                             ];
 
                             clip_rect = [meas_start_x - 5, (y - 50), 
-                                (x * draw_scale - (meas_start_x - 5)), 100];
+                                (x - (meas_start_x - 5)), 100];
 
-                            paper.getContext("2d").scale(1.0/draw_scale, 1.0);
+                            //paper.getContext("2d").scale(1.0/draw_scale, 1.0);
                             
                             graphic.CanvasbBzierCurve(paper, brace_points, false, false,
                                 {"clip-rect":clip_rect});
 
-                            paper.getContext("2d").scale(draw_scale, 1.0);
+                            //paper.getContext("2d").scale(draw_scale, 1.0);
 
                         } else {
                             let brace_points = [
-                                [prev_coord.x[ci][3] * prev_draw_scale + sdx, prev_coord.y[ci] + dy],
-                                [prev_coord.x[ci][3] * prev_draw_scale + sdx, prev_coord.y[ci] - round + dy],
-                                [xs[ci][0] * draw_scale + edx, y - round + dy],
-                                [xs[ci][0] * draw_scale + edx, y + dy]
+                                [prev_coord.x[ci][3] + sdx, prev_coord.y[ci] + dy],
+                                [prev_coord.x[ci][3] + sdx, prev_coord.y[ci] - round + dy],
+                                [xs[ci][0] + edx, y - round + dy],
+                                [xs[ci][0] + edx, y + dy]
                             ];
 
-                            paper.getContext("2d").scale(1.0/draw_scale, 1.0);
+                            //paper.getContext("2d").scale(1.0/draw_scale, 1.0);
                             
                             graphic.CanvasbBzierCurve(paper, brace_points, false, false);
                             
-                            paper.getContext("2d").scale(draw_scale, 1.0);
+                            //paper.getContext("2d").scale(draw_scale, 1.0);
                         }
                     }
                 }
@@ -870,11 +899,11 @@ export class Renderer {
                 music_context.tie_info.rs_prev_meas = meas;
             }
 
-            e.renderprop.x = x;
+            e.renderprop.x = x; 
             balken_element.renderprop.x = x;
 
             // Here is the only update of x
-
+            //   * org_room_for_rs_per_element is with on-screen coordinates. In case scaling apply, this value is already set to 0.
             x += wo_flags.bounding_box.w + balken.groups[gbi].org_room_for_rs_per_element; // TODO : FIXME to cater for actual width of components
         }
 
@@ -908,8 +937,9 @@ export class Renderer {
             (upper_flag ? min_y - param.note_bar_length : max_y + param.note_bar_length) -
             slope * (upper_flag ? x_at_min_y : x_at_max_y);
 
-        // 4. Draw bars, flags
+        // 4. Draw vertical bars
         for (var gbi = 0; gbi < balken.groups.length; ++gbi) {
+            // Currnetly, not apply scaling for vertical line and line width 1 always set to 1
 
             let ys = balken.groups[gbi].balken_element.notes_coord.y;
             let xs = balken.groups[gbi].balken_element.notes_coord.x;
@@ -954,6 +984,8 @@ export class Renderer {
         // 5. Draw balkens
 
         if (balken.groups.length >= 2) {
+            // Inter-element balkens, no scaling apply (even for single balken)
+
             // Draw flag for balken
             // Common balken
             if (balken.groups[0].balken_element.note_value >= 8) {
@@ -1096,6 +1128,9 @@ export class Renderer {
             balken.groups.length == 1 &&
             ( balken.groups[0].balken_element.type == "slash" || balken.groups[0].balken_element.type == "notes")
         ) {
+            // This is sigle flag/balken, then scaling apply. This is the only case we apply the scaling
+            let this_elem_draw_scale = balken.groups[0].org_draw_scale;
+
             // Normal drawing of flags
             let bar_x = balken.groups[0].balken_element.notes_coord.x[0][upper_flag?2:1];
             let d = balken.groups[0].balken_element.note_value;
@@ -1108,12 +1143,17 @@ export class Renderer {
                 let barlen_delta = Math.max(0, (numflag-2) * 5); // "5" is magic number adjusted for this paticular font
                 let flag_w = _5lines_intv * 1.1; // Normalize by width. Unfortunately, it is not easy to normalize with height as the rule is not clear. "1.1" is magic number.
                 let url = "flag_"+(upper_flag?"f":"i")+numflag; // for now numflags <= 4
+
+                paper.getContext("2d").scale(this_elem_draw_scale, 1.0);
                 graphic.CanvasImage(paper, graphic.G_imgmap[url],
-                    bar_x + x_adj,
+                    (bar_x + x_adj)/this_elem_draw_scale,
                     slope * bar_x +
                         intercept +
-                        (upper_flag ? -barlen_delta : barlen_delta),
-                    flag_w, null, "l"+(upper_flag?"t":"b"));
+                        (upper_flag ? -barlen_delta : barlen_delta), // y coordinates kep the same, then no need to apply scaling
+                    flag_w,  // No need to apply "/this_elem_draw_scale" otherwise no compression apply :).
+                    null, "l"+(upper_flag?"t":"b"));
+                paper.getContext("2d").scale(1.0/this_elem_draw_scale, 1.0);
+
             }
         }
 

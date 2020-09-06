@@ -820,7 +820,8 @@ export class Renderer {
                         let y = ys[ci];
                         //let prev_draw_scale = music_context.tie_info.rs_prev_draw_scale;
 
-                        if (y != prev_coord.y[ci]) {
+                        if ((y != prev_coord.y[ci]) || 
+                             music_context.tie_info.rs_prev_tie_paper != paper) {
 
                             // Crossing measure row. Previous RS mark could be on another page.
                             // Make sure to create curve on the paper on which previous RS is drawn.

@@ -18649,7 +18649,7 @@ var Renderer = /*#__PURE__*/function () {
             for (var _ci = 0; _ci < ys.length; ++_ci) {
               var y = ys[_ci]; //let prev_draw_scale = music_context.tie_info.rs_prev_draw_scale;
 
-              if (y != prev_coord.y[_ci]) {
+              if (y != prev_coord.y[_ci] || music_context.tie_info.rs_prev_tie_paper != paper) {
                 // Crossing measure row. Previous RS mark could be on another page.
                 // Make sure to create curve on the paper on which previous RS is drawn.
                 brace_points = [[prev_coord.x[_ci][3] + sdx, prev_coord.y[_ci] + _dy2], [prev_coord.x[_ci][3] + sdx, prev_coord.y[_ci] - round + _dy2], [psm.renderprop.meas_end_x + 20, prev_coord.y[_ci] - round + _dy2], [psm.renderprop.meas_end_x + 20, prev_coord.y[_ci] + _dy2]];

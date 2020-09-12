@@ -11707,7 +11707,7 @@ module.exports = function (module) {
 /*!******************************!*\
   !*** ./src/common/common.js ***!
   \******************************/
-/*! exports provided: shallowcopy, deepcopy, myLog2, TaskQueue, Task, WHOLE_NOTE_LENGTH, Track, ReharsalGroup, Measure, Rest, Simile, Chord, LoopIndicator, Space, LongRestIndicator, Time, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, DaCapo, DalSegno, Segno, Coda, ToCoda, Fine, Comment, Lyric, BoundingBox */
+/*! exports provided: shallowcopy, deepcopy, myLog2, TaskQueue, Task, WHOLE_NOTE_LENGTH, Track, ReharsalGroup, Measure, Rest, Simile, Chord, LoopIndicator, Space, LongRestIndicator, Time, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, DaCapo, DalSegno, Segno, Coda, ToCoda, Fine, Comment, Lyric, Macro, BoundingBox, RawSpaces, TemplateString */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11743,7 +11743,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Fine", function() { return Fine; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Comment", function() { return Comment; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Lyric", function() { return Lyric; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Macro", function() { return Macro; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BoundingBox", function() { return BoundingBox; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RawSpaces", function() { return RawSpaces; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TemplateString", function() { return TemplateString; });
 /* harmony import */ var _babel_polyfill__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/polyfill */ "./node_modules/@babel/polyfill/lib/index.js");
 /* harmony import */ var _babel_polyfill__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_polyfill__WEBPACK_IMPORTED_MODULE_0__);
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -11980,6 +11983,7 @@ var Track = /*#__PURE__*/function () {
     this.reharsal_groups = new Array();
     this.macros = deepcopy(MACRO_DEFAULT);
     this.pre_render_info = {};
+    this.serialize = []; // Store serialized data structure
   } // Utility functions open for external
 
 
@@ -12011,62 +12015,132 @@ var Track = /*#__PURE__*/function () {
     value: function getVariable(name) {
       return this.macros[name];
     }
+  }, {
+    key: "exportCode",
+    value: function exportCode() {
+      var code = "";
+
+      for (var si = 0; si < this.serialize.length; ++si) {
+        code += this.serialize[si].exportCode();
+      }
+
+      return code;
+    }
   }]);
 
   return Track;
 }();
-var ReharsalGroup = function ReharsalGroup(name) {
-  var inline = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+var ReharsalGroup = /*#__PURE__*/function () {
+  function ReharsalGroup(name) {
+    var inline = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
-  _classCallCheck(this, ReharsalGroup);
+    _classCallCheck(this, ReharsalGroup);
 
-  this.name = name;
-  this.inline = inline; //	this.measures = new Array();
+    this.name = name;
+    this.inline = inline; //	this.measures = new Array();
 
-  this.blocks = new Array(); // Blocks in the reharsal groups
+    this.blocks = new Array(); // Blocks in the reharsal groups
 
-  this.macros = deepcopy(MACRO_DEFAULT);
-};
-var Measure = function Measure() {
-  _classCallCheck(this, Measure);
+    this.macros = deepcopy(MACRO_DEFAULT);
+    this.serialize = [];
+  }
 
-  this.elements = new Array();
-  this.boundary_info = ["n", "n"]; // "n" : normal boundary
-  // "b" : loop Begin boundary
-  // "e" : loop End boundary
-  // "d" : Double line boundary
+  _createClass(ReharsalGroup, [{
+    key: "exportCode",
+    value: function exportCode() {
+      var code = "";
 
-  this.header_width = 0;
-  this.body_width = 0;
-  this.footer_width = 0;
-  this.body_scaling = 1.0;
-  this.raw_new_line = false; // Raw "new line" mark. Maked when this is a second or later measure inside a reharsal group after one ore more new lines in the fumen code
+      for (var si = 0; si < this.serialize.length; ++si) {
+        code += this.serialize[si].exportCode();
+      }
 
-  this.new_line = false; // THis is used in renderer
+      return code;
+    }
+  }]);
 
-  this.align = "expand"; // expand, left, right
+  return ReharsalGroup;
+}();
+var Measure = /*#__PURE__*/function () {
+  function Measure() {
+    _classCallCheck(this, Measure);
 
-  this.renderprop = {}; // Rendering information storage
+    this.elements = new Array();
+    this.boundary_info = ["n", "n"]; // "n" : normal boundary
+    // "b" : loop Begin boundary
+    // "e" : loop End boundary
+    // "d" : Double line boundary
 
-  this.macros = deepcopy(MACRO_DEFAULT);
-};
-var Rest = function Rest(length_s) {
-  _classCallCheck(this, Rest);
+    this.header_width = 0;
+    this.body_width = 0;
+    this.footer_width = 0;
+    this.body_scaling = 1.0;
+    this.raw_new_line = false; // Raw "new line" mark. Maked when this is a second or later measure inside a reharsal group after one ore more new lines in the fumen code
 
-  this.note_group_list = [{
-    lengthIndicator: parseLengthIndicator(length_s),
-    note_profiles: null
-  }];
-  this.renderprop = {};
-};
-var Simile = function Simile(numslash) {
-  _classCallCheck(this, Simile);
+    this.new_line = false; // THis is used in renderer
 
-  // NOTE : Double simile on measure boundary is not treated in this class, it is treated as a one of boundary type
-  this.numslash = numslash;
-  this.renderprop = {};
-  this.note_group_list = null;
-};
+    this.align = "expand"; // expand, left, right
+
+    this.renderprop = {}; // Rendering information storage
+
+    this.macros = deepcopy(MACRO_DEFAULT);
+    this.serialize = [];
+  }
+
+  _createClass(Measure, [{
+    key: "exportCode",
+    value: function exportCode() {
+      var code = "";
+
+      for (var si = 0; si < this.serialize.length; ++si) {
+        code += this.serialize[si].exportCode();
+      }
+
+      return code;
+    }
+  }]);
+
+  return Measure;
+}();
+var Rest = /*#__PURE__*/function () {
+  function Rest(length_s) {
+    _classCallCheck(this, Rest);
+
+    this.length_s = length_s;
+    this.note_group_list = [{
+      lengthIndicator: parseLengthIndicator(length_s),
+      note_profiles: null
+    }];
+    this.renderprop = {};
+  }
+
+  _createClass(Rest, [{
+    key: "exportCode",
+    value: function exportCode() {
+      return "r:".concat(this.length_s);
+    }
+  }]);
+
+  return Rest;
+}();
+var Simile = /*#__PURE__*/function () {
+  function Simile(numslash) {
+    _classCallCheck(this, Simile);
+
+    // NOTE : Double simile on measure boundary is not treated in this class, it is treated as a one of boundary type
+    this.numslash = numslash;
+    this.renderprop = {};
+    this.note_group_list = null;
+  }
+
+  _createClass(Simile, [{
+    key: "exportCode",
+    value: function exportCode() {
+      return "." + "/".repeat(this.numslash) + ".";
+    }
+  }]);
+
+  return Simile;
+}();
 var cnrg = new RegExp();
 cnrg.compile(/^((sus(4|2)?)|(add(9|13))|(alt)|(dim)|(7|9|6|11|13)|((\+|#)(5|9|13|11))|((-|b)(5|9|13))|([Mm]([Aa][Jj]?|[Ii][Nn]?)?)|([,()]))/);
 var CS_IDX_OFFSET = 2;
@@ -12582,46 +12656,99 @@ var Chord = /*#__PURE__*/function () {
 
       return [tranposed_note, transposed_base_note];
     }
+  }, {
+    key: "exportCode",
+    value: function exportCode() {
+      if (this.is_valid_chord) {
+        return this.chord_str;
+      } else {
+        return "\"".concat(this.chord_str, "\"");
+      }
+    }
   }]);
 
   return Chord;
 }();
-var LoopIndicator = function LoopIndicator(indicators) {
-  _classCallCheck(this, LoopIndicator);
+var LoopIndicator = /*#__PURE__*/function () {
+  function LoopIndicator(indicators) {
+    _classCallCheck(this, LoopIndicator);
 
-  // Note : Content of indicators are not always integers.
-  // intindicators is storage for integer indicators analyzed from indicators.
-  this.indicators = indicators;
-  this.intindicators = [];
-  var intrg = new RegExp(/(\d+)/);
+    // Note : Content of indicators are not always integers.
+    // intindicators is storage for integer indicators analyzed from indicators.
+    this.indicators = indicators;
+    this.intindicators = [];
+    var intrg = new RegExp(/(\d+)/);
 
-  for (var i = 0; i < this.indicators.length; ++i) {
-    var m = this.indicators[i].match(intrg);
+    for (var i = 0; i < this.indicators.length; ++i) {
+      var m = this.indicators[i].match(intrg);
 
-    if (m) {
-      this.intindicators.push(parseInt(m[0]));
+      if (m) {
+        this.intindicators.push(parseInt(m[0]));
+      }
     }
   }
-};
-var Space = function Space() {
-  var length = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
 
-  _classCallCheck(this, Space);
+  _createClass(LoopIndicator, [{
+    key: "exportCode",
+    value: function exportCode() {
+      return "[".concat(this.indicators, "]");
+    }
+  }]);
 
-  this.length = length;
-  this.renderprop = {};
-};
-var LongRestIndicator = function LongRestIndicator(longrestlen) {
-  _classCallCheck(this, LongRestIndicator);
+  return LoopIndicator;
+}();
+var Space = /*#__PURE__*/function () {
+  function Space() {
+    var length = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
 
-  this.longrestlen = longrestlen;
-};
-var Time = function Time(numer, denom) {
-  _classCallCheck(this, Time);
+    _classCallCheck(this, Space);
 
-  this.numer = numer;
-  this.denom = denom;
-};
+    this.length = length;
+    this.renderprop = {};
+  }
+
+  _createClass(Space, [{
+    key: "exportCode",
+    value: function exportCode() {
+      return ",".repeat(this.length);
+    }
+  }]);
+
+  return Space;
+}();
+var LongRestIndicator = /*#__PURE__*/function () {
+  function LongRestIndicator(longrestlen) {
+    _classCallCheck(this, LongRestIndicator);
+
+    this.longrestlen = longrestlen;
+  }
+
+  _createClass(LongRestIndicator, [{
+    key: "exportCode",
+    value: function exportCode() {
+      return "-".concat(this.longrestlen, "-");
+    }
+  }]);
+
+  return LongRestIndicator;
+}();
+var Time = /*#__PURE__*/function () {
+  function Time(numer, denom) {
+    _classCallCheck(this, Time);
+
+    this.numer = numer;
+    this.denom = denom;
+  }
+
+  _createClass(Time, [{
+    key: "exportCode",
+    value: function exportCode() {
+      return "(".concat(this.numer, "/").concat(this.denom, ")");
+    }
+  }]);
+
+  return Time;
+}();
 var MeasureBoundary = function MeasureBoundary() {
   _classCallCheck(this, MeasureBoundary);
 };
@@ -12640,6 +12767,13 @@ var MeasureBoundaryMark = /*#__PURE__*/function (_MeasureBoundary) {
     return _this;
   }
 
+  _createClass(MeasureBoundaryMark, [{
+    key: "exportCode",
+    value: function exportCode() {
+      return "|".repeat(this.nline);
+    }
+  }]);
+
   return MeasureBoundaryMark;
 }(MeasureBoundary);
 var LoopBeginMark = /*#__PURE__*/function (_MeasureBoundary2) {
@@ -12652,6 +12786,13 @@ var LoopBeginMark = /*#__PURE__*/function (_MeasureBoundary2) {
 
     return _super2.call(this);
   }
+
+  _createClass(LoopBeginMark, [{
+    key: "exportCode",
+    value: function exportCode() {
+      return "||:";
+    }
+  }]);
 
   return LoopBeginMark;
 }(MeasureBoundary);
@@ -12671,6 +12812,14 @@ var LoopEndMark = /*#__PURE__*/function (_MeasureBoundary3) {
     return _this2;
   }
 
+  _createClass(LoopEndMark, [{
+    key: "exportCode",
+    value: function exportCode() {
+      var ts = this.ntimes ? "xX" : "x".concat(this.times);
+      return ":||" + (ts == "x2" ? "" : ts); // x2 is not explicity stated : TODO : align with what wrote in the code.
+    }
+  }]);
+
   return LoopEndMark;
 }(MeasureBoundary);
 var LoopBothMark = /*#__PURE__*/function (_MeasureBoundary4) {
@@ -12689,6 +12838,14 @@ var LoopBothMark = /*#__PURE__*/function (_MeasureBoundary4) {
     return _this3;
   }
 
+  _createClass(LoopBothMark, [{
+    key: "exportCode",
+    value: function exportCode() {
+      var ts = this.ntimes ? "xX" : "x".concat(this.times);
+      return ":||:" + (ts == "x2" ? "" : ts); // x2 is not explicity stated : TODO : align with what wrote in the code.
+    }
+  }]);
+
   return LoopBothMark;
 }(MeasureBoundary);
 var MeasureBoundaryFinMark = /*#__PURE__*/function (_MeasureBoundary5) {
@@ -12701,6 +12858,13 @@ var MeasureBoundaryFinMark = /*#__PURE__*/function (_MeasureBoundary5) {
 
     return _super5.call(this);
   }
+
+  _createClass(MeasureBoundaryFinMark, [{
+    key: "exportCode",
+    value: function exportCode() {
+      return "||.";
+    }
+  }]);
 
   return MeasureBoundaryFinMark;
 }(MeasureBoundary);
@@ -12715,24 +12879,15 @@ var MeasureBoundaryDblSimile = /*#__PURE__*/function (_MeasureBoundary6) {
     return _super6.call(this);
   }
 
+  _createClass(MeasureBoundaryDblSimile, [{
+    key: "exportCode",
+    value: function exportCode() {
+      return "./|/.";
+    }
+  }]);
+
   return MeasureBoundaryDblSimile;
-}(MeasureBoundary);
-/*
-	var inherits = function inherits(sub, sup) {
-		var F = function F () {};
-		F.prototype = sup.prototype;
-		sub.prototype = new F();
-		sub.prototype.constructor = sub;
-	};
-	
-	inherits(MeasureBoundaryMark, MeasureBoundary);
-	inherits(LoopBeginMark, MeasureBoundary);
-	inherits(LoopEndMark, MeasureBoundary);
-	inherits(LoopBothMark, MeasureBoundary);
-	inherits(MeasureBoundaryFinMark, MeasureBoundary);
-	inherits(MeasureBoundaryDblSimile, MeasureBoundary);
-*/
-// Signs
+}(MeasureBoundary); // Signs
 
 var DaCapo = /*#__PURE__*/function () {
   function DaCapo() {
@@ -12743,6 +12898,11 @@ var DaCapo = /*#__PURE__*/function () {
     key: "toString",
     value: function toString() {
       return "D.C.";
+    }
+  }, {
+    key: "exportCode",
+    value: function exportCode() {
+      return this.toString();
     }
   }]);
 
@@ -12763,16 +12923,33 @@ var DalSegno = /*#__PURE__*/function () {
       var als = this.al === null ? "" : " al " + this.al.toString();
       return dss + als;
     }
+  }, {
+    key: "exportCode",
+    value: function exportCode() {
+      return "<" + this.toString() + ">";
+    }
   }]);
 
   return DalSegno;
 }();
-var Segno = function Segno(number, opt) {
-  _classCallCheck(this, Segno);
+var Segno = /*#__PURE__*/function () {
+  function Segno(number, opt) {
+    _classCallCheck(this, Segno);
 
-  this.number = number;
-  this.opt = opt;
-};
+    this.number = number;
+    this.opt = opt;
+  }
+
+  _createClass(Segno, [{
+    key: "exportCode",
+    value: function exportCode() {
+      var opts = this.opt ? " ".concat(this.opt) : "";
+      return "<S".concat(this.number || "").concat(opts, ">");
+    }
+  }]);
+
+  return Segno;
+}();
 var Coda = /*#__PURE__*/function () {
   function Coda(number) {
     _classCallCheck(this, Coda);
@@ -12785,15 +12962,31 @@ var Coda = /*#__PURE__*/function () {
     value: function toString() {
       return "Coda" + (this.number === null ? "" : this.number);
     }
+  }, {
+    key: "exportCode",
+    value: function exportCode() {
+      return "<" + this.toString() + ">";
+    }
   }]);
 
   return Coda;
 }();
-var ToCoda = function ToCoda(number) {
-  _classCallCheck(this, ToCoda);
+var ToCoda = /*#__PURE__*/function () {
+  function ToCoda(number) {
+    _classCallCheck(this, ToCoda);
 
-  this.number = number;
-};
+    this.number = number;
+  }
+
+  _createClass(ToCoda, [{
+    key: "exportCode",
+    value: function exportCode() {
+      return "<to Coda".concat(this.number || "", ">");
+    }
+  }]);
+
+  return ToCoda;
+}();
 var Fine = /*#__PURE__*/function () {
   function Fine() {
     _classCallCheck(this, Fine);
@@ -12803,6 +12996,11 @@ var Fine = /*#__PURE__*/function () {
     key: "toString",
     value: function toString() {
       return "Fine";
+    }
+  }, {
+    key: "exportCode",
+    value: function exportCode() {
+      return "<" + this.toString() + ">";
     }
   }]);
 
@@ -12823,6 +13021,12 @@ var Comment = /*#__PURE__*/function () {
     value: function setCodeDependency(v) {
       this.chorddep = v;
     }
+  }, {
+    key: "exportCode",
+    value: function exportCode() {
+      return "'" + this.comment + "'";
+    } // TODO : quote considrtaion
+
   }]);
 
   return Comment;
@@ -12842,9 +13046,49 @@ var Lyric = /*#__PURE__*/function () {
     value: function setCodeDependency(v) {
       this.chorddep = v;
     }
+  }, {
+    key: "exportCode",
+    value: function exportCode() {
+      return "`" + this.lyric + "`";
+    } // TODO : quote considrtaion
+
   }]);
 
   return Lyric;
+}(); // Pure {} object
+
+function isObject(val) {
+  if (val !== null && _typeof(val) === "object" && val.constructor === Object) {
+    return true;
+  }
+
+  return false;
+}
+
+var Macro = /*#__PURE__*/function () {
+  function Macro(name, value) {
+    _classCallCheck(this, Macro);
+
+    this.name = name;
+    this.value = value;
+  }
+
+  _createClass(Macro, [{
+    key: "exportCode",
+    value: function exportCode() {
+      var vtype = _typeof(this.value);
+
+      var code = "%" + this.name + "=";
+      if (vtype == "string") code += "\"".concat(this.value, "\"");else if (vtype == "number") code += "".concat(this.value);else if (isObject(this.value)) {
+        code += JSON.stringify(this.value);
+      } else {
+        throw "Error on export code for Macro";
+      }
+      return code;
+    }
+  }]);
+
+  return Macro;
 }(); // Utilities
 
 var BoundingBox = /*#__PURE__*/function () {
@@ -12903,6 +13147,51 @@ var BoundingBox = /*#__PURE__*/function () {
   }]);
 
   return BoundingBox;
+}();
+/**
+ * Reperesetnts skipped contiguous spaces/tabs during parsing.
+ * Used for serialization.
+ */
+
+var RawSpaces = /*#__PURE__*/function () {
+  function RawSpaces(sss) {
+    _classCallCheck(this, RawSpaces);
+
+    this.sss = sss;
+  }
+
+  _createClass(RawSpaces, [{
+    key: "exportCode",
+    value: function exportCode() {
+      return this.sss;
+    }
+  }]);
+
+  return RawSpaces;
+}();
+var TemplateString = /*#__PURE__*/function () {
+  // dict is hold as reference. Any change in the dict is propagated to exported code
+  function TemplateString(tmpl, dict) {
+    _classCallCheck(this, TemplateString);
+
+    this.tmpl = tmpl;
+    this.dict = dict;
+  }
+
+  _createClass(TemplateString, [{
+    key: "exportCode",
+    value: function exportCode() {
+      var _this4 = this;
+
+      var tpl = deepcopy(this.tmpl);
+      Object.keys(this.dict).forEach(function (k) {
+        tpl = tpl.replace(new RegExp("\\${" + k + "}", "g"), _this4.dict[k]);
+      });
+      return tpl;
+    }
+  }]);
+
+  return TemplateString;
 }();
 
 /***/ }),
@@ -13089,9 +13378,11 @@ var Parser = /*#__PURE__*/function () {
     value: function nextToken(s, dont_skip_spaces) {
       var word_def = WORD_DEFINIITON_GENERAL;
       var skipped_spaces = 0;
+      var skipped_spaces_str = "";
 
       if (!(dont_skip_spaces === true)) {
         while (s.length > 0 && charIsIn(s[0], " 	")) {
+          skipped_spaces_str += s[0];
           s = s.substr(1);
           ++skipped_spaces;
         }
@@ -13101,7 +13392,8 @@ var Parser = /*#__PURE__*/function () {
         token: null,
         s: s,
         type: TOKEN_END,
-        ss: skipped_spaces
+        ss: skipped_spaces,
+        sss: skipped_spaces_str
       }; // At first, plain string is analyzed irrespective of word_def.
 
       var r = charStartsWithAmong(s, ["\"", "'", "`", "-"]); //if (s[0] == "\"" || s[0] == "'" || s[0] == "`") {
@@ -13124,7 +13416,8 @@ var Parser = /*#__PURE__*/function () {
           token: plain_str,
           s: s,
           type: [TOKEN_STRING, TOKEN_STRING_SQ, TOKEN_STRING_GRAVE_ACCENT, TOKEN_STRING_HYPHEN][r.index],
-          ss: skipped_spaces
+          ss: skipped_spaces,
+          sss: skipped_spaces_str
         };
       }
 
@@ -13135,6 +13428,7 @@ var Parser = /*#__PURE__*/function () {
           token: r.s,
           s: s.substr(r.s.length),
           ss: skipped_spaces,
+          sss: skipped_spaces_str,
           type: [TOKEN_MB_LOOP_BEGIN, TOKEN_MB_FIN, TOKEN_MB_DBL, TOKEN_MB, TOKEN_MB_DBL_SIMILE][r.index]
         };
       }
@@ -13154,6 +13448,7 @@ var Parser = /*#__PURE__*/function () {
           token: m[0],
           s: s.substr(m[0].length),
           ss: skipped_spaces,
+          sss: skipped_spaces_str,
           type: m[1] == ":||:" ? TOKEN_MB_LOOP_BOTH : TOKEN_MB_LOOP_END,
           param: {
             times: loopTimes,
@@ -13169,6 +13464,7 @@ var Parser = /*#__PURE__*/function () {
           token: s[0],
           s: s.substr(1),
           ss: skipped_spaces,
+          sss: skipped_spaces_str,
           type: [TOKEN_BRACKET_LS, TOKEN_BRACKET_RS, TOKEN_BRACKET_LA, TOKEN_BRACKET_RA, TOKEN_BRACKET_LR, TOKEN_BRACKET_RR, TOKEN_BRACKET_LW, TOKEN_BRACKET_RW, TOKEN_COMMA, TOKEN_NL, TOKEN_SLASH, TOKEN_BACK_SLASH, TOKEN_PERCENT, TOKEN_EQUAL, TOKEN_ATMARK, TOKEN_COLON, TOKEN_PERIOD][r.index]
         };
       } // "Word characters"
@@ -13183,7 +13479,8 @@ var Parser = /*#__PURE__*/function () {
           token: w,
           s: s.substr(w.length),
           type: TOKEN_WORD,
-          ss: skipped_spaces
+          ss: skipped_spaces,
+          sss: skipped_spaces_str
         };
       }
 
@@ -13256,7 +13553,11 @@ var Parser = /*#__PURE__*/function () {
   }, {
     key: "parseReharsalMark",
     value: function parseReharsalMark(trig_token, s) {
-      // "Word characters"
+      // prerequisite
+      //   trig_token_type = TOKEN_BRACKET_LS
+      // Expects "Word characters"
+      // exit state
+      //   "]" is consumed.
       var m = s.match(WORD_DEFINITION_IN_REHARSAL_MARK);
 
       if (m != null) {
@@ -13443,9 +13744,11 @@ var Parser = /*#__PURE__*/function () {
       // note:
       //   | or || or ||: or :|| at the end of the measure will "not" be consumed.
       var measure = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Measure"]();
+      var serialize = measure.serialize;
       if (trig_token_obj.type == TOKEN_MB) measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundaryMark"](1));else if (trig_token_obj.type == TOKEN_MB_DBL) measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundaryMark"](2));else if (trig_token_obj.type == TOKEN_MB_LOOP_END) measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopEndMark"](trig_token_obj.param));else if (trig_token_obj.type == TOKEN_MB_LOOP_BEGIN) measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopBeginMark"]());else if (trig_token_obj.type == TOKEN_MB_LOOP_BOTH) measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopBothMark"](trig_token_obj.param));else if (trig_token_obj.type == TOKEN_MB_FIN) measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundaryFinMark"]());else if (trig_token_obj.type == TOKEN_MB_DBL_SIMILE) measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundaryDblSimile"]());
-      var loop_flg = true; //var atmark_detected = false;
+      serialize.push(measure.elements[measure.elements.length - 1]); // Register boundary
 
+      var loop_flg = true;
       var atmark_associated_elements = [];
 
       var associator = function associator(elem_list, chord) {
@@ -13463,11 +13766,13 @@ var Parser = /*#__PURE__*/function () {
 
       while (loop_flg) {
         var r = this.nextToken(s);
+        if (r.sss.length > 0) serialize.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.sss));
         var m = null;
 
         switch (r.type) {
           case TOKEN_COMMA:
             measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["Space"](1));
+            serialize.push(measure.elements[measure.elements.length - 1]);
             s = r.s;
             break;
 
@@ -13480,32 +13785,21 @@ var Parser = /*#__PURE__*/function () {
             }
 
             measure.elements.push(chord);
+            serialize.push(measure.elements[measure.elements.length - 1]);
             s = r.s;
             break;
 
           case TOKEN_STRING_SQ:
-            /*var comment = new common.Comment(r.token, atmark_detected);
-            previous_comment = comment;
-            if (atmark_detected) {
-                associated_chord.setException(comment);
-                atmark_detected = false;
-                associated_chord = null;
-            }*/
             var comment = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Comment"](r.token);
             measure.elements.push(comment);
+            serialize.push(measure.elements[measure.elements.length - 1]);
             s = r.s;
             break;
 
           case TOKEN_STRING_GRAVE_ACCENT:
-            /*var lyric = new common.Lyric(r.token, atmark_detected);
-            previous_lyric = lyric;
-            if (atmark_detected) {
-                associated_chord.setLyric(lyric);
-                atmark_detected = false;
-                associated_chord = null;
-            }*/
             var lyric = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Lyric"](r.token);
             measure.elements.push(lyric);
+            serialize.push(measure.elements[measure.elements.length - 1]);
             s = r.s;
             break;
 
@@ -13517,6 +13811,7 @@ var Parser = /*#__PURE__*/function () {
             }
 
             measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["LongRestIndicator"](parseInt(r.token)));
+            serialize.push(measure.elements[measure.elements.length - 1]);
             s = r.s;
             break;
 
@@ -13525,6 +13820,7 @@ var Parser = /*#__PURE__*/function () {
             //atmark_detected = true;
             atmark_associated_elements.push(measure.elements[measure.elements.length - 1]); // Remember the previous element
 
+            serialize.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
             s = r.s;
             break;
 
@@ -13534,10 +13830,12 @@ var Parser = /*#__PURE__*/function () {
 
             if (rr.rest !== null) {
               measure.elements.push(rr.rest);
+              serialize.push(measure.elements[measure.elements.length - 1]);
               s = rr.s;
               break;
             }
 
+          // else continute to chord symbol analysis
           // To SLASH or COLON
           // eslint-disable-next-line no-fallthrough
 
@@ -13551,6 +13849,7 @@ var Parser = /*#__PURE__*/function () {
             }
 
             measure.elements.push(r.chord);
+            serialize.push(measure.elements[measure.elements.length - 1]);
             s = r.s;
             break;
 
@@ -13558,26 +13857,33 @@ var Parser = /*#__PURE__*/function () {
             // Only simile symbol at this moment
             r = this.parseInMeasSimile(r.token, r.type, r.s);
             measure.elements.push(r.simile);
+            serialize.push(measure.elements[measure.elements.length - 1]);
             s = r.s;
             break;
 
           case TOKEN_BRACKET_LA:
             r = this.parseSign(r.type, r.s);
             measure.elements.push(r.sign);
+            serialize.push(measure.elements[measure.elements.length - 1]);
             s = r.s;
             break;
 
           case TOKEN_BRACKET_LR:
             r = this.parseTime(r.type, r.s);
             measure.elements.push(r.time);
+            serialize.push(measure.elements[measure.elements.length - 1]);
             s = r.s;
             break;
 
           case TOKEN_BRACKET_LS:
             r = this.parseLoopIndicator(r.type, r.s);
             measure.elements.push(r.loopIndicator);
+            serialize.push(measure.elements[measure.elements.length - 1]);
             s = r.s;
             break;
+          // Boundaries.
+          // Not consumed. Not registed to sealize object as it will be registred at as the begin boundary of next measure.
+          // For the last measure, it still needst to be registed, which is done outside this function. 
 
           case TOKEN_MB:
             measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundaryMark"](1));
@@ -13630,8 +13936,9 @@ var Parser = /*#__PURE__*/function () {
     value: function parseMeasures(trig_token_obj, s) {
       // prerequisite :
       //   trig_token_obj == "|" or "||" or "||:" with params
+      // Contiguous measures in one row(from raw string perspective) is parsed. Parsing lasts until newline/end/or backslash is detected.
       // After calling this method, context will be out of measure context, that is,
-      // last boundary will be consumed.
+      // last boundary will be consumed. newline/end/backslash will not be consumed.
       var measures = new Array();
       var loop_flg = true;
 
@@ -13654,15 +13961,12 @@ var Parser = /*#__PURE__*/function () {
 
             switch (tr.type) {
               case TOKEN_NL:
-                loop_flg = false;
-                break;
-
               case TOKEN_END:
-                loop_flg = false;
-                break;
-
               case TOKEN_BACK_SLASH:
-                loop_flg = false;
+                loop_flg = false; // Register the last boundary to the serialize object of last measure as it is not regisereted.
+
+                var lastm = measures[measures.length - 1];
+                lastm.serialize.push(lastm.elements[lastm.elements.length - 1]);
                 break;
 
               default:
@@ -13686,6 +13990,9 @@ var Parser = /*#__PURE__*/function () {
   }, {
     key: "parseMacro",
     value: function parseMacro(s) {
+      // prerequisite :
+      //   trig_token_obj == TOKEN_PERCENT
+      // TODO: Serialize. Maybe  Macro class is needed
       var key = null;
       var value = null;
       var r = this.nextToken(s);
@@ -13760,42 +14067,56 @@ var Parser = /*#__PURE__*/function () {
         }; // eslint-disable-next-line no-constant-condition
 
         while (true) {
-          r = this.nextToken(code); //console.log(r);
+          r = this.nextToken(code);
+          var serialize = currentReharsalGroup ? currentReharsalGroup.serialize : track.serialize;
+          if (r.sss.length > 0) serialize.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.sss)); // remember skipped spaces
+          //console.log(r);
 
-          if (r.type == TOKEN_END) break;
-
-          if (r.type == TOKEN_NL) {
+          if (r.type == TOKEN_END) {
+            break;
+          } else if (r.type == TOKEN_NL) {
             this.context.line += 1;
             this.context.contiguous_line_break += 1;
             current_align = "expand"; // default is expand
+
+            serialize.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
           } else if (r.type == TOKEN_BACK_SLASH) {
             // Expect TOKEN_NL 
+            serialize.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
             r = this.nextToken(r.s);
             if (r.type != TOKEN_NL) this.onParseError("INVALID CODE DETECTED AFTER BACK SLASH");
-            this.context.line += 1; // Does not count as line break
+            this.context.line += 1;
+            serialize.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.sss));
+            serialize.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token)); // Does not count as line break
           } else if (r.type == TOKEN_BRACKET_RA) {
             // Right aligh indicoator > which is outside measure
             current_align = "right";
+            serialize.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
           } else if (r.type == TOKEN_BRACKET_LA) {
             // Right aligh indicoator > which is outside measure
             current_align = "left";
+            serialize.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
           } else if (r.type == TOKEN_BRACKET_LS) {
             // Reset latest_macros
-            latest_macros = {};
-            r = this.parseReharsalMark(r.token, r.s); //console.log("Reharsal Mark:"+r.reharsalMarkName);
+            latest_macros = {}; //console.log("Reharsal Mark:"+r.reharsalMarkName);
 
             if (currentReharsalGroup != null) track.reharsal_groups.push(currentReharsalGroup);
             var inline = this.context.contiguous_line_break <= 1 && track.reharsal_groups.length > 0 && // 1st RG is always non-inline
             track.reharsal_groups[track.reharsal_groups.length - 1].blocks.length > 0; // previous reharsal group has at least one block(measure)
 
-            currentReharsalGroup = new _common_common__WEBPACK_IMPORTED_MODULE_1__["ReharsalGroup"](r.reharsalMarkName, inline); //console.log(currentReharsalGroup);
+            r = this.parseReharsalMark(r.token, r.s);
+            currentReharsalGroup = new _common_common__WEBPACK_IMPORTED_MODULE_1__["ReharsalGroup"](r.reharsalMarkName, inline);
+            track.serialize.push(currentReharsalGroup);
+            currentReharsalGroup.serialize.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["TemplateString"]("[${name}]", currentReharsalGroup)); //console.log(currentReharsalGroup);
 
             this.context.contiguous_line_break = 0;
           } else if ([TOKEN_MB, TOKEN_MB_DBL, TOKEN_MB_LOOP_BEGIN, TOKEN_MB_LOOP_BOTH, TOKEN_MB_FIN, TOKEN_MB_DBL_SIMILE].indexOf(r.type) >= 0) {
             // Exepction : If not reharsal mark is defined and the measure is directly specified, 
             // then define default anonymous reharsal mark
+            // Anonymous reharsal group
             if (currentReharsalGroup == null) {
               currentReharsalGroup = new _common_common__WEBPACK_IMPORTED_MODULE_1__["ReharsalGroup"]("", false);
+              track.serialize.push(currentReharsalGroup);
               this.context.contiguous_line_break = 0;
             }
 
@@ -13819,10 +14140,11 @@ var Parser = /*#__PURE__*/function () {
               currentReharsalGroup.blocks[blocklen - 1] = currentReharsalGroup.blocks[blocklen - 1].concat(r.measures);
             }
 
-            this.context.contiguous_line_break = 0; //currentReharsalGroup.measures =
-            //	currentReharsalGroup.measures.concat(r.measures);
+            currentReharsalGroup.serialize = currentReharsalGroup.serialize.concat(r.measures);
+            this.context.contiguous_line_break = 0;
           } else if (r.type == TOKEN_PERCENT) {
             // Expression
+            // TODO : Serialize
             r = this.parseMacro(r.s);
 
             if (currentReharsalGroup) {
@@ -13832,6 +14154,7 @@ var Parser = /*#__PURE__*/function () {
             }
 
             latest_macros[r.key] = r.value;
+            serialize.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["Macro"](r.key, r.value));
             this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this macro
           } else {
             console.log(r.token);
@@ -13846,16 +14169,11 @@ var Parser = /*#__PURE__*/function () {
         if (currentReharsalGroup != null) {
           track.reharsal_groups.push(currentReharsalGroup);
           currentReharsalGroup = null;
-        } // If same reharsal mark appears, preceeding one is applied
-        // NOET : This is abandoned in fumen v2 as it does not provide a benefit but cause confusion.
-        // eslint-disable-next-line no-constant-condition
-
-
-        if (false) { var rg, i, rgmap; }
+        }
 
         return track;
       } catch (e) {
-        console.warn(e);
+        console.error(e);
         return null;
       }
     }

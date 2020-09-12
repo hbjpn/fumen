@@ -227,6 +227,7 @@ export class Track {
         this.reharsal_groups = new Array();
         this.macros = deepcopy(MACRO_DEFAULT);
         this.pre_render_info = {};
+        this.serialize = []; // Store serialized data structure
     }
     
     // Utility functions open for external
@@ -248,6 +249,14 @@ export class Track {
     getVariable(name){
         return this.macros[name];
     }
+
+    exportCode(){
+        let code = "";
+        for(let si=0; si<this.serialize.length; ++si){
+            code += this.serialize[si].exportCode();
+        }
+        return code;
+    }
 }
 
 export class ReharsalGroup {
@@ -257,6 +266,16 @@ export class ReharsalGroup {
         //	this.measures = new Array();
         this.blocks = new Array(); // Blocks in the reharsal groups
         this.macros = deepcopy(MACRO_DEFAULT);
+
+        this.serialize = [];
+    }
+
+    exportCode(){
+        let code = "";
+        for(let si=0; si<this.serialize.length; ++si){
+            code += this.serialize[si].exportCode();
+        }
+        return code;
     }
 }
 
@@ -280,15 +299,29 @@ export class Measure {
 
         this.renderprop = {}; // Rendering information storage
         this.macros = deepcopy(MACRO_DEFAULT);
+
+        this.serialize = [];
+    }
+
+    exportCode(){
+        let code = "";
+        for(let si=0; si<this.serialize.length; ++si){
+            code += this.serialize[si].exportCode();
+        }
+        return code;
     }
 }
 
 export class Rest {
     constructor(length_s) {
+        this.length_s = length_s;
         this.note_group_list = [
             { lengthIndicator: parseLengthIndicator(length_s), note_profiles: null }
         ];
         this.renderprop = {};
+    }
+    exportCode(){
+        return `r:${this.length_s}`;
     }
 }
 
@@ -298,6 +331,9 @@ export class Simile {
         this.numslash = numslash;
         this.renderprop = {};
         this.note_group_list = null;
+    }
+    exportCode(){
+        return "."+("/".repeat(this.numslash))+".";
     }
 }
 
@@ -765,6 +801,14 @@ export class Chord {
 
         return [tranposed_note, transposed_base_note];
     }
+
+    exportCode(){
+        if(this.is_valid_chord){
+            return this.chord_str;
+        }else{
+            return `"${this.chord_str}"`;
+        }
+    }
 }
 
 export class LoopIndicator {
@@ -781,6 +825,7 @@ export class LoopIndicator {
             }
         }
     }
+    exportCode(){ return `[${this.indicators}]`; }
 }
 
 export class Space{
@@ -788,11 +833,15 @@ export class Space{
         this.length = length;
         this.renderprop = {};
     }
+    exportCode(){ return ",".repeat(this.length); }
 }
 
 export class LongRestIndicator {
     constructor(longrestlen) {
         this.longrestlen = longrestlen;
+    }
+    exportCode() {
+        return `-${this.longrestlen}-`;
     }
 }
 
@@ -800,6 +849,9 @@ export class Time {
     constructor(numer, denom) {
         this.numer = numer;
         this.denom = denom;
+    }
+    exportCode() {
+        return `(${this.numer}/${this.denom})`;
     }
 }
 
@@ -812,17 +864,27 @@ export class MeasureBoundaryMark extends MeasureBoundary {
 		super();
         this.nline = nline;
     }
+    exportCode() {
+        return "|".repeat(this.nline);
+    }
 }
 
 export class LoopBeginMark  extends MeasureBoundary {
     constructor() { super(); }
+    exportCode() {
+        return "||:";
+    }
 }
 
 export class LoopEndMark  extends MeasureBoundary {
     constructor(param) {
-		super();
+        super();
         this.times = param.times;
         this.ntimes = param.ntimes;
+    }
+    exportCode() {
+        let ts = this.ntimes?"xX":`x${this.times}`;
+        return ":||"+(ts=="x2"?"":ts); // x2 is not explicity stated : TODO : align with what wrote in the code.
     }
 }
 
@@ -832,30 +894,25 @@ export class LoopBothMark  extends MeasureBoundary {
         this.times = param.times;
         this.ntimes = param.ntimes;
     }
+    exportCode() {
+        let ts = this.ntimes?"xX":`x${this.times}`;
+        return ":||:"+(ts=="x2"?"":ts); // x2 is not explicity stated : TODO : align with what wrote in the code.
+    }
 }
 
 export class MeasureBoundaryFinMark  extends MeasureBoundary {
     constructor() { super(); }
+    exportCode() {
+        return "||.";
+    }
 }
 
 export class MeasureBoundaryDblSimile  extends MeasureBoundary {
     constructor() { super(); }
+    exportCode() {
+        return "./|/.";
+    }
 }
-/*
-	var inherits = function inherits(sub, sup) {
-		var F = function F () {};
-		F.prototype = sup.prototype;
-		sub.prototype = new F();
-		sub.prototype.constructor = sub;
-	};
-	
-	inherits(MeasureBoundaryMark, MeasureBoundary);
-	inherits(LoopBeginMark, MeasureBoundary);
-	inherits(LoopEndMark, MeasureBoundary);
-	inherits(LoopBothMark, MeasureBoundary);
-	inherits(MeasureBoundaryFinMark, MeasureBoundary);
-	inherits(MeasureBoundaryDblSimile, MeasureBoundary);
-*/
 
 // Signs
 export class DaCapo {
@@ -864,6 +921,7 @@ export class DaCapo {
     toString() {
         return "D.C.";
     }
+    exportCode(){ return this.toString(); }
 }
 
 export class DalSegno {
@@ -877,12 +935,18 @@ export class DalSegno {
         var als = this.al === null ? "" : " al " + this.al.toString();
         return dss + als;
     }
+    exportCode(){ return "<"+this.toString()+">"; }
+
 }
 
 export class Segno {
     constructor(number, opt) {
         this.number = number;
         this.opt = opt;
+    }
+    exportCode(){
+        let opts = this.opt ? ` ${this.opt}` : "";
+        return `<S${this.number||""}${opts}>`;
     }
 }
 
@@ -894,12 +958,14 @@ export class Coda {
     toString() {
         return "Coda" + (this.number === null ? "" : this.number);
     }
+    exportCode(){ return "<"+this.toString()+">"; }
 }
 
 export class ToCoda {
     constructor(number) {
         this.number = number;
     }
+    exportCode(){ return `<to Coda${this.number||""}>`; }
 }
 
 export class Fine {
@@ -908,6 +974,7 @@ export class Fine {
     toString() {
         return "Fine";
     }
+    exportCode(){ return "<"+this.toString()+">"; }
 }
 
 export class Comment {
@@ -916,6 +983,7 @@ export class Comment {
         this.chorddep = chorddep; // Dependency for particular chord : true/false
     }
     setCodeDependency(v){ this.chorddep = v; }
+    exportCode(){ return "'"+this.comment+"'"; } // TODO : quote considrtaion
 }
 
 export class Lyric {
@@ -924,8 +992,39 @@ export class Lyric {
         this.chorddep = chorddep; // Dependency for particular chord : true/false
     }
     setCodeDependency(v){ this.chorddep = v; }
+    exportCode(){ return "`"+this.lyric+"`"; } // TODO : quote considrtaion
 }
 
+// Pure {} object
+function isObject(val) {
+    if( val !== null
+        && typeof(val) === "object"
+        && val.constructor === Object ) {
+        return true;
+    }
+    return false;
+}
+
+export class Macro {
+    constructor(name, value){
+        this.name = name;
+        this.value = value;
+    }
+    exportCode(){
+        let vtype = typeof(this.value);
+        let code = "%"+this.name+"=";
+        if(vtype=="string")
+            code += `"${this.value}"`;
+        else if(vtype =="number")
+            code += `${this.value}`;
+        else if(isObject(this.value)){
+            code += JSON.stringify(this.value);
+        }else{
+            throw "Error on export code for Macro";
+        }
+        return code;
+    }
+}
 
 // Utilities
 export class BoundingBox{
@@ -959,5 +1058,35 @@ export class BoundingBox{
     }
     get(){
         return {x:this.x[0],y:this.y[0],w:this.x[1]-this.x[0], h:this.y[1]-this.y[0]};
+    }
+}
+
+/**
+ * Reperesetnts skipped contiguous spaces/tabs during parsing.
+ * Used for serialization.
+ */
+export class RawSpaces
+{
+    constructor(sss){
+        this.sss = sss;
+    }
+    exportCode(){
+        return this.sss;
+    }
+}
+
+export class TemplateString
+{
+    // dict is hold as reference. Any change in the dict is propagated to exported code
+    constructor(tmpl, dict){
+        this.tmpl = tmpl;
+        this.dict = dict;
+    }
+    exportCode(){
+        let tpl = deepcopy(this.tmpl);
+        Object.keys(this.dict).forEach((k) => {
+            tpl = tpl.replace(new RegExp("\\${" + k + "}","g"), this.dict[k]);
+        });
+        return tpl;
     }
 }

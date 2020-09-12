@@ -1,9 +1,10 @@
-const puppeteer = require('puppeteer');
-const fs = require('fs');
-const path = require('path');
-const PNG = require('pngjs').PNG;
-const pixelmatch = require('pixelmatch');
-const execSync = require('child_process').execSync;
+const puppeteer = require("puppeteer");
+const fs = require("fs");
+const path = require("path");
+const PNG = require("pngjs").PNG;
+const pixelmatch = require("pixelmatch");
+const execSync = require("child_process").execSync;
+const {argv} = require("yargs");
 
 const FIRST_SC = -3;
 const SIZE_DIFF = -2;
@@ -64,9 +65,9 @@ let capture = (async(addr, fumenfile, headInfo, base_commit) => {
     };
 
     let options = {
-        ignoreDefaultArgs: ['--disable-extensions'], 
+        ignoreDefaultArgs: ["--disable-extensions"], 
         defaultViewport: null,
-        args: ['--no-sandbox'],
+        args: ["--no-sandbox"],
         // executablePath: "./node_modules/puppeteer/.local-chromium/linux-706915/chrome-linux/chrome", // Does not work
         executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
     };
@@ -157,20 +158,20 @@ let imgtag = function(src){
 };
 let tablerowtag = function(cols){
     let html="<tr>";
-    for(let i=0;i<cols.length;++i){
+    for(let i=0; i<cols.length; ++i){
         html += "<td>"+cols[i]+"</td>";
     }
     html += "</tr>";
     return html;
-}
+};
 
 let report_html = "<html><head><style>img { width:250px; } td{border: solid 1px gray; } table{border-collapse: collapse; }</style><title>CI</title><head><body>";
 report_html += "<table>";
 
 let dotest = async (headInfo)=>{
-    const addr = process.argv[2];
+    const addr = argv._[0];
     console.log(addr);
-    const base_commit = process.argv.length >= 4 ? process.argv[3] : null;
+    const base_commit = argv.c; // -c option for speicyf base commit
     const files = [
         "case1.fumen",
         "case2.fumen",
@@ -200,11 +201,15 @@ let dotest = async (headInfo)=>{
     }
 };
 
+if(argv.p){ // -p option for git pull
+    let gitpull = execSync("git pull").toString();
+    console.log(gitpull);
+}
+if(argv.b){ // -b option for build
+    let build = execSync("npm run build").toString();
+    console.log(build);
+}
 
-let gitpull = execSync("git pull").toString();
-console.log(gitpull);
-let build = execSync("npm run build").toString();
-console.log(build);
 let headInfo = getHeadCommit();
 
 dotest(headInfo);

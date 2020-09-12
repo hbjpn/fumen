@@ -193,11 +193,10 @@ export class DefaultRenderer extends Renderer {
             // Page number footer
             let footerstr =
                 songname + " - " + (pageidx + 1) + " of " + canvaslist.length;
-            //alert(footerstr);
             graphic.CanvasText(
                 canvas,
                 this.param.origin.x + score_width / 2,
-                y, //this.param.origin.y + score_height - this.param.y_footer_offset,
+                y, 
                 footerstr,
                 12,
                 "ct"
@@ -381,9 +380,7 @@ export class DefaultRenderer extends Renderer {
         // https://docs.google.com/document/d/1oPmUvAF6-KTsQrEovYJgMZSDqlztp4pL-XVs8uee7A4/edit?usp=sharing
         // Here alpha=1 case is filtered at the first IF statement, then we only consider the case
         // where room when optimize_type = 0 is positive.
-        let num_flexible_rooms = this.field_sum(x_width_info,"meas_num_flexible_rooms");
-        let fixed_width = this.field_sum(x_width_info,"meas_fixed_width");
-        
+
         let room_per_meas_even_meas = this.room_per_meas_for_equal_divison(
             x_width_info, total_width, 
             num_meas, num_meas_to_consider);
@@ -441,10 +438,6 @@ export class DefaultRenderer extends Renderer {
 
     determine_rooms(param, reharsal_x_width_info){
         let total_width = param.paper_width / this.param.text_size - (param.x_offset_left + param.x_offset_right);
-
-        let field_sum = function(arr,field){
-            return arr.reduce( (acc,e)=>{ let obj={}; obj[field]=acc[field]+e[field]; return obj;} )[field];
-        };
 
         // Optimize width of each measure
         let row = 0;
@@ -782,13 +775,10 @@ export class DefaultRenderer extends Renderer {
                         alpha = 0.0;
                         console.log("Inner vertical alignment : not all meets requirement : alpha = " + alpha.toFixed(2));
                     }else{
-                        //alpha = 1.0;
                         alpha = Math.max(0, Math.min(min_narrowed, 1));
-                        //alpha = Math.max(0, Math.min(max_narrowed,1));  // TODO : 0.0 <= Is this <= 1.0 ?
                         console.log("Inner vertical alignment : all meets requirement : alpha = " + alpha.toFixed(2));
                     }
 
-                    //let alpha = param.inner_vertical_align_intensity;
                     for(let l = 0; l < L; ++l){
                         m.renderprop.room_per_elem[l] = alpha * room_force[l] + (1 - alpha) * org_room[l];
 
@@ -1089,7 +1079,6 @@ export class DefaultRenderer extends Renderer {
 
             let x = yse[pei].param.x_offset_left;
 
-            //if(yse[pei].rg_id != current_rg_block[0] || yse[pei].block_id != current_rg_block[1]){
             if(!yse[pei].block_ids.includes(current_accum_block_id)){
                // Per block optimization
                this.determine_rooms(yse[pei].param, reharsal_x_width_info);
@@ -1177,52 +1166,6 @@ export class DefaultRenderer extends Renderer {
         var y_base = origin.y;
 
         if(show_header){
-
-            /*
-            var max_header_height = 0;
-
-            // Title
-            var ri = graphic.CanvasText(
-                canvas,
-                x_offset + width / 2,
-                y_title_offset,
-                global_macros.TITLE,
-                param.title_font_size,
-                "ct",
-                null, false, {"bold":true}
-            );
-
-            max_header_height = Math.max(max_header_height, y_title_offset + ri.height);
-
-            // Sub Title
-            if (global_macros.SUB_TITLE != ""){
-                ri = graphic.CanvasText(
-                    canvas,
-                    x_offset + width / 2,
-                    y_subtitle_offset,
-                    global_macros.SUB_TITLE,
-                    param.subtitle_font_size,
-                    "ct",
-                    null, false, {"bold":false}
-                );
-
-                max_header_height = Math.max(max_header_height, y_title_offset + ri.height);
-            }
-
-            // Artist
-            ri = graphic.CanvasText(
-                canvas,
-                x_offset + width,
-                y_artist_offset,
-                global_macros.ARTIST,
-                param.artist_font_size,
-                "rt",
-                null, false, {"bold":false}
-            );
-
-            max_header_height = Math.max(max_header_height, y_title_offset + ri.height);
-            */
-
             var max_header_height = this.drawheader(canvas, 2, x_offset, width, param, global_macros);
             y_stacks.push({ type: "titles", height: (max_header_height + param.y_header_margin) });
             y_base += (max_header_height + param.y_header_margin);
@@ -1584,21 +1527,8 @@ export class DefaultRenderer extends Renderer {
         var unscale = function(draw_scale){
             paper.getContext("2d").scale(1/draw_scale, 1);
         };
-        /*if(draw && param.scale_if_overlap && m.renderprop.total_room < 0){
-            let body_width = m.renderprop.body_fixed_width + m.renderprop.total_room;
-            draw_scale = body_width / m.renderprop.body_fixed_width;
-            console.log("draw_scale = " + draw_scale);
-            // and then for this case room_per_elem is 0 and scale fixed elemetns while keeping
-            // total width.
-            paper.getContext("2d").scale(draw_scale, 1);
-        }*/
 
         if (elements.body.length == 0) {
-            /*if(draw && draw_scale < 1){
-                x += (1 * param.base_font_size * draw_scale + 0);
-            }else if(draw){
-                x += (1 * param.base_font_size + m.renderprop.total_room);
-            }*/
             if(draw){
                 let [draw_scale, elem_width] = scale(1 * param.base_font_size, m.renderprop.total_room);
                 x += elem_width;
@@ -1872,11 +1802,7 @@ export class DefaultRenderer extends Renderer {
                             false,
                             "l"
                         );
-                        /*if(draw && draw_scale<1){
-                            x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
-                        }else if(draw)
-                            x += (e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index+ei]); 
-                        */
+
                         if(draw){
                             x += elem_width;
                             unscale(draw_scale);
@@ -2026,19 +1952,6 @@ export class DefaultRenderer extends Renderer {
         if(row_elements_list[0].renderprop.left_margin != null){
             x += row_elements_list[0].renderprop.left_margin;
         }
-
-        // Reharsal mark if any
-        /*if(first_block_first_row && !inner_reharsal_mark){
-            let r = graphic.CanvasTextWithBox(
-                paper,
-                param.x_offset,
-                yprof.rm.y,
-                reharsal_group.name,
-                param.reharsal_mark_font_size,
-                2, 
-                graphic.GetCharProfile(param.reharsal_mark_font_size).height
-            );
-        }*/
 
         // For each measure in this row
         for (let ml = 0; ml < row_elements_list.length; ++ml) {
@@ -2415,10 +2328,7 @@ export class DefaultRenderer extends Renderer {
         var img_width = B/3;
         var img_height = B/2;
         var text_size = B/2;
-        /*paper
-            .getContext("2d")
-            .drawImage(graphic.G_imgmap["assets/img/segno.svg"], lx, y, B / 3, B / 2);
-        */
+
         graphic.CanvasImage(paper, 
             graphic.G_imgmap["uniE047"], //segno.svg
             lx, 
@@ -3092,9 +3002,6 @@ export class DefaultRenderer extends Renderer {
         else{
             width = Math.max(upper_width, lower_width) + tensions_width;
         }
-
-        // Quantize with 0.25*B unit : Not so beneficial ?
-        // width = Math.ceil(width / (B/4.0)) * (B/4.0);
 
         return { width: width };
     }

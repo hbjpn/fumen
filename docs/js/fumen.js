@@ -13489,7 +13489,6 @@ var Parser = /*#__PURE__*/function () {
   }, {
     key: "parseGroup",
     value: function parseGroup(profile, s, errmsg) {
-      var org_s = s;
       var tokens = new Array();
 
       for (var i = 0; i < profile.length; ++i) {
@@ -13992,7 +13991,6 @@ var Parser = /*#__PURE__*/function () {
     value: function parseMacro(s) {
       // prerequisite :
       //   trig_token_obj == TOKEN_PERCENT
-      // TODO: Serialize. Maybe  Macro class is needed
       var key = null;
       var value = null;
       var r = this.nextToken(s);
@@ -14015,12 +14013,7 @@ var Parser = /*#__PURE__*/function () {
         this.onParseError("ERROR_WHILE_PARSE_MACRO_VALUE");
       }
 
-      s = s.substr(v_s.length); //r = this.nextToken(s);
-      //if (r.type != TOKEN_STRING)
-      //    this.onParseError("ERROR_WHILE_PARSE_MACRO");
-      //s = r.s;
-      //value = r.token;
-
+      s = s.substr(v_s.length);
       return {
         key: key,
         value: value,
@@ -14144,7 +14137,6 @@ var Parser = /*#__PURE__*/function () {
             this.context.contiguous_line_break = 0;
           } else if (r.type == TOKEN_PERCENT) {
             // Expression
-            // TODO : Serialize
             r = this.parseMacro(r.s);
 
             if (currentReharsalGroup) {
@@ -14477,10 +14469,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       var score_width = this.param.paper_width / this.param.text_size / this.param.ncol;
       canvaslist.forEach(function (canvas, pageidx) {
         // Page number footer
-        var footerstr = songname + " - " + (pageidx + 1) + " of " + canvaslist.length; //alert(footerstr);
-
-        _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, _this3.param.origin.x + score_width / 2, y, //this.param.origin.y + score_height - this.param.y_footer_offset,
-        footerstr, 12, "ct");
+        var footerstr = songname + " - " + (pageidx + 1) + " of " + canvaslist.length;
+        _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, _this3.param.origin.x + score_width / 2, y, footerstr, 12, "ct");
       });
     }
   }, {
@@ -14652,8 +14642,6 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       // https://docs.google.com/document/d/1oPmUvAF6-KTsQrEovYJgMZSDqlztp4pL-XVs8uee7A4/edit?usp=sharing
       // Here alpha=1 case is filtered at the first IF statement, then we only consider the case
       // where room when optimize_type = 0 is positive.
-      var num_flexible_rooms = this.field_sum(x_width_info, "meas_num_flexible_rooms");
-      var fixed_width = this.field_sum(x_width_info, "meas_fixed_width");
       var room_per_meas_even_meas = this.room_per_meas_for_equal_divison(x_width_info, total_width, num_meas, num_meas_to_consider);
       var room_equal_ratio = this.room_for_equal_ratio_divison(x_width_info, total_width, num_meas, num_meas_to_consider);
       var alpha = null;
@@ -14708,16 +14696,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
   }, {
     key: "determine_rooms",
     value: function determine_rooms(param, reharsal_x_width_info) {
-      var total_width = param.paper_width / this.param.text_size - (param.x_offset_left + param.x_offset_right);
-
-      var field_sum = function field_sum(arr, field) {
-        return arr.reduce(function (acc, e) {
-          var obj = {};
-          obj[field] = acc[field] + e[field];
-          return obj;
-        })[field];
-      }; // Optimize width of each measure
-
+      var total_width = param.paper_width / this.param.text_size - (param.x_offset_left + param.x_offset_right); // Optimize width of each measure
 
       var row = 0;
 
@@ -15063,12 +15042,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
               alpha = 0.0;
               console.log("Inner vertical alignment : not all meets requirement : alpha = " + alpha.toFixed(2));
             } else {
-              //alpha = 1.0;
-              alpha = Math.max(0, Math.min(min_narrowed, 1)); //alpha = Math.max(0, Math.min(max_narrowed,1));  // TODO : 0.0 <= Is this <= 1.0 ?
-
+              alpha = Math.max(0, Math.min(min_narrowed, 1));
               console.log("Inner vertical alignment : all meets requirement : alpha = " + alpha.toFixed(2));
-            } //let alpha = param.inner_vertical_align_intensity;
-
+            }
 
             for (var _l2 = 0; _l2 < L; ++_l2) {
               m.renderprop.room_per_elem[_l2] = alpha * room_force[_l2] + (1 - alpha) * org_room[_l2];
@@ -15393,7 +15369,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 return _context.abrupt("continue", 40);
 
               case 31:
-                x = yse[pei].param.x_offset_left; //if(yse[pei].rg_id != current_rg_block[0] || yse[pei].block_id != current_rg_block[1]){
+                x = yse[pei].param.x_offset_left;
 
                 if (!yse[pei].block_ids.includes(current_accum_block_id)) {
                   // Per block optimization
@@ -15465,44 +15441,6 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 y_base = origin.y;
 
                 if (show_header) {
-                  /*
-                  var max_header_height = 0;
-                   // Title
-                  var ri = graphic.CanvasText(
-                      canvas,
-                      x_offset + width / 2,
-                      y_title_offset,
-                      global_macros.TITLE,
-                      param.title_font_size,
-                      "ct",
-                      null, false, {"bold":true}
-                  );
-                   max_header_height = Math.max(max_header_height, y_title_offset + ri.height);
-                   // Sub Title
-                  if (global_macros.SUB_TITLE != ""){
-                      ri = graphic.CanvasText(
-                          canvas,
-                          x_offset + width / 2,
-                          y_subtitle_offset,
-                          global_macros.SUB_TITLE,
-                          param.subtitle_font_size,
-                          "ct",
-                          null, false, {"bold":false}
-                      );
-                       max_header_height = Math.max(max_header_height, y_title_offset + ri.height);
-                  }
-                   // Artist
-                  ri = graphic.CanvasText(
-                      canvas,
-                      x_offset + width,
-                      y_artist_offset,
-                      global_macros.ARTIST,
-                      param.artist_font_size,
-                      "rt",
-                      null, false, {"bold":false}
-                  );
-                   max_header_height = Math.max(max_header_height, y_title_offset + ri.height);
-                  */
                   max_header_height = this.drawheader(canvas, 2, x_offset, width, param, global_macros);
                   y_stacks.push({
                     type: "titles",
@@ -15864,22 +15802,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       var unscale = function unscale(draw_scale) {
         paper.getContext("2d").scale(1 / draw_scale, 1);
       };
-      /*if(draw && param.scale_if_overlap && m.renderprop.total_room < 0){
-          let body_width = m.renderprop.body_fixed_width + m.renderprop.total_room;
-          draw_scale = body_width / m.renderprop.body_fixed_width;
-          console.log("draw_scale = " + draw_scale);
-          // and then for this case room_per_elem is 0 and scale fixed elemetns while keeping
-          // total width.
-          paper.getContext("2d").scale(draw_scale, 1);
-      }*/
-
 
       if (elements.body.length == 0) {
-        /*if(draw && draw_scale < 1){
-            x += (1 * param.base_font_size * draw_scale + 0);
-        }else if(draw){
-            x += (1 * param.base_font_size + m.renderprop.total_room);
-        }*/
         if (draw) {
           var _scale = scale(1 * param.base_font_size, m.renderprop.total_room),
               _scale2 = _slicedToArray(_scale, 2),
@@ -16117,12 +16041,6 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
               }
 
               var _cr3 = _this6.render_simile_mark_plain(draw, paper, x / _draw_scale4, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, e.numslash, false, "l");
-              /*if(draw && draw_scale<1){
-                  x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
-              }else if(draw)
-                  x += (e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index+ei]); 
-              */
-
 
               if (draw) {
                 x += _elem_width3;
@@ -16269,20 +16187,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
       if (row_elements_list[0].renderprop.left_margin != null) {
         x += row_elements_list[0].renderprop.left_margin;
-      } // Reharsal mark if any
-
-      /*if(first_block_first_row && !inner_reharsal_mark){
-          let r = graphic.CanvasTextWithBox(
-              paper,
-              param.x_offset,
-              yprof.rm.y,
-              reharsal_group.name,
-              param.reharsal_mark_font_size,
-              2, 
-              graphic.GetCharProfile(param.reharsal_mark_font_size).height
-          );
-      }*/
-      // For each measure in this row
+      } // For each measure in this row
 
 
       var _loop6 = function _loop6(ml) {
@@ -16522,11 +16427,6 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       var img_width = B / 3;
       var img_height = B / 2;
       var text_size = B / 2;
-      /*paper
-          .getContext("2d")
-          .drawImage(graphic.G_imgmap["assets/img/segno.svg"], lx, y, B / 3, B / 2);
-      */
-
       _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uniE047"], //segno.svg
       lx, y, img_width, img_height, "lb", true);
       lx += img_width;
@@ -16925,9 +16825,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       var width = 0;
       if (param.on_bass_style == "below") width = Math.max(upper_width, lower_width, onbass_width) + tensions_width;else {
         width = Math.max(upper_width, lower_width) + tensions_width;
-      } // Quantize with 0.25*B unit : Not so beneficial ?
-      // width = Math.ceil(width / (B/4.0)) * (B/4.0);
-
+      }
       return {
         width: width
       };

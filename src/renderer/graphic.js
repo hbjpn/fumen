@@ -6,6 +6,63 @@ var G_memCanvasStore = {}; // refered by ratio&zoom
 var G_mem_Canvas_size = [600, 600];
 //var G_pixelRatio = null;
 //var G_zoom = null;
+// Utilities
+export class BoundingBox{
+    constructor(x, y, w=0, h=0){
+        this.x = [100000, -100000];
+        this.y = [100000, -100000];
+        if(x !== undefined && y !== undefined){
+            this.add(x, y, w, h);
+        }
+    }
+    add(x, y, w=0, h=0){
+        this.x[0] = Math.min(x, this.x[0]);
+        this.x[1] = Math.max(x+w, this.x[1]);
+        this.y[0] = Math.min(y, this.y[0]);
+        this.y[1] = Math.max(y+h, this.y[1]);
+        return this;
+    }
+    add_BB(bb){ // add another bounding box
+        this.x[0] = Math.min(bb.x[0], this.x[0]);
+        this.x[1] = Math.max(bb.x[1], this.x[1]);
+        this.y[0] = Math.min(bb.y[0], this.y[0]);
+        this.y[1] = Math.max(bb.y[1], this.y[1]);
+        return this;
+    }
+    add_rect(rect){
+        this.x[0] = Math.min(rect.x, this.x[0]);
+        this.x[1] = Math.max(rect.x+rect.w, this.x[1]);
+        this.y[0] = Math.min(rect.y, this.y[0]);
+        this.y[1] = Math.max(rect.y+rect.h, this.y[1]);
+        return this;
+    }
+    expand(x0, x1, y0, y1){
+        this.x[0] -= x0;
+        this.x[1] += x1;
+        this.y[0] -= y0;
+        this.y[1] += y1;
+        return this;
+    }
+    scale(sx, sy){
+        this.x[0] *= sx;
+        this.x[1] *= sx;
+        this.y[0] *= sy;
+        this.y[0] *= sy;
+        return this;
+    }
+    clone(){
+        return new BoundingBox(this.x[0], this.y[0], this.x[1]-this.x[0], this.y[1]-this.y[0]);
+    }
+    get(){
+        return {x:this.x[0],y:this.y[0],w:this.x[1]-this.x[0], h:this.y[1]-this.y[0]};
+    }
+    width(){
+        return this.x[1]-this.x[0];
+    }
+    height(){
+        return this.y[1]-this.y[0];
+    }
+}
 
 export function CanvasRect(canvas, x, y, w, h, fill=null) {
     var context = canvas.getContext("2d");
@@ -28,7 +85,9 @@ export function CanvasCircle(canvas, x, y, r, draw=true) {
         context.arc(x, y, r, 0, Math.PI * 2, false);
         context.fill();
     }
-    return {bounding_box:{x:x-r,y:y-r,w:2*r,h:2*r}};
+    //return {bounding_box:{x:x-r,y:y-r,w:2*r,h:2*r}};
+    return {bb:new BoundingBox(x-r,y-r,2*r,2*r)};
+    
 }
 
 export function CanvasLine(canvas, x0, y0, x1, y1, opt, draw=true) {
@@ -43,13 +102,16 @@ export function CanvasLine(canvas, x0, y0, x1, y1, opt, draw=true) {
         if (opt && opt.dash) context.setLineDash([]);
         if (opt && opt.width) context.lineWidth = 1;
     }
-    return {bounding_box:{x:Math.min(x0,x1), y:Math.min(y0,y1), w:Math.abs(x0-x1), h:Math.abs(y0-y1)}};
+    //return {bounding_box:{x:Math.min(x0,x1), y:Math.min(y0,y1), w:Math.abs(x0-x1), h:Math.abs(y0-y1)}};
+    return {bb:new BoundingBox(Math.min(x0,x1), Math.min(y0,y1), Math.abs(x0-x1), Math.abs(y0-y1))};
 }
 
 export function CanvasPolygon(canvas, points, close=false, fill=false, opt=null){
     var context = canvas.getContext("2d");
 
     context.save();
+
+    let bb = new BoundingBox();
 
     let orgValues = {};
     if (opt != null) {
@@ -66,6 +128,7 @@ export function CanvasPolygon(canvas, points, close=false, fill=false, opt=null)
         }else{
             context.lineTo(points[i][0], points[i][1]);
         }
+        bb.add(points[i][0], points[i][1]);
     }
     if(close){
         context.closePath();
@@ -76,6 +139,8 @@ export function CanvasPolygon(canvas, points, close=false, fill=false, opt=null)
     }
 
     context.restore();
+
+    return {bb:bb};
 }
 
 export function CanvasbBzierCurve(canvas, points, close=false, fill=false, opt=null){
@@ -220,8 +285,6 @@ export function CanvasText(canvas, x, y, text, fsize, align, xwidth, notdraw, op
     
     }
 
-
-
     let orgValues = {};
     if (opt != null) {
         for (let key in opt) {
@@ -253,7 +316,9 @@ export function CanvasText(canvas, x, y, text, fsize, align, xwidth, notdraw, op
     }
     context.font = orgfont;
 
-    var ret = { width: width };
+    // TODO : For backward compatibility, width is kept as is. Remove in the later.
+    let xadjust = {"left":0, "center":-width/2, "right":-width}[ta[align[0]]];
+    var ret = { width: width, bb:new BoundingBox(x + xadjust, y + yadjust, width, yroom.height) };
     Object.assign(ret, yroom);
     return ret;
 }
@@ -272,7 +337,8 @@ export function CanvasTextWithBox(canvas, x, y, text, fsize, margin=2, min_width
         ret = CanvasText(canvas, x + margin, y + margin, text, fsize, "lt");
     }
     CanvasRect(canvas, x, y, ret.width + 2*margin, ret.height + 2*margin);
-    return {width: ret.width+2*margin, height:ret.height+2*margin};
+    //return {x:x, y:y, width: ret.width+2*margin, height:ret.height+2*margin};
+    return {bb: new BoundingBox(x, y, ret.width+2*margin, ret.height+2*margin)};
 }
 
 export function CanvasImage(canvas, img, x, y, w, h, align = "lt", draw=true)
@@ -313,7 +379,9 @@ export function CanvasImage(canvas, img, x, y, w, h, align = "lt", draw=true)
         );
     }
 
-    return {bounding_box:{x:x+x_shift, y:y+y_shift,w:act_w,h:act_h}};
+    //return {bounding_box:{x:x+x_shift, y:y+y_shift,w:act_w,h:act_h}};
+    return {bb:new BoundingBox(x+x_shift, y+y_shift, act_w, act_h)};
+    
 }
 
 // SVG related

@@ -139,6 +139,7 @@ export class DefaultRenderer extends Renderer {
             this.canvas = null;
         }else{
             this.canvas = canvas;
+            if(canvas.id === undefined){ canvas.id = common.guid; }
             this.canvas_provider = null;    
         }
 
@@ -170,6 +171,8 @@ export class DefaultRenderer extends Renderer {
             paper: null,
             region_id: 0
         };
+
+        this.canvas_count = 0;
     }
 
     /**
@@ -1153,6 +1156,8 @@ export class DefaultRenderer extends Renderer {
             this.param.text_size
         );
 
+        this.hitManager.setGlobalScale(this.param.text_size, this.param.text_size);
+
         var score_height = (this.param.paper_height > 0 ? 
             this.param.paper_height/this.param.text_size : y_base_screening)
             / param.nrow;
@@ -1210,6 +1215,7 @@ export class DefaultRenderer extends Renderer {
                         y_base = origin.y + yse[pei].param.y_offset_top;
                     }
 
+                    this.hitManager.commit(canvas);
                     canvas = await this.canvas_provider();
                     canvaslist.push(canvas);
                     graphic.SetupHiDPICanvas(
@@ -1237,6 +1243,8 @@ export class DefaultRenderer extends Renderer {
         if(show_footer)
             this.render_footer(canvaslist, global_macros.TITLE + "/" + global_macros.ARTIST,
                 this.param.origin.y + score_height - this.param.y_footer_offset);
+        
+        this.hitManager.commit(canvas);
 
         return {
             pages: canvaslist.length,
@@ -1598,6 +1606,8 @@ export class DefaultRenderer extends Renderer {
                         C7_width
                     );
 
+                    if(draw) this.hitManager.add(paper, cr.bb.scale(draw_scale,1), e0);
+
                     if (draw && e0.exceptinal_comment !== null) {
                         graphic.CanvasText(
                             paper,
@@ -1665,7 +1675,7 @@ export class DefaultRenderer extends Renderer {
                     // unscale(draw_scale); // No need to unscale as all the scaling procedure is enclosed in the above function
 
                 }else{
-                    let rs_area_bounding_box = new common.BoundingBox();
+                    let rs_area_bounding_box = new graphic.BoundingBox();
                     // Only try to esimate using non-flag-balken drawer
                     let tmp_fixed_width_details = [];
                     element_group.elems.forEach(e=>{
@@ -1739,16 +1749,12 @@ export class DefaultRenderer extends Renderer {
                                 );
                             }
                         }
-                        /*if(draw && draw_scale<1){
-                            x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
-                        }else if(draw)
-                            x += ( e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index+ei]);
-                        */
                        if(draw){
                            x += elem_width;
                            unscale(draw_scale);
+                           this.hitManager.add(paper, cr.bb.scale(draw_scale,1), e); // BBbox scaled to convert back to on-screen coordinate
                        }else{
-                            e.renderprop.w = cr.width;
+                            e.renderprop.w = cr.bb.width();
                             fixed_width += e.renderprop.w;
                             fixed_width_details.push({type:"flex",f:e.renderprop.w});
                             num_flexible_rooms++;
@@ -1771,16 +1777,12 @@ export class DefaultRenderer extends Renderer {
                             yprof.rs.detected ? param.rs_area_height : param.base_body_height,
                             param
                         );
-                        /*if(draw && draw_scale<1){
-                            x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
-                        }else if(draw)
-                            x += (e.renderprop.w +m.renderprop.room_per_elem[this_group_start_index+ei]); 
-                        */
                         if(draw){
                             x += elem_width;
+                            this.hitManager.add(paper, cr.bb.scale(draw_scale,1), e);
                             unscale(draw_scale);
                         }else{
-                            e.renderprop.w = cr.bounding_box.w;
+                            e.renderprop.w = cr.bb.width();
                             fixed_width += e.renderprop.w;
                             fixed_width_details.push({type:"flex",f:e.renderprop.w});
                             num_flexible_rooms++;
@@ -1805,6 +1807,7 @@ export class DefaultRenderer extends Renderer {
 
                         if(draw){
                             x += elem_width;
+                            this.hitManager.add(cr.bb.scale(draw_scale,1));
                             unscale(draw_scale);
                         }else{
                             e.renderprop.w = cr.width;
@@ -1990,8 +1993,9 @@ export class DefaultRenderer extends Renderer {
                     2, 
                     graphic.GetCharProfile(param.reharsal_mark_font_size, null, false, paper.ratio, paper.zoom).height
                 );
+                if(draw) this.hitManager.add(paper, r.bb, reharsal_group);
 
-                if(inner_reharsal_mark) mh_offset += (r.width+2);
+                if(inner_reharsal_mark) mh_offset += (r.bb.width()+2);
             }
 
             for (var ei = 0; ei < elements.header.length; ++ei) {
@@ -2005,7 +2009,8 @@ export class DefaultRenderer extends Renderer {
                         e,
                         param.base_font_size
                     );
-                    mh_offset += r.width;
+                    mh_offset += r.bb.width();
+                    this.hitManager.add(paper, r.bb, e);
                 } else if (e instanceof common.Segno) {
                     let r = this.draw_segno_plain(
                         paper,
@@ -2015,6 +2020,7 @@ export class DefaultRenderer extends Renderer {
                         param.base_font_size
                     );
                     mh_offset += r.width;
+                    this.hitManager.add(paper, r.bb, e);
                 } else if (e instanceof common.Comment) {
                     // If this comment is associated with a chord with exceptional comment, not rendered here.
                     if (!e.chorddep) {
@@ -2027,6 +2033,7 @@ export class DefaultRenderer extends Renderer {
                             "lb"
                         );
                         mh_offset += r.width;
+                        this.hitManager.add(paper, r.bb, e);
                     }
                 } else if (e instanceof common.Lyric) {
                     if (draw) {
@@ -2065,6 +2072,7 @@ export class DefaultRenderer extends Renderer {
                     m.renderprop.paper = paper;
                     x += e.renderprop.w;
                     meas_start_x_actual_boundary = r.actual_boundary;
+                    if(r.drawn) this.hitManager.add(paper, r.bb, e);
                 } else if (e instanceof common.Time) {
                     let chord_str_height = graphic.GetCharProfile(
                         param.base_font_size, null, false, paper.ratio, paper.zoom).height;
@@ -2072,7 +2080,7 @@ export class DefaultRenderer extends Renderer {
                     let cont_height = yprof.rs.detected ?param.rs_area_height : chord_str_height;
                     let left_margin = 2;
                     
-                    graphic.CanvasImage(paper, 
+                    let rd = graphic.CanvasImage(paper, 
                         graphic.G_imgmap["uniE08"+e.numer],// numbers
                         x + left_margin, 
                         y_body_or_rs_base + row_height/2, 
@@ -2080,7 +2088,7 @@ export class DefaultRenderer extends Renderer {
                         cont_height/2,
                         "lb",
                         true);
-                    graphic.CanvasImage(paper, 
+                    let rn = graphic.CanvasImage(paper, 
                         graphic.G_imgmap["uniE08"+e.denom],// numbers
                         x + left_margin, 
                         y_body_or_rs_base + row_height/2, 
@@ -2089,6 +2097,7 @@ export class DefaultRenderer extends Renderer {
                         "lt",
                         true);
                     x += e.renderprop.w;
+                    this.hitManager.add(paper, rd.bb.add_BB(rn.bb), e);
                 }
             });
 
@@ -2144,8 +2153,9 @@ export class DefaultRenderer extends Renderer {
 
                     m.renderprop.ex = x;
                     x += e.renderprop.w;
+                    if(r.drawn) this.hitManager.add(paper, r.bb, e);
                 } else if (e instanceof common.DaCapo) {
-                    graphic.CanvasText(
+                    let r = graphic.CanvasText(
                         paper,
                         x,
                         repeat_mark_y_base,
@@ -2153,9 +2163,9 @@ export class DefaultRenderer extends Renderer {
                         param.base_font_size / 2,
                         "rb"
                     );
-                    //if (yprof.rs.detected) x += 15 * 4;
+                    this.hitManager.add(paper, r.bb, e);
                 } else if (e instanceof common.DalSegno) {
-                    graphic.CanvasText(
+                    let r = graphic.CanvasText(
                         paper,
                         x,
                         repeat_mark_y_base,
@@ -2163,6 +2173,7 @@ export class DefaultRenderer extends Renderer {
                         param.base_font_size / 2,
                         "rb"
                     );
+                    this.hitManager.add(paper, r.bb, e);
                 } else if (e instanceof common.ToCoda) {
                     let r = this.draw_coda_plain(
                         paper,
@@ -2172,16 +2183,17 @@ export class DefaultRenderer extends Renderer {
                         e,
                         param.base_font_size
                     );
-                    graphic.CanvasText(
+                    let rt = graphic.CanvasText(
                         paper,
-                        x - r.width,
+                        x - r.bb.width(),
                         repeat_mark_y_base,
                         "To",
                         param.base_font_size / 2,
                         "rb"
                     );
+                    this.hitManager.add(paper, r.bb.add_BB(rt.bb), e);
                 } else if (e instanceof common.Fine) {
-                    graphic.CanvasText(
+                    let r = graphic.CanvasText(
                         paper,
                         x,
                         repeat_mark_y_base,
@@ -2189,6 +2201,7 @@ export class DefaultRenderer extends Renderer {
                         param.base_font_size / 2,
                         "rb"
                     );
+                    this.hitManager.add(paper, r.bb, e);
                 } else {
                     throw "Unkown instance of footer elements";
                 }
@@ -2209,7 +2222,7 @@ export class DefaultRenderer extends Renderer {
                     graphic.CanvasLine(paper, sx, ly, sx, ly + oy);
                     graphic.CanvasLine(paper, sx, ly, fx, ly);
                     var s = e.indicators.join(",");
-                    graphic.CanvasText(
+                    let r = graphic.CanvasText(
                         paper,
                         sx + 2,
                         ly + oy/2,
@@ -2217,6 +2230,7 @@ export class DefaultRenderer extends Renderer {
                         param.base_font_size / 3,
                         "lm"
                     );
+                    if(draw) this.hitManager.add(paper, r.bb, e);
                 } else if (e instanceof common.LongRestIndicator) {
                     let height = yprof.rs.detected ? param.rs_area_height : param.row_height;
                     let sx =
@@ -2238,7 +2252,7 @@ export class DefaultRenderer extends Renderer {
                     var lx = sx + lrmargin;
                     var rx = fx - lrmargin;
 
-                    if (draw)
+                    if (draw){
                         graphic.CanvasLine(
                             paper,
                             lx,
@@ -2247,7 +2261,6 @@ export class DefaultRenderer extends Renderer {
                             y_body_or_rs_base + height / 2 + yshift,
                             { width: height/5 }
                         );
-                    if (draw)
                         graphic.CanvasLine(
                             paper,
                             lx,
@@ -2256,7 +2269,6 @@ export class DefaultRenderer extends Renderer {
                             y_body_or_rs_base + rh - rh * vlmargin + yshift,
                             { width: "1" }
                         );
-                    if (draw)
                         graphic.CanvasLine(
                             paper,
                             rx,
@@ -2265,8 +2277,7 @@ export class DefaultRenderer extends Renderer {
                             y_body_or_rs_base + rh - rh * vlmargin + yshift,
                             { width: "1" }
                         );
-                    if (draw) {
-                        graphic.CanvasText(
+                        let r = graphic.CanvasText(
                             paper,
                             (sx + fx) / 2,
                             y_body_or_rs_base,
@@ -2276,6 +2287,8 @@ export class DefaultRenderer extends Renderer {
                             undefined,
                             !draw
                         );
+
+                        this.hitManager.add(paper, r.bb, e);
                     }
 
                     //rest_or_long_rests_detected |= true;
@@ -2285,7 +2298,7 @@ export class DefaultRenderer extends Renderer {
                         meas_start_x +
                         header_width; // header_width does not include header_body_margin
                     let fx = meas_end_x - footer_width;
-                    this.render_simile_mark_plain(
+                    let r = this.render_simile_mark_plain(
                         draw,
                         paper,
                         (sx + fx) / 2,
@@ -2296,6 +2309,7 @@ export class DefaultRenderer extends Renderer {
                         false,
                         "c"
                     );
+                    if(draw) this.hitManager.add(paper, r.bb, e);
                 } else {
                     throw "Unkown measure wide instance detected";
                 }
@@ -2328,8 +2342,8 @@ export class DefaultRenderer extends Renderer {
         var img_width = B/3;
         var img_height = B/2;
         var text_size = B/2;
-
-        graphic.CanvasImage(paper, 
+        let bb = new graphic.BoundingBox();
+        let r = graphic.CanvasImage(paper, 
             graphic.G_imgmap["uniE047"], //segno.svg
             lx, 
             y, 
@@ -2338,6 +2352,7 @@ export class DefaultRenderer extends Renderer {
             "lb",
             true);
         lx += img_width;
+        bb.add_BB(r.bb);
         if (segno.number !== null) {
             let r = graphic.CanvasText(
                 paper,
@@ -2348,6 +2363,7 @@ export class DefaultRenderer extends Renderer {
                 "lb"
             );
             lx += r.width;
+            bb.add_BB(r.bb);
         }
         if (segno.opt !== null) {
             let r = graphic.CanvasText(
@@ -2359,12 +2375,14 @@ export class DefaultRenderer extends Renderer {
                 "lb"
             );
             lx += r.width;
+            bb.add_BB(r.bb);
         }
 
-        return { width: lx - x };
+        return { width: lx - x, bb:bb };
     }
 
     draw_coda_plain(paper, x, y, align, coda, B) {
+        let bb = new graphic.BoundingBox();
         var width = 0;
         var ys = 0;
         var img_width = B/2;
@@ -2388,8 +2406,9 @@ export class DefaultRenderer extends Renderer {
                     "rb"
                 );
                 width += r.width;
+                bb.add_BB(r.bb);
             }
-            graphic.CanvasImage(paper, 
+            let r = graphic.CanvasImage(paper, 
                 graphic.G_imgmap["uniE048"],  //coda.svg
                 x - width, 
                 y, 
@@ -2398,8 +2417,9 @@ export class DefaultRenderer extends Renderer {
                 "rb",
                 true);
             width += img_width;
+            bb.add_BB(r.bb);
         } else if (align[0] == "l") {
-            graphic.CanvasImage(paper, 
+            let r = graphic.CanvasImage(paper, 
                 graphic.G_imgmap["uniE048"],  // coda.svg
                 x , 
                 y, 
@@ -2408,6 +2428,7 @@ export class DefaultRenderer extends Renderer {
                 "lb",
                 true);
             width += img_width;
+            bb.add_BB(r.bb);
             if (coda.number !== null) {
                 let r = graphic.CanvasText(
                     paper,
@@ -2418,11 +2439,12 @@ export class DefaultRenderer extends Renderer {
                     "lb"
                 );
                 width += r.width;
+                bb.add_BB(r.bb);
             }
         } else {
             throw "NOT SUPPORTED";
         }
-        return { width: width };
+        return { bb: bb };
     }
 
     render_chord_as_string_plain(chord, paper, x, y_body_base, param, draw) {
@@ -2437,7 +2459,7 @@ export class DefaultRenderer extends Renderer {
             !draw
         );
 
-        return { width: r.width };
+        return { bb: r.bb };
     }
 
     render_rest_plain(
@@ -2536,7 +2558,8 @@ export class DefaultRenderer extends Renderer {
             }
         }
 
-        return { bounding_box:{x:x,y:y_body_or_rs_base, w:10, h:row_height }}; // TODO : Impelment correctly
+        //return { bounding_box:{x:x,y:y_body_or_rs_base, w:10, h:row_height }}; // TODO : Impelment correctly
+        return { bb: new graphic.BoundingBox(x,y_body_or_rs_base, 10, row_height)}; // TODO : Impelment correctly
     }
 
     render_simile_mark_plain(
@@ -2562,13 +2585,16 @@ export class DefaultRenderer extends Renderer {
         else if (align == "r") x -= width;
 
         var x0 = x;
-        if (draw)
-            graphic.CanvasCircle(
+        let bb = new graphic.BoundingBox();
+        if (draw){
+            let r = graphic.CanvasCircle(
                 paper,
                 x + cm,
                 y_body_base + row_height/2 - _5lines_intv * 0.5,
                 cr
             );
+            bb.add_BB(r.bb);
+        }
         for (let r = 0; r < numslash; ++r) {
             var y = y_body_base + row_height/2;
             x += (h + i) * r;
@@ -2579,19 +2605,22 @@ export class DefaultRenderer extends Renderer {
                     [x + h + H, y - _5lines_intv * 1],
                     [x + H, y - _5lines_intv * 1]
                 ];
-                graphic.CanvasPolygon(paper, points, true, true);     
+                let r = graphic.CanvasPolygon(paper, points, true, true);   
+                bb.add_BB(r.bb);  
             }
         }
-        if (draw)
-            graphic.CanvasCircle(
+        if (draw){
+            let r = graphic.CanvasCircle(
                 paper,
                 x + h + H - cm,
                 y_body_base + row_height/2 + _5lines_intv * 0.5,
                 cr
             );
+            bb.add_BB(r.bb);
+        }
         if (put_boundary) {
-            if (draw)
-                graphic.CanvasLine(
+            if (draw){
+                let r = graphic.CanvasLine(
                     paper,
                     x0 + width / 2,
                     y_body_base,
@@ -2599,8 +2628,10 @@ export class DefaultRenderer extends Renderer {
                     y_body_base + row_height,
                     { width: 1 }
                 );
+                bb.add_BB(r.bb);
+            }
         }
-        return {width: width};
+        return {width: width, bb:bb};
     }
 
     render_chord_simplified(
@@ -2626,6 +2657,8 @@ export class DefaultRenderer extends Renderer {
             );
         }
 
+        var bb = new graphic.BoundingBox();
+
         var ce = this.chord_elem_classify(chord, transpose, half_type, key);
         var bases = ce.bases;
         var elems = ce.mid_elem_objs;
@@ -2635,7 +2668,7 @@ export class DefaultRenderer extends Renderer {
 
         // if bases are null, elems are null, then it is just a duration information
         if (bases[0] == null && bases[1] == null && elems === undefined) {
-            return { width: B };
+            return { width: B, bb: new graphic.BoundingBox(x, y_body_base, B, B) }; // TODO : Check
         }
 
         var _3rdelem = ce._3rdelem;
@@ -2673,7 +2706,7 @@ export class DefaultRenderer extends Renderer {
         var space_char_width = 0.3;
 
         if (root) {
-            graphic.CanvasText(
+            let r = graphic.CanvasText(
                 canvas,
                 x,
                 y + param.row_height/2 + chord_offset_on_bass,
@@ -2683,6 +2716,7 @@ export class DefaultRenderer extends Renderer {
                 B * char_width_scale,
                 !draw
             );
+            bb.add_BB(r.bb);
             upper_width = B * main_char_width;
             lower_width = B * main_char_width;
             if (root.length == 2) {
@@ -2690,7 +2724,7 @@ export class DefaultRenderer extends Renderer {
                 let acc_width = B * 0.25;
                 if (root[1] == "b") {
                     if (draw){
-                        graphic.CanvasImage(
+                        let r = graphic.CanvasImage(
                             canvas,
                             graphic.G_imgmap["uni266D"], // flat.svg
                             x + upper_width,
@@ -2698,11 +2732,12 @@ export class DefaultRenderer extends Renderer {
                             acc_width,
                             acc_height,
                             "lb");
+                        bb.add_BB(r.bb);
                     }
                     upper_width += acc_width;
                 } else {
                     if (draw){
-                        graphic.CanvasImage(
+                        let r = graphic.CanvasImage(
                             canvas,
                             graphic.G_imgmap["uni266F"], // sharp.svg
                             x + upper_width,
@@ -2710,6 +2745,7 @@ export class DefaultRenderer extends Renderer {
                             acc_width,
                             acc_height,
                             "lb");
+                        bb.add_BB(r.bb);
                     }
                     upper_width += acc_width;
                 }
@@ -2741,6 +2777,7 @@ export class DefaultRenderer extends Renderer {
                 !draw
             );
             lower_width += r.width;
+            bb.add_BB(r.bb);
         }
 
         _3rdelem.forEach(e => {
@@ -2756,6 +2793,7 @@ export class DefaultRenderer extends Renderer {
                     !draw
                 );
                 lower_width += r.width;
+                bb.add_BB(r.bb);
             } else if (e.type == "m") {
                 let r = graphic.CanvasText(
                     canvas,
@@ -2768,6 +2806,7 @@ export class DefaultRenderer extends Renderer {
                     !draw
                 );
                 lower_width += r.width;
+                bb.add_BB(r.bb);
             } else {
                 // Unkown type
             }
@@ -2785,6 +2824,7 @@ export class DefaultRenderer extends Renderer {
                     !draw
                 );
                 lower_width += r.width;
+                bb.add_BB(r.bb);
             } else if (e.type == "sus" || e.type == "add") {
                 let r = graphic.CanvasText(
                     canvas,
@@ -2797,6 +2837,7 @@ export class DefaultRenderer extends Renderer {
                     !draw
                 );
                 lower_width += r.width;
+                bb.add_BB(r.bb);
             } else if (e.type == "dim") {
                 let r = graphic.CanvasText(
                     canvas,
@@ -2809,6 +2850,7 @@ export class DefaultRenderer extends Renderer {
                     !draw
                 );
                 lower_width += r.width;
+                bb.add_BB(r.bb);
             } else if (e.type == "M") {
                 let r = graphic.CanvasText(
                     canvas,
@@ -2821,6 +2863,7 @@ export class DefaultRenderer extends Renderer {
                     !draw
                 );
                 lower_width += r.width;
+                bb.add_BB(r.bb);
             }
         });
         _5thelem.forEach(e => {
@@ -2836,6 +2879,7 @@ export class DefaultRenderer extends Renderer {
                     !draw
                 );
                 upper_width += r.width;
+                bb.add_BB(r.bb);
             } else if (e.type == "#") {
                 let r = graphic.CanvasText(
                     canvas,
@@ -2848,6 +2892,7 @@ export class DefaultRenderer extends Renderer {
                     !draw
                 );
                 upper_width += r.width;
+                bb.add_BB(r.bb);
             }
         });
 
@@ -2864,11 +2909,12 @@ export class DefaultRenderer extends Renderer {
                 !draw
             );
             tensions_width += r.width;
+            bb.add_BB(r.bb);
             var h = graphic.GetCharProfile(B * 0.5, null, false, canvas.ratio, canvas.zoom).height;
             _alteredelem.forEach((e, index) => {
                 if (e.type == "b") {
                     if (draw){
-                        graphic.CanvasImage(canvas,
+                        let r = graphic.CanvasImage(canvas,
                             graphic.G_imgmap["uni266D"], // flat.svg,
                             x + tensions_pos + tensions_width,
                             y + param.row_height/2 + chord_offset_on_bass + upper_tension_y_offset,
@@ -2876,11 +2922,12 @@ export class DefaultRenderer extends Renderer {
                             h,
                             "lb"
                         );
+                        bb.add_BB(r.bb);
                     }
                     tensions_width += B * 0.2;
                 } else if (e.type == "#") {
                     if (draw){
-                        graphic.CanvasImage(canvas,
+                        let r = graphic.CanvasImage(canvas,
                             graphic.G_imgmap["uni266F"], //sharp.svg"],
                             x + tensions_pos + tensions_width,
                             y + param.row_height/2 + chord_offset_on_bass + upper_tension_y_offset,
@@ -2888,6 +2935,7 @@ export class DefaultRenderer extends Renderer {
                             h,
                             "lb"
                         );
+                        bb.add_BB(r.bb);
                     }
                     tensions_width += B * 0.2;
                 }
@@ -2902,6 +2950,7 @@ export class DefaultRenderer extends Renderer {
                     !draw
                 );
                 tensions_width += r.width;
+                bb.add_BB(r.bb);
                 if (index != _alteredelem.length - 1) {
                     let r = graphic.CanvasText(
                         canvas,
@@ -2914,6 +2963,7 @@ export class DefaultRenderer extends Renderer {
                         !draw
                     );
                     tensions_width += r.width;
+                    bb.add_BB(r.bb);
                 }
             });
             r = graphic.CanvasText(
@@ -2927,6 +2977,7 @@ export class DefaultRenderer extends Renderer {
                 !draw
             );
             tensions_width += r.width;
+            bb.add_BB(r.bb);
         }
 
         if (onbass != null) {
@@ -2957,10 +3008,11 @@ export class DefaultRenderer extends Renderer {
                 !draw
             );
             onbass_width += r.width;
+            bb.add_BB(r.bb);
             if (onbass.length == 2) {
                 if (onbass[1] == "b") {
-                    if (draw)
-                        graphic.CanvasImage(canvas, 
+                    if (draw){
+                        let rd = graphic.CanvasImage(canvas, 
                             graphic.G_imgmap["uni266D"], // flat.svg
                             onbass_pos + onbass_width, 
                             y + param.row_height/2 + rootCharHeight/2
@@ -2971,11 +3023,13 @@ export class DefaultRenderer extends Renderer {
                             r.height, 
                             param.on_bass_style == "below"  ? "lt" : "lb", 
                             true);
+                        bb.add_BB(rd.bb);
+                    }
                         
                     onbass_width += B * 0.2;
                 } else {
-                    if (draw)
-                        graphic.CanvasImage(canvas, 
+                    if (draw){
+                        let rd = graphic.CanvasImage(canvas, 
                             graphic.G_imgmap["uni266F"], // sharp.svg 
                             onbass_pos + onbass_width, 
                             y + param.row_height/2 + rootCharHeight/2 
@@ -2986,6 +3040,8 @@ export class DefaultRenderer extends Renderer {
                             r.height, 
                             param.on_bass_style == "below"  ? "lt" : "lb", 
                             true);
+                        bb.add_BB(rd.bb);
+                    }
 
                     onbass_width += B * 0.2;
                 }
@@ -3003,7 +3059,7 @@ export class DefaultRenderer extends Renderer {
             width = Math.max(upper_width, lower_width) + tensions_width;
         }
 
-        return { width: width };
+        return { width: width, bb:bb };
     }
 
     /**
@@ -3043,18 +3099,14 @@ export class DefaultRenderer extends Renderer {
         var draw_type = null; // "s, d, lb, le, lb, f"
 
         var w = 0; // width of boundary
-        let actual_boundary = 0; // Actual boundary when having more than 1 pixel width. 
+        let actual_boundary = 0; // Actual boundary when having more than 1 pixel width.
+        
+        let bb = new graphic.BoundingBox();
 
         if (side == "end" && !is_row_edge) {
             // If this is not the last measure in this line, then does not draw the boundary. Draw in the "begin" side of next measure.
-            return { width: 0, actual_boundary : 0 };
+            return { drawn:false, width: 0, actual_boundary : 0, bb:bb };
         }
-        /*
-            var thisIsLastMeasureInLine = e1 === null || is_row_edge;
-
-            // If this is not the last measure in this line, then does not draw the boundary. Draw in the "begin" side of next measure.
-            if (!thisIsLastMeasureInLine) return { width: 0, actual_boundary : 0 };
-        }*/
 
         if (is_row_edge === null || is_row_edge == false) {
             // 1. 2 boundaries in  differnt rows in the code will be rendered as an adjacent measure, or
@@ -3079,14 +3131,16 @@ export class DefaultRenderer extends Renderer {
                 var barintv = 3;
                 w = 1 + (nline - 1) * barintv;
                 for (var li = 0; li < nline; ++li) {
-                    if (draw)
-                        graphic.CanvasLine(
+                    if (draw){
+                        let r = graphic.CanvasLine(
                             canvas,
                             x + li * barintv,
                             y_body_base,
                             x + li * barintv,
                             y_body_base + row_height
                         );
+                        bb.add_BB(r.bb);
+                    }
                 }
                 actual_boundary = x + (nline-1) * barintv;
                 break;
@@ -3094,8 +3148,8 @@ export class DefaultRenderer extends Renderer {
                 // begin only
                 w = 8;
                 actual_boundary = x;
-                if (draw)
-                    graphic.CanvasLine(
+                if (draw){
+                    let r = graphic.CanvasLine(
                         canvas,
                         x,
                         y_body_base,
@@ -3103,58 +3157,60 @@ export class DefaultRenderer extends Renderer {
                         y_body_base + row_height,
                         { width: 2 }
                     );
-                if (draw)
-                    graphic.CanvasLine(
+                    bb.add_BB(r.bb);
+                    r = graphic.CanvasLine(
                         canvas,
                         x + 3,
                         y_body_base,
                         x + 3,
                         y_body_base + row_height
                     );
-                if (draw)
-                    graphic.CanvasCircle(
+                    bb.add_BB(r.bb);
+                    r = graphic.CanvasCircle(
                         canvas,
                         x + 7,
                         y_body_base + (row_height / 4) * 1.5,
                         1
                     );
-                if (draw)
-                    graphic.CanvasCircle(
+                    bb.add_BB(r.bb);
+                    r = graphic.CanvasCircle(
                         canvas,
                         x + 7,
                         y_body_base + (row_height / 4) * 2.5,
                         1
                     );
+                    bb.add_BB(r.bb);
+                }
                 break;
             case "e":
                 // begin and end
                 w = 8;
                 actual_boundary = x + w;
                 xshift = side == "end" ? 0 : 0;
-                if (draw)
-                    graphic.CanvasCircle(
+                if (draw){
+                    let r = graphic.CanvasCircle(
                         canvas,
                         x + xshift,
                         y_body_base + (row_height / 4) * 1.5,
                         1
                     );
-                if (draw)
-                    graphic.CanvasCircle(
+                    bb.add_BB(r.bb);
+                    r = graphic.CanvasCircle(
                         canvas,
                         x + xshift,
                         y_body_base + (row_height / 4) * 2.5,
                         1
                     );
-                if (draw)
-                    graphic.CanvasLine(
+                    bb.add_BB(r.bb);
+                    r = graphic.CanvasLine(
                         canvas,
                         x + xshift + 4,
                         y_body_base,
                         x + xshift + 4,
                         y_body_base + row_height
                     );
-                if (draw)
-                    graphic.CanvasLine(
+                    bb.add_BB(r.bb);
+                    r = graphic.CanvasLine(
                         canvas,
                         x + xshift + 7,
                         y_body_base,
@@ -3162,10 +3218,12 @@ export class DefaultRenderer extends Renderer {
                         y_body_base + row_height,
                         { width: 2 }
                     );
+                    bb.add_BB(r.bb);
+                }
                 if (e0.times !== null && (e0.ntimes || e0.times != 2)) {
                     let stimes = e0.ntimes == true ? "X" : "" + e0.times;
-                    if (draw)
-                        graphic.CanvasText(
+                    if (draw){
+                        let r = graphic.CanvasText(
                             canvas,
                             x + xshift + w,
                             y_body_base + row_height + param.xtimes_mark_y_margin,
@@ -3173,36 +3231,38 @@ export class DefaultRenderer extends Renderer {
                             param.base_font_size / 2,
                             "rt"
                         );
+                        bb.add_BB(r.bb);
+                    }
                 }
                 break;
             case "B":
                 // begin only
                 w = 15;
                 actual_boundary = x + w/2;
-                if (draw)
-                    graphic.CanvasCircle(
+                if (draw){
+                    let r = graphic.CanvasCircle(
                         canvas,
                         x,
                         y_body_base + (row_height / 4) * 1.5,
                         1
                     );
-                if (draw)
-                    graphic.CanvasCircle(
+                    bb.add_BB(r.bb);
+                    r = graphic.CanvasCircle(
                         canvas,
                         x,
                         y_body_base + (row_height / 4) * 2.5,
                         1
                     );
-                if (draw)
-                    graphic.CanvasLine(
+                    bb.add_BB(r.bb);
+                    r = graphic.CanvasLine(
                         canvas,
                         x + 4,
                         y_body_base,
                         x + 4,
                         y_body_base + row_height
                     );
-                if (draw)
-                    graphic.CanvasLine(
+                    bb.add_BB(r.bb);
+                    r = graphic.CanvasLine(
                         canvas,
                         x + 7,
                         y_body_base,
@@ -3210,19 +3270,21 @@ export class DefaultRenderer extends Renderer {
                         y_body_base + row_height,
                         { width: 2 }
                     );
-                if (draw)
-                    graphic.CanvasLine(
+                    bb.add_BB(r.bb);
+                    r = graphic.CanvasLine(
                         canvas,
                         x + 10,
                         y_body_base,
                         x + 10,
                         y_body_base + row_height
                     );
+                    bb.add_BB(r.bb);
+                }
 
                 if (e0.times !== null && (e0.ntimes || e0.times != 2)) {
                     let stimes = e0.ntimes == true ? "X" : "" + e0.times;
-                    if (draw)
-                        graphic.CanvasText(
+                    if (draw){
+                        let r = graphic.CanvasText(
                             canvas,
                             x + 8,
                             y_body_base + row_height,
@@ -3230,37 +3292,41 @@ export class DefaultRenderer extends Renderer {
                             param.base_font_size / 2,
                             "rt"
                         );
+                        bb.add_BB(r.bb);
+                    }
                 }
-                if (draw)
-                    graphic.CanvasCircle(
+                if (draw){
+                    let r = graphic.CanvasCircle(
                         canvas,
                         x + 14,
                         y_body_base + (row_height / 4) * 1.5,
                         1
                     );
-                if (draw)
-                    graphic.CanvasCircle(
+                    bb.add_BB(r.bb);
+                    r = graphic.CanvasCircle(
                         canvas,
                         x + 14,
                         y_body_base + (row_height / 4) * 2.5,
                         1
                     );
+                    bb.add_BB(r.bb);
+                }
                 break;
             case "f":
                 // begin and end (normally, end)
                 w = 5;
                 xshift = side == "end" ? 0 : 0;
                 actual_boundary = x + w;
-                if (draw)
-                    graphic.CanvasLine(
+                if (draw){
+                    let r = graphic.CanvasLine(
                         canvas,
                         x + xshift,
                         y_body_base,
                         x + xshift,
                         y_body_base + row_height
                     );
-                if (draw)
-                    graphic.CanvasLine(
+                    bb.add_BB(r.bb);
+                    r = graphic.CanvasLine(
                         canvas,
                         x + xshift + 3,
                         y_body_base,
@@ -3268,6 +3334,8 @@ export class DefaultRenderer extends Renderer {
                         y_body_base + row_height,
                         { width: 2 }
                     );
+                    bb.add_BB(r.bb);
+                }
                 break;
             case "r":
                 r = this.render_simile_mark_plain(
@@ -3284,11 +3352,12 @@ export class DefaultRenderer extends Renderer {
                 x += r.width;
                 w = r.width;
                 actual_boundary = x + w/2;
+                if(draw) bb.add_BB(r.bb);
                 break;
             default:
                 throw "Internal error";
         }
-        return { width: w, actual_boundary: actual_boundary };
+        return { drawn: true, width: w, actual_boundary: actual_boundary, bb:bb };
     }
 
 

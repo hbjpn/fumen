@@ -11707,7 +11707,7 @@ module.exports = function (module) {
 /*!******************************!*\
   !*** ./src/common/common.js ***!
   \******************************/
-/*! exports provided: shallowcopy, deepcopy, myLog2, TaskQueue, Task, WHOLE_NOTE_LENGTH, Track, ReharsalGroup, Measure, Rest, Simile, Chord, LoopIndicator, Space, LongRestIndicator, Time, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, DaCapo, DalSegno, Segno, Coda, ToCoda, Fine, Comment, Lyric, Macro, BoundingBox, RawSpaces, TemplateString */
+/*! exports provided: shallowcopy, deepcopy, myLog2, TaskQueue, Task, WHOLE_NOTE_LENGTH, Track, ReharsalGroup, Measure, Rest, Simile, Chord, LoopIndicator, Space, LongRestIndicator, Time, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, DaCapo, DalSegno, Segno, Coda, ToCoda, Fine, Comment, Lyric, Macro, RawSpaces, TemplateString, HitManager */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11744,9 +11744,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Comment", function() { return Comment; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Lyric", function() { return Lyric; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Macro", function() { return Macro; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BoundingBox", function() { return BoundingBox; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RawSpaces", function() { return RawSpaces; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TemplateString", function() { return TemplateString; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HitManager", function() { return HitManager; });
 /* harmony import */ var _babel_polyfill__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/polyfill */ "./node_modules/@babel/polyfill/lib/index.js");
 /* harmony import */ var _babel_polyfill__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_polyfill__WEBPACK_IMPORTED_MODULE_0__);
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -13089,64 +13089,6 @@ var Macro = /*#__PURE__*/function () {
   }]);
 
   return Macro;
-}(); // Utilities
-
-var BoundingBox = /*#__PURE__*/function () {
-  function BoundingBox() {
-    _classCallCheck(this, BoundingBox);
-
-    this.x = [100000, -100000];
-    this.y = [100000, -100000];
-  }
-
-  _createClass(BoundingBox, [{
-    key: "add",
-    value: function add(x, y) {
-      var w = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
-      var h = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
-      this.x[0] = Math.min(x, this.x[0]);
-      this.x[1] = Math.max(x + w, this.x[1]);
-      this.y[0] = Math.min(y, this.y[0]);
-      this.y[1] = Math.max(y + h, this.y[1]);
-    }
-  }, {
-    key: "add_BB",
-    value: function add_BB(bb) {
-      // add another bounding box
-      this.x[0] = Math.min(bb.x[0], this.x[0]);
-      this.x[1] = Math.max(bb.x[1], this.x[1]);
-      this.y[0] = Math.min(bb.y[0], this.y[0]);
-      this.y[1] = Math.max(bb.y[1], this.y[1]);
-    }
-  }, {
-    key: "add_rect",
-    value: function add_rect(rect) {
-      this.x[0] = Math.min(rect.x, this.x[0]);
-      this.x[1] = Math.max(rect.x + rect.w, this.x[1]);
-      this.y[0] = Math.min(rect.y, this.y[0]);
-      this.y[1] = Math.max(rect.y + rect.h, this.y[1]);
-    }
-  }, {
-    key: "expand",
-    value: function expand(x0, x1, y0, y1) {
-      this.x[0] -= x0;
-      this.x[1] += x1;
-      this.y[0] -= y0;
-      this.y[1] += y1;
-    }
-  }, {
-    key: "get",
-    value: function get() {
-      return {
-        x: this.x[0],
-        y: this.y[0],
-        w: this.x[1] - this.x[0],
-        h: this.y[1] - this.y[0]
-      };
-    }
-  }]);
-
-  return BoundingBox;
 }();
 /**
  * Reperesetnts skipped contiguous spaces/tabs during parsing.
@@ -13192,6 +13134,174 @@ var TemplateString = /*#__PURE__*/function () {
   }]);
 
   return TemplateString;
+}();
+var HitManager = /*#__PURE__*/function () {
+  function HitManager() {
+    _classCallCheck(this, HitManager);
+
+    this.clear();
+  }
+
+  _createClass(HitManager, [{
+    key: "_uuid",
+    value: function _uuid() {
+      var chars = new Array(8);
+
+      for (var i = 0; i < chars.length; ++i) {
+        chars[i] = Math.floor(Math.random() * 16).toString(16);
+      }
+
+      return chars.join();
+    }
+  }, {
+    key: "_drawBBs",
+    value: function _drawBBs() {
+      var _this5 = this;
+
+      var _loop = function _loop(paper_id) {
+        var p = _this5.papers[paper_id];
+        var ctx = p.paper.getContext("2d");
+        p.objs.forEach(function (entry) {
+          ctx.fillStyle = "rgb(0, 0, 255, 0.5)";
+          ctx.fillRect(entry.bb.x[0], entry.bb.y[0], entry.bb.width(), entry.bb.height());
+          console.log("BB dump : " + [entry.bb.x[0], entry.bb.y[0], entry.bb.width(), entry.bb.height()]);
+        });
+      };
+
+      for (var paper_id in this.papers) {
+        _loop(paper_id);
+      }
+    } // This is to set global scale to convert the real on-screen coordinate to graphic coordinate.
+    // Assumed to use when text_size parameter != 1 is specofied.
+
+  }, {
+    key: "setGlobalScale",
+    value: function setGlobalScale(sx, sy) {
+      this.global_scale.x = sx;
+      this.global_scale.y = sy;
+    } // Once you add, you need to call commmit to construct the data
+    // Canvas DOM element "paper" has to have unique ID in .fumen_canvas_id property
+    // If no fumen_canvas_id is specified, automtically generated with random string.
+
+  }, {
+    key: "add",
+    value: function add(paper, bb, obj) {
+      if (bb === undefined) {
+        console.warn("bb is null");
+        return;
+      }
+
+      if (paper.fumen_canvas_id === undefined) {
+        paper.fumen_canvas_id = this._uuid();
+      }
+
+      if (!(paper.fumen_canvas_id in this.papers)) {
+        this.papers[paper.fumen_canvas_id] = {
+          paper: paper,
+          objs: [],
+          left_x_sorted: [],
+          top_y_sorted: [],
+          right_x_sorted: [],
+          bottom_y_sorted: []
+        };
+      }
+
+      this.papers[paper.fumen_canvas_id].objs.push({
+        bb: bb,
+        obj: obj
+      });
+    }
+  }, {
+    key: "clear",
+    value: function clear() {
+      this.papers = {};
+      this.global_scale = {
+        x: 1.0,
+        y: 1.0
+      };
+    }
+  }, {
+    key: "indexSort",
+    value: function indexSort(paper, pred) {
+      // sort it in x
+      var len = this.papers[paper.fumen_canvas_id].objs.length;
+      var indices = new Array(len);
+
+      for (var i = 0; i < len; ++i) {
+        indices[i] = i;
+      }
+
+      indices.sort(pred);
+      return indices;
+    }
+  }, {
+    key: "commit",
+    value: function commit(paper) {
+      if (!(paper.fumen_canvas_id in this.papers)) return;
+      var p = this.papers[paper.fumen_canvas_id];
+      p.left_x_sorted = this.indexSort(paper, function (a, b) {
+        var va = p.objs[a].bb.x[0];
+        var vb = p.objs[b].bb.x[0];
+        return va < vb ? -1 : va > vb ? 1 : 0;
+      });
+      p.right_x_sorted = this.indexSort(paper, function (a, b) {
+        var va = p.objs[a].bb.x[1];
+        var vb = p.objs[b].bb.x[1];
+        return va < vb ? -1 : va > vb ? 1 : 0;
+      });
+      p.top_y_sorted = this.indexSort(paper, function (a, b) {
+        var va = p.objs[a].bb.y[0];
+        var vb = p.objs[b].bb.y[0];
+        return va < vb ? -1 : va > vb ? 1 : 0;
+      });
+      p.bottom_y_sorted = this.indexSort(paper, function (a, b) {
+        var va = p.objs[a].bb.y[1];
+        var vb = p.objs[b].bb.y[1];
+        return va < vb ? -1 : va > vb ? 1 : 0;
+      });
+    }
+  }, {
+    key: "get",
+    value: function get(paper, coord) {
+      var _this6 = this;
+
+      if (!(paper.fumen_canvas_id in this.papers)) return;
+      var p = this.papers[paper.fumen_canvas_id];
+      var len = p.objs.length;
+      var lx_end = p.left_x_sorted.findIndex(function (n) {
+        return p.objs[n].bb.x[0] > coord.x / _this6.global_scale.x;
+      });
+      if (lx_end == 0) return [];else if (lx_end == -1) lx_end = len - 1;else lx_end -= 1;
+      var rx_start = p.right_x_sorted.findIndex(function (n) {
+        return p.objs[n].bb.x[1] >= coord.x / _this6.global_scale.x;
+      });
+      if (rx_start == -1) return [];
+      var ty_end = p.top_y_sorted.findIndex(function (n) {
+        return p.objs[n].bb.y[0] > coord.y / _this6.global_scale.y;
+      });
+      if (ty_end == 0) return [];else if (ty_end == -1) ty_end = len - 1;else ty_end -= 1;
+      var by_start = p.bottom_y_sorted.findIndex(function (n) {
+        return p.objs[n].bb.y[1] >= coord.y / _this6.global_scale.y;
+      });
+      if (by_start == -1) return [];
+      var lxc = p.left_x_sorted.slice(0, lx_end + 1);
+      var rxc = p.right_x_sorted.slice(rx_start);
+      var tyc = p.top_y_sorted.slice(0, ty_end + 1);
+      var byc = p.bottom_y_sorted.slice(by_start);
+      var hit_objs = lxc.filter(function (val) {
+        return rxc.indexOf(val) !== -1;
+      }).filter(function (val) {
+        return tyc.indexOf(val) !== -1;
+      }).filter(function (val) {
+        return byc.indexOf(val) !== -1;
+      }).map(function (val) {
+        return p.objs[val].obj;
+      });
+      return hit_objs;
+    }
+  }]);
+
+  return HitManager;
 }();
 
 /***/ }),
@@ -14411,6 +14521,11 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       _this.canvas = null;
     } else {
       _this.canvas = canvas;
+
+      if (canvas.id === undefined) {
+        canvas.id = _common_common__WEBPACK_IMPORTED_MODULE_2__["guid"];
+      }
+
       _this.canvas_provider = null;
     }
 
@@ -14442,6 +14557,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       paper: null,
       region_id: 0
     };
+    _this.canvas_count = 0;
     return _this;
   }
   /**
@@ -15436,6 +15552,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
               case 52:
                 _graphic__WEBPACK_IMPORTED_MODULE_3__["SetupHiDPICanvas"](canvas, this.param.paper_width / this.param.text_size, this.param.paper_height > 0 ? this.param.paper_height / this.param.text_size : y_base_screening, this.param.pixel_ratio, this.param.text_size);
+                this.hitManager.setGlobalScale(this.param.text_size, this.param.text_size);
                 score_height = (this.param.paper_height > 0 ? this.param.paper_height / this.param.text_size : y_base_screening) / param.nrow;
                 if (param.background_color) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasRect"](canvas, 0, 0, this.param.paper_width / this.param.text_size, this.param.paper_height > 0 ? this.param.paper_height / this.param.text_size : y_base_screening, param.background_color);
                 y_base = origin.y;
@@ -15454,23 +15571,23 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 canvaslist = [canvas];
                 _pei = 0;
 
-              case 59:
+              case 60:
                 if (!(_pei < yse.length)) {
-                  _context.next = 86;
+                  _context.next = 88;
                   break;
                 }
 
                 if (!(yse[_pei].type == "titles")) {
-                  _context.next = 63;
+                  _context.next = 64;
                   break;
                 }
 
-                _context.next = 83;
+                _context.next = 85;
                 break;
 
-              case 63:
+              case 64:
                 if (!(yse[_pei].type == "meas")) {
-                  _context.next = 83;
+                  _context.next = 85;
                   break;
                 }
 
@@ -15479,50 +15596,52 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 r = this.render_measure_row_simplified(x_offset, canvas, yse[_pei].macros, _row_elements_list3, yse[_pei].pm, yse[_pei].nm, y_base, yse[_pei].param, true, yse[_pei].macros.REHARSAL_MARK_POSITION == "Inner", ylimit, music_context);
 
                 if (r) {
-                  _context.next = 82;
+                  _context.next = 84;
                   break;
                 }
 
                 if (!(y_base == origin.y + yse[_pei].param.y_offset_top)) {
-                  _context.next = 72;
+                  _context.next = 73;
                   break;
                 }
 
                 throw "Paper height is too short to fit in single row";
 
-              case 72:
+              case 73:
                 y_base = origin.y + yse[_pei].param.y_offset_top;
 
-              case 73:
-                _context.next = 75;
+              case 74:
+                this.hitManager.commit(canvas);
+                _context.next = 77;
                 return this.canvas_provider();
 
-              case 75:
+              case 77:
                 canvas = _context.sent;
                 canvaslist.push(canvas);
                 _graphic__WEBPACK_IMPORTED_MODULE_3__["SetupHiDPICanvas"](canvas, yse[_pei].param.paper_width / this.param.text_size, yse[_pei].param.paper_height / this.param.text_size, this.param.pixel_ratio, this.param.text_size);
                 if (param.background_color) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasRect"](canvas, 0, 0, this.param.paper_width / this.param.text_size, this.param.paper_height / this.param.text_size, param.background_color); // try again next page
 
                 _pei = _pei - 1;
-                _context.next = 83;
+                _context.next = 85;
                 break;
 
-              case 82:
+              case 84:
                 y_base = r.y_base;
 
-              case 83:
+              case 85:
                 ++_pei;
-                _context.next = 59;
+                _context.next = 60;
                 break;
 
-              case 86:
+              case 88:
                 if (show_footer) this.render_footer(canvaslist, global_macros.TITLE + "/" + global_macros.ARTIST, this.param.origin.y + score_height - this.param.y_footer_offset);
+                this.hitManager.commit(canvas);
                 return _context.abrupt("return", {
                   pages: canvaslist.length,
                   height: score_height
                 });
 
-              case 88:
+              case 91:
               case "end":
                 return _context.stop();
             }
@@ -15870,6 +15989,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
           if (e0 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Chord"]) {
             cr = _this6.render_chord_simplified(draw, e0, transpose, half_type, key, paper, x / _draw_scale, yprof.body.y, param, C7_width);
+            if (draw) _this6.hitManager.add(paper, cr.bb.scale(_draw_scale, 1), e0);
 
             if (draw && e0.exceptinal_comment !== null) {
               _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / _draw_scale, yprof.mu.y + yprof.mu.height, e0.exceptinal_comment.comment, param.base_font_size / 2, "lb");
@@ -15910,7 +16030,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
             x += element_group_width; // unscale(draw_scale); // No need to unscale as all the scaling procedure is enclosed in the above function
           } else {
-            var rs_area_bounding_box = new _common_common__WEBPACK_IMPORTED_MODULE_2__["BoundingBox"](); // Only try to esimate using non-flag-balken drawer
+            var rs_area_bounding_box = new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"](); // Only try to esimate using non-flag-balken drawer
 
             var tmp_fixed_width_details = [];
             element_group.elems.forEach(function (e) {
@@ -15975,18 +16095,15 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                   _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / _draw_scale2, yprof.ml.y + li * param.ml_row_height, llist[li], param.base_font_size / 3, "lt");
                 }
               }
-              /*if(draw && draw_scale<1){
-                  x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
-              }else if(draw)
-                  x += ( e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index+ei]);
-              */
-
 
               if (draw) {
                 x += _elem_width;
                 unscale(_draw_scale2);
+
+                _this6.hitManager.add(paper, _cr.bb.scale(_draw_scale2, 1), e); // BBbox scaled to convert back to on-screen coordinate
+
               } else {
-                e.renderprop.w = _cr.width;
+                e.renderprop.w = _cr.bb.width();
                 fixed_width += e.renderprop.w;
                 fixed_width_details.push({
                   type: "flex",
@@ -16008,18 +16125,15 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
               }
 
               var _cr2 = _this6.render_rest_plain(e, paper, draw, x / _draw_scale3, y_body_or_rs_base, C7_width, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, param);
-              /*if(draw && draw_scale<1){
-                  x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
-              }else if(draw)
-                  x += (e.renderprop.w +m.renderprop.room_per_elem[this_group_start_index+ei]); 
-              */
-
 
               if (draw) {
                 x += _elem_width2;
+
+                _this6.hitManager.add(paper, _cr2.bb.scale(_draw_scale3, 1), e);
+
                 unscale(_draw_scale3);
               } else {
-                e.renderprop.w = _cr2.bounding_box.w;
+                e.renderprop.w = _cr2.bb.width();
                 fixed_width += e.renderprop.w;
                 fixed_width_details.push({
                   type: "flex",
@@ -16044,6 +16158,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
               if (draw) {
                 x += _elem_width3;
+
+                _this6.hitManager.add(_cr3.bb.scale(_draw_scale4, 1));
+
                 unscale(_draw_scale4);
               } else {
                 e.renderprop.w = _cr3.width;
@@ -16213,7 +16330,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         if (m.renderprop && m.renderprop.rg_from_here && m.renderprop.rg_from_here.name != "") {
           var reharsal_group = m.renderprop.rg_from_here;
           var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasTextWithBox"](paper, meas_base_x, inner_reharsal_mark ? yprof.mu.y : yprof.rm.y, reharsal_group.name, param.reharsal_mark_font_size, 2, _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](param.reharsal_mark_font_size, null, false, paper.ratio, paper.zoom).height);
-          if (inner_reharsal_mark) mh_offset += r.width + 2;
+          if (draw) _this7.hitManager.add(paper, r.bb, reharsal_group);
+          if (inner_reharsal_mark) mh_offset += r.bb.width() + 2;
         }
 
         for (ei = 0; ei < elements.header.length; ++ei) {
@@ -16222,17 +16340,23 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Coda"]) {
             var _r = _this7.draw_coda_plain(paper, meas_base_x + mh_offset, yprof.mu.y + yprof.mu.height, "lb", e, param.base_font_size);
 
-            mh_offset += _r.width;
+            mh_offset += _r.bb.width();
+
+            _this7.hitManager.add(paper, _r.bb, e);
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Segno"]) {
             var _r2 = _this7.draw_segno_plain(paper, meas_base_x + mh_offset, yprof.mu.y + yprof.mu.height, e, param.base_font_size);
 
             mh_offset += _r2.width;
+
+            _this7.hitManager.add(paper, _r2.bb, e);
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Comment"]) {
             // If this comment is associated with a chord with exceptional comment, not rendered here.
             if (!e.chorddep) {
               var _r3 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, meas_base_x + mh_offset, yprof.mu.y + yprof.mu.height, e.comment, param.base_font_size / 2, "lb");
 
               mh_offset += _r3.width;
+
+              _this7.hitManager.add(paper, _r3.bb, e);
             }
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Lyric"]) {
             if (draw) {
@@ -16261,16 +16385,19 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             m.renderprop.paper = paper;
             x += e.renderprop.w;
             meas_start_x_actual_boundary = _r4.actual_boundary;
+            if (_r4.drawn) _this7.hitManager.add(paper, _r4.bb, e);
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Time"]) {
             var chord_str_height = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](param.base_font_size, null, false, paper.ratio, paper.zoom).height;
             var row_height = yprof.rs.detected ? param.rs_area_height : param.row_height;
             var cont_height = yprof.rs.detected ? param.rs_area_height : chord_str_height;
             var left_margin = 2;
-            _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uniE08" + e.numer], // numbers
+            var rd = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uniE08" + e.numer], // numbers
             x + left_margin, y_body_or_rs_base + row_height / 2, null, cont_height / 2, "lb", true);
-            _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uniE08" + e.denom], // numbers
+            var rn = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uniE08" + e.denom], // numbers
             x + left_margin, y_body_or_rs_base + row_height / 2, null, cont_height / 2, "lt", true);
             x += e.renderprop.w;
+
+            _this7.hitManager.add(paper, rd.bb.add_BB(rn.bb), e);
           }
         });
         var header_width = x - meas_start_x;
@@ -16296,16 +16423,25 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
             m.renderprop.ex = x;
             x += _e2.renderprop.w;
+            if (_r5.drawn) _this7.hitManager.add(paper, _r5.bb, _e2);
           } else if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DaCapo"]) {
-            _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, repeat_mark_y_base, _e2.toString(), param.base_font_size / 2, "rb"); //if (yprof.rs.detected) x += 15 * 4;
-          } else if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DalSegno"]) {
-            _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, repeat_mark_y_base, _e2.toString(), param.base_font_size / 2, "rb");
-          } else if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["ToCoda"]) {
-            var _r6 = _this7.draw_coda_plain(paper, x, repeat_mark_y_base, "rb", _e2, param.base_font_size);
+            var _r6 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, repeat_mark_y_base, _e2.toString(), param.base_font_size / 2, "rb");
 
-            _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x - _r6.width, repeat_mark_y_base, "To", param.base_font_size / 2, "rb");
+            _this7.hitManager.add(paper, _r6.bb, _e2);
+          } else if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DalSegno"]) {
+            var _r7 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, repeat_mark_y_base, _e2.toString(), param.base_font_size / 2, "rb");
+
+            _this7.hitManager.add(paper, _r7.bb, _e2);
+          } else if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["ToCoda"]) {
+            var _r8 = _this7.draw_coda_plain(paper, x, repeat_mark_y_base, "rb", _e2, param.base_font_size);
+
+            var rt = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x - _r8.bb.width(), repeat_mark_y_base, "To", param.base_font_size / 2, "rb");
+
+            _this7.hitManager.add(paper, _r8.bb.add_BB(rt.bb), _e2);
           } else if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Fine"]) {
-            _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, repeat_mark_y_base, _e2.toString(), param.base_font_size / 2, "rb");
+            var _r9 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, repeat_mark_y_base, _e2.toString(), param.base_font_size / 2, "rb");
+
+            _this7.hitManager.add(paper, _r9.bb, _e2);
           } else {
             throw "Unkown instance of footer elements";
           }
@@ -16325,7 +16461,10 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, sx, ly, sx, ly + oy);
             _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, sx, ly, fx, ly);
             s = _e3.indicators.join(",");
-            _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, sx + 2, ly + oy / 2, s, param.base_font_size / 3, "lm");
+
+            var _r10 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, sx + 2, ly + oy / 2, s, param.base_font_size / 3, "lm");
+
+            if (draw) _this7.hitManager.add(paper, _r10.bb, _e3);
           } else if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["LongRestIndicator"]) {
             var height = yprof.rs.detected ? param.rs_area_height : param.row_height;
 
@@ -16344,18 +16483,21 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             var lrmargin = Math.max(min_lrmargin, Math.min(max_lrmargin, (_sx + _fx) * r_lrmargin));
             lx = _sx + lrmargin;
             rx = _fx - lrmargin;
-            if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, lx, y_body_or_rs_base + height / 2 + yshift, rx, y_body_or_rs_base + height / 2 + yshift, {
-              width: height / 5
-            });
-            if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, lx, y_body_or_rs_base + rh * vlmargin + yshift, lx, y_body_or_rs_base + rh - rh * vlmargin + yshift, {
-              width: "1"
-            });
-            if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, rx, y_body_or_rs_base + rh * vlmargin + yshift, rx, y_body_or_rs_base + rh - rh * vlmargin + yshift, {
-              width: "1"
-            });
 
             if (draw) {
-              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, (_sx + _fx) / 2, y_body_or_rs_base, _e3.longrestlen, param.base_font_size / 2, "ct", undefined, !draw);
+              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, lx, y_body_or_rs_base + height / 2 + yshift, rx, y_body_or_rs_base + height / 2 + yshift, {
+                width: height / 5
+              });
+              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, lx, y_body_or_rs_base + rh * vlmargin + yshift, lx, y_body_or_rs_base + rh - rh * vlmargin + yshift, {
+                width: "1"
+              });
+              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, rx, y_body_or_rs_base + rh * vlmargin + yshift, rx, y_body_or_rs_base + rh - rh * vlmargin + yshift, {
+                width: "1"
+              });
+
+              var _r11 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, (_sx + _fx) / 2, y_body_or_rs_base, _e3.longrestlen, param.base_font_size / 2, "ct", undefined, !draw);
+
+              _this7.hitManager.add(paper, _r11.bb, _e3);
             } //rest_or_long_rests_detected |= true;
 
           } else if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Simile"]) {
@@ -16365,7 +16507,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
             var _fx2 = meas_end_x - footer_width;
 
-            _this7.render_simile_mark_plain(draw, paper, (_sx2 + _fx2) / 2, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, _e3.numslash, false, "c");
+            var _r12 = _this7.render_simile_mark_plain(draw, paper, (_sx2 + _fx2) / 2, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, _e3.numslash, false, "c");
+
+            if (draw) _this7.hitManager.add(paper, _r12.bb, _e3);
           } else {
             throw "Unkown measure wide instance detected";
           }
@@ -16427,28 +16571,35 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       var img_width = B / 3;
       var img_height = B / 2;
       var text_size = B / 2;
-      _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uniE047"], //segno.svg
+      var bb = new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"]();
+      var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uniE047"], //segno.svg
       lx, y, img_width, img_height, "lb", true);
       lx += img_width;
+      bb.add_BB(r.bb);
 
       if (segno.number !== null) {
-        var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, lx, y, segno.number, text_size, "lb");
-        lx += r.width;
+        var _r13 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, lx, y, segno.number, text_size, "lb");
+
+        lx += _r13.width;
+        bb.add_BB(_r13.bb);
       }
 
       if (segno.opt !== null) {
-        var _r7 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, lx, y, "(" + segno.opt + ")", text_size, "lb");
+        var _r14 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, lx, y, "(" + segno.opt + ")", text_size, "lb");
 
-        lx += _r7.width;
+        lx += _r14.width;
+        bb.add_BB(_r14.bb);
       }
 
       return {
-        width: lx - x
+        width: lx - x,
+        bb: bb
       };
     }
   }, {
     key: "draw_coda_plain",
     value: function draw_coda_plain(paper, x, y, align, coda, B) {
+      var bb = new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"]();
       var width = 0;
       var ys = 0;
       var img_width = B / 2;
@@ -16464,31 +16615,37 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
       if (align[0] == "r") {
         if (coda.number !== null) {
-          var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, y, //img_y + img_height,
+          var _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, y, //img_y + img_height,
           coda.number, text_size, "rb");
-          width += r.width;
+
+          width += _r15.width;
+          bb.add_BB(_r15.bb);
         }
 
-        _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uniE048"], //coda.svg
+        var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uniE048"], //coda.svg
         x - width, y, img_width, img_height, "rb", true);
         width += img_width;
+        bb.add_BB(r.bb);
       } else if (align[0] == "l") {
-        _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uniE048"], // coda.svg
+        var _r16 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uniE048"], // coda.svg
         x, y, img_width, img_height, "lb", true);
+
         width += img_width;
+        bb.add_BB(_r16.bb);
 
         if (coda.number !== null) {
-          var _r8 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x + width, y, //img_y + img_height,
+          var _r17 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x + width, y, //img_y + img_height,
           coda.number, text_size, "lb");
 
-          width += _r8.width;
+          width += _r17.width;
+          bb.add_BB(_r17.bb);
         }
       } else {
         throw "NOT SUPPORTED";
       }
 
       return {
-        width: width
+        bb: bb
       };
     }
   }, {
@@ -16496,7 +16653,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
     value: function render_chord_as_string_plain(chord, paper, x, y_body_base, param, draw) {
       var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, y_body_base + param.row_height / 2, chord.chord_str, param.base_font_size * 0.6, "lm", undefined, !draw);
       return {
-        width: r.width
+        bb: r.bb
       };
     }
   }, {
@@ -16567,15 +16724,11 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         for (var di = 0; di < numdot; ++di) {
           _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](paper, x + dot_xoffsets[rd] + di * 5, y_body_or_rs_base + row_height / 2 - _5i / 2, 1);
         }
-      }
+      } //return { bounding_box:{x:x,y:y_body_or_rs_base, w:10, h:row_height }}; // TODO : Impelment correctly
+
 
       return {
-        bounding_box: {
-          x: x,
-          y: y_body_or_rs_base,
-          w: 10,
-          h: row_height
-        }
+        bb: new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"](x, y_body_or_rs_base, 10, row_height)
       }; // TODO : Impelment correctly
     }
   }, {
@@ -16593,28 +16746,45 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       var width = (h + i) * (numslash - 1) + h + H;
       if (align == "c") x -= width / 2;else if (align == "r") x -= width;
       var x0 = x;
-      if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](paper, x + cm, y_body_base + row_height / 2 - _5lines_intv * 0.5, cr);
+      var bb = new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"]();
 
-      for (var r = 0; r < numslash; ++r) {
+      if (draw) {
+        var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](paper, x + cm, y_body_base + row_height / 2 - _5lines_intv * 0.5, cr);
+        bb.add_BB(r.bb);
+      }
+
+      for (var _r18 = 0; _r18 < numslash; ++_r18) {
         var y = y_body_base + row_height / 2;
-        x += (h + i) * r;
+        x += (h + i) * _r18;
 
         if (draw) {
           var points = [[x, y + _5lines_intv * 1], [x + h, y + _5lines_intv * 1], [x + h + H, y - _5lines_intv * 1], [x + H, y - _5lines_intv * 1]];
-          _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasPolygon"](paper, points, true, true);
+
+          var _r19 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasPolygon"](paper, points, true, true);
+
+          bb.add_BB(_r19.bb);
         }
       }
 
-      if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](paper, x + h + H - cm, y_body_base + row_height / 2 + _5lines_intv * 0.5, cr);
+      if (draw) {
+        var _r20 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](paper, x + h + H - cm, y_body_base + row_height / 2 + _5lines_intv * 0.5, cr);
+
+        bb.add_BB(_r20.bb);
+      }
 
       if (put_boundary) {
-        if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, x0 + width / 2, y_body_base, x0 + width / 2, y_body_base + row_height, {
-          width: 1
-        });
+        if (draw) {
+          var _r21 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, x0 + width / 2, y_body_base, x0 + width / 2, y_body_base + row_height, {
+            width: 1
+          });
+
+          bb.add_BB(_r21.bb);
+        }
       }
 
       return {
-        width: width
+        width: width,
+        bb: bb
       };
     }
   }, {
@@ -16624,6 +16794,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         return this.render_chord_as_string_plain(chord, canvas, x, y_body_base, param, draw);
       }
 
+      var bb = new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"]();
       var ce = this.chord_elem_classify(chord, transpose, half_type, key);
       var bases = ce.bases;
       var elems = ce.mid_elem_objs;
@@ -16632,8 +16803,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
       if (bases[0] == null && bases[1] == null && elems === undefined) {
         return {
-          width: B
-        };
+          width: B,
+          bb: new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"](x, y_body_base, B, B)
+        }; // TODO : Check
       }
 
       var _3rdelem = ce._3rdelem;
@@ -16665,7 +16837,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       var space_char_width = 0.3;
 
       if (root) {
-        _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x, y + param.row_height / 2 + chord_offset_on_bass, root[0], B, "lm", B * char_width_scale, !draw);
+        var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x, y + param.row_height / 2 + chord_offset_on_bass, root[0], B, "lm", B * char_width_scale, !draw);
+        bb.add_BB(r.bb);
         upper_width = B * main_char_width;
         lower_width = B * main_char_width;
 
@@ -16675,15 +16848,19 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
           if (root[1] == "b") {
             if (draw) {
-              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266D"], // flat.svg
+              var _r22 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266D"], // flat.svg
               x + upper_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, acc_width, acc_height, "lb");
+
+              bb.add_BB(_r22.bb);
             }
 
             upper_width += acc_width;
           } else {
             if (draw) {
-              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266F"], // sharp.svg
+              var _r23 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266F"], // sharp.svg
               x + upper_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, acc_width, acc_height, "lb");
+
+              bb.add_BB(_r23.bb);
             }
 
             upper_width += acc_width;
@@ -16710,75 +16887,91 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         _5thelem = _5thelem.filter(function (e) {
           return e.type != "b";
         });
-        var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x00d8), B * 0.5, "lb", B * 0.5, !draw);
-        lower_width += r.width;
+
+        var _r24 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x00d8), B * 0.5, "lb", B * 0.5, !draw);
+
+        lower_width += _r24.width;
+        bb.add_BB(_r24.bb);
       }
 
       _3rdelem.forEach(function (e) {
         if (e.type == "M" && _6791113suselem.length > 0) {
-          var _r9 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x0394), B * 0.5, "lb", B * 0.5, !draw);
+          var _r25 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x0394), B * 0.5, "lb", B * 0.5, !draw);
 
-          lower_width += _r9.width;
+          lower_width += _r25.width;
+          bb.add_BB(_r25.bb);
         } else if (e.type == "m") {
-          var _r10 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x2013), B * 0.5, "lb", B * 0.5, !draw);
+          var _r26 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x2013), B * 0.5, "lb", B * 0.5, !draw);
 
-          lower_width += _r10.width;
+          lower_width += _r26.width;
+          bb.add_BB(_r26.bb);
         } else {// Unkown type
         }
       });
 
       _6791113suselem.forEach(function (e) {
         if (e.type == "dig") {
-          var _r11 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, e.param, B * 0.5, "lb", B * 0.5, !draw);
+          var _r27 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, e.param, B * 0.5, "lb", B * 0.5, !draw);
 
-          lower_width += _r11.width;
+          lower_width += _r27.width;
+          bb.add_BB(_r27.bb);
         } else if (e.type == "sus" || e.type == "add") {
-          var _r12 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, e.type + (e.param ? e.param : ""), B * 0.5, "lb", B * 0.8, !draw);
+          var _r28 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, e.type + (e.param ? e.param : ""), B * 0.5, "lb", B * 0.8, !draw);
 
-          lower_width += _r12.width;
+          lower_width += _r28.width;
+          bb.add_BB(_r28.bb);
         } else if (e.type == "dim") {
-          var _r13 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x004f) + (e.param ? e.param : ""), B * 0.5, "lb", B * 0.5, !draw);
+          var _r29 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x004f) + (e.param ? e.param : ""), B * 0.5, "lb", B * 0.5, !draw);
 
-          lower_width += _r13.width;
+          lower_width += _r29.width;
+          bb.add_BB(_r29.bb);
         } else if (e.type == "M") {
-          var _r14 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x0394) + (e.param ? e.param : ""), B * 0.5, "lb", B * 0.5, !draw);
+          var _r30 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x0394) + (e.param ? e.param : ""), B * 0.5, "lb", B * 0.5, !draw);
 
-          lower_width += _r14.width;
+          lower_width += _r30.width;
+          bb.add_BB(_r30.bb);
         }
       });
 
       _5thelem.forEach(function (e) {
         if (e.type == "b") {
-          var _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + upper_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, "-5", B * 0.5, "lb", B * 0.5, !draw);
+          var _r31 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + upper_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, "-5", B * 0.5, "lb", B * 0.5, !draw);
 
-          upper_width += _r15.width;
+          upper_width += _r31.width;
+          bb.add_BB(_r31.bb);
         } else if (e.type == "#") {
-          var _r16 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + upper_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, "+5", B * 0.5, "lb", B * 0.5, !draw);
+          var _r32 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + upper_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, "+5", B * 0.5, "lb", B * 0.5, !draw);
 
-          upper_width += _r16.width;
+          upper_width += _r32.width;
+          bb.add_BB(_r32.bb);
         }
       });
 
       if (_alteredelem.length > 0) {
         var tensions_pos = Math.max(upper_width, lower_width); // Assume onbass below does not exceed lower_width
 
-        var _r17 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, "(", B * 0.5, "lb", B * 0.5, !draw);
+        var _r33 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, "(", B * 0.5, "lb", B * 0.5, !draw);
 
-        tensions_width += _r17.width;
+        tensions_width += _r33.width;
+        bb.add_BB(_r33.bb);
         var h = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](B * 0.5, null, false, canvas.ratio, canvas.zoom).height;
 
         _alteredelem.forEach(function (e, index) {
           if (e.type == "b") {
             if (draw) {
-              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266D"], // flat.svg,
+              var _r34 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266D"], // flat.svg,
               x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, B * 0.2, h, "lb");
+
+              bb.add_BB(_r34.bb);
             }
 
             tensions_width += B * 0.2;
           } else if (e.type == "#") {
             if (draw) {
-              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266F"], //sharp.svg"],
+              var _r35 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266F"], //sharp.svg"],
               x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, B * 0.2, h, "lb");
+
+              bb.add_BB(_r35.bb);
             }
 
             tensions_width += B * 0.2;
@@ -16786,16 +16979,19 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
           var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, e.param, B * 0.5, "lb", B * 0.5, !draw);
           tensions_width += r.width;
+          bb.add_BB(r.bb);
 
           if (index != _alteredelem.length - 1) {
-            var _r18 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, ", ", B * 0.5, "lb", B * 0.5, !draw);
+            var _r36 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, ", ", B * 0.5, "lb", B * 0.5, !draw);
 
-            tensions_width += _r18.width;
+            tensions_width += _r36.width;
+            bb.add_BB(_r36.bb);
           }
         });
 
-        _r17 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, ")", B * 0.5, "lb", B * 0.5, !draw);
-        tensions_width += _r17.width;
+        _r33 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, ")", B * 0.5, "lb", B * 0.5, !draw);
+        tensions_width += _r33.width;
+        bb.add_BB(_r33.bb);
       }
 
       if (onbass != null) {
@@ -16803,18 +16999,28 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         var onbass_pos = param.on_bass_style == "below" ? x : x + lower_width;
         var on_bass_y_offset = param.on_bass_style == "below" ? 0 : lower_onbass_y_offset;
 
-        var _r19 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, onbass_pos, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, "/" + onbass[0], B * 0.45, param.on_bass_style == "below" ? "lt" : "lb", B * 0.5, !draw);
+        var _r37 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, onbass_pos, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, "/" + onbass[0], B * 0.45, param.on_bass_style == "below" ? "lt" : "lb", B * 0.5, !draw);
 
-        onbass_width += _r19.width;
+        onbass_width += _r37.width;
+        bb.add_BB(_r37.bb);
 
         if (onbass.length == 2) {
           if (onbass[1] == "b") {
-            if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266D"], // flat.svg
-            onbass_pos + onbass_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, B * 0.2, _r19.height, param.on_bass_style == "below" ? "lt" : "lb", true);
+            if (draw) {
+              var rd = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266D"], // flat.svg
+              onbass_pos + onbass_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, B * 0.2, _r37.height, param.on_bass_style == "below" ? "lt" : "lb", true);
+              bb.add_BB(rd.bb);
+            }
+
             onbass_width += B * 0.2;
           } else {
-            if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266F"], // sharp.svg 
-            onbass_pos + onbass_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, B * 0.2, _r19.height, param.on_bass_style == "below" ? "lt" : "lb", true);
+            if (draw) {
+              var _rd = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266F"], // sharp.svg 
+              onbass_pos + onbass_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, B * 0.2, _r37.height, param.on_bass_style == "below" ? "lt" : "lb", true);
+
+              bb.add_BB(_rd.bb);
+            }
+
             onbass_width += B * 0.2;
           }
         }
@@ -16827,7 +17033,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         width = Math.max(upper_width, lower_width) + tensions_width;
       }
       return {
-        width: width
+        width: width,
+        bb: bb
       };
     }
     /**
@@ -16858,21 +17065,19 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
       var w = 0; // width of boundary
 
-      var actual_boundary = 0; // Actual boundary when having more than 1 pixel width. 
+      var actual_boundary = 0; // Actual boundary when having more than 1 pixel width.
+
+      var bb = new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"]();
 
       if (side == "end" && !is_row_edge) {
         // If this is not the last measure in this line, then does not draw the boundary. Draw in the "begin" side of next measure.
         return {
+          drawn: false,
           width: 0,
-          actual_boundary: 0
+          actual_boundary: 0,
+          bb: bb
         };
       }
-      /*
-          var thisIsLastMeasureInLine = e1 === null || is_row_edge;
-           // If this is not the last measure in this line, then does not draw the boundary. Draw in the "begin" side of next measure.
-          if (!thisIsLastMeasureInLine) return { width: 0, actual_boundary : 0 };
-      }*/
-
 
       if (is_row_edge === null || is_row_edge == false) {
         // 1. 2 boundaries in  differnt rows in the code will be rendered as an adjacent measure, or
@@ -16897,7 +17102,11 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           w = 1 + (nline - 1) * barintv;
 
           for (var li = 0; li < nline; ++li) {
-            if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + li * barintv, y_body_base, x + li * barintv, y_body_base + row_height);
+            if (draw) {
+              var _r38 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + li * barintv, y_body_base, x + li * barintv, y_body_base + row_height);
+
+              bb.add_BB(_r38.bb);
+            }
           }
 
           actual_boundary = x + (nline - 1) * barintv;
@@ -16907,12 +17116,21 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           // begin only
           w = 8;
           actual_boundary = x;
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x, y_body_base, x, y_body_base + row_height, {
-            width: 2
-          });
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 3, y_body_base, x + 3, y_body_base + row_height);
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 7, y_body_base + row_height / 4 * 1.5, 1);
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 7, y_body_base + row_height / 4 * 2.5, 1);
+
+          if (draw) {
+            var _r39 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x, y_body_base, x, y_body_base + row_height, {
+              width: 2
+            });
+
+            bb.add_BB(_r39.bb);
+            _r39 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 3, y_body_base, x + 3, y_body_base + row_height);
+            bb.add_BB(_r39.bb);
+            _r39 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 7, y_body_base + row_height / 4 * 1.5, 1);
+            bb.add_BB(_r39.bb);
+            _r39 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 7, y_body_base + row_height / 4 * 2.5, 1);
+            bb.add_BB(_r39.bb);
+          }
+
           break;
 
         case "e":
@@ -16920,16 +17138,29 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           w = 8;
           actual_boundary = x + w;
           xshift = side == "end" ? 0 : 0;
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + xshift, y_body_base + row_height / 4 * 1.5, 1);
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + xshift, y_body_base + row_height / 4 * 2.5, 1);
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 4, y_body_base, x + xshift + 4, y_body_base + row_height);
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 7, y_body_base, x + xshift + 7, y_body_base + row_height, {
-            width: 2
-          });
+
+          if (draw) {
+            var _r40 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + xshift, y_body_base + row_height / 4 * 1.5, 1);
+
+            bb.add_BB(_r40.bb);
+            _r40 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + xshift, y_body_base + row_height / 4 * 2.5, 1);
+            bb.add_BB(_r40.bb);
+            _r40 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 4, y_body_base, x + xshift + 4, y_body_base + row_height);
+            bb.add_BB(_r40.bb);
+            _r40 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 7, y_body_base, x + xshift + 7, y_body_base + row_height, {
+              width: 2
+            });
+            bb.add_BB(_r40.bb);
+          }
 
           if (e0.times !== null && (e0.ntimes || e0.times != 2)) {
             var stimes = e0.ntimes == true ? "X" : "" + e0.times;
-            if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + xshift + w, y_body_base + row_height + param.xtimes_mark_y_margin, "(" + stimes + " times)", param.base_font_size / 2, "rt");
+
+            if (draw) {
+              var _r41 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + xshift + w, y_body_base + row_height + param.xtimes_mark_y_margin, "(" + stimes + " times)", param.base_font_size / 2, "rt");
+
+              bb.add_BB(_r41.bb);
+            }
           }
 
           break;
@@ -16938,22 +17169,41 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           // begin only
           w = 15;
           actual_boundary = x + w / 2;
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x, y_body_base + row_height / 4 * 1.5, 1);
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x, y_body_base + row_height / 4 * 2.5, 1);
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 4, y_body_base, x + 4, y_body_base + row_height);
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 7, y_body_base, x + 7, y_body_base + row_height, {
-            width: 2
-          });
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 10, y_body_base, x + 10, y_body_base + row_height);
+
+          if (draw) {
+            var _r42 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x, y_body_base + row_height / 4 * 1.5, 1);
+
+            bb.add_BB(_r42.bb);
+            _r42 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x, y_body_base + row_height / 4 * 2.5, 1);
+            bb.add_BB(_r42.bb);
+            _r42 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 4, y_body_base, x + 4, y_body_base + row_height);
+            bb.add_BB(_r42.bb);
+            _r42 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 7, y_body_base, x + 7, y_body_base + row_height, {
+              width: 2
+            });
+            bb.add_BB(_r42.bb);
+            _r42 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 10, y_body_base, x + 10, y_body_base + row_height);
+            bb.add_BB(_r42.bb);
+          }
 
           if (e0.times !== null && (e0.ntimes || e0.times != 2)) {
             var _stimes = e0.ntimes == true ? "X" : "" + e0.times;
 
-            if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + 8, y_body_base + row_height, "(" + _stimes + " times)", param.base_font_size / 2, "rt");
+            if (draw) {
+              var _r43 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + 8, y_body_base + row_height, "(" + _stimes + " times)", param.base_font_size / 2, "rt");
+
+              bb.add_BB(_r43.bb);
+            }
           }
 
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 14, y_body_base + row_height / 4 * 1.5, 1);
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 14, y_body_base + row_height / 4 * 2.5, 1);
+          if (draw) {
+            var _r44 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 14, y_body_base + row_height / 4 * 1.5, 1);
+
+            bb.add_BB(_r44.bb);
+            _r44 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 14, y_body_base + row_height / 4 * 2.5, 1);
+            bb.add_BB(_r44.bb);
+          }
+
           break;
 
         case "f":
@@ -16961,10 +17211,17 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           w = 5;
           xshift = side == "end" ? 0 : 0;
           actual_boundary = x + w;
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift, y_body_base, x + xshift, y_body_base + row_height);
-          if (draw) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 3, y_body_base, x + xshift + 3, y_body_base + row_height, {
-            width: 2
-          });
+
+          if (draw) {
+            var _r45 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift, y_body_base, x + xshift, y_body_base + row_height);
+
+            bb.add_BB(_r45.bb);
+            _r45 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 3, y_body_base, x + xshift + 3, y_body_base + row_height, {
+              width: 2
+            });
+            bb.add_BB(_r45.bb);
+          }
+
           break;
 
         case "r":
@@ -16972,6 +17229,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           x += r.width;
           w = r.width;
           actual_boundary = x + w / 2;
+          if (draw) bb.add_BB(r.bb);
           break;
 
         default:
@@ -16979,8 +17237,10 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       }
 
       return {
+        drawn: true,
         width: w,
-        actual_boundary: actual_boundary
+        actual_boundary: actual_boundary,
+        bb: bb
       };
     }
   }]);
@@ -17396,11 +17656,12 @@ var fontData = {
 /*!*********************************!*\
   !*** ./src/renderer/graphic.js ***!
   \*********************************/
-/*! exports provided: CanvasRect, CanvasCircle, CanvasLine, CanvasPolygon, CanvasbBzierCurve, CanvasPath, fontDesc, GetCharProfile, CanvasText, CanvasTextWithBox, CanvasImage, svgLine, svgPath, svgArcBezie, GetPixelRatio, SetupHiDPICanvas, getFontSizeFromHeight, ReleaseCanvas, G_imgmap, PreloadImages, PreloadJsonFont */
+/*! exports provided: BoundingBox, CanvasRect, CanvasCircle, CanvasLine, CanvasPolygon, CanvasbBzierCurve, CanvasPath, fontDesc, GetCharProfile, CanvasText, CanvasTextWithBox, CanvasImage, svgLine, svgPath, svgArcBezie, GetPixelRatio, SetupHiDPICanvas, getFontSizeFromHeight, ReleaseCanvas, G_imgmap, PreloadImages, PreloadJsonFont */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BoundingBox", function() { return BoundingBox; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CanvasRect", function() { return CanvasRect; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CanvasCircle", function() { return CanvasCircle; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CanvasLine", function() { return CanvasLine; });
@@ -17425,6 +17686,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _babel_polyfill__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/polyfill */ "./node_modules/@babel/polyfill/lib/index.js");
 /* harmony import */ var _babel_polyfill__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_polyfill__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _fonts__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./fonts */ "./src/renderer/fonts.js");
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
 
 
 var G_memCanvasStore = {}; // refered by ratio&zoom
@@ -17432,7 +17699,100 @@ var G_memCanvasStore = {}; // refered by ratio&zoom
 
 var G_mem_Canvas_size = [600, 600]; //var G_pixelRatio = null;
 //var G_zoom = null;
+// Utilities
 
+var BoundingBox = /*#__PURE__*/function () {
+  function BoundingBox(x, y) {
+    var w = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+    var h = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
+
+    _classCallCheck(this, BoundingBox);
+
+    this.x = [100000, -100000];
+    this.y = [100000, -100000];
+
+    if (x !== undefined && y !== undefined) {
+      this.add(x, y, w, h);
+    }
+  }
+
+  _createClass(BoundingBox, [{
+    key: "add",
+    value: function add(x, y) {
+      var w = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+      var h = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
+      this.x[0] = Math.min(x, this.x[0]);
+      this.x[1] = Math.max(x + w, this.x[1]);
+      this.y[0] = Math.min(y, this.y[0]);
+      this.y[1] = Math.max(y + h, this.y[1]);
+      return this;
+    }
+  }, {
+    key: "add_BB",
+    value: function add_BB(bb) {
+      // add another bounding box
+      this.x[0] = Math.min(bb.x[0], this.x[0]);
+      this.x[1] = Math.max(bb.x[1], this.x[1]);
+      this.y[0] = Math.min(bb.y[0], this.y[0]);
+      this.y[1] = Math.max(bb.y[1], this.y[1]);
+      return this;
+    }
+  }, {
+    key: "add_rect",
+    value: function add_rect(rect) {
+      this.x[0] = Math.min(rect.x, this.x[0]);
+      this.x[1] = Math.max(rect.x + rect.w, this.x[1]);
+      this.y[0] = Math.min(rect.y, this.y[0]);
+      this.y[1] = Math.max(rect.y + rect.h, this.y[1]);
+      return this;
+    }
+  }, {
+    key: "expand",
+    value: function expand(x0, x1, y0, y1) {
+      this.x[0] -= x0;
+      this.x[1] += x1;
+      this.y[0] -= y0;
+      this.y[1] += y1;
+      return this;
+    }
+  }, {
+    key: "scale",
+    value: function scale(sx, sy) {
+      this.x[0] *= sx;
+      this.x[1] *= sx;
+      this.y[0] *= sy;
+      this.y[0] *= sy;
+      return this;
+    }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new BoundingBox(this.x[0], this.y[0], this.x[1] - this.x[0], this.y[1] - this.y[0]);
+    }
+  }, {
+    key: "get",
+    value: function get() {
+      return {
+        x: this.x[0],
+        y: this.y[0],
+        w: this.x[1] - this.x[0],
+        h: this.y[1] - this.y[0]
+      };
+    }
+  }, {
+    key: "width",
+    value: function width() {
+      return this.x[1] - this.x[0];
+    }
+  }, {
+    key: "height",
+    value: function height() {
+      return this.y[1] - this.y[0];
+    }
+  }]);
+
+  return BoundingBox;
+}();
 function CanvasRect(canvas, x, y, w, h) {
   var fill = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : null;
   var context = canvas.getContext("2d");
@@ -17457,15 +17817,11 @@ function CanvasCircle(canvas, x, y, r) {
     context.beginPath();
     context.arc(x, y, r, 0, Math.PI * 2, false);
     context.fill();
-  }
+  } //return {bounding_box:{x:x-r,y:y-r,w:2*r,h:2*r}};
+
 
   return {
-    bounding_box: {
-      x: x - r,
-      y: y - r,
-      w: 2 * r,
-      h: 2 * r
-    }
+    bb: new BoundingBox(x - r, y - r, 2 * r, 2 * r)
   };
 }
 function CanvasLine(canvas, x0, y0, x1, y1, opt) {
@@ -17481,15 +17837,11 @@ function CanvasLine(canvas, x0, y0, x1, y1, opt) {
     context.stroke();
     if (opt && opt.dash) context.setLineDash([]);
     if (opt && opt.width) context.lineWidth = 1;
-  }
+  } //return {bounding_box:{x:Math.min(x0,x1), y:Math.min(y0,y1), w:Math.abs(x0-x1), h:Math.abs(y0-y1)}};
+
 
   return {
-    bounding_box: {
-      x: Math.min(x0, x1),
-      y: Math.min(y0, y1),
-      w: Math.abs(x0 - x1),
-      h: Math.abs(y0 - y1)
-    }
+    bb: new BoundingBox(Math.min(x0, x1), Math.min(y0, y1), Math.abs(x0 - x1), Math.abs(y0 - y1))
   };
 }
 function CanvasPolygon(canvas, points) {
@@ -17498,6 +17850,7 @@ function CanvasPolygon(canvas, points) {
   var opt = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
   var context = canvas.getContext("2d");
   context.save();
+  var bb = new BoundingBox();
   var orgValues = {};
 
   if (opt != null) {
@@ -17515,6 +17868,8 @@ function CanvasPolygon(canvas, points) {
     } else {
       context.lineTo(points[i][0], points[i][1]);
     }
+
+    bb.add(points[i][0], points[i][1]);
   }
 
   if (close) {
@@ -17528,6 +17883,9 @@ function CanvasPolygon(canvas, points) {
   }
 
   context.restore();
+  return {
+    bb: bb
+  };
 }
 function CanvasbBzierCurve(canvas, points) {
   var close = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
@@ -17687,9 +18045,16 @@ function CanvasText(canvas, x, y, text, fsize, align, xwidth, notdraw, opt) {
     }
   }
 
-  context.font = orgfont;
+  context.font = orgfont; // TODO : For backward compatibility, width is kept as is. Remove in the later.
+
+  var xadjust = {
+    "left": 0,
+    "center": -width / 2,
+    "right": -width
+  }[ta[align[0]]];
   var ret = {
-    width: width
+    width: width,
+    bb: new BoundingBox(x + xadjust, y + yadjust, width, yroom.height)
   };
   Object.assign(ret, yroom);
   return ret;
@@ -17712,10 +18077,10 @@ function CanvasTextWithBox(canvas, x, y, text, fsize) {
     ret = CanvasText(canvas, x + margin, y + margin, text, fsize, "lt");
   }
 
-  CanvasRect(canvas, x, y, ret.width + 2 * margin, ret.height + 2 * margin);
+  CanvasRect(canvas, x, y, ret.width + 2 * margin, ret.height + 2 * margin); //return {x:x, y:y, width: ret.width+2*margin, height:ret.height+2*margin};
+
   return {
-    width: ret.width + 2 * margin,
-    height: ret.height + 2 * margin
+    bb: new BoundingBox(x, y, ret.width + 2 * margin, ret.height + 2 * margin)
   };
 }
 function CanvasImage(canvas, img, x, y, w, h) {
@@ -17746,15 +18111,11 @@ function CanvasImage(canvas, img, x, y, w, h) {
   if (draw) {
     var ctx = canvas.getContext("2d");
     ctx.drawImage(img, x + x_shift, y + y_shift, act_w, act_h);
-  }
+  } //return {bounding_box:{x:x+x_shift, y:y+y_shift,w:act_w,h:act_h}};
+
 
   return {
-    bounding_box: {
-      x: x + x_shift,
-      y: y + y_shift,
-      w: act_w,
-      h: act_h
-    }
+    bb: new BoundingBox(x + x_shift, y + y_shift, act_w, act_h)
   };
 } // SVG related
 
@@ -18132,12 +18493,19 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 var Renderer = /*#__PURE__*/function () {
   function Renderer() {
     _classCallCheck(this, Renderer);
+
+    this.hitManager = new _common_common__WEBPACK_IMPORTED_MODULE_1__["HitManager"]();
   }
 
   _createClass(Renderer, [{
     key: "render",
     value: function render() {
       console.log("Run renderer");
+    }
+  }, {
+    key: "getComponent",
+    value: function getComponent(paper, coord) {
+      return this.hitManager.get(paper, coord);
     }
   }, {
     key: "get_boundary_sign",
@@ -18544,7 +18912,7 @@ var Renderer = /*#__PURE__*/function () {
   }, {
     key: "draw_rs_area_without_flag_balken",
     value: function draw_rs_area_without_flag_balken(draw, paper, param, e, balken_element, x, rs_y_base, row_height) {
-      var bounding_box = new _common_common__WEBPACK_IMPORTED_MODULE_1__["BoundingBox"]();
+      var bounding_box = new _graphic__WEBPACK_IMPORTED_MODULE_2__["BoundingBox"]();
 
       var _5lines_intv = row_height / 4;
 
@@ -18611,17 +18979,17 @@ var Renderer = /*#__PURE__*/function () {
             throw "SOMETHING WRONG WITH PARSING";
           }
 
-          var note_right_side = note_x_center + r.bounding_box.w;
-          bounding_box.add_rect(r.bounding_box); // dots
+          var note_right_side = note_x_center + r.bb.width();
+          bounding_box.add_BB(r.bb); // dots
 
-          var dots_bounding_box = new _common_common__WEBPACK_IMPORTED_MODULE_1__["BoundingBox"]();
+          var dots_bounding_box = new _graphic__WEBPACK_IMPORTED_MODULE_2__["BoundingBox"]();
           dots_bounding_box.add(note_right_side, y);
 
           for (var i = 0; i < numdot; ++i) {
             var dy = pos_on_5lines[ci] % 2 == 0 ? -_5lines_intv / 2 : 0;
             r = _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasCircle"](paper, note_x_center + 12 + i * 5, y + dy, 1, draw);
-            bounding_box.add_rect(r.bounding_box);
-            dots_bounding_box.add_rect(r.bounding_box);
+            bounding_box.add_BB(r.bb);
+            dots_bounding_box.add_BB(r.bb);
           }
 
           if (draw) {
@@ -18649,7 +19017,7 @@ var Renderer = /*#__PURE__*/function () {
             var url = svgname[sharp_flats[ci]];
             var _dy = svg_dy[sharp_flats[ci]];
             r = _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_2__["G_imgmap"][url], x, y + _5lines_intv * _dy, null, _5lines_intv * 2.5, "lm", draw);
-            bounding_box.add_rect(r.bounding_box);
+            bounding_box.add_BB(r.bb);
           } // Draw additional horizontal lines
 
 
@@ -18676,7 +19044,7 @@ var Renderer = /*#__PURE__*/function () {
       } else if (balken_element.type == "rest") {
         var _r = this.render_rest_plain(e, paper, draw, x, rs_y_base, 0, row_height, row_height, param);
 
-        bounding_box.add_rect(_r.bounding_box);
+        bounding_box.add_BB(_r.bb);
 
         if (draw) {
           // notes_coord.x : 
@@ -18684,7 +19052,7 @@ var Renderer = /*#__PURE__*/function () {
           //   1 : Left side of note
           //   2 : Right side of note
           //   3 : Right side of note including dots
-          balken_element.notes_coord.x.push([x, x, x + _r.bounding_box.w, x + _r.bounding_box.w]);
+          balken_element.notes_coord.x.push([x, x, x + _r.bb.width(), x + _r.bb.width()]);
         }
       } else if (balken_element.type == "space") {
         // Do not use expand here in case only one space is grouped in balken group

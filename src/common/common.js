@@ -1026,41 +1026,6 @@ export class Macro {
     }
 }
 
-// Utilities
-export class BoundingBox{
-    constructor(){
-        this.x = [100000, -100000];
-        this.y = [100000, -100000];
-    }
-    add(x, y, w=0, h=0){
-        this.x[0] = Math.min(x, this.x[0]);
-        this.x[1] = Math.max(x+w, this.x[1]);
-        this.y[0] = Math.min(y, this.y[0]);
-        this.y[1] = Math.max(y+h, this.y[1]);
-    }
-    add_BB(bb){ // add another bounding box
-        this.x[0] = Math.min(bb.x[0], this.x[0]);
-        this.x[1] = Math.max(bb.x[1], this.x[1]);
-        this.y[0] = Math.min(bb.y[0], this.y[0]);
-        this.y[1] = Math.max(bb.y[1], this.y[1]);
-    }
-    add_rect(rect){
-        this.x[0] = Math.min(rect.x, this.x[0]);
-        this.x[1] = Math.max(rect.x+rect.w, this.x[1]);
-        this.y[0] = Math.min(rect.y, this.y[0]);
-        this.y[1] = Math.max(rect.y+rect.h, this.y[1]);
-    }
-    expand(x0, x1, y0, y1){
-        this.x[0] -= x0;
-        this.x[1] += x1;
-        this.y[0] -= y0;
-        this.y[1] += y1;
-    }
-    get(){
-        return {x:this.x[0],y:this.y[0],w:this.x[1]-this.x[0], h:this.y[1]-this.y[0]};
-    }
-}
-
 /**
  * Reperesetnts skipped contiguous spaces/tabs during parsing.
  * Used for serialization.
@@ -1088,5 +1053,157 @@ export class TemplateString
             tpl = tpl.replace(new RegExp("\\${" + k + "}","g"), this.dict[k]);
         });
         return tpl;
+    }
+}
+
+export class HitManager
+{
+    constructor(){
+        this.clear();
+    }
+
+    _uuid(){
+        let chars = new Array(8);
+        for(let i = 0; i < chars.length; ++i){
+            chars[i] = Math.floor(Math.random() * 16).toString(16);
+        }
+        return chars.join();
+    }
+    
+    _drawBBs(){
+        for(let paper_id in this.papers){
+            let p = this.papers[paper_id];
+            let ctx = p.paper.getContext("2d");
+            p.objs.forEach(entry=>{
+                ctx.fillStyle = "rgb(0, 0, 255, 0.5)";
+                ctx.fillRect(entry.bb.x[0], entry.bb.y[0], entry.bb.width(), entry.bb.height());
+                console.log("BB dump : " + [entry.bb.x[0], entry.bb.y[0], entry.bb.width(), entry.bb.height()]);
+            });
+        }
+    }
+
+    // This is to set global scale to convert the real on-screen coordinate to graphic coordinate.
+    // Assumed to use when text_size parameter != 1 is specofied.
+    setGlobalScale(sx, sy){
+        this.global_scale.x = sx;
+        this.global_scale.y = sy;
+    }
+
+    // Once you add, you need to call commmit to construct the data
+    // Canvas DOM element "paper" has to have unique ID in .fumen_canvas_id property
+    // If no fumen_canvas_id is specified, automtically generated with random string.
+    add(paper, bb, obj){
+        if(bb === undefined){
+            console.warn("bb is null");
+            return;
+        }
+        if(paper.fumen_canvas_id === undefined){
+            paper.fumen_canvas_id = this._uuid();
+        }
+
+        if(! (paper.fumen_canvas_id in this.papers)){
+            this.papers[paper.fumen_canvas_id] = {
+                paper: paper,
+                objs: [],
+                left_x_sorted: [],
+                top_y_sorted: [],
+                right_x_sorted: [],
+                bottom_y_sorted: []
+            };
+        }
+        this.papers[paper.fumen_canvas_id].objs.push({bb, obj});
+    }
+
+    clear(){
+        this.papers = {};
+        this.global_scale = {x:1.0,y:1.0};
+    }
+
+    indexSort(paper, pred){
+        // sort it in x
+        var len = this.papers[paper.fumen_canvas_id].objs.length;
+        var indices = new Array(len);
+        for (var i = 0; i < len; ++i) indices[i] = i;
+        indices.sort(pred);
+        return indices;  
+    }
+
+    commit(paper){
+        if(!(paper.fumen_canvas_id in this.papers)) return;
+        
+        let p = this.papers[paper.fumen_canvas_id];
+
+        p.left_x_sorted = this.indexSort(paper, (a,b)=>{
+            let va = p.objs[a].bb.x[0];
+            let vb = p.objs[b].bb.x[0];
+            return va < vb ? -1 : va > vb ? 1 : 0;
+        });
+        p.right_x_sorted = this.indexSort(paper, (a,b)=>{
+            let va = p.objs[a].bb.x[1];
+            let vb = p.objs[b].bb.x[1];
+            return va < vb ? -1 : va > vb ? 1 : 0;
+        });
+        p.top_y_sorted = this.indexSort(paper, (a,b)=>{
+            let va = p.objs[a].bb.y[0];
+            let vb = p.objs[b].bb.y[0];
+            return va < vb ? -1 : va > vb ? 1 : 0;
+        });
+        p.bottom_y_sorted = this.indexSort(paper, (a,b)=>{
+            let va = p.objs[a].bb.y[1];
+            let vb = p.objs[b].bb.y[1];
+            return va < vb ? -1 : va > vb ? 1 : 0;
+        });
+    }
+
+    get(paper, coord){
+        if(!(paper.fumen_canvas_id in this.papers)) return;
+
+        let p = this.papers[paper.fumen_canvas_id];
+        var len = p.objs.length;
+
+        var lx_end = p.left_x_sorted.findIndex(n => {
+            return p.objs[n].bb.x[0] > coord.x / this.global_scale.x;
+        });
+        if(lx_end == 0) return [];
+        else if(lx_end == -1) lx_end = len-1;
+        else lx_end -= 1;
+
+        var rx_start = p.right_x_sorted.findIndex(n => {
+            return p.objs[n].bb.x[1] >= coord.x / this.global_scale.x;
+        });
+        if(rx_start == -1) return [];
+
+        var ty_end = p.top_y_sorted.findIndex(n => {
+            return p.objs[n].bb.y[0] > coord.y / this.global_scale.y;
+        });
+        if(ty_end == 0) return [];
+        else if(ty_end == -1) ty_end = len-1;
+        else ty_end -= 1;
+
+        var by_start = p.bottom_y_sorted.findIndex(n => {
+            return p.objs[n].bb.y[1] >= coord.y / this.global_scale.y;
+        });
+        if(by_start == -1) return [];
+
+        let lxc = p.left_x_sorted.slice(0, lx_end+1);
+        let rxc = p.right_x_sorted.slice(rx_start);
+        let tyc = p.top_y_sorted.slice(0, ty_end+1);
+        let byc = p.bottom_y_sorted.slice(by_start);
+        
+        let hit_objs = 
+        lxc.filter((val)=>{
+            return rxc.indexOf(val) !== -1;
+        })
+        .filter((val)=>{
+            return tyc.indexOf(val) !== -1;
+        })
+        .filter((val)=>{
+            return byc.indexOf(val) !== -1;
+        })
+        .map((val)=>{
+            return p.objs[val].obj;
+        });
+        
+        return hit_objs;
     }
 }

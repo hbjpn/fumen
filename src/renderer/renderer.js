@@ -3,10 +3,15 @@ import * as common from "../common/common";
 import * as graphic from "./graphic";
 
 export class Renderer {
-    constructor() {}
+    constructor() {
+        this.hitManager = new common.HitManager();
+    }
     render() {
         console.log("Run renderer");
-	}
+    }
+    getComponent(paper, coord){
+        return this.hitManager.get(paper, coord);
+    }
 
 	get_boundary_sign(e) {
         if (e === null) return "n";
@@ -441,7 +446,7 @@ export class Renderer {
 
     draw_rs_area_without_flag_balken(draw, paper, param, e, balken_element, x, rs_y_base, row_height){
 
-        let bounding_box = new common.BoundingBox();
+        let bounding_box = new graphic.BoundingBox();
 
         let _5lines_intv = row_height / 4;
         var deltax_acc = 10;  
@@ -539,12 +544,12 @@ export class Renderer {
                     throw "SOMETHING WRONG WITH PARSING";
                 }
 
-                let note_right_side = note_x_center + r.bounding_box.w;
+                let note_right_side = note_x_center + r.bb.width();
 
-                bounding_box.add_rect(r.bounding_box);
+                bounding_box.add_BB(r.bb);
 
                 // dots
-                let dots_bounding_box = new common.BoundingBox();
+                let dots_bounding_box = new graphic.BoundingBox();
                 dots_bounding_box.add(note_right_side, y);
                 for (let i = 0; i < numdot; ++i) {
                     let dy =
@@ -552,8 +557,8 @@ export class Renderer {
     
                     r = graphic.CanvasCircle(paper, note_x_center + 12 + i * 5, y + dy, 1, draw);
                     
-                    bounding_box.add_rect(r.bounding_box);
-                    dots_bounding_box.add_rect(r.bounding_box);
+                    bounding_box.add_BB(r.bb);
+                    dots_bounding_box.add_BB(r.bb);
                 }
 
                 if(draw){
@@ -577,7 +582,7 @@ export class Renderer {
                     r = graphic.CanvasImage(paper, graphic.G_imgmap[url],
                         x, y + _5lines_intv*dy, null, _5lines_intv*2.5, "lm", draw);
                     
-                    bounding_box.add_rect(r.bounding_box);
+                    bounding_box.add_BB(r.bb);
                 }
 
                 // Draw additional horizontal lines
@@ -619,7 +624,7 @@ export class Renderer {
                 param
             );
 
-            bounding_box.add_rect(r.bounding_box);
+            bounding_box.add_BB(r.bb);
 
             if(draw){
                 // notes_coord.x : 
@@ -628,7 +633,7 @@ export class Renderer {
                 //   2 : Right side of note
                 //   3 : Right side of note including dots
                 balken_element.notes_coord.x
-                    .push([x, x, x + r.bounding_box.w, x + r.bounding_box.w,]);
+                    .push([x, x, x + r.bb.width(), x + r.bb.width()]);
             }
         }else if(balken_element.type == "space"){
 

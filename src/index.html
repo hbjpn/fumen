@@ -119,7 +119,7 @@
                       $('#edit_component').modal('hide');       
                       sel_component.chord_str = $('#edit_component_input').val();
                       document.getElementById("code").value = track.exportCode(); 
-                      draw();      
+                      window.setTimeout(draw, 1);      
                     });
                     $('#edit_component').modal('show');
                   }

@@ -14,6 +14,7 @@
 
     <script type="text/javascript">
       window.onload = getFromGet;
+      var sel_component = null;
 
       // Compress
       function deflate(val) {
@@ -82,6 +83,7 @@
             param.inner_vertical_align = iva?1:0;
 
             var canvas_count = 0;
+            var canvaslist = [];
             var canvas_provider = function(){
               var score_area = document.getElementById("scores_area");
               var new_canvas = document.createElement("canvas");
@@ -91,11 +93,41 @@
               }
               score_area.appendChild(new_canvas);
               ++canvas_count;
+              canvaslist.push(new_canvas);
               return new_canvas;
             };
 
             var renderer = new Fumen.DefaultRenderer(canvas_provider, param);
-            renderer.render(track);
+            renderer.render(track)
+            .then(()=>{
+              canvaslist.forEach((canvas)=>{
+                canvas.addEventListener("click", e => {
+                  const rect = canvas.getBoundingClientRect();
+                  const point = {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                  };
+                  let components = renderer.getComponent(canvas, point);
+                  if(components.length > 0){
+                    // mutiple components could be identiified
+                    //$('#edit_component').on('shown.bs.modal', function () {
+                    //  $('#edit_component').trigger('focus')
+                    //})
+                    sel_component = components[0];
+                    $('#edit_component_input').val(sel_component.exportCode());
+                    $('#edit_component_ok').click(function(){
+                      $('#edit_component').modal('hide');       
+                      sel_component.chord_str = $('#edit_component_input').val();
+                      document.getElementById("code").value = track.exportCode(); 
+                      draw();      
+                    });
+                    $('#edit_component').modal('show');
+                  }
+                });
+              })
+              renderer.hitManager._drawBBs();
+            });
+
       }
       function updated()
       {
@@ -308,6 +340,26 @@ textarea {
         </div>
       </div>
     </div> <!--row-->
+    <div class="modal fade" id="edit_component" tabindex="-1"
+    role="dialog" aria-labelledby="label1" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="label1">Edit component</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <input id="edit_component_input" />
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" id="edit_component_ok">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div> <!--container-->
   </body>
 </html>

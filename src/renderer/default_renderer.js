@@ -2072,7 +2072,8 @@ export class DefaultRenderer extends Renderer {
                     m.renderprop.paper = paper;
                     x += e.renderprop.w;
                     meas_start_x_actual_boundary = r.actual_boundary;
-                    if(r.drawn) this.hitManager.add(paper, r.bb, e);
+                    if(r.bb.width()>0) this.hitManager.add(paper, r.bb, e);
+                    if(r.bb2.width()>0) this.hitManager.add(paper, r.bb2, e);
                 } else if (e instanceof common.Time) {
                     let chord_str_height = graphic.GetCharProfile(
                         param.base_font_size, null, false, paper.ratio, paper.zoom).height;
@@ -2153,7 +2154,8 @@ export class DefaultRenderer extends Renderer {
 
                     m.renderprop.ex = x;
                     x += e.renderprop.w;
-                    if(r.drawn) this.hitManager.add(paper, r.bb, e);
+                    if(r.bb.width()>0) this.hitManager.add(paper, r.bb, e);
+                    if(r.bb2.width()>0) this.hitManager.add(paper, r.bb2, e);
                 } else if (e instanceof common.DaCapo) {
                     let r = graphic.CanvasText(
                         paper,
@@ -2253,7 +2255,8 @@ export class DefaultRenderer extends Renderer {
                     var rx = fx - lrmargin;
 
                     if (draw){
-                        graphic.CanvasLine(
+                        let bb = new graphic.BoundingBox();
+                        let r = graphic.CanvasLine(
                             paper,
                             lx,
                             y_body_or_rs_base + height / 2 + yshift,
@@ -2261,7 +2264,8 @@ export class DefaultRenderer extends Renderer {
                             y_body_or_rs_base + height / 2 + yshift,
                             { width: height/5 }
                         );
-                        graphic.CanvasLine(
+                        bb.add_BB(r.bb);
+                        r = graphic.CanvasLine(
                             paper,
                             lx,
                             y_body_or_rs_base + rh * vlmargin + yshift,
@@ -2269,7 +2273,8 @@ export class DefaultRenderer extends Renderer {
                             y_body_or_rs_base + rh - rh * vlmargin + yshift,
                             { width: "1" }
                         );
-                        graphic.CanvasLine(
+                        bb.add_BB(r.bb);
+                        r = graphic.CanvasLine(
                             paper,
                             rx,
                             y_body_or_rs_base + rh * vlmargin + yshift,
@@ -2277,7 +2282,8 @@ export class DefaultRenderer extends Renderer {
                             y_body_or_rs_base + rh - rh * vlmargin + yshift,
                             { width: "1" }
                         );
-                        let r = graphic.CanvasText(
+                        bb.add_BB(r.bb);
+                        r = graphic.CanvasText(
                             paper,
                             (sx + fx) / 2,
                             y_body_or_rs_base,
@@ -2287,8 +2293,9 @@ export class DefaultRenderer extends Renderer {
                             undefined,
                             !draw
                         );
+                        bb.add_BB(r.bb);
 
-                        this.hitManager.add(paper, r.bb, e);
+                        this.hitManager.add(paper, bb, e);
                     }
 
                     //rest_or_long_rests_detected |= true;
@@ -3102,10 +3109,11 @@ export class DefaultRenderer extends Renderer {
         let actual_boundary = 0; // Actual boundary when having more than 1 pixel width.
         
         let bb = new graphic.BoundingBox();
+        let bb2 = new graphic.BoundingBox(); // in case separated bb required.
 
         if (side == "end" && !is_row_edge) {
             // If this is not the last measure in this line, then does not draw the boundary. Draw in the "begin" side of next measure.
-            return { drawn:false, width: 0, actual_boundary : 0, bb:bb };
+            return { drawn:false, width: 0, actual_boundary : 0, bb:bb, bb2:bb2 };
         }
 
         if (is_row_edge === null || is_row_edge == false) {
@@ -3231,7 +3239,7 @@ export class DefaultRenderer extends Renderer {
                             param.base_font_size / 2,
                             "rt"
                         );
-                        bb.add_BB(r.bb);
+                        bb2.add_BB(r.bb);
                     }
                 }
                 break;
@@ -3292,7 +3300,7 @@ export class DefaultRenderer extends Renderer {
                             param.base_font_size / 2,
                             "rt"
                         );
-                        bb.add_BB(r.bb);
+                        bb2.add_BB(r.bb);
                     }
                 }
                 if (draw){
@@ -3357,7 +3365,7 @@ export class DefaultRenderer extends Renderer {
             default:
                 throw "Internal error";
         }
-        return { drawn: true, width: w, actual_boundary: actual_boundary, bb:bb };
+        return { drawn: true, width: w, actual_boundary: actual_boundary, bb:bb, bb2:bb2 };
     }
 
 

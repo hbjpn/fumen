@@ -16385,7 +16385,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             m.renderprop.paper = paper;
             x += e.renderprop.w;
             meas_start_x_actual_boundary = _r4.actual_boundary;
-            if (_r4.drawn) _this7.hitManager.add(paper, _r4.bb, e);
+            if (_r4.bb.width() > 0) _this7.hitManager.add(paper, _r4.bb, e);
+            if (_r4.bb2.width() > 0) _this7.hitManager.add(paper, _r4.bb2, e);
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Time"]) {
             var chord_str_height = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](param.base_font_size, null, false, paper.ratio, paper.zoom).height;
             var row_height = yprof.rs.detected ? param.rs_area_height : param.row_height;
@@ -16423,7 +16424,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
             m.renderprop.ex = x;
             x += _e2.renderprop.w;
-            if (_r5.drawn) _this7.hitManager.add(paper, _r5.bb, _e2);
+            if (_r5.bb.width() > 0) _this7.hitManager.add(paper, _r5.bb, _e2);
+            if (_r5.bb2.width() > 0) _this7.hitManager.add(paper, _r5.bb2, _e2);
           } else if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DaCapo"]) {
             var _r6 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, repeat_mark_y_base, _e2.toString(), param.base_font_size / 2, "rb");
 
@@ -16485,19 +16487,25 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             rx = _fx - lrmargin;
 
             if (draw) {
-              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, lx, y_body_or_rs_base + height / 2 + yshift, rx, y_body_or_rs_base + height / 2 + yshift, {
+              var bb = new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"]();
+
+              var _r11 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, lx, y_body_or_rs_base + height / 2 + yshift, rx, y_body_or_rs_base + height / 2 + yshift, {
                 width: height / 5
               });
-              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, lx, y_body_or_rs_base + rh * vlmargin + yshift, lx, y_body_or_rs_base + rh - rh * vlmargin + yshift, {
+
+              bb.add_BB(_r11.bb);
+              _r11 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, lx, y_body_or_rs_base + rh * vlmargin + yshift, lx, y_body_or_rs_base + rh - rh * vlmargin + yshift, {
                 width: "1"
               });
-              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, rx, y_body_or_rs_base + rh * vlmargin + yshift, rx, y_body_or_rs_base + rh - rh * vlmargin + yshift, {
+              bb.add_BB(_r11.bb);
+              _r11 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, rx, y_body_or_rs_base + rh * vlmargin + yshift, rx, y_body_or_rs_base + rh - rh * vlmargin + yshift, {
                 width: "1"
               });
+              bb.add_BB(_r11.bb);
+              _r11 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, (_sx + _fx) / 2, y_body_or_rs_base, _e3.longrestlen, param.base_font_size / 2, "ct", undefined, !draw);
+              bb.add_BB(_r11.bb);
 
-              var _r11 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, (_sx + _fx) / 2, y_body_or_rs_base, _e3.longrestlen, param.base_font_size / 2, "ct", undefined, !draw);
-
-              _this7.hitManager.add(paper, _r11.bb, _e3);
+              _this7.hitManager.add(paper, bb, _e3);
             } //rest_or_long_rests_detected |= true;
 
           } else if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Simile"]) {
@@ -17068,6 +17076,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       var actual_boundary = 0; // Actual boundary when having more than 1 pixel width.
 
       var bb = new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"]();
+      var bb2 = new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"](); // in case separated bb required.
 
       if (side == "end" && !is_row_edge) {
         // If this is not the last measure in this line, then does not draw the boundary. Draw in the "begin" side of next measure.
@@ -17075,7 +17084,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           drawn: false,
           width: 0,
           actual_boundary: 0,
-          bb: bb
+          bb: bb,
+          bb2: bb2
         };
       }
 
@@ -17159,7 +17169,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             if (draw) {
               var _r41 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + xshift + w, y_body_base + row_height + param.xtimes_mark_y_margin, "(" + stimes + " times)", param.base_font_size / 2, "rt");
 
-              bb.add_BB(_r41.bb);
+              bb2.add_BB(_r41.bb);
             }
           }
 
@@ -17192,7 +17202,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             if (draw) {
               var _r43 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + 8, y_body_base + row_height, "(" + _stimes + " times)", param.base_font_size / 2, "rt");
 
-              bb.add_BB(_r43.bb);
+              bb2.add_BB(_r43.bb);
             }
           }
 
@@ -17240,7 +17250,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         drawn: true,
         width: w,
         actual_boundary: actual_boundary,
-        bb: bb
+        bb: bb,
+        bb2: bb2
       };
     }
   }]);

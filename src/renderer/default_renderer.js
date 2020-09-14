@@ -1807,7 +1807,7 @@ export class DefaultRenderer extends Renderer {
 
                         if(draw){
                             x += elem_width;
-                            this.hitManager.add(cr.bb.scale(draw_scale,1));
+                            this.hitManager.add(paper, cr.bb.scale(draw_scale,1), e);
                             unscale(draw_scale);
                         }else{
                             e.renderprop.w = cr.width;

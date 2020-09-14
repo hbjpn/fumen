@@ -16159,7 +16159,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
               if (draw) {
                 x += _elem_width3;
 
-                _this6.hitManager.add(_cr3.bb.scale(_draw_scale4, 1));
+                _this6.hitManager.add(paper, _cr3.bb.scale(_draw_scale4, 1), e);
 
                 unscale(_draw_scale4);
               } else {

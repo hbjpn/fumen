@@ -1754,7 +1754,7 @@ export class DefaultRenderer extends Renderer {
                            unscale(draw_scale);
                            this.hitManager.add(paper, cr.bb.scale(draw_scale,1), e); // BBbox scaled to convert back to on-screen coordinate
                        }else{
-                            e.renderprop.w = cr.bb.width();
+                            e.renderprop.w = cr.width; // cr.bb.width(); TODO: Do not use bb.width as it only works for draw=True
                             fixed_width += e.renderprop.w;
                             fixed_width_details.push({type:"flex",f:e.renderprop.w});
                             num_flexible_rooms++;
@@ -2654,7 +2654,7 @@ export class DefaultRenderer extends Renderer {
         C7_width
     ) {
         if (!chord.is_valid_chord) {
-            return this.render_chord_as_string_plain(
+            let r = this.render_chord_as_string_plain(
                 chord,
                 canvas,
                 x,
@@ -2662,6 +2662,8 @@ export class DefaultRenderer extends Renderer {
                 param,
                 draw
             );
+            // add width for now. TODO : remove
+            return {width: r.bb.width(), bb:r.bb};
         }
 
         var bb = new graphic.BoundingBox();
@@ -3066,7 +3068,7 @@ export class DefaultRenderer extends Renderer {
             width = Math.max(upper_width, lower_width) + tensions_width;
         }
 
-        return { width: width, bb:bb };
+        return { width: width, bb:bb }; // width and bb.width() could be differnt. TODO : Clean up.
     }
 
     /**

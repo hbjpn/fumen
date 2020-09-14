@@ -1684,9 +1684,9 @@ export class DefaultRenderer extends Renderer {
                         let r = this.draw_rs_area_without_flag_balken(
                             draw, paper, param, e, balken_element, x, yprof.rs.y, yprof.rs.height);
                         e.renderprop.balken_element = balken_element;
-                        rs_area_bounding_box.add_rect(r.bounding_box);
-                        x += r.bounding_box.w;
-                        tmp_fixed_width_details.push({type:"flex",f:r.bounding_box.w});
+                        rs_area_bounding_box.add_BB(r.bounding_box);
+                        x += r.bounding_box.width();
+                        tmp_fixed_width_details.push({type:"flex",f:r.bounding_box.width()});
                     });
                     let rs_area_width = rs_area_bounding_box.get().w;
                     // To select which (chord or RS area element) to be selected as a elemng group 

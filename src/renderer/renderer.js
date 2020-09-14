@@ -262,16 +262,8 @@ export class Renderer {
         room_for_rs_per_element, // room per element in RS are for set of elemes. This is on-screen coordinates. Already considred scaling impact.
         balken,
         is_last_body_elem_group_in_a_measure
-    ) {
-        // chords is list of chords for each chord object has .renderprop.x property
-        // All elements shall have length indicators
-        // var balken_width = "3px";
-
-        //let balken = {
-        //    groups: []
-        //};
-        
-        var group = null; //paper.set();
+    ) { 
+        var group = null; 
 
         // elements in a measure
         for (var ei = 0; ei < elems.length; ++ei) {
@@ -280,10 +272,6 @@ export class Renderer {
             if (e.note_group_list === null) {
                 throw "SOMETHING WRONG WITH LENGTH INDICATOR SCREENING";
             }
-
-            //var x = e.renderprop.x;
-            // var barlen = 25;
-            //var flagintv = 5;
 
             let balken_element = e.renderprop.balken_element; // this is corresponds to single flex element
 
@@ -647,7 +635,7 @@ export class Renderer {
         // Apply minimum room for RS area elements
         bounding_box.expand(0, param.rs_elem_min_room, 0, 0); // Apply minimum room
 
-        return {bounding_box:bounding_box.get()};
+        return {bounding_box:bounding_box};
     }
 
     draw_rs_area_balkens(
@@ -773,11 +761,13 @@ export class Renderer {
             // ----
             // Convert output to on-screen coordinates
             // -----
-            wo_flags.bounding_box.x *= this_elem_draw_scale;
-            wo_flags.bounding_box.w *= this_elem_draw_scale;
+            wo_flags.bounding_box.scale(this_elem_draw_scale, 1.0);
+            //wo_flags.bounding_box.x *= this_elem_draw_scale;
+            //wo_flags.bounding_box.w *= this_elem_draw_scale;
             for(let ncc = 0; ncc < balken_element.notes_coord.x.length; ++ncc){
                 balken_element.notes_coord.x[ncc] = balken_element.notes_coord.x[ncc].map(x => x*this_elem_draw_scale);
             }
+            this.hitManager.add(paper, wo_flags.bounding_box, e);
 
 
             let xs = balken_element.notes_coord.x;
@@ -910,7 +900,7 @@ export class Renderer {
 
             // Here is the only update of x
             //   * org_room_for_rs_per_element is with on-screen coordinates. In case scaling apply, this value is already set to 0.
-            x += wo_flags.bounding_box.w + balken.groups[gbi].org_room_for_rs_per_element; // TODO : FIXME to cater for actual width of components
+            x += wo_flags.bounding_box.width() + balken.groups[gbi].org_room_for_rs_per_element; // TODO : FIXME to cater for actual width of components
         }
 
         // 3. Determine the flag intercept and slope
@@ -1193,7 +1183,7 @@ export class Renderer {
             }
         }
 
-        return { bar_reduction: rsgh / 2 - rsh, bounding_box:{x:x, y:y, w: rsgw + (numdot > 0 ? 5 + numdot * 5 : 0), h:rsgh}};
+        return { bar_reduction: rsgh / 2 - rsh, bounding_box:{x:x, y:y - rsgh/2, w: rsgw + (numdot > 0 ? 5 + numdot * 5 : 0), h:rsgh}};
     }
 
 

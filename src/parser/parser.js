@@ -5,18 +5,6 @@
 import "@babel/polyfill";
 import * as common from "../common/common";
 
-function charIsIn(c, chars) {
-    for (var i = 0; i < chars.length; ++i)
-        if (chars[i] == c) return { r: true, index: i };
-    return null;
-}
-
-function charStartsWithAmong(s, strlist) {
-    for (var i = 0; i < strlist.length; ++i)
-        if (s.indexOf(strlist[i]) == 0) return { index: i, s: strlist[i] };
-    return null;
-}
-
 var TOKEN_INVALID = -1;
 var TOKEN_END = 0;
 var TOKEN_WORD = 1;
@@ -82,7 +70,7 @@ export class Parser {
         var skipped_spaces = 0;
         let skipped_spaces_str = "";
         if (!(dont_skip_spaces === true)) {
-            while (s.length > 0 && charIsIn(s[0], " 	")) {
+            while (s.length > 0 && common.charIsIn(s[0], " 	")) {
                 skipped_spaces_str += s[0];
                 s = s.substr(1);
                 ++skipped_spaces;
@@ -93,7 +81,7 @@ export class Parser {
             return { token: null, s: s, type: TOKEN_END, ss: skipped_spaces, sss:skipped_spaces_str };
 
         // At first, plain string is analyzed irrespective of word_def.
-        var r = charStartsWithAmong(s, ["\"", "'", "`", "-"]);
+        var r = common.charStartsWithAmong(s, ["\"", "'", "`", "-"]);
         //if (s[0] == "\"" || s[0] == "'" || s[0] == "`") {
         if(r != null){
             var quote = r.s; //s[0];
@@ -117,7 +105,7 @@ export class Parser {
             };
         }
 
-        r = charStartsWithAmong(s, ["||:", "||.", "||", "|", "./|/."]);
+        r = common.charStartsWithAmong(s, ["||:", "||.", "||", "|", "./|/."]);
         if (r != null) {
             return {
                 token: r.s,
@@ -153,7 +141,7 @@ export class Parser {
             };
         }
 
-        r = charIsIn(s[0], "[]<>(){},\n/\\%=@:.");
+        r = common.charIsIn(s[0], "[]<>(){},\n/\\%=@:.");
         if (r != null) {
             return {
                 token: s[0],

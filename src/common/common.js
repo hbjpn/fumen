@@ -37,6 +37,18 @@ export function myLog2(integer) {
 	return log2[integer];
 }
 
+export function charIsIn(c, chars) {
+    for (var i = 0; i < chars.length; ++i)
+        if (chars[i] == c) return { r: true, index: i };
+    return null;
+}
+
+export function charStartsWithAmong(s, strlist) {
+    for (var i = 0; i < strlist.length; ++i)
+        if (s.indexOf(strlist[i]) == 0) return { index: i, s: strlist[i] };
+    return null;
+}
+
 export class TaskQueue {
     constructor() {
         this.task_queue = {};
@@ -335,6 +347,123 @@ export class Simile {
     exportCode(){
         return "."+("/".repeat(this.numslash))+".";
     }
+}
+
+// More sophiscated 
+function parseChordSymbol2(s){
+    // Recusive and the longest accepted one is identified 
+    function root(ps){
+        let c0 = "ABCDEFG";
+        let c1 = "#b";
+        if(ps.length >= 1 && charIsIn(ps[0],c0)){
+            var accepted = null;
+            if(ps.length >= 2 && charIsIn(ps[1],c1)) {
+                accepted = triad(ps.substr(2));
+                if(accepted) return [{"root":ps[0]+ps[1]}].concat(accepted);
+            }
+            accepted = triad(ps.substr(1));
+            if(accepted) return [{"root":ps[0]}].concat(accepted);
+        }
+        return null;
+    }
+    function triad(ps){
+        let ts = ["min", "dim","aug", "mi", "m", "+"];
+        let r = charStartsWithAmong(ps, ts);
+        var accepted = null;
+        if(r){
+            accepted = M(ps.substr(r.s.length));
+            if(accepted) return [{"triad":ts[r.index]}].concat(accepted);
+        }
+        accepted = M(ps);
+        if(accepted) return [{"triad":""}].concat(accepted);
+        return null;
+    }
+    function M(ps){
+        var accepted = null;
+        if(ps.length >= 1 && ps[0] == "M"){
+            accepted = digit(ps.substr(1));
+            if(accepted) return [{"M":ps[0]}].concat(accepted);
+        }else{
+            accepted = digit(ps);
+            if(accepted) return [{"M":""}].concat(accepted);
+        }
+        return null;
+    }
+    function digit(ps){
+        let ds = ["69","13","11","5","6","7","9"];
+        let r = charStartsWithAmong(ps, ds);
+        var accepted = null;
+        if(r){
+            accepted = sus(ps.substr(r.s.length));
+            if(accepted) return [{"digit":ds[r.index]}].concat(accepted);
+        }
+        accepted = sus(ps);
+        if(accepted) return [{"digit":""}].concat(accepted);
+        return null;
+    }
+    function sus(ps){
+        let ds = ["sus2","sus4"];
+        let r = charStartsWithAmong(ps, ds);
+        var accepted = null;
+        if(r){
+            accepted = tensionswrap(ps.substr(r.s.length));
+            if(accepted) return [{"sus":ds[r.index]}].concat(accepted);
+        }
+        accepted = tensionswrap(ps);
+        if(accepted) return [{"susadd":""}].concat(accepted);
+        return null;
+    }
+    function tensionswrap(ps){
+        let r0 = tensionlist(ps);
+        if(r0){
+            let r1 = chordend(r0.s);
+            if(r1){
+                return r0.accepted.concat(r1);
+            }
+        }
+        return chordend(ps);
+    }
+    function tensionlist(ps){
+        if(ps.length==0) return null;
+        let r0 = tenstiongroup(ps);
+        if(r0){
+            ps = r0.s;
+            if(ps.length > 0 && ps[0] == ",") ps = ps.substr(1);
+            let r1 = tensionlist(ps);
+            if(r1) return {s:r1.s, accepted:r0.accepted.concat(r1.accepted)};
+            return {s:r0.s, accepted:r0.accepted};
+        }
+        return null;
+    }
+    function tenstiongroup(ps){
+        if(ps.length == 0) return null;
+        if(ps[0] == "("){
+            let r = tensionlist(ps.substr(1));
+            if(r && r.s[0] == ")"){ return {s:r.s.substr(1), accepted:r.accepted}; }
+        }else{
+            let r = tension(ps);
+            if(r) return r;
+        }
+        return null;
+    }
+    function tension(ps){
+        let ds = ["add9","add2","#11","#13","b13","no3","no5","#9","b9","+5","-5"];
+        if(ps.length == 0) return null;
+        let r = charStartsWithAmong(ps, ds);
+        if(r){
+            return {s:ps.substr(r.s.length),accepted:[{"tension":ds[r.index]}]};
+        }
+        return null;
+    }
+
+    function chordend(ps){
+        if(ps.length == 0) return [{"chordend":""}];
+        else if(ps[0] == "/") return [{"chordend":"/"}];
+        else if(ps[0] == ":") return [{"chordend":":"}];
+        else return null; // not accepted
+    }
+
+    return root(s);
 }
 
 var cnrg = new RegExp();

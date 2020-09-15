@@ -349,7 +349,14 @@ export class Simile {
     }
 }
 
-// More sophiscated 
+// More sophiscated method based on BNF based parsing
+/*
+CHORD ::= ROOT ( "m" | "dim"|"aug"|"+")? "M"? ("5" | "6"|"7"|"9"|"11"|"13"|"69")? (("sus" ("4"|"2")? ) | ("add" ("2"|"9")))?  TENSIONLIST* ( EOF | ":" | "/" )
+ROOT ::= ( A|B|C|D|E|F|G ) ("#"|"b") ?
+TENSIONLIST ::= TENSIONGROUP | TENSIONGROUP ","? TENSIONLIST
+TENSIONGROUP ::= TENSION | "(" TENSIONLIST ")" 
+TENSION ::= ( ("+" ("5"|"9"|"11")) | ("-" ("5"|"9"|"13")) | ("b" ("9"|"13")) | ("#" ("9"|"11")) | ("no" ("3" | "5")) )
+*/
 function parseChordSymbol2(s){
     // Recusive and the longest accepted one is identified 
     function root(ps){
@@ -359,10 +366,10 @@ function parseChordSymbol2(s){
             var accepted = null;
             if(ps.length >= 2 && charIsIn(ps[1],c1)) {
                 accepted = triad(ps.substr(2));
-                if(accepted) return [{"root":ps[0]+ps[1]}].concat(accepted);
+                if(accepted) return [{type:"root", value:ps[0]+ps[1]}].concat(accepted);
             }
             accepted = triad(ps.substr(1));
-            if(accepted) return [{"root":ps[0]}].concat(accepted);
+            if(accepted) return [{type:"root", value:ps[0]}].concat(accepted);
         }
         return null;
     }
@@ -372,20 +379,17 @@ function parseChordSymbol2(s){
         var accepted = null;
         if(r){
             accepted = M(ps.substr(r.s.length));
-            if(accepted) return [{"triad":ts[r.index]}].concat(accepted);
+            if(accepted) return [{type:"triad",value:ts[r.index]}].concat(accepted);
         }
-        accepted = M(ps);
-        if(accepted) return [{"triad":""}].concat(accepted);
-        return null;
+        return M(ps);
     }
     function M(ps){
         var accepted = null;
         if(ps.length >= 1 && ps[0] == "M"){
             accepted = digit(ps.substr(1));
-            if(accepted) return [{"M":ps[0]}].concat(accepted);
+            if(accepted) return [{type:"M",value:ps[0]}].concat(accepted);
         }else{
-            accepted = digit(ps);
-            if(accepted) return [{"M":""}].concat(accepted);
+            return digit(ps);
         }
         return null;
     }
@@ -395,23 +399,20 @@ function parseChordSymbol2(s){
         var accepted = null;
         if(r){
             accepted = sus(ps.substr(r.s.length));
-            if(accepted) return [{"digit":ds[r.index]}].concat(accepted);
+            if(accepted) return [{type:"dig", value:ds[r.index]}].concat(accepted);
         }
-        accepted = sus(ps);
-        if(accepted) return [{"digit":""}].concat(accepted);
-        return null;
+        return sus(ps);
     }
     function sus(ps){
-        let ds = ["sus2","sus4"];
+        let ds = ["sus2","sus4","sus"];
+
         let r = charStartsWithAmong(ps, ds);
         var accepted = null;
         if(r){
             accepted = tensionswrap(ps.substr(r.s.length));
-            if(accepted) return [{"sus":ds[r.index]}].concat(accepted);
+            if(accepted) return [{type:"sus", value:"sus", param:ds[r.index].substr(3,1)}].concat(accepted);
         }
-        accepted = tensionswrap(ps);
-        if(accepted) return [{"susadd":""}].concat(accepted);
-        return null;
+        return tensionswrap(ps);
     }
     function tensionswrap(ps){
         let r0 = tensionlist(ps);
@@ -447,23 +448,25 @@ function parseChordSymbol2(s){
         return null;
     }
     function tension(ps){
-        let ds = ["add9","add2","#11","#13","b13","no3","no5","#9","b9","+5","-5"];
+        let ds = ["add9","add2","#11","+11","b13","-13","no3","no5","#9","+9","b9","-9","+5","-5"];
+        let th = [3,     3,      1,    1,    1,    1,    2,    2,    1,   1,   1,   1,   1,   1  ]; // type and digit split pos
         if(ps.length == 0) return null;
         let r = charStartsWithAmong(ps, ds);
         if(r){
-            return {s:ps.substr(r.s.length),accepted:[{"tension":ds[r.index]}]};
+            return {s:ps.substr(r.s.length),accepted:[{type:"tension",value:ds[r.index].substr(0, th[r.index]), param:ds[r.index].substr(th[r.index])}]};
         }
         return null;
     }
 
     function chordend(ps){
-        if(ps.length == 0) return [{"chordend":""}];
-        else if(ps[0] == "/") return [{"chordend":"/"}];
-        else if(ps[0] == ":") return [{"chordend":":"}];
+        if(ps.length == 0) return [{type:"chordend",value:""}];
+        else if(ps[0] == "/") return [{type:"chordend",value:"/"}];
+        else if(ps[0] == ":") return [{type:"chordend",value:":"}];
         else return null; // not accepted
     }
 
-    return root(s);
+    //return root(s);
+    return triad(s); // For now root is already analzyzed, then start from triad.
 }
 
 var cnrg = new RegExp();
@@ -504,6 +507,9 @@ var CS_LIST = [
 function parseChordMids(s) {
     var holder = [];
     var objholder = [];
+
+    // eslint-disable-next-line no-constant-condition
+    if(false){
     while (s.length > 0) {
         //if([",","(",")"].indexOf(s[0]) >= 0){ s = s.substr(1); continue; }
         let m = s.match(cnrg);
@@ -575,6 +581,35 @@ function parseChordMids(s) {
         }
     }
     //console.log(objholder);
+    }else{
+        // new parser
+        let r = parseChordSymbol2(s);
+        if(!r){
+            return null; // Invalid code
+        }else{
+            // Convert to flat data list rather than structured data
+            for(let i = 0; i < r.length; ++i){
+                switch(r[i].type){
+                case "triad":
+                    objholder.push({type:r[i].value, param:r[i].param}); break;
+                case "M":
+                    objholder.push({type:r[i].type}); break;
+                case "dig":
+                    objholder.push({type:"dig", param: r[i].value}); break;
+                case "sus":
+                    objholder.push({type:r[i].value, param:r[i].param}); break; 
+                case "tension":
+                    // normalize +, - to #, b
+                    var repl = {add:"add",sus:"sus","+":"#","-":"b","#":"#","b":"b"};
+                    objholder.push({type:repl[r[i].value], param:r[i].param}); break; 
+                case "chordend":
+                    break;
+                default:
+                    throw "Unexpected situations";
+                }
+            }
+        }
+    }
 
     return [holder, objholder];
 }

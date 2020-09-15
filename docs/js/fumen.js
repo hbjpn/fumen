@@ -11707,7 +11707,7 @@ module.exports = function (module) {
 /*!******************************!*\
   !*** ./src/common/common.js ***!
   \******************************/
-/*! exports provided: shallowcopy, deepcopy, myLog2, TaskQueue, Task, WHOLE_NOTE_LENGTH, Track, ReharsalGroup, Measure, Rest, Simile, Chord, LoopIndicator, Space, LongRestIndicator, Time, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, DaCapo, DalSegno, Segno, Coda, ToCoda, Fine, Comment, Lyric, Macro, RawSpaces, TemplateString, HitManager */
+/*! exports provided: shallowcopy, deepcopy, myLog2, charIsIn, charStartsWithAmong, TaskQueue, Task, WHOLE_NOTE_LENGTH, Track, ReharsalGroup, Measure, Rest, Simile, Chord, LoopIndicator, Space, LongRestIndicator, Time, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, DaCapo, DalSegno, Segno, Coda, ToCoda, Fine, Comment, Lyric, Macro, RawSpaces, TemplateString, HitManager */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11715,6 +11715,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "shallowcopy", function() { return shallowcopy; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "deepcopy", function() { return deepcopy; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "myLog2", function() { return myLog2; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "charIsIn", function() { return charIsIn; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "charStartsWithAmong", function() { return charStartsWithAmong; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TaskQueue", function() { return TaskQueue; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Task", function() { return Task; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WHOLE_NOTE_LENGTH", function() { return WHOLE_NOTE_LENGTH; });
@@ -11803,6 +11805,26 @@ function myLog2(integer) {
     128: 7
   };
   return log2[integer];
+}
+function charIsIn(c, chars) {
+  for (var i = 0; i < chars.length; ++i) {
+    if (chars[i] == c) return {
+      r: true,
+      index: i
+    };
+  }
+
+  return null;
+}
+function charStartsWithAmong(s, strlist) {
+  for (var i = 0; i < strlist.length; ++i) {
+    if (s.indexOf(strlist[i]) == 0) return {
+      index: i,
+      s: strlist[i]
+    };
+  }
+
+  return null;
 }
 var TaskQueue = /*#__PURE__*/function () {
   function TaskQueue() {
@@ -12140,7 +12162,202 @@ var Simile = /*#__PURE__*/function () {
   }]);
 
   return Simile;
-}();
+}(); // More sophiscated method based on BNF based parsing
+
+/*
+CHORD ::= ROOT ( "m" | "dim"|"aug"|"+")? "M"? ("5" | "6"|"7"|"9"|"11"|"13"|"69")? (("sus" ("4"|"2")? ) | ("add" ("2"|"9")))?  TENSIONLIST* ( EOF | ":" | "/" )
+ROOT ::= ( A|B|C|D|E|F|G ) ("#"|"b") ?
+TENSIONLIST ::= TENSIONGROUP | TENSIONGROUP ","? TENSIONLIST
+TENSIONGROUP ::= TENSION | "(" TENSIONLIST ")" 
+TENSION ::= ( ("+" ("5"|"9"|"11")) | ("-" ("5"|"9"|"13")) | ("b" ("9"|"13")) | ("#" ("9"|"11")) | ("no" ("3" | "5")) )
+*/
+
+function parseChordSymbol2(s) {
+  // Recusive and the longest accepted one is identified 
+  function root(ps) {
+    var c0 = "ABCDEFG";
+    var c1 = "#b";
+
+    if (ps.length >= 1 && charIsIn(ps[0], c0)) {
+      var accepted = null;
+
+      if (ps.length >= 2 && charIsIn(ps[1], c1)) {
+        accepted = triad(ps.substr(2));
+        if (accepted) return [{
+          type: "root",
+          value: ps[0] + ps[1]
+        }].concat(accepted);
+      }
+
+      accepted = triad(ps.substr(1));
+      if (accepted) return [{
+        type: "root",
+        value: ps[0]
+      }].concat(accepted);
+    }
+
+    return null;
+  }
+
+  function triad(ps) {
+    var ts = ["min", "dim", "aug", "mi", "m", "+"];
+    var r = charStartsWithAmong(ps, ts);
+    var accepted = null;
+
+    if (r) {
+      accepted = M(ps.substr(r.s.length));
+      if (accepted) return [{
+        type: "triad",
+        value: ts[r.index]
+      }].concat(accepted);
+    }
+
+    return M(ps);
+  }
+
+  function M(ps) {
+    var accepted = null;
+
+    if (ps.length >= 1 && ps[0] == "M") {
+      accepted = digit(ps.substr(1));
+      if (accepted) return [{
+        type: "M",
+        value: ps[0]
+      }].concat(accepted);
+    } else {
+      return digit(ps);
+    }
+
+    return null;
+  }
+
+  function digit(ps) {
+    var ds = ["69", "13", "11", "5", "6", "7", "9"];
+    var r = charStartsWithAmong(ps, ds);
+    var accepted = null;
+
+    if (r) {
+      accepted = sus(ps.substr(r.s.length));
+      if (accepted) return [{
+        type: "dig",
+        value: ds[r.index]
+      }].concat(accepted);
+    }
+
+    return sus(ps);
+  }
+
+  function sus(ps) {
+    var ds = ["sus2", "sus4", "sus"];
+    var r = charStartsWithAmong(ps, ds);
+    var accepted = null;
+
+    if (r) {
+      accepted = tensionswrap(ps.substr(r.s.length));
+      if (accepted) return [{
+        type: "sus",
+        value: "sus",
+        param: ds[r.index].substr(3, 1)
+      }].concat(accepted);
+    }
+
+    return tensionswrap(ps);
+  }
+
+  function tensionswrap(ps) {
+    var r0 = tensionlist(ps);
+
+    if (r0) {
+      var r1 = chordend(r0.s);
+
+      if (r1) {
+        return r0.accepted.concat(r1);
+      }
+    }
+
+    return chordend(ps);
+  }
+
+  function tensionlist(ps) {
+    if (ps.length == 0) return null;
+    var r0 = tenstiongroup(ps);
+
+    if (r0) {
+      ps = r0.s;
+      if (ps.length > 0 && ps[0] == ",") ps = ps.substr(1);
+      var r1 = tensionlist(ps);
+      if (r1) return {
+        s: r1.s,
+        accepted: r0.accepted.concat(r1.accepted)
+      };
+      return {
+        s: r0.s,
+        accepted: r0.accepted
+      };
+    }
+
+    return null;
+  }
+
+  function tenstiongroup(ps) {
+    if (ps.length == 0) return null;
+
+    if (ps[0] == "(") {
+      var r = tensionlist(ps.substr(1));
+
+      if (r && r.s[0] == ")") {
+        return {
+          s: r.s.substr(1),
+          accepted: r.accepted
+        };
+      }
+    } else {
+      var _r = tension(ps);
+
+      if (_r) return _r;
+    }
+
+    return null;
+  }
+
+  function tension(ps) {
+    var ds = ["add9", "add2", "#11", "+11", "b13", "-13", "no3", "no5", "#9", "+9", "b9", "-9", "+5", "-5"];
+    var th = [3, 3, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1]; // type and digit split pos
+
+    if (ps.length == 0) return null;
+    var r = charStartsWithAmong(ps, ds);
+
+    if (r) {
+      return {
+        s: ps.substr(r.s.length),
+        accepted: [{
+          type: "tension",
+          value: ds[r.index].substr(0, th[r.index]),
+          param: ds[r.index].substr(th[r.index])
+        }]
+      };
+    }
+
+    return null;
+  }
+
+  function chordend(ps) {
+    if (ps.length == 0) return [{
+      type: "chordend",
+      value: ""
+    }];else if (ps[0] == "/") return [{
+      type: "chordend",
+      value: "/"
+    }];else if (ps[0] == ":") return [{
+      type: "chordend",
+      value: ":"
+    }];else return null; // not accepted
+  } //return root(s);
+
+
+  return triad(s); // For now root is already analzyzed, then start from triad.
+}
+
 var cnrg = new RegExp();
 cnrg.compile(/^((sus(4|2)?)|(add(9|13))|(alt)|(dim)|(7|9|6|11|13)|((\+|#)(5|9|13|11))|((-|b)(5|9|13))|([Mm]([Aa][Jj]?|[Ii][Nn]?)?)|([,()]))/);
 var CS_IDX_OFFSET = 2;
@@ -12165,114 +12382,70 @@ var CS_LIST = [CS_M, CS_DIG, CS_SUS, CS_DIM, CS_SEP, CS_PLS, CS_MNS, CS_ADD, CS_
 
 function parseChordMids(s) {
   var holder = [];
-  var objholder = [];
+  var objholder = []; // eslint-disable-next-line no-constant-condition
 
-  while (s.length > 0) {
-    //if([",","(",")"].indexOf(s[0]) >= 0){ s = s.substr(1); continue; }
-    var m = s.match(cnrg); //console.log(m);
+  if (false) { var isMaj, _s, _i, minor_exists, i, m; } else {
+    // new parser
+    var r = parseChordSymbol2(s);
 
-    if (m === null) {
-      console.log("Invalid code notation : " + s);
-      return null;
-    }
+    if (!r) {
+      return null; // Invalid code
+    } else {
+      // Convert to flat data list rather than structured data
+      for (var _i2 = 0; _i2 < r.length; ++_i2) {
+        switch (r[_i2].type) {
+          case "triad":
+            objholder.push({
+              type: r[_i2].value,
+              param: r[_i2].param
+            });
+            break;
 
-    for (var i = 0; i < CS_LIST.length; ++i) {
-      if (m[CS_IDX_OFFSET + CS_LIST[i]] !== undefined && m[CS_IDX_OFFSET + CS_LIST[i]] !== null) {
-        holder.push({
-          cs: CS_LIST[i],
-          s: m[0],
-          g: m
-        });
-        break;
+          case "M":
+            objholder.push({
+              type: r[_i2].type
+            });
+            break;
+
+          case "dig":
+            objholder.push({
+              type: "dig",
+              param: r[_i2].value
+            });
+            break;
+
+          case "sus":
+            objholder.push({
+              type: r[_i2].value,
+              param: r[_i2].param
+            });
+            break;
+
+          case "tension":
+            // normalize +, - to #, b
+            var repl = {
+              add: "add",
+              sus: "sus",
+              "+": "#",
+              "-": "b",
+              "#": "#",
+              "b": "b"
+            };
+            objholder.push({
+              type: repl[r[_i2].value],
+              param: r[_i2].param
+            });
+            break;
+
+          case "chordend":
+            break;
+
+          default:
+            throw "Unexpected situations";
+        }
       }
     }
-
-    s = s.substr(m[0].length);
   }
-
-  var minor_exists = false;
-
-  for (var _i = 0; _i < holder.length; ++_i) {
-    var _s = "";
-
-    switch (holder[_i].cs) {
-      case CS_M:
-        _s = holder[_i].s;
-        var isMaj = _s == "M" || _s.toLowerCase() == "maj" || _s.toLowerCase() == "ma";
-        if (isMaj == false) minor_exists = true;
-
-        if (minor_exists && isMaj == true) {
-          // mM7 Chord is expected
-          if (holder[_i + 1].cs == CS_DIG) {
-            objholder.push({
-              type: "M",
-              param: holder[_i + 1].s
-            });
-            ++_i; // Skip next CS_DIG
-          } else {
-            throw Error("Invalid statement");
-          }
-        } else if (isMaj) {
-          objholder.push({
-            type: "M"
-          });
-        } else {
-          objholder.push({
-            type: "m"
-          });
-        }
-
-        break;
-
-      case CS_DIG:
-        objholder.push({
-          type: "dig",
-          param: holder[_i].s
-        });
-        break;
-
-      case CS_SUS:
-        objholder.push({
-          type: "sus",
-          param: holder[_i].s.substr(3)
-        });
-        break;
-
-      case CS_DIM:
-        objholder.push({
-          type: "dim"
-        });
-        break;
-
-      case CS_MNS:
-        objholder.push({
-          type: "b",
-          param: holder[_i].s.substr(1)
-        });
-        break;
-
-      case CS_PLS:
-        objholder.push({
-          type: "#",
-          param: holder[_i].s.substr(1)
-        });
-        break;
-
-      case CS_ADD:
-        objholder.push({
-          type: "add",
-          param: holder[_i].s.substr(3)
-        });
-        break;
-
-      case CS_ALT:
-        objholder.push({
-          type: "alt"
-        });
-        break;
-    }
-  } //console.log(objholder);
-
 
   return [holder, objholder];
 }
@@ -13310,7 +13483,7 @@ var HitManager = /*#__PURE__*/function () {
 /*!**********************!*\
   !*** ./src/index.js ***!
   \**********************/
-/*! exports provided: Parser, DefaultRenderer, SetupHiDPICanvas, GetCharProfile, CanvasTextWithBox, CanvasText, getFontSizeFromHeight */
+/*! exports provided: Parser, DefaultRenderer, SetupHiDPICanvas, GetCharProfile, CanvasTextWithBox, CanvasText, getFontSizeFromHeight, Chord, Rest, MeasureBoundary, Time, Coda, Segno, ToCoda, DalSegno, DaCapo, Simile */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -13334,6 +13507,27 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "getFontSizeFromHeight", function() { return _renderer_graphic__WEBPACK_IMPORTED_MODULE_3__["getFontSizeFromHeight"]; });
 
+/* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./common/common */ "./src/common/common.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Chord", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Chord"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Rest", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Rest"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MeasureBoundary", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["MeasureBoundary"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Time", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Time"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Coda", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Coda"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Segno", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Segno"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ToCoda", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["ToCoda"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DalSegno", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["DalSegno"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DaCapo", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["DaCapo"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Simile", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Simile"]; });
+
 
  //export * from './renderer/default_renderer';
 
@@ -13342,6 +13536,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+ // Export Component Classes
 
 
 
@@ -13370,29 +13566,6 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
  * @module Fumen
  */
 
-
-
-function charIsIn(c, chars) {
-  for (var i = 0; i < chars.length; ++i) {
-    if (chars[i] == c) return {
-      r: true,
-      index: i
-    };
-  }
-
-  return null;
-}
-
-function charStartsWithAmong(s, strlist) {
-  for (var i = 0; i < strlist.length; ++i) {
-    if (s.indexOf(strlist[i]) == 0) return {
-      index: i,
-      s: strlist[i]
-    };
-  }
-
-  return null;
-}
 
 var TOKEN_INVALID = -1;
 var TOKEN_END = 0;
@@ -13491,7 +13664,7 @@ var Parser = /*#__PURE__*/function () {
       var skipped_spaces_str = "";
 
       if (!(dont_skip_spaces === true)) {
-        while (s.length > 0 && charIsIn(s[0], " 	")) {
+        while (s.length > 0 && _common_common__WEBPACK_IMPORTED_MODULE_1__["charIsIn"](s[0], " 	")) {
           skipped_spaces_str += s[0];
           s = s.substr(1);
           ++skipped_spaces;
@@ -13506,7 +13679,7 @@ var Parser = /*#__PURE__*/function () {
         sss: skipped_spaces_str
       }; // At first, plain string is analyzed irrespective of word_def.
 
-      var r = charStartsWithAmong(s, ["\"", "'", "`", "-"]); //if (s[0] == "\"" || s[0] == "'" || s[0] == "`") {
+      var r = _common_common__WEBPACK_IMPORTED_MODULE_1__["charStartsWithAmong"](s, ["\"", "'", "`", "-"]); //if (s[0] == "\"" || s[0] == "'" || s[0] == "`") {
 
       if (r != null) {
         var quote = r.s; //s[0];
@@ -13531,7 +13704,7 @@ var Parser = /*#__PURE__*/function () {
         };
       }
 
-      r = charStartsWithAmong(s, ["||:", "||.", "||", "|", "./|/."]);
+      r = _common_common__WEBPACK_IMPORTED_MODULE_1__["charStartsWithAmong"](s, ["||:", "||.", "||", "|", "./|/."]);
 
       if (r != null) {
         return {
@@ -13567,7 +13740,7 @@ var Parser = /*#__PURE__*/function () {
         };
       }
 
-      r = charIsIn(s[0], "[]<>(){},\n/\\%=@:.");
+      r = _common_common__WEBPACK_IMPORTED_MODULE_1__["charIsIn"](s[0], "[]<>(){},\n/\\%=@:.");
 
       if (r != null) {
         return {

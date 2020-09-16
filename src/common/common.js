@@ -458,7 +458,10 @@ export class Chord {
             let code = "";
             if(this.note_base) code += this.note_base;
             if(this.sharp_flat) code += this.sharp_flat;
-            if(this.mid_elems) code += Chord.serializer(this.mid_elems);
+            if(this.mid_elems) code += Chord.serializer(this.mid_elems)[1];
+            if(this.base_note_base) code += ("/"+this.base_note_base);
+            if(this.base_sharp_flat) code += this.base_sharp_flat;
+
             return code;
             //return this.chord_str;
         }else{

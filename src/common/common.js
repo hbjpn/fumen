@@ -358,81 +358,82 @@ TENSIONGROUP ::= TENSION | "(" TENSIONLIST ")"
 TENSION ::= ( ("+" ("5"|"9"|"11")) | ("-" ("5"|"9"|"13")) | ("b" ("9"|"13")) | ("#" ("9"|"11")) | ("no" ("3" | "5")) )
 */
 function parseChordSymbol2(s){
-    // Recusive and the longest accepted one is identified 
+    function parse(ps){
+        let structure = [];
+        let r = null;
+
+        //let fs = [root, triad, M, digit, sus, tensionlist, chordend];
+        let fs = [triad, M, digit, sus, tensionlist, chordend];
+
+        for(let fi = 0; fi < fs.length; ++fi){
+            r = fs[fi](ps);
+            if(r){ ps = r.s; structure.push(r.structure);}
+        }
+
+        if(r) return {s:ps, structure: {type:"chord", structure:structure}};
+        else return null;
+    }
     function root(ps){
         let c0 = "ABCDEFG";
         let c1 = "#b";
         if(ps.length >= 1 && charIsIn(ps[0],c0)){
-            var accepted = null;
             if(ps.length >= 2 && charIsIn(ps[1],c1)) {
-                accepted = triad(ps.substr(2));
-                if(accepted) return [{type:"root", value:ps[0]+ps[1]}].concat(accepted);
+                return {s: ps.substr(2), structure: {type:"root", value:ps[0]+ps[1]}};
+            }else{
+                return {s: ps.substr(1), structure: { type:"root", value:ps[0]}};
             }
-            accepted = triad(ps.substr(1));
-            if(accepted) return [{type:"root", value:ps[0]}].concat(accepted);
         }
         return null;
     }
     function triad(ps){
         let ts = ["min", "dim","aug", "mi", "m", "+"];
         let r = charStartsWithAmong(ps, ts);
-        var accepted = null;
         if(r){
-            accepted = M(ps.substr(r.s.length));
-            if(accepted) return [{type:"triad",value:ts[r.index]}].concat(accepted);
+            return {s: ps.substr(r.s.length), structure: {type:"triad",value:ts[r.index]}};
         }
-        return M(ps);
+        return null;
     }
     function M(ps){
-        var accepted = null;
         if(ps.length >= 1 && ps[0] == "M"){
-            accepted = digit(ps.substr(1));
-            if(accepted) return [{type:"M",value:ps[0]}].concat(accepted);
-        }else{
-            return digit(ps);
+            return {s:ps.substr(1), structure:{type:"M",value:ps[0]}};
         }
         return null;
     }
     function digit(ps){
         let ds = ["69","13","11","5","6","7","9"];
         let r = charStartsWithAmong(ps, ds);
-        var accepted = null;
         if(r){
-            accepted = sus(ps.substr(r.s.length));
-            if(accepted) return [{type:"dig", value:ds[r.index]}].concat(accepted);
+            return {s:ps.substr(r.s.length), structure:{type:"dig", value:ds[r.index]}};
         }
-        return sus(ps);
+        return null;
     }
     function sus(ps){
         let ds = ["sus2","sus4","sus"];
 
         let r = charStartsWithAmong(ps, ds);
-        var accepted = null;
         if(r){
-            accepted = tensionswrap(ps.substr(r.s.length));
-            if(accepted) return [{type:"sus", value:"sus", param:ds[r.index].substr(3,1)}].concat(accepted);
+            return {s: ps.substr(r.s.length), structure: {type:"sus", value:"sus", param:ds[r.index].substr(3,1)}};
         }
-        return tensionswrap(ps);
+        return null;
     }
-    function tensionswrap(ps){
-        let r0 = tensionlist(ps);
-        if(r0){
-            let r1 = chordend(r0.s);
-            if(r1){
-                return r0.accepted.concat(r1);
-            }
-        }
-        return chordend(ps);
-    }
+    // Brnaches in tensionlist
     function tensionlist(ps){
         if(ps.length==0) return null;
+        let value = [];
         let r0 = tenstiongroup(ps);
         if(r0){
+            value.push(r0.structure);
             ps = r0.s;
-            if(ps.length > 0 && ps[0] == ",") ps = ps.substr(1);
+            if(ps.length > 0 && ps[0] == ","){ ps = ps.substr(1); value.push({type:"delim",value:","}); }
             let r1 = tensionlist(ps);
-            if(r1) return {s:r1.s, accepted:r0.accepted.concat(r1.accepted)};
-            return {s:r0.s, accepted:r0.accepted};
+            if(r1){
+                value.push(r1.structure);
+                return {
+                    s:r1.s, 
+                    structure: {type: "tensionlist", value:value}
+                };
+            }
+            return {s:r0.s, structure:{type:"tensionlist", value:value}};
         }
         return null;
     }
@@ -440,10 +441,24 @@ function parseChordSymbol2(s){
         if(ps.length == 0) return null;
         if(ps[0] == "("){
             let r = tensionlist(ps.substr(1));
-            if(r && r.s[0] == ")"){ return {s:r.s.substr(1), accepted:r.accepted}; }
+            if(r && r.s[0] == ")"){
+                return {
+                    s:r.s.substr(1), 
+                    structure: {
+                        type:"tensiongroup", 
+                        value:[{type:"delim",value:"("}, r.structure, {type:"delim",value:")"}]
+                    }
+                };
+            }
         }else{
             let r = tension(ps);
-            if(r) return r;
+            if(r) return {
+                s:r.s,
+                structure: {
+                    type:"tensiongroup",
+                    value:[r.structure]
+                }
+            };
         }
         return null;
     }
@@ -453,20 +468,25 @@ function parseChordSymbol2(s){
         if(ps.length == 0) return null;
         let r = charStartsWithAmong(ps, ds);
         if(r){
-            return {s:ps.substr(r.s.length),accepted:[{type:"tension",value:ds[r.index].substr(0, th[r.index]), param:ds[r.index].substr(th[r.index])}]};
+            return {
+                s:ps.substr(r.s.length),
+                structure: {
+                    type:"tension", 
+                    value:ds[r.index].substr(0, th[r.index]),
+                    param:ds[r.index].substr(th[r.index])
+                }
+            };
         }
         return null;
     }
-
     function chordend(ps){
-        if(ps.length == 0) return [{type:"chordend",value:""}];
-        else if(ps[0] == "/") return [{type:"chordend",value:"/"}];
-        else if(ps[0] == ":") return [{type:"chordend",value:":"}];
+        if(ps.length == 0) return {s:ps, structure: {type:"chordend", value:""}};
+        else if(ps[0] == "/") return {s:ps.substr(1), structure: {type:"chordend", value:"/"}};
+        else if(ps[0] == ":") return {s:ps.substr(1), structure: {type:"chordend", value:":"}};
         else return null; // not accepted
     }
 
-    //return root(s);
-    return triad(s); // For now root is already analzyzed, then start from triad.
+    return parse(s);
 }
 
 var cnrg = new RegExp();
@@ -583,25 +603,52 @@ function parseChordMids(s) {
     //console.log(objholder);
     }else{
         // new parser
-        let r = parseChordSymbol2(s);
-        if(!r){
+        let p = parseChordSymbol2(s);
+        if(!p){
             return null; // Invalid code
         }else{
+            let tensionlist = function(value, serialize){
+                for(let i = 0; i < value.length; ++i){
+                    let e = value[i];
+                    if(e.type == "tensionlist"){
+                        tensionlist(e.value, serialize);
+                    }else if(e.type == "tensiongroup"){
+                        tensiongroup(e.value, serialize);
+                    }
+                }
+            };
+            let tensiongroup = function(value, serialize){
+                for(let i = 0; i < value.length; ++i){
+                    let e = value[i];
+                    if(e.type == "tension"){
+                        serialize.push({value:e.value,param:e.param});
+                    }else if(e.type == "tensionlist"){
+                        tensionlist(e.value, serialize);
+                    }
+                }
+            };
             // Convert to flat data list rather than structured data
-            for(let i = 0; i < r.length; ++i){
-                switch(r[i].type){
+            for(let i = 0; i < p.structure.structure.length; ++i){
+                let r = p.structure.structure[i];
+                switch(r.type){
                 case "triad":
-                    objholder.push({type:r[i].value, param:r[i].param}); break;
+                    objholder.push({type:r.value, param:r.param}); break;
                 case "M":
-                    objholder.push({type:r[i].type}); break;
+                    objholder.push({type:r.type}); break;
                 case "dig":
-                    objholder.push({type:"dig", param: r[i].value}); break;
+                    objholder.push({type:"dig", param: r.value}); break;
                 case "sus":
-                    objholder.push({type:r[i].value, param:r[i].param}); break; 
-                case "tension":
+                    objholder.push({type:r.value, param:r.param}); break; 
+                case "tensionlist":{
                     // normalize +, - to #, b
-                    var repl = {add:"add",sus:"sus","+":"#","-":"b","#":"#","b":"b"};
-                    objholder.push({type:repl[r[i].value], param:r[i].param}); break; 
+                    let serialize = [];
+                    tensionlist(r.value, serialize);
+                    for(let j=0; j<serialize.length; ++j){
+                        var repl = {add:"add",sus:"sus","+":"#","-":"b","#":"#","b":"b"};
+                        objholder.push({type:repl[serialize[j].value], param:serialize[j].param}); 
+                    }
+                    break; 
+                }
                 case "chordend":
                     break;
                 default:
@@ -968,7 +1015,13 @@ export class Chord {
 
     exportCode(){
         if(this.is_valid_chord){
-            return this.chord_str;
+            // construct from the raw data.
+            // Keep the original strign as much as possible.
+            let code = "";
+            if(this.note_base) code += this.note_base;
+            if(this.sharp_flat) code += this.sharp_flat;
+            return code;
+            //return this.chord_str;
         }else{
             return `"${this.chord_str}"`;
         }

@@ -461,6 +461,30 @@ export class Chord {
             if(this.mid_elems) code += Chord.serializer(this.mid_elems)[1];
             if(this.base_note_base) code += ("/"+this.base_note_base);
             if(this.base_sharp_flat) code += this.base_sharp_flat;
+            if(this.note_group_list){
+                if(this.note_group_list[0].note_profiles){
+                    // note
+                    code += ":(";
+                    for(let i=0; i<this.note_group_list.length; ++i){
+                        code += "(";
+                        let li = this.note_group_list[i].lengthIndicator;
+                        let nps = this.note_group_list[i].note_profiles;
+                        for(let j=0; j<nps.length; ++j){
+                            let note = nps[j].note; //
+                            code += note.name+note.octave+Chord.accCodeToStr(note.accidental);
+                            if(j < nps.length-1) code += ",";
+                        }
+                        code += ")";
+                        code += (":"+li.base + ".".repeat(li.numdot) + (li.has_tie?"~":""));
+                        if(i < this.note_group_list.length-1) code += ",";
+                    }
+                    code += ")";
+                }else{
+                    // simple length indicator
+                    let li =  this.note_group_list[0].lengthIndicator;
+                    code += (":"+li.base + ".".repeat(li.numdot) + (li.has_tie?"~":""));
+                }
+            }
 
             return code;
             //return this.chord_str;
@@ -607,8 +631,12 @@ export class Chord {
         }
 
         let holder = parse(s);
-        let [objholder, code] = Chord.serializer(holder);
-        return [ holder, objholder, code];
+        if(holder){
+            let [objholder, code] = Chord.serializer(holder);
+            return [ holder, objholder, code];
+        }else{
+            return null; // invalid format
+        }
     }
 
 
@@ -691,6 +719,10 @@ export class Chord {
             }
             return [objholder,code];
         }
+    }
+
+    static accCodeToStr(acc){
+        return {0:"",11:"b",1:"#",12:"bb",2:"##"}[acc];
     }
 
     static getNoteProfile(note_str) {

@@ -49,6 +49,7 @@ export function charStartsWithAmong(s, strlist) {
     return null;
 }
 
+
 export class TaskQueue {
     constructor() {
         this.task_queue = {};
@@ -245,7 +246,7 @@ export class Track {
     // Utility functions open for external
     getKey() {
         if(Number.isInteger(this.macros["TRANSPOSE"])){
-            let transposed_key = getTransposedKeyFromOffset(this.macros["KEY"], this.macros["TRANSPOSE"], this.macros["KEY_TYPE"]);
+            let transposed_key = Chord.getTransposedKeyFromOffset(this.macros["KEY"], this.macros["TRANSPOSE"], this.macros["KEY_TYPE"]);
             return {key:transposed_key, originalKey:this.macros["KEY"]};
         }else{
             return {key:this.macros["TRANSPOSE"], originalKey:this.macros["KEY"]};
@@ -324,11 +325,11 @@ export class Measure {
     }
 }
 
-export class Rest {
+export class Rest{
     constructor(length_s) {
         this.length_s = length_s;
         this.note_group_list = [
-            { lengthIndicator: parseLengthIndicator(length_s), note_profiles: null }
+            { lengthIndicator: Chord.parseLengthIndicator(length_s), note_profiles: null }
         ];
         this.renderprop = {};
     }
@@ -349,144 +350,270 @@ export class Simile {
     }
 }
 
-// More sophiscated method based on BNF based parsing
-/*
-CHORD ::= ROOT ( "m" | "dim"|"aug"|"+")? "M"? ("5" | "6"|"7"|"9"|"11"|"13"|"69")? (("sus" ("4"|"2")? ) | ("add" ("2"|"9")))?  TENSIONLIST* ( EOF | ":" | "/" )
-ROOT ::= ( A|B|C|D|E|F|G ) ("#"|"b") ?
-TENSIONLIST ::= TENSIONGROUP | TENSIONGROUP ","? TENSIONLIST
-TENSIONGROUP ::= TENSION | "(" TENSIONLIST ")" 
-TENSION ::= ( ("+" ("5"|"9"|"11")) | ("-" ("5"|"9"|"13")) | ("b" ("9"|"13")) | ("#" ("9"|"11")) | ("no" ("3" | "5")) )
-*/
-function parseChordMids(s){
-    function parse(ps){
-        let structure = [];
-        let r = null;
+export class Chord {
+    constructor(chord_str) {
+        this.chord_str = chord_str;
 
-        //let fs = [root, triad, M, digit, sus, tensionlist, chordend];
-        let fs = [triad, M, digit, sus, tensionlist, chordend];
+        this.is_valid_chord = true;
 
-        for(let fi = 0; fi < fs.length; ++fi){
-            r = fs[fi](ps);
-            if(r){ ps = r.s; structure.push(r.structure);}
+        this.renderprop = {};
+
+        this.exceptinal_comment = null;
+        this.lyric = null;
+
+        //this.lengthIndicator = null;
+
+        this.note_group_list = null;
+
+        // Analyze Chord symbol
+        var r = /^(((A|B|C|D|E|F|G)(#|b)?([^/:]*))?(\/(A|B|C|D|E|F|G)(#|b)?)?)(:((([\d_]+)(\.*)(~)?)|(\(.*\))))?/;
+        var m = chord_str.match(r);
+        //console.log(m);
+        // [0] is entire matched string
+
+        this.chord_name_str = null;
+
+        if (m && m[0] != "") {
+            this.chord_name_str = m[1];
+            this.note_base = m[3];
+            this.sharp_flat = m[4];
+            this.mid_str = m[5];
+            this.base_note_base = m[7];
+            this.base_sharp_flat = m[8];
+
+            this.mid_elems = null;
+            if (this.mid_str !== undefined) {
+                var ret = Chord.parseChordMids(this.mid_str);
+                if (ret !== null) {
+                    this.mid_elems = ret[0];
+                    this.mid_elem_objs = ret[1];
+                }
+                this.is_valid_chord = ret !== null;
+            }
+            if (m[9]) {
+                if (m[11]) {
+                    var li = Chord.parseLengthIndicator(m[11]);
+                    //this.length_s = m[11];
+                    //this.length = li.length;
+                    this.note_group_list = [{ lengthIndicator: li, note_profiles: null }];
+                    //this.tie = li.has_tie;
+                } else if (m[15]) {
+                    // Notes
+                    let ret = Chord.parseChordNotes(m[15]);
+                    if(ret.length > 0) // empty note_group_list does not work
+                        this.note_group_list = ret;
+                    //console.log(this.note_group_list);
+                }
+            }
+
+            //this.tie = (m[14] == '~');
+        } else {
+            this.chord_name_str = this.chord_str;
+            this.is_valid_chord = false;
+        }
+    }
+
+    setException(exceptional_comment) {
+        this.exceptinal_comment = exceptional_comment;
+    }
+
+    setLyric(lyric) {
+        this.lyric = lyric;
+    }
+
+    getTranpsoedNote(transpose, half_type, key, note_base, sharp_flat) {
+        return Chord.getTranpsoedNote(transpose, half_type, key, note_base, sharp_flat);
+    }
+
+    getChordStrBase(tranpose, half_type, key) {
+        if (!this.is_valid_chord) return [false, this.chord_str]; // Not chord or invalid chord notation
+
+        var tranposed_note = null;
+        if (this.note_base !== undefined)
+            tranposed_note = this.getTranpsoedNote(
+                tranpose,
+                half_type,
+                key,
+                this.note_base,
+                this.sharp_flat
+            );
+        var transposed_base_note = null;
+        if (this.base_note_base !== undefined) {
+            transposed_base_note = this.getTranpsoedNote(
+                tranpose,
+                half_type,
+                key,
+                this.base_note_base,
+                this.base_sharp_flat
+            );
         }
 
-        if(r) return {s:ps, structure: {type:"chord", structure:structure}};
-        else return null;
+        return [tranposed_note, transposed_base_note];
     }
-    function root(ps){
-        let c0 = "ABCDEFG";
-        let c1 = "#b";
-        if(ps.length >= 1 && charIsIn(ps[0],c0)){
-            if(ps.length >= 2 && charIsIn(ps[1],c1)) {
-                return {s: ps.substr(2), structure: {type:"root", value:ps[0]+ps[1]}};
+
+    exportCode(){
+        if(this.is_valid_chord){
+            // construct from the raw data.
+            // Keep the original strign as much as possible.
+            let code = "";
+            if(this.note_base) code += this.note_base;
+            if(this.sharp_flat) code += this.sharp_flat;
+            if(this.mid_elems) code += Chord.serializer(this.mid_elems);
+            return code;
+            //return this.chord_str;
+        }else{
+            return `"${this.chord_str}"`;
+        }
+    }
+
+    // More sophiscated method based on BNF based parsing
+    /*
+    CHORD ::= ROOT ( "m" | "dim"|"aug"|"+")? "M"? ("5" | "6"|"7"|"9"|"11"|"13"|"69")? (("sus" ("4"|"2")? ) | ("add" ("2"|"9")))?  TENSIONLIST* ( EOF | ":" | "/" )
+    ROOT ::= ( A|B|C|D|E|F|G ) ("#"|"b") ?
+    TENSIONLIST ::= TENSIONGROUP | TENSIONGROUP ","? TENSIONLIST
+    TENSIONGROUP ::= TENSION | "(" TENSIONLIST ")" 
+    TENSION ::= ( ("+" ("5"|"9"|"11")) | ("-" ("5"|"9"|"13")) | ("b" ("9"|"13")) | ("#" ("9"|"11")) | ("no" ("3" | "5")) )
+    */
+    static parseChordMids(s){
+        function parse(ps){
+            let structure = [];
+            let r = null;
+
+            //let fs = [root, triad, M, digit, sus, tensionlist, chordend];
+            let fs = [triad, M, digit, sus, tensionlist, chordend];
+
+            for(let fi = 0; fi < fs.length; ++fi){
+                r = fs[fi](ps);
+                if(r){ ps = r.s; structure.push(r.structure);}
+            }
+
+            if(r) return {s:ps, structure: {type:"chord", structure:structure}};
+            else return null;
+        }
+        function root(ps){
+            let c0 = "ABCDEFG";
+            let c1 = "#b";
+            if(ps.length >= 1 && charIsIn(ps[0],c0)){
+                if(ps.length >= 2 && charIsIn(ps[1],c1)) {
+                    return {s: ps.substr(2), structure: {type:"root", value:ps[0]+ps[1]}};
+                }else{
+                    return {s: ps.substr(1), structure: { type:"root", value:ps[0]}};
+                }
+            }
+            return null;
+        }
+        function triad(ps){
+            let ts = ["min", "dim","aug", "mi", "m", "+"];
+            let r = charStartsWithAmong(ps, ts);
+            if(r){
+                return {s: ps.substr(r.s.length), structure: {type:"triad",value:ts[r.index]}};
+            }
+            return null;
+        }
+        function M(ps){
+            if(ps.length >= 1 && ps[0] == "M"){
+                return {s:ps.substr(1), structure:{type:"M",value:ps[0]}};
+            }
+            return null;
+        }
+        function digit(ps){
+            let ds = ["69","13","11","5","6","7","9"];
+            let r = charStartsWithAmong(ps, ds);
+            if(r){
+                return {s:ps.substr(r.s.length), structure:{type:"dig", value:ds[r.index]}};
+            }
+            return null;
+        }
+        function sus(ps){
+            let ds = ["sus2","sus4","sus"];
+
+            let r = charStartsWithAmong(ps, ds);
+            if(r){
+                return {s: ps.substr(r.s.length), structure: {type:"sus", value:"sus", param:ds[r.index].substr(3,1)}};
+            }
+            return null;
+        }
+        // Brnaches in tensionlist
+        function tensionlist(ps){
+            if(ps.length==0) return null;
+            let value = [];
+            let r0 = tenstiongroup(ps);
+            if(r0){
+                value.push(r0.structure);
+                ps = r0.s;
+                if(ps.length > 0 && ps[0] == ","){ ps = ps.substr(1); value.push({type:"delim",value:","}); }
+                let r1 = tensionlist(ps);
+                if(r1){
+                    value.push(r1.structure);
+                    return {
+                        s:r1.s, 
+                        structure: {type: "tensionlist", value:value}
+                    };
+                }
+                return {s:r0.s, structure:{type:"tensionlist", value:value}};
+            }
+            return null;
+        }
+        function tenstiongroup(ps){
+            if(ps.length == 0) return null;
+            if(ps[0] == "("){
+                let r = tensionlist(ps.substr(1));
+                if(r && r.s[0] == ")"){
+                    return {
+                        s:r.s.substr(1), 
+                        structure: {
+                            type:"tensiongroup", 
+                            value:[{type:"delim",value:"("}, r.structure, {type:"delim",value:")"}]
+                        }
+                    };
+                }
             }else{
-                return {s: ps.substr(1), structure: { type:"root", value:ps[0]}};
-            }
-        }
-        return null;
-    }
-    function triad(ps){
-        let ts = ["min", "dim","aug", "mi", "m", "+"];
-        let r = charStartsWithAmong(ps, ts);
-        if(r){
-            return {s: ps.substr(r.s.length), structure: {type:"triad",value:ts[r.index]}};
-        }
-        return null;
-    }
-    function M(ps){
-        if(ps.length >= 1 && ps[0] == "M"){
-            return {s:ps.substr(1), structure:{type:"M",value:ps[0]}};
-        }
-        return null;
-    }
-    function digit(ps){
-        let ds = ["69","13","11","5","6","7","9"];
-        let r = charStartsWithAmong(ps, ds);
-        if(r){
-            return {s:ps.substr(r.s.length), structure:{type:"dig", value:ds[r.index]}};
-        }
-        return null;
-    }
-    function sus(ps){
-        let ds = ["sus2","sus4","sus"];
-
-        let r = charStartsWithAmong(ps, ds);
-        if(r){
-            return {s: ps.substr(r.s.length), structure: {type:"sus", value:"sus", param:ds[r.index].substr(3,1)}};
-        }
-        return null;
-    }
-    // Brnaches in tensionlist
-    function tensionlist(ps){
-        if(ps.length==0) return null;
-        let value = [];
-        let r0 = tenstiongroup(ps);
-        if(r0){
-            value.push(r0.structure);
-            ps = r0.s;
-            if(ps.length > 0 && ps[0] == ","){ ps = ps.substr(1); value.push({type:"delim",value:","}); }
-            let r1 = tensionlist(ps);
-            if(r1){
-                value.push(r1.structure);
-                return {
-                    s:r1.s, 
-                    structure: {type: "tensionlist", value:value}
-                };
-            }
-            return {s:r0.s, structure:{type:"tensionlist", value:value}};
-        }
-        return null;
-    }
-    function tenstiongroup(ps){
-        if(ps.length == 0) return null;
-        if(ps[0] == "("){
-            let r = tensionlist(ps.substr(1));
-            if(r && r.s[0] == ")"){
-                return {
-                    s:r.s.substr(1), 
+                let r = tension(ps);
+                if(r) return {
+                    s:r.s,
                     structure: {
-                        type:"tensiongroup", 
-                        value:[{type:"delim",value:"("}, r.structure, {type:"delim",value:")"}]
+                        type:"tensiongroup",
+                        value:[r.structure]
                     }
                 };
             }
-        }else{
-            let r = tension(ps);
-            if(r) return {
-                s:r.s,
-                structure: {
-                    type:"tensiongroup",
-                    value:[r.structure]
-                }
-            };
+            return null;
         }
-        return null;
-    }
-    function tension(ps){
-        let ds = ["add9","add2","#11","+11","b13","-13","no3","no5","#9","+9","b9","-9","+5","-5"];
-        let th = [3,     3,      1,    1,    1,    1,    2,    2,    1,   1,   1,   1,   1,   1  ]; // type and digit split pos
-        if(ps.length == 0) return null;
-        let r = charStartsWithAmong(ps, ds);
-        if(r){
-            return {
-                s:ps.substr(r.s.length),
-                structure: {
-                    type:"tension", 
-                    value:ds[r.index].substr(0, th[r.index]),
-                    param:ds[r.index].substr(th[r.index])
-                }
-            };
+        function tension(ps){
+            let ds = ["add9","add2","#11","+11","b13","-13","no3","no5","#9","+9","b9","-9","+5","-5"];
+            let th = [3,     3,      1,    1,    1,    1,    2,    2,    1,   1,   1,   1,   1,   1  ]; // type and digit split pos
+            if(ps.length == 0) return null;
+            let r = charStartsWithAmong(ps, ds);
+            if(r){
+                return {
+                    s:ps.substr(r.s.length),
+                    structure: {
+                        type:"tension", 
+                        value:ds[r.index].substr(0, th[r.index]),
+                        param:ds[r.index].substr(th[r.index])
+                    }
+                };
+            }
+            return null;
         }
-        return null;
-    }
-    function chordend(ps){
-        if(ps.length == 0) return {s:ps, structure: {type:"chordend", value:""}};
-        else if(ps[0] == "/") return {s:ps.substr(1), structure: {type:"chordend", value:"/"}};
-        else if(ps[0] == ":") return {s:ps.substr(1), structure: {type:"chordend", value:":"}};
-        else return null; // not accepted
+        function chordend(ps){
+            if(ps.length == 0) return {s:ps, structure: {type:"chordend", value:""}};
+            else if(ps[0] == "/") return {s:ps.substr(1), structure: {type:"chordend", value:"/"}};
+            else if(ps[0] == ":") return {s:ps.substr(1), structure: {type:"chordend", value:":"}};
+            else return null; // not accepted
+        }
+
+        let holder = parse(s);
+        let [objholder, code] = Chord.serializer(holder);
+        return [ holder, objholder, code];
     }
 
-    function serializer(p){
+
+    /**
+     * Convert the data structure (chord mids) to flat list and code string.
+     * @param {*} p Data structure of chord mids.
+     */
+    static serializer(p){
         let objholder = [];
         if(!p){
             return null; // Invalid code
@@ -563,375 +690,255 @@ function parseChordMids(s){
         }
     }
 
-    let holder = parse(s);
-    let [objholder, code] = serializer(holder);
-    return [ holder, objholder, code];
-}
-
-function getNoteProfile(note_str) {
-    var IDX = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
-    var ACC = { b: 11, "#": 1, bb: 12, "##": 2 };
-    var m = note_str.match(/([A-G])(#|b)?(\d+)/);
-    if (!m) return null;
-    var code =
-        parseInt(m[3]) * 12 + IDX[m[1]] + (m[2] == "#" ? 1 : -1) - 36 + 0x3c; // C3 bocomes 0x3C
-    var accidental = 0;
-    if (m[2]) accidental = ACC[m[2]];
-    return {
-        code: code,
-        note: { name: m[1], accidental: accidental, octave: parseInt(m[3]) }
-    };
-}
-
-// Parse strings of number + dot
-function parseLengthIndicator(length_s) {
-    var mm = length_s.match(/(\d+)((_(3|5|6|7))|(\.+))?(~)?/);
-    if (!mm) return null;
-
-    var base = parseInt(mm[1]);
-    var length = 0;
-    var numdot = 0;
-    if (mm[3]) {
-        // Renpu
-        var renpu = parseInt(mm[4]);
-        length = WHOLE_NOTE_LENGTH / (base / 2) / renpu;
-    } else {
-        length = WHOLE_NOTE_LENGTH / base;
-        var tp = length;
-        numdot = mm[5] ? mm[5].length : 0;
-        for (var j = 0; j < numdot; ++j) {
-            tp /= 2;
-            length += tp;
-        }
-    }
-    return {
-        length: length,
-        base: base,
-        renpu: renpu,
-        numdot: numdot,
-        has_tie: mm[6] ? true : false
-    };
-}
-
-function parseChordNotes(str) {
-    str = str.substr(1); // first (
-
-    var parseNoteGroup = function(sng) {
-        // pre-requisite : after outer "(" is loaded
-        var sngi = 0;
-        if(sng[0] == ")"){
-            // empty note groups
-            return {
-                s: sng, // do not consume last )
-                ng: null
-            };
-        }
-        sng = sng.substr(1); // first (
-        var tmp = "";
-        while (sng[sngi] != ")") {
-            tmp += sng[sngi];
-            ++sngi;
-        }
-        var notes_str = tmp.split(",");
-        var note_profiles = [];
-        for (var nsi = 0; nsi < notes_str.length; ++nsi) {
-            //var m = notes_str[nsi].match(/([A-G])(#|b)?(\d+)/);
-            var np = getNoteProfile(notes_str[nsi]);
-            if (!np) throw "INVALID_TOKEN_DETECTED : invalid note notation";
-            note_profiles.push(np);
-        }
-
-        sng = sng.substr(sngi + 1); // Skip )
-        var r = /:(([\d_]+)(\.*)(~)?)/;
-        var m = sng.match(r);
-
-        if (!m[0]) throw "INVALID_TOKEN_DETECTED";
-
-        var li = parseLengthIndicator(m[1]);
-
+    static getNoteProfile(note_str) {
+        var IDX = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+        var ACC = { b: 11, "#": 1, bb: 12, "##": 2 };
+        var m = note_str.match(/([A-G])(#|b)?(\d+)/);
+        if (!m) return null;
+        var code =
+            parseInt(m[3]) * 12 + IDX[m[1]] + (m[2] == "#" ? 1 : -1) - 36 + 0x3c; // C3 bocomes 0x3C
+        var accidental = 0;
+        if (m[2]) accidental = ACC[m[2]];
         return {
-            s: sng.substr(m[0].length),
-            ng: { note_profiles: note_profiles, lengthIndicator: li }
+            code: code,
+            note: { name: m[1], accidental: accidental, octave: parseInt(m[3]) }
         };
-    };
+    }
 
-    var note_group_list = [];
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-        var ret = parseNoteGroup(str);
-        if(ret.ng) note_group_list.push(ret.ng);
-        str = ret.s;
-        if (str[0] == ",") {
-            str = str.substr(1);
-        } else if (str[0] == ")") {
-            break;
+    // Parse strings of number + dot
+    static parseLengthIndicator(length_s) {
+        var mm = length_s.match(/(\d+)((_(3|5|6|7))|(\.+))?(~)?/);
+        if (!mm) return null;
+
+        var base = parseInt(mm[1]);
+        var length = 0;
+        var numdot = 0;
+        if (mm[3]) {
+            // Renpu
+            var renpu = parseInt(mm[4]);
+            length = WHOLE_NOTE_LENGTH / (base / 2) / renpu;
         } else {
-            throw "INVALID_TOKEN_DETECTED";
-        }
-    }
-    return note_group_list;
-}
-
-function getTranpsoedNote(transpose, half_type, key, note_base, sharp_flat) {
-    // https://music.stackexchange.com/questions/40041/algorithm-for-transposing-chords-between-keys
-
-    var min_maj_map = {
-        "B#m" : "D#",
-        "Cm" : "Eb",
-        "C#m" : "E",
-        "Dbm" : "Fb",
-        "Dm" : "F",
-        "D#m" : "F#",
-        "Ebm" : "Gb",
-        "Em" : "G",
-        //"Fbm" : "Abb",
-        "E#m" : "G#",
-        "Fm" : "Ab",
-        "F#m" : "A",
-        //"Gbm" : "Bbb",
-        "Gm" : "Bb",
-        "G#m" : "B",
-        "Abm" : "Cb",
-        "Am" : "C",
-        "A#m" : "C#",
-        "Bbm" : "Db",
-        "Bm" : "D",
-        //"Cbm" : "Ebb"
-    };
-
-    var note_values_1 = [
-        ["C",  null, "B#"],
-        [null, "Db", "C#"],
-        ["D",  null, null],
-        [null, "Eb", "D#"],
-        ["E",  "Fb", null],
-        ["F",  null, "E#"],
-        [null, "Gb", "F#"],
-        ["G",  null, null],
-        [null, "Ab", "G#"],
-        ["A",  null, null],
-        [null, "Bb", "A#"],
-        ["B",  "Cb", null]
-    ];
-    var note_values_2 = {
-        "B#":0, "C":0, "C#":1, "Db":1, "D":2, "D#":3, "Eb":3, "E":4, "Fb":4, "E#":5, "F":5, 
-        "F#":6, "Gb":6, "G":7, "G#":8, "Ab":8, "A":9, "A#":10, "Bb":10, "B":11, "Cb":11
-    };
-    var keyclass_maj = {
-        "B#":"#", "C":"b", "C#":"#", "Db":"b", "D":"#", "D#":"#", "Eb":"b", "E":"b", "Fb":"b", "E#":"#", "F":"b", 
-        "F#":"#", "Gb":"b", "G":"#", "G#":"#", "Ab":"b", "A":"#", "A#":"#", "Bb":"b", "B":"#", "Cb":"b"
-    };
-
-    var letters = ["A","B","C","D","E","F","G"];
-
-    /////
-
-    var note = note_base;
-    if (sharp_flat) note += sharp_flat;
-
-    var org_maj_key = key; 
-
-    if(key in min_maj_map)
-        org_maj_key = min_maj_map[key]; // minor is converted to maj key
-
-    var target_maj_key = null; // given from external. Temprory implementation.
-
-    if(Number.isInteger(transpose)){
-
-        var base_value = note_values_2[org_maj_key];
-        var tgt_value = (base_value + transpose + 12)%12;
-
-        var half_to_apply = null;
-        if(half_type.toUpperCase()  == "AUTO")
-            half_to_apply = keyclass_maj[org_maj_key]; // Use the similar key class as original key
-        else if(half_type.toUpperCase() == "SHARP")
-            half_to_apply = "#";
-        else if(half_type.toUpperCase() == "FLAT")
-            half_to_apply = "b";
-        else
-            half_to_apply = half_type; // "#" or "b" directly is OK.
-
-        var tgt_key_cand = note_values_1[tgt_value];
-        if(tgt_key_cand[0]) target_maj_key = tgt_key_cand[0];
-        else target_maj_key = tgt_key_cand[ half_to_apply == "b" ? 1 : 2];
-
-    }else {
-        // Key is specified directly
-        target_maj_key = transpose;
-        if(target_maj_key in min_maj_map)
-            target_maj_key = min_maj_map[target_maj_key]; // minor is converted to maj key
-        transpose = ((note_values_2[target_maj_key] - note_values_2[org_maj_key])+12)%12;
-    }
-
-    //console.log("Orignal key = "+org_maj_key + " Target key = " + target_key);
-
-    var letter_diff = letters.indexOf(target_maj_key[0]) - letters.indexOf(org_maj_key[0]);
-
-    var letter_index = letters.indexOf(note_base);
-    var new_letter_index = (letter_index + letter_diff + 7)%7;
-    var newletter = letters[new_letter_index];
-
-    var nvalue = note_values_2[note];
-    var new_nvalue = (nvalue + transpose + 12) % 12;
-
-    var acc="";
-    // eslint-disable-next-line no-constant-condition
-    while(true){
-        // Take circular diff
-        var offset = 6 - note_values_2[newletter]; 
-        var fs = (new_nvalue + offset + 12)%12 - 6; // >0 means #, <0 means flat, 0 means no accidental
-
-        if(fs == 0){ acc = ""; break; }
-        else if(fs == 1){ acc = "#"; break; }
-        else if(fs == -1){ acc = "b"; break; }
-        else if(fs >= 2) { // ## can happen.
-            // 2 can happen e.g. E# in key=C = III#. Key=D goes to F##. Convert it to G.
-            // 3 can happen e.g. G# in key=Gb = I##. Key=C# goes to C###. Convert it to D#.
-            // Next letter
-            new_letter_index = (new_letter_index+1)%7;
-            newletter = letters[new_letter_index];
-        }else if(fs <= -2){
-            // Previous letter
-            // -2 can happen e.g. Fb in key=C = IVb. Key=Eb goes to Abb. Convert it to G.
-            // -3 can happen e.g. Gb in key=B = VIbb = G#bb. Key=Db goes to Bbbb. Convert it to Ab.
-            new_letter_index = (new_letter_index-1+7)%7;
-            newletter = letters[new_letter_index];                
-        }else{
-            throw "Unexpected situation on transpose";
-        }
-    }
-
-    return newletter+acc;
-    
-}
-
-function getTransposedKeyFromOffset(key, transpose, half_type){
-
-    let is_minor = key[key.length-1] == "m";
-    let note = (is_minor ? key.substr(0, key.length-1) : key);
-    let note_base = note[0];
-    let acc = note.length==2 ? key[1] : null;
-
-    let transposed_key = getTranpsoedNote(transpose, half_type, key, note_base, acc);
-
-    if(is_minor) transposed_key += "m";
-
-    return transposed_key;
-}
-
-export class Chord {
-    constructor(chord_str) {
-        this.chord_str = chord_str;
-
-        this.is_valid_chord = true;
-
-        this.renderprop = {};
-
-        this.exceptinal_comment = null;
-        this.lyric = null;
-
-        //this.lengthIndicator = null;
-
-        this.note_group_list = null;
-
-        // Analyze Chord symbol
-        var r = /^(((A|B|C|D|E|F|G)(#|b)?([^/:]*))?(\/(A|B|C|D|E|F|G)(#|b)?)?)(:((([\d_]+)(\.*)(~)?)|(\(.*\))))?/;
-        var m = chord_str.match(r);
-        //console.log(m);
-        // [0] is entire matched string
-
-        this.chord_name_str = null;
-
-        if (m && m[0] != "") {
-            this.chord_name_str = m[1];
-            this.note_base = m[3];
-            this.sharp_flat = m[4];
-            this.mid_str = m[5];
-            this.base_note_base = m[7];
-            this.base_sharp_flat = m[8];
-
-            this.mid_elems = null;
-            if (this.mid_str !== undefined) {
-                var ret = parseChordMids(this.mid_str);
-                if (ret !== null) {
-                    this.mid_elems = ret[0];
-                    this.mid_elem_objs = ret[1];
-                }
-                this.is_valid_chord = ret !== null;
+            length = WHOLE_NOTE_LENGTH / base;
+            var tp = length;
+            numdot = mm[5] ? mm[5].length : 0;
+            for (var j = 0; j < numdot; ++j) {
+                tp /= 2;
+                length += tp;
             }
-            if (m[9]) {
-                if (m[11]) {
-                    var li = parseLengthIndicator(m[11]);
-                    //this.length_s = m[11];
-                    //this.length = li.length;
-                    this.note_group_list = [{ lengthIndicator: li, note_profiles: null }];
-                    //this.tie = li.has_tie;
-                } else if (m[15]) {
-                    // Notes
-                    let ret = parseChordNotes(m[15]);
-                    if(ret.length > 0) // empty note_group_list does not work
-                        this.note_group_list = ret;
-                    //console.log(this.note_group_list);
-                }
+        }
+        return {
+            length: length,
+            base: base,
+            renpu: renpu,
+            numdot: numdot,
+            has_tie: mm[6] ? true : false
+        };
+    }
+
+    static parseChordNotes(str) {
+        str = str.substr(1); // first (
+
+        var parseNoteGroup = function(sng) {
+            // pre-requisite : after outer "(" is loaded
+            var sngi = 0;
+            if(sng[0] == ")"){
+                // empty note groups
+                return {
+                    s: sng, // do not consume last )
+                    ng: null
+                };
+            }
+            sng = sng.substr(1); // first (
+            var tmp = "";
+            while (sng[sngi] != ")") {
+                tmp += sng[sngi];
+                ++sngi;
+            }
+            var notes_str = tmp.split(",");
+            var note_profiles = [];
+            for (var nsi = 0; nsi < notes_str.length; ++nsi) {
+                //var m = notes_str[nsi].match(/([A-G])(#|b)?(\d+)/);
+                var np = Chord.getNoteProfile(notes_str[nsi]);
+                if (!np) throw "INVALID_TOKEN_DETECTED : invalid note notation";
+                note_profiles.push(np);
             }
 
-            //this.tie = (m[14] == '~');
-        } else {
-            this.chord_name_str = this.chord_str;
-            this.is_valid_chord = false;
+            sng = sng.substr(sngi + 1); // Skip )
+            var r = /:(([\d_]+)(\.*)(~)?)/;
+            var m = sng.match(r);
+
+            if (!m[0]) throw "INVALID_TOKEN_DETECTED";
+
+            var li = Chord.parseLengthIndicator(m[1]);
+
+            return {
+                s: sng.substr(m[0].length),
+                ng: { note_profiles: note_profiles, lengthIndicator: li }
+            };
+        };
+
+        var note_group_list = [];
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+            var ret = parseNoteGroup(str);
+            if(ret.ng) note_group_list.push(ret.ng);
+            str = ret.s;
+            if (str[0] == ",") {
+                str = str.substr(1);
+            } else if (str[0] == ")") {
+                break;
+            } else {
+                throw "INVALID_TOKEN_DETECTED";
+            }
         }
+        return note_group_list;
     }
 
-    setException(exceptional_comment) {
-        this.exceptinal_comment = exceptional_comment;
-    }
+    static getTranpsoedNote(transpose, half_type, key, note_base, sharp_flat) {
+        // https://music.stackexchange.com/questions/40041/algorithm-for-transposing-chords-between-keys
 
-    setLyric(lyric) {
-        this.lyric = lyric;
-    }
+        var min_maj_map = {
+            "B#m" : "D#",
+            "Cm" : "Eb",
+            "C#m" : "E",
+            "Dbm" : "Fb",
+            "Dm" : "F",
+            "D#m" : "F#",
+            "Ebm" : "Gb",
+            "Em" : "G",
+            //"Fbm" : "Abb",
+            "E#m" : "G#",
+            "Fm" : "Ab",
+            "F#m" : "A",
+            //"Gbm" : "Bbb",
+            "Gm" : "Bb",
+            "G#m" : "B",
+            "Abm" : "Cb",
+            "Am" : "C",
+            "A#m" : "C#",
+            "Bbm" : "Db",
+            "Bm" : "D",
+            //"Cbm" : "Ebb"
+        };
 
-    getTranpsoedNote(transpose, half_type, key, note_base, sharp_flat) {
-        return getTranpsoedNote(transpose, half_type, key, note_base, sharp_flat);
-    }
+        var note_values_1 = [
+            ["C",  null, "B#"],
+            [null, "Db", "C#"],
+            ["D",  null, null],
+            [null, "Eb", "D#"],
+            ["E",  "Fb", null],
+            ["F",  null, "E#"],
+            [null, "Gb", "F#"],
+            ["G",  null, null],
+            [null, "Ab", "G#"],
+            ["A",  null, null],
+            [null, "Bb", "A#"],
+            ["B",  "Cb", null]
+        ];
+        var note_values_2 = {
+            "B#":0, "C":0, "C#":1, "Db":1, "D":2, "D#":3, "Eb":3, "E":4, "Fb":4, "E#":5, "F":5, 
+            "F#":6, "Gb":6, "G":7, "G#":8, "Ab":8, "A":9, "A#":10, "Bb":10, "B":11, "Cb":11
+        };
+        var keyclass_maj = {
+            "B#":"#", "C":"b", "C#":"#", "Db":"b", "D":"#", "D#":"#", "Eb":"b", "E":"b", "Fb":"b", "E#":"#", "F":"b", 
+            "F#":"#", "Gb":"b", "G":"#", "G#":"#", "Ab":"b", "A":"#", "A#":"#", "Bb":"b", "B":"#", "Cb":"b"
+        };
 
-    getChordStrBase(tranpose, half_type, key) {
-        if (!this.is_valid_chord) return [false, this.chord_str]; // Not chord or invalid chord notation
+        var letters = ["A","B","C","D","E","F","G"];
 
-        var tranposed_note = null;
-        if (this.note_base !== undefined)
-            tranposed_note = this.getTranpsoedNote(
-                tranpose,
-                half_type,
-                key,
-                this.note_base,
-                this.sharp_flat
-            );
-        var transposed_base_note = null;
-        if (this.base_note_base !== undefined) {
-            transposed_base_note = this.getTranpsoedNote(
-                tranpose,
-                half_type,
-                key,
-                this.base_note_base,
-                this.base_sharp_flat
-            );
+        /////
+
+        var note = note_base;
+        if (sharp_flat) note += sharp_flat;
+
+        var org_maj_key = key; 
+
+        if(key in min_maj_map)
+            org_maj_key = min_maj_map[key]; // minor is converted to maj key
+
+        var target_maj_key = null; // given from external. Temprory implementation.
+
+        if(Number.isInteger(transpose)){
+
+            var base_value = note_values_2[org_maj_key];
+            var tgt_value = (base_value + transpose + 12)%12;
+
+            var half_to_apply = null;
+            if(half_type.toUpperCase()  == "AUTO")
+                half_to_apply = keyclass_maj[org_maj_key]; // Use the similar key class as original key
+            else if(half_type.toUpperCase() == "SHARP")
+                half_to_apply = "#";
+            else if(half_type.toUpperCase() == "FLAT")
+                half_to_apply = "b";
+            else
+                half_to_apply = half_type; // "#" or "b" directly is OK.
+
+            var tgt_key_cand = note_values_1[tgt_value];
+            if(tgt_key_cand[0]) target_maj_key = tgt_key_cand[0];
+            else target_maj_key = tgt_key_cand[ half_to_apply == "b" ? 1 : 2];
+
+        }else {
+            // Key is specified directly
+            target_maj_key = transpose;
+            if(target_maj_key in min_maj_map)
+                target_maj_key = min_maj_map[target_maj_key]; // minor is converted to maj key
+            transpose = ((note_values_2[target_maj_key] - note_values_2[org_maj_key])+12)%12;
         }
 
-        return [tranposed_note, transposed_base_note];
+        //console.log("Orignal key = "+org_maj_key + " Target key = " + target_key);
+
+        var letter_diff = letters.indexOf(target_maj_key[0]) - letters.indexOf(org_maj_key[0]);
+
+        var letter_index = letters.indexOf(note_base);
+        var new_letter_index = (letter_index + letter_diff + 7)%7;
+        var newletter = letters[new_letter_index];
+
+        var nvalue = note_values_2[note];
+        var new_nvalue = (nvalue + transpose + 12) % 12;
+
+        var acc="";
+        // eslint-disable-next-line no-constant-condition
+        while(true){
+            // Take circular diff
+            var offset = 6 - note_values_2[newletter]; 
+            var fs = (new_nvalue + offset + 12)%12 - 6; // >0 means #, <0 means flat, 0 means no accidental
+
+            if(fs == 0){ acc = ""; break; }
+            else if(fs == 1){ acc = "#"; break; }
+            else if(fs == -1){ acc = "b"; break; }
+            else if(fs >= 2) { // ## can happen.
+                // 2 can happen e.g. E# in key=C = III#. Key=D goes to F##. Convert it to G.
+                // 3 can happen e.g. G# in key=Gb = I##. Key=C# goes to C###. Convert it to D#.
+                // Next letter
+                new_letter_index = (new_letter_index+1)%7;
+                newletter = letters[new_letter_index];
+            }else if(fs <= -2){
+                // Previous letter
+                // -2 can happen e.g. Fb in key=C = IVb. Key=Eb goes to Abb. Convert it to G.
+                // -3 can happen e.g. Gb in key=B = VIbb = G#bb. Key=Db goes to Bbbb. Convert it to Ab.
+                new_letter_index = (new_letter_index-1+7)%7;
+                newletter = letters[new_letter_index];                
+            }else{
+                throw "Unexpected situation on transpose";
+            }
+        }
+
+        return newletter+acc;
+        
     }
 
-    exportCode(){
-        if(this.is_valid_chord){
-            // construct from the raw data.
-            // Keep the original strign as much as possible.
-            let code = "";
-            if(this.note_base) code += this.note_base;
-            if(this.sharp_flat) code += this.sharp_flat;
-            return code;
-            //return this.chord_str;
-        }else{
-            return `"${this.chord_str}"`;
-        }
+    static getTransposedKeyFromOffset(key, transpose, half_type){
+
+        let is_minor = key[key.length-1] == "m";
+        let note = (is_minor ? key.substr(0, key.length-1) : key);
+        let note_base = note[0];
+        let acc = note.length==2 ? key[1] : null;
+
+        let transposed_key = Chord.getTranpsoedNote(transpose, half_type, key, note_base, acc);
+
+        if(is_minor) transposed_key += "m";
+
+        return transposed_key;
     }
 }
 

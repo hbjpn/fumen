@@ -357,7 +357,7 @@ TENSIONLIST ::= TENSIONGROUP | TENSIONGROUP ","? TENSIONLIST
 TENSIONGROUP ::= TENSION | "(" TENSIONLIST ")" 
 TENSION ::= ( ("+" ("5"|"9"|"11")) | ("-" ("5"|"9"|"13")) | ("b" ("9"|"13")) | ("#" ("9"|"11")) | ("no" ("3" | "5")) )
 */
-function parseChordSymbol2(s){
+function parseChordMids(s){
     function parse(ps){
         let structure = [];
         let r = null;
@@ -486,163 +486,67 @@ function parseChordSymbol2(s){
         else return null; // not accepted
     }
 
-    return parse(s);
-}
-
-var cnrg = new RegExp();
-cnrg.compile(
-    /^((sus(4|2)?)|(add(9|13))|(alt)|(dim)|(7|9|6|11|13)|((\+|#)(5|9|13|11))|((-|b)(5|9|13))|([Mm]([Aa][Jj]?|[Ii][Nn]?)?)|([,()]))/
-);
-var CS_IDX_OFFSET = 2;
-
-var CS_SUS = 0;
-var CS_SUS_DIG = 1;
-var CS_ADD = 2;
-var CS_ADD_DIG = 3;
-var CS_ALT = 4;
-var CS_DIM = 5;
-var CS_DIG = 6;
-var CS_PLS = 7;
-var CS_PLS_SYM = 8;
-var CS_PLS_DIG = 9;
-var CS_MNS = 10;
-var CS_MNS_SYM = 11;
-var CS_MNS_DIG = 12;
-var CS_M = 13;
-var CS_M_TAIL = 14;
-var CS_SEP = 15;
-var NUM_CS = 16;
-var CS_LIST = [
-    CS_M,
-    CS_DIG,
-    CS_SUS,
-    CS_DIM,
-    CS_SEP,
-    CS_PLS,
-    CS_MNS,
-    CS_ADD,
-    CS_ALT
-]; // Frequently used first
-
-function parseChordMids(s) {
-    var holder = [];
-    var objholder = [];
-
-    // eslint-disable-next-line no-constant-condition
-    if(false){
-    while (s.length > 0) {
-        //if([",","(",")"].indexOf(s[0]) >= 0){ s = s.substr(1); continue; }
-        let m = s.match(cnrg);
-        //console.log(m);
-        if (m === null) {
-            console.log("Invalid code notation : " + s);
-            return null;
-        }
-        for (var i = 0; i < CS_LIST.length; ++i) {
-            if (
-                m[CS_IDX_OFFSET + CS_LIST[i]] !== undefined &&
-                m[CS_IDX_OFFSET + CS_LIST[i]] !== null
-            ) {
-                holder.push({ cs: CS_LIST[i], s: m[0], g: m });
-                break;
-            }
-        }
-
-        s = s.substr(m[0].length);
-    }
-
-    var minor_exists = false;
-    for (let i = 0; i < holder.length; ++i) {
-        let s = "";
-        switch (holder[i].cs) {
-            case CS_M:
-                s = holder[i].s;
-                var isMaj =
-                    s == "M" ||
-                    s.toLowerCase() == "maj" ||
-                    s.toLowerCase() == "ma";
-                if (isMaj == false) minor_exists = true;
-
-                if (minor_exists && isMaj == true) {
-                    // mM7 Chord is expected
-                    if (holder[i + 1].cs == CS_DIG) {
-                        objholder.push({ type: "M", param: holder[i + 1].s });
-                        ++i; // Skip next CS_DIG
-                    } else {
-                        throw Error("Invalid statement");
-                    }
-                } else if (isMaj) {
-                    objholder.push({ type: "M" });
-                } else {
-                    objholder.push({ type: "m" });
-                }
-                break;
-            case CS_DIG:
-                objholder.push({ type: "dig", param: holder[i].s });
-                break;
-            case CS_SUS:
-                objholder.push({ type: "sus", param: holder[i].s.substr(3) });
-                break;
-            case CS_DIM:
-                objholder.push({ type: "dim" });
-                break;
-            case CS_MNS:
-                objholder.push({ type: "b", param: holder[i].s.substr(1) });
-                break;
-            case CS_PLS:
-                objholder.push({ type: "#", param: holder[i].s.substr(1) });
-                break;
-            case CS_ADD:
-                objholder.push({ type: "add", param: holder[i].s.substr(3) });
-                break;
-            case CS_ALT:
-                objholder.push({ type: "alt" });
-                break;
-        }
-    }
-    //console.log(objholder);
-    }else{
-        // new parser
-        let p = parseChordSymbol2(s);
+    function serializer(p){
+        let objholder = [];
         if(!p){
             return null; // Invalid code
         }else{
             let tensionlist = function(value, serialize){
+                let code = "";
                 for(let i = 0; i < value.length; ++i){
                     let e = value[i];
                     if(e.type == "tensionlist"){
-                        tensionlist(e.value, serialize);
+                        code += tensionlist(e.value, serialize);
                     }else if(e.type == "tensiongroup"){
-                        tensiongroup(e.value, serialize);
+                        code += tensiongroup(e.value, serialize);
+                    }else if(e.type == "delim"){
+                        code += e.value;
                     }
                 }
+                return code;
             };
             let tensiongroup = function(value, serialize){
+                // single tension or ( TENSIONLIST )
+                let code = "";
                 for(let i = 0; i < value.length; ++i){
                     let e = value[i];
                     if(e.type == "tension"){
                         serialize.push({value:e.value,param:e.param});
+                        code += (e.value+e.param||"");
                     }else if(e.type == "tensionlist"){
-                        tensionlist(e.value, serialize);
+                        code += tensionlist(e.value, serialize);
+                    }else if(e.type == "delim"){
+                        code += e.value;
                     }
                 }
+                return code;
             };
-            // Convert to flat data list rather than structured data
+            // Convert to flat data list and export string rather than structured data
+            
+            let code = "";
             for(let i = 0; i < p.structure.structure.length; ++i){
                 let r = p.structure.structure[i];
                 switch(r.type){
                 case "triad":
-                    objholder.push({type:r.value, param:r.param}); break;
+                    objholder.push({type:r.value, param:r.param});
+                    code += r.value + (r.param||"");
+                    break;
                 case "M":
-                    objholder.push({type:r.type}); break;
+                    objholder.push({type:r.type});
+                    code += r.value;
+                    break;
                 case "dig":
-                    objholder.push({type:"dig", param: r.value}); break;
+                    objholder.push({type:"dig", param: r.value});
+                    code += r.value;
+                    break;
                 case "sus":
-                    objholder.push({type:r.value, param:r.param}); break; 
+                    objholder.push({type:r.value, param:r.param});
+                    code += r.value + (r.param||"");
+                    break;
                 case "tensionlist":{
                     // normalize +, - to #, b
                     let serialize = [];
-                    tensionlist(r.value, serialize);
+                    code += tensionlist(r.value, serialize);
                     for(let j=0; j<serialize.length; ++j){
                         var repl = {add:"add",sus:"sus","+":"#","-":"b","#":"#","b":"b"};
                         objholder.push({type:repl[serialize[j].value], param:serialize[j].param}); 
@@ -655,10 +559,13 @@ function parseChordMids(s) {
                     throw "Unexpected situations";
                 }
             }
+            return [objholder,code];
         }
     }
 
-    return [holder, objholder];
+    let holder = parse(s);
+    let [objholder, code] = serializer(holder);
+    return [ holder, objholder, code];
 }
 
 function getNoteProfile(note_str) {

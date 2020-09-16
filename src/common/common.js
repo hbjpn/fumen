@@ -458,7 +458,7 @@ export class Chord {
             let code = "";
             if(this.note_base) code += this.note_base;
             if(this.sharp_flat) code += this.sharp_flat;
-            if(this.mid_elems) code += Chord.serializer(this.mid_elems)[1];
+            if(this.mid_elems) code += Chord.chordMidSerialize(this.mid_elems)[1];
             if(this.base_note_base) code += ("/"+this.base_note_base);
             if(this.base_sharp_flat) code += this.base_sharp_flat;
             if(this.note_group_list){
@@ -632,7 +632,7 @@ export class Chord {
 
         let holder = parse(s);
         if(holder){
-            let [objholder, code] = Chord.serializer(holder);
+            let [objholder, code] = Chord.chordMidSerialize(holder);
             return [ holder, objholder, code];
         }else{
             return null; // invalid format
@@ -644,7 +644,7 @@ export class Chord {
      * Convert the data structure (chord mids) to flat list and code string.
      * @param {*} p Data structure of chord mids.
      */
-    static serializer(p){
+    static chordMidSerialize(p){
         let objholder = [];
         if(!p){
             return null; // Invalid code

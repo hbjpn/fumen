@@ -905,61 +905,63 @@ export class Time {
 }
 
 export class MeasureBoundary {
-    constructor() {}
+    constructor(exportTarget = true) {
+        this.exportTarget = exportTarget;
+    }
 }
 
 export class MeasureBoundaryMark extends MeasureBoundary {
-    constructor(nline) {
-		super();
+    constructor(nline, exportTarget) {
+		super(exportTarget);
         this.nline = nline;
     }
     exportCode() {
-        return "|".repeat(this.nline);
+        return this.exportTarget ? "|".repeat(this.nline) : "";
     }
 }
 
 export class LoopBeginMark  extends MeasureBoundary {
-    constructor() { super(); }
+    constructor(exportTarget = true) { super(exportTarget); }
     exportCode() {
-        return "||:";
+        return this.exportTarget ?  "||:" : "";
     }
 }
 
 export class LoopEndMark  extends MeasureBoundary {
-    constructor(param) {
-        super();
+    constructor(param, exportTarget=true) {
+        super(exportTarget);
         this.times = param.times;
         this.ntimes = param.ntimes;
     }
     exportCode() {
         let ts = this.ntimes?"xX":`x${this.times}`;
-        return ":||"+(ts=="x2"?"":ts); // x2 is not explicity stated : TODO : align with what wrote in the code.
+        return this.exportTarget ? ":||"+(ts=="x2"?"":ts) : "";// x2 is not explicity stated : TODO : align with what wrote in the code.
     }
 }
 
 export class LoopBothMark  extends MeasureBoundary {
-    constructor(param) {
-		super();
+    constructor(param, exportTarget = true) {
+		super(exportTarget);
         this.times = param.times;
         this.ntimes = param.ntimes;
     }
     exportCode() {
         let ts = this.ntimes?"xX":`x${this.times}`;
-        return ":||:"+(ts=="x2"?"":ts); // x2 is not explicity stated : TODO : align with what wrote in the code.
+        return this.exportTarget ? ":||:"+(ts=="x2"?"":ts) : ""; // x2 is not explicity stated : TODO : align with what wrote in the code.
     }
 }
 
 export class MeasureBoundaryFinMark  extends MeasureBoundary {
-    constructor() { super(); }
+    constructor(exportTarget = true) { super(exportTarget); }
     exportCode() {
-        return "||.";
+        return this.exportTarget ? "||." : "";
     }
 }
 
 export class MeasureBoundaryDblSimile  extends MeasureBoundary {
-    constructor() { super(); }
+    constructor(exportTarget = true) { super(exportTarget); }
     exportCode() {
-        return "./|/.";
+        return this.exportTarget ? "./|/." : "";
     }
 }
 

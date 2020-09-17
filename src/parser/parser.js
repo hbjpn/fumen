@@ -177,10 +177,10 @@ export class Parser {
             var w = m[0];
             return {
                 token: w,
-                s: s.substr(w.length),
+                s: s.substr(w.length), // updated string 
                 type: TOKEN_WORD,
-                ss: skipped_spaces,
-                sss: skipped_spaces_str
+                ss: skipped_spaces, // number of skipped spaces
+                sss: skipped_spaces_str // skipped spaces string
             };
         }
 
@@ -538,38 +538,47 @@ export class Parser {
                     measure.elements.push(r.loopIndicator);
                     s = r.s;
                     break;
+                
                 // Boundaries.
-                // Not consumed. Not registed to sealize object as it will be registred at as the begin boundary of next measure.
-                // For the last measure, it still needst to be registed, which is done outside this function. 
+                // Boundary is not consumed as it will be drawn as the first element of next measure.
+                // Not that if spaces exists before the boundary, spaces are consumed.
+                 // For the last measure, it still needst to be registed, which is done outside this function. 
                 case TOKEN_MB:
-                    measure.elements.push(new common.MeasureBoundaryMark(1));
+                    measure.elements.push(new common.MeasureBoundaryMark(1, false));
                     loop_flg = false;
+                    s = s.substr(r.sss);
                     break;
                 case TOKEN_MB_DBL:
-                    measure.elements.push(new common.MeasureBoundaryMark(2));
+                    measure.elements.push(new common.MeasureBoundaryMark(2, false));
                     loop_flg = false;
+                    s = s.substr(r.sss);
                     break;
                 case TOKEN_MB_LOOP_END:
-                    measure.elements.push(new common.LoopEndMark(r.param));
+                    measure.elements.push(new common.LoopEndMark(r.param, false));
                     loop_flg = false;
+                    s = s.substr(r.sss);
                     break;
                 case TOKEN_MB_LOOP_BEGIN:
-                    measure.elements.push(new common.LoopBeginMark());
+                    measure.elements.push(new common.LoopBeginMark(false));
                     loop_flg = false;
+                    s = s.substr(r.sss);
                     break;
                 case TOKEN_MB_LOOP_BOTH:
-                    measure.elements.push(new common.LoopBothMark(r.param));
+                    measure.elements.push(new common.LoopBothMark(r.param, false));
                     loop_flg = false;
+                    s = s.substr(r.sss);
                     break;
                 case TOKEN_MB_FIN:
-                    measure.elements.push(new common.MeasureBoundaryFinMark());
+                    measure.elements.push(new common.MeasureBoundaryFinMark(false));
                     loop_flg = false;
+                    s = s.substr(r.sss);
                     break;
                 case TOKEN_MB_DBL_SIMILE:
                     measure.elements.push(
-                        new common.MeasureBoundaryDblSimile()
+                        new common.MeasureBoundaryDblSimile(false)
                     );
                     loop_flg = false;
+                    s = s.substr(r.sss);
                     break;
                 default:
                     this.onParseError("ERROR_WHILE_PARSE_MEASURE");
@@ -592,7 +601,8 @@ export class Parser {
             var r = this.parseMeasure(trig_token_obj, s);
             s = r.s;
             measures.push(r.measure);
-            r = this.nextToken(s);
+            r = this.nextToken(s); // Not skipped spaces are already consumed.
+            if(r.sss.length > 0){ this.onParseError("ERROR_WHILE_PARSE_MEASURES"); }
             s = r.s;
             switch (r.type) {
                 case TOKEN_MB:
@@ -606,12 +616,18 @@ export class Parser {
                     switch (tr.type) {
                         case TOKEN_NL:
                         case TOKEN_END:
-                        case TOKEN_BACK_SLASH:
+                        case TOKEN_BACK_SLASH:{
                             loop_flg = false;
                             // Register the last boundary to the serialize object of last measure as it is not regisereted.
-                            //var lastm = measures[measures.length-1];
+                            var lastm = measures[measures.length-1];
+                            let lastb = lastm.elements[lastm.elements.length-1];
+                            if(! (lastb instanceof common.MeasureBoundary)){
+                                throw "Invalid state";
+                            }
+                            lastb.exportTarget = true;
                             //lastm.serialize.push(lastm.elements[lastm.elements.length-1]);
                             break;
+                        }
                         default:
                             // Measure definition is continuing
                             trig_token_obj = r;

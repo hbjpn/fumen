@@ -270,6 +270,15 @@ export class Track {
         }
         return code;
     }
+
+    insertBefore(elem, newelem){
+        if(elem){
+            let i = this.reharsal_groups.indexOf(elem);
+            this.reharsal_groups.insert(i, newelem);
+        }else{
+            this.reharsal_groups.push(newelem);
+        }
+    }
 }
 
 export class ReharsalGroup {
@@ -289,6 +298,42 @@ export class ReharsalGroup {
             code += this.serialize[si].exportCode();
         }
         return code;
+    }
+
+    insertBefore(elem, newelem){
+        if(elem){
+            let i = this.blocks.indexOf(elem);
+            this.blocks.insert(i, newelem);
+        }else{
+            this.blocks.push(newelem);
+        }
+    }
+}
+
+export class Block {
+    constructor(){
+        this.measures = new Array();
+    }
+
+    exportCode(){
+        let code = "";
+        for(let si=0; si<this.serialize.length; ++si){
+            code += this.serialize[si].exportCode();
+        }
+        return code;
+    }
+
+    concat(newmeasures){
+        this.measures = this.measures.concat(newmeasures);
+    }
+
+    insertBefore(elem, newelem){
+        if(elem){
+            let i = this.measures.indexOf(elem);
+            this.measures.insert(i, newelem);
+        }else{
+            this.measures.push(newelem);
+        }
     }
 }
 
@@ -323,6 +368,15 @@ export class Measure {
         }
         return code;
     }
+
+    insertBefore(elem, newelem){
+        if(elem){
+            let i = this.elements.indexOf(elem);
+            this.elements.insert(i, newelem);
+        }else{
+            this.elements.push(newelem);
+        }
+    }
 }
 
 export class Rest{
@@ -352,6 +406,10 @@ export class Simile {
 
 export class Chord {
     constructor(chord_str) {
+        this.init(chord_str);
+    }
+
+    init(chord_str){
         this.chord_str = chord_str;
 
         this.is_valid_chord = true;
@@ -449,6 +507,10 @@ export class Chord {
         }
 
         return [tranposed_note, transposed_base_note];
+    }
+
+    forEachMid(callback){
+        Chord.chordMidSerialize(this.mid_elems, callback);
     }
 
     exportCode(){
@@ -643,8 +705,9 @@ export class Chord {
     /**
      * Convert the data structure (chord mids) to flat list and code string.
      * @param {*} p Data structure of chord mids.
+     * @param {*} callback callback called for each leaf element. (Called synchrnously)
      */
-    static chordMidSerialize(p){
+    static chordMidSerialize(p, callback){
         let objholder = [];
         if(!p){
             return null; // Invalid code
@@ -670,6 +733,7 @@ export class Chord {
                     let e = value[i];
                     if(e.type == "tension"){
                         serialize.push({value:e.value,param:e.param});
+                        if(callback) callback(e);
                         code += (e.value+e.param||"");
                     }else if(e.type == "tensionlist"){
                         code += tensionlist(e.value, serialize);
@@ -688,18 +752,22 @@ export class Chord {
                 case "triad":
                     objholder.push({type:r.value, param:r.param});
                     code += r.value + (r.param||"");
+                    if(callback) callback(r);
                     break;
                 case "M":
                     objholder.push({type:r.type});
                     code += r.value;
+                    if(callback) callback(r);
                     break;
                 case "dig":
                     objholder.push({type:"dig", param: r.value});
                     code += r.value;
+                    if(callback) callback(r);
                     break;
                 case "sus":
                     objholder.push({type:r.value, param:r.param});
                     code += r.value + (r.param||"");
+                    if(callback) callback(r);
                     break;
                 case "tensionlist":{
                     // normalize +, - to #, b

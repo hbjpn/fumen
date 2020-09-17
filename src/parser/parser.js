@@ -776,13 +776,11 @@ export class Parser {
                     r.measures[0].macros = common.deepcopy(latest_macros);
 
                     if (currentReharsalGroup.blocks.length == 0) {
-                        currentReharsalGroup.blocks.push(new Array());
-                        currentReharsalGroup.blocks[0] = currentReharsalGroup.blocks[0].concat(
-                            r.measures
-                        );
+                        currentReharsalGroup.blocks.push(new common.Block());
+                        currentReharsalGroup.blocks[0].concat(r.measures);
                     } else {
                         if (this.context.contiguous_line_break >= 2) {
-                            currentReharsalGroup.blocks.push(new Array());
+                            currentReharsalGroup.blocks.push(new common.Block());
                         } else if (this.context.contiguous_line_break == 1){
                             // When new line in the fumen code in the middle of a block
                             r.measures[0].raw_new_line = true;
@@ -790,11 +788,7 @@ export class Parser {
                         r.measures[0].align = current_align;
 
                         var blocklen = currentReharsalGroup.blocks.length;
-                        currentReharsalGroup.blocks[
-                            blocklen - 1
-                        ] = currentReharsalGroup.blocks[blocklen - 1].concat(
-                            r.measures
-                        );
+                        currentReharsalGroup.blocks[blocklen - 1].concat(r.measures);
                     }
                     currentReharsalGroup.serialize = currentReharsalGroup.serialize.concat(r.measures);
                     this.context.contiguous_line_break = 0;

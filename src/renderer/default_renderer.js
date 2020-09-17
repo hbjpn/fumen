@@ -898,7 +898,7 @@ export class DefaultRenderer extends Renderer {
             for (let i = 0; i < track.reharsal_groups.length; ++i) {
                 let rg = track.reharsal_groups[i];
                 for (var bi = 0; bi < rg.blocks.length; ++bi) {
-                    var block_measures = rg.blocks[bi];
+                    var block_measures = rg.blocks[bi].measures;
                     for (var ml = 0; ml < block_measures.length; ++ml) {
                         var m = block_measures[ml];
                         if(m.raw_new_line){
@@ -952,7 +952,7 @@ export class DefaultRenderer extends Renderer {
             for (let i = 0; i < track.reharsal_groups.length; ++i) {
                 let rg = track.reharsal_groups[i];
                 for (let bi = 0; bi < rg.blocks.length; ++bi) {
-                    let block_measures = rg.blocks[bi];
+                    let block_measures = rg.blocks[bi].measures;
                     for (let ml = 0; ml < block_measures.length; ++ml) {
                         let m = block_measures[ml];
                         meas_row.push(m);

@@ -11707,7 +11707,7 @@ module.exports = function (module) {
 /*!******************************!*\
   !*** ./src/common/common.js ***!
   \******************************/
-/*! exports provided: shallowcopy, deepcopy, myLog2, charIsIn, charStartsWithAmong, TaskQueue, Task, WHOLE_NOTE_LENGTH, Track, ReharsalGroup, Measure, Rest, Simile, Chord, LoopIndicator, Space, LongRestIndicator, Time, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, DaCapo, DalSegno, Segno, Coda, ToCoda, Fine, Comment, Lyric, Macro, RawSpaces, TemplateString, HitManager */
+/*! exports provided: shallowcopy, deepcopy, myLog2, charIsIn, charStartsWithAmong, TaskQueue, Task, WHOLE_NOTE_LENGTH, Track, ReharsalGroup, Block, Measure, Rest, Simile, Chord, LoopIndicator, Space, LongRestIndicator, Time, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, DaCapo, DalSegno, Segno, Coda, ToCoda, Fine, Comment, Lyric, Macro, RawSpaces, TemplateString, HitManager */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11722,6 +11722,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WHOLE_NOTE_LENGTH", function() { return WHOLE_NOTE_LENGTH; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Track", function() { return Track; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ReharsalGroup", function() { return ReharsalGroup; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Block", function() { return Block; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Measure", function() { return Measure; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Rest", function() { return Rest; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Simile", function() { return Simile; });
@@ -12060,6 +12061,16 @@ var Track = /*#__PURE__*/function () {
 
       return code;
     }
+  }, {
+    key: "insertBefore",
+    value: function insertBefore(elem, newelem) {
+      if (elem) {
+        var i = this.reharsal_groups.indexOf(elem);
+        this.reharsal_groups.insert(i, newelem);
+      } else {
+        this.reharsal_groups.push(newelem);
+      }
+    }
   }]);
 
   return Track;
@@ -12090,9 +12101,52 @@ var ReharsalGroup = /*#__PURE__*/function () {
 
       return code;
     }
+  }, {
+    key: "insertBefore",
+    value: function insertBefore(elem, newelem) {
+      var i = -1;
+      var block = null;
+
+      for (var _i = 0; _i < this.blocks.length; ++_i) {
+        block = this.blocks[_i];
+        _i = this.blocks[_i].indexOf(elem);
+        if (_i >= 0) break;
+      }
+
+      if (i >= 0) {
+        block.insert(i, newelem);
+      }
+    }
   }]);
 
   return ReharsalGroup;
+}();
+var Block = /*#__PURE__*/function () {
+  function Block() {
+    _classCallCheck(this, Block);
+
+    this.measures = new Array();
+  }
+
+  _createClass(Block, [{
+    key: "exportCode",
+    value: function exportCode() {
+      var code = "";
+
+      for (var si = 0; si < this.serialize.length; ++si) {
+        code += this.serialize[si].exportCode();
+      }
+
+      return code;
+    }
+  }, {
+    key: "concat",
+    value: function concat(newmeasures) {
+      this.measures = this.measures.concat(newmeasures);
+    }
+  }]);
+
+  return Block;
 }();
 var Measure = /*#__PURE__*/function () {
   function Measure() {
@@ -12131,6 +12185,9 @@ var Measure = /*#__PURE__*/function () {
 
       return code;
     }
+  }, {
+    key: "insertBefore",
+    value: function insertBefore() {}
   }]);
 
   return Measure;
@@ -12179,65 +12236,70 @@ var Chord = /*#__PURE__*/function () {
   function Chord(chord_str) {
     _classCallCheck(this, Chord);
 
-    this.chord_str = chord_str;
-    this.is_valid_chord = true;
-    this.renderprop = {};
-    this.exceptinal_comment = null;
-    this.lyric = null; //this.lengthIndicator = null;
-
-    this.note_group_list = null; // Analyze Chord symbol
-
-    var r = /^(((A|B|C|D|E|F|G)(#|b)?([^/:]*))?(\/(A|B|C|D|E|F|G)(#|b)?)?)(:((([\d_]+)(\.*)(~)?)|(\(.*\))))?/;
-    var m = chord_str.match(r); //console.log(m);
-    // [0] is entire matched string
-
-    this.chord_name_str = null;
-
-    if (m && m[0] != "") {
-      this.chord_name_str = m[1];
-      this.note_base = m[3];
-      this.sharp_flat = m[4];
-      this.mid_str = m[5];
-      this.base_note_base = m[7];
-      this.base_sharp_flat = m[8];
-      this.mid_elems = null;
-
-      if (this.mid_str !== undefined) {
-        var ret = Chord.parseChordMids(this.mid_str);
-
-        if (ret !== null) {
-          this.mid_elems = ret[0];
-          this.mid_elem_objs = ret[1];
-        }
-
-        this.is_valid_chord = ret !== null;
-      }
-
-      if (m[9]) {
-        if (m[11]) {
-          var li = Chord.parseLengthIndicator(m[11]); //this.length_s = m[11];
-          //this.length = li.length;
-
-          this.note_group_list = [{
-            lengthIndicator: li,
-            note_profiles: null
-          }]; //this.tie = li.has_tie;
-        } else if (m[15]) {
-          // Notes
-          var _ret = Chord.parseChordNotes(m[15]);
-
-          if (_ret.length > 0) // empty note_group_list does not work
-            this.note_group_list = _ret; //console.log(this.note_group_list);
-        }
-      } //this.tie = (m[14] == '~');
-
-    } else {
-      this.chord_name_str = this.chord_str;
-      this.is_valid_chord = false;
-    }
+    this.init(chord_str);
   }
 
   _createClass(Chord, [{
+    key: "init",
+    value: function init(chord_str) {
+      this.chord_str = chord_str;
+      this.is_valid_chord = true;
+      this.renderprop = {};
+      this.exceptinal_comment = null;
+      this.lyric = null; //this.lengthIndicator = null;
+
+      this.note_group_list = null; // Analyze Chord symbol
+
+      var r = /^(((A|B|C|D|E|F|G)(#|b)?([^/:]*))?(\/(A|B|C|D|E|F|G)(#|b)?)?)(:((([\d_]+)(\.*)(~)?)|(\(.*\))))?/;
+      var m = chord_str.match(r); //console.log(m);
+      // [0] is entire matched string
+
+      this.chord_name_str = null;
+
+      if (m && m[0] != "") {
+        this.chord_name_str = m[1];
+        this.note_base = m[3];
+        this.sharp_flat = m[4];
+        this.mid_str = m[5];
+        this.base_note_base = m[7];
+        this.base_sharp_flat = m[8];
+        this.mid_elems = null;
+
+        if (this.mid_str !== undefined) {
+          var ret = Chord.parseChordMids(this.mid_str);
+
+          if (ret !== null) {
+            this.mid_elems = ret[0];
+            this.mid_elem_objs = ret[1];
+          }
+
+          this.is_valid_chord = ret !== null;
+        }
+
+        if (m[9]) {
+          if (m[11]) {
+            var li = Chord.parseLengthIndicator(m[11]); //this.length_s = m[11];
+            //this.length = li.length;
+
+            this.note_group_list = [{
+              lengthIndicator: li,
+              note_profiles: null
+            }]; //this.tie = li.has_tie;
+          } else if (m[15]) {
+            // Notes
+            var _ret = Chord.parseChordNotes(m[15]);
+
+            if (_ret.length > 0) // empty note_group_list does not work
+              this.note_group_list = _ret; //console.log(this.note_group_list);
+          }
+        } //this.tie = (m[14] == '~');
+
+      } else {
+        this.chord_name_str = this.chord_str;
+        this.is_valid_chord = false;
+      }
+    }
+  }, {
     key: "setException",
     value: function setException(exceptional_comment) {
       this.exceptinal_comment = exceptional_comment;
@@ -12266,6 +12328,11 @@ var Chord = /*#__PURE__*/function () {
       }
 
       return [tranposed_note, transposed_base_note];
+    }
+  }, {
+    key: "forEachMid",
+    value: function forEachMid(callback) {
+      Chord.chordMidSerialize(this.mid_elems, callback);
     }
   }, {
     key: "exportCode",
@@ -12582,11 +12649,12 @@ var Chord = /*#__PURE__*/function () {
     /**
      * Convert the data structure (chord mids) to flat list and code string.
      * @param {*} p Data structure of chord mids.
+     * @param {*} callback callback called for each leaf element. (Called synchrnously)
      */
 
   }, {
     key: "chordMidSerialize",
-    value: function chordMidSerialize(p) {
+    value: function chordMidSerialize(p, callback) {
       var objholder = [];
 
       if (!p) {
@@ -12622,6 +12690,7 @@ var Chord = /*#__PURE__*/function () {
                 value: e.value,
                 param: e.param
               });
+              if (callback) callback(e);
               code += e.value + e.param || "";
             } else if (e.type == "tensionlist") {
               code += tensionlist(e.value, serialize);
@@ -12646,6 +12715,7 @@ var Chord = /*#__PURE__*/function () {
                 param: r.param
               });
               code += r.value + (r.param || "");
+              if (callback) callback(r);
               break;
 
             case "M":
@@ -12653,6 +12723,7 @@ var Chord = /*#__PURE__*/function () {
                 type: r.type
               });
               code += r.value;
+              if (callback) callback(r);
               break;
 
             case "dig":
@@ -12661,6 +12732,7 @@ var Chord = /*#__PURE__*/function () {
                 param: r.value
               });
               code += r.value;
+              if (callback) callback(r);
               break;
 
             case "sus":
@@ -12669,6 +12741,7 @@ var Chord = /*#__PURE__*/function () {
                 param: r.param
               });
               code += r.value + (r.param || "");
+              if (callback) callback(r);
               break;
 
             case "tensionlist":
@@ -14570,11 +14643,14 @@ var Parser = /*#__PURE__*/function () {
             r.measures[0].macros = _common_common__WEBPACK_IMPORTED_MODULE_1__["deepcopy"](latest_macros);
 
             if (currentReharsalGroup.blocks.length == 0) {
-              currentReharsalGroup.blocks.push(new Array());
-              currentReharsalGroup.blocks[0] = currentReharsalGroup.blocks[0].concat(r.measures);
+              currentReharsalGroup.blocks.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["Block"]()); //currentReharsalGroup.blocks[0] = currentReharsalGroup.blocks[0].concat(
+              //    r.measures
+              //);
+
+              currentReharsalGroup.blocks[0].concat(r.measures);
             } else {
               if (this.context.contiguous_line_break >= 2) {
-                currentReharsalGroup.blocks.push(new Array());
+                currentReharsalGroup.blocks.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["Block"]());
               } else if (this.context.contiguous_line_break == 1) {
                 // When new line in the fumen code in the middle of a block
                 r.measures[0].raw_new_line = true;
@@ -14582,7 +14658,13 @@ var Parser = /*#__PURE__*/function () {
 
               r.measures[0].align = current_align;
               var blocklen = currentReharsalGroup.blocks.length;
-              currentReharsalGroup.blocks[blocklen - 1] = currentReharsalGroup.blocks[blocklen - 1].concat(r.measures);
+              /*currentReharsalGroup.blocks[
+                  blocklen - 1
+              ] = currentReharsalGroup.blocks[blocklen - 1].concat(
+                  r.measures
+              );*/
+
+              currentReharsalGroup.blocks[blocklen - 1].concat(r.measures);
             }
 
             currentReharsalGroup.serialize = currentReharsalGroup.serialize.concat(r.measures);
@@ -15614,7 +15696,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                     rg = track.reharsal_groups[i];
 
                     for (bi = 0; bi < rg.blocks.length; ++bi) {
-                      block_measures = rg.blocks[bi];
+                      block_measures = rg.blocks[bi].measures;
 
                       for (ml = 0; ml < block_measures.length; ++ml) {
                         m = block_measures[ml];
@@ -15686,7 +15768,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                     _rg = track.reharsal_groups[_i3];
 
                     for (_bi = 0; _bi < _rg.blocks.length; ++_bi) {
-                      _block_measures = _rg.blocks[_bi];
+                      _block_measures = _rg.blocks[_bi].measures;
 
                       for (_ml = 0; _ml < _block_measures.length; ++_ml) {
                         _m = _block_measures[_ml];

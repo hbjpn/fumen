@@ -11707,7 +11707,7 @@ module.exports = function (module) {
 /*!******************************!*\
   !*** ./src/common/common.js ***!
   \******************************/
-/*! exports provided: shallowcopy, deepcopy, myLog2, charIsIn, charStartsWithAmong, TaskQueue, Task, WHOLE_NOTE_LENGTH, Track, ReharsalGroup, Block, Measure, Rest, Simile, Chord, LoopIndicator, Space, LongRestIndicator, Time, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, DaCapo, DalSegno, Segno, Coda, ToCoda, Fine, Comment, Lyric, Macro, RawSpaces, TemplateString, HitManager */
+/*! exports provided: shallowcopy, deepcopy, myLog2, charIsIn, charStartsWithAmong, WHOLE_NOTE_LENGTH, Track, ReharsalGroup, Block, Measure, Rest, Simile, Chord, LoopIndicator, Space, LongRestIndicator, Time, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, DaCapo, DalSegno, Segno, Coda, ToCoda, Fine, Comment, Lyric, Macro, RawSpaces, TemplateString, HitManager */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11717,8 +11717,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "myLog2", function() { return myLog2; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "charIsIn", function() { return charIsIn; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "charStartsWithAmong", function() { return charStartsWithAmong; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TaskQueue", function() { return TaskQueue; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Task", function() { return Task; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WHOLE_NOTE_LENGTH", function() { return WHOLE_NOTE_LENGTH; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Track", function() { return Track; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ReharsalGroup", function() { return ReharsalGroup; });
@@ -11838,175 +11836,7 @@ function charStartsWithAmong(s, strlist) {
   }
 
   return null;
-}
-var TaskQueue = /*#__PURE__*/function () {
-  function TaskQueue() {
-    _classCallCheck(this, TaskQueue);
-
-    this.task_queue = {};
-  }
-
-  _createClass(TaskQueue, [{
-    key: "enqueue",
-    value: function enqueue(task) {
-      if (task.task_type !== null) {
-        // All the tasks with same task type are serialized
-        // Tasks are queued
-        if (!(task.task_type in this.task_queue)) this.task_queue[task.task_type] = [];
-        this.task_queue[task.task_type].push(task);
-        console.log("Enqueue task for queue '" + task.task_type + "'. Size = " + this.task_queue[task.task_type].length);
-
-        if (this.task_queue[task.task_type].length == 1) {
-          setTimeout(task.run.bind(task), 0);
-        }
-      } else {
-        setTimeout(task.run.bind(task), 0); // Just run it immediately if task type is null
-      }
-    }
-  }, {
-    key: "finish",
-    value: function finish(task) {
-      // Finish notification from task
-      if (task.task_type === null) return;
-
-      if (!(task.task_type in this.task_queue) || this.task_queue[task.task_type].length == 0 || this.task_queue[task.task_type][0] != task) {
-        alert("Invalid task execution state detected");
-      } else {
-        var q = this.task_queue[task.task_type];
-        q.shift();
-        console.log("Dequeue task for queue '" + task.task_type + "'. Size = " + q.length);
-
-        if (q.length > 0) {
-          // TODO : Set timer for next task run ?
-          q[0].run();
-        }
-      }
-    }
-  }]);
-
-  return TaskQueue;
-}(); //
-// Task and Task queue class
-//
-
-var the_task_queue = new TaskQueue();
-var Task = /*#__PURE__*/function () {
-  function Task(context, worker, task_type, queue) {
-    _classCallCheck(this, Task);
-
-    if (task_type === undefined) task_type = null;
-    this.task_type = task_type;
-    this.context = context;
-    this.worker = worker;
-    this.promise = null;
-    this.resolve = null;
-    this.reject = null;
-    var me = this; // TODO : Promise.defer may be better, but chrome does not support it yet.
-
-    this.promise = new Promise(function (resolve, reject) {
-      me.resolve = resolve;
-      me.reject = reject;
-    });
-    queue = queue === undefined ? null : queue;
-    this.queue = queue ? queue : the_task_queue;
-    this.queue.enqueue(this);
-  }
-
-  _createClass(Task, [{
-    key: "then",
-    value: function then(func) {
-      return this.promise.then(func);
-    }
-  }, {
-    key: "run",
-    value: function run() {
-      var ret = this.worker(this.context);
-
-      if (ret instanceof Task || ret instanceof Promise) {
-        // Asynchronous execution of worker
-        var me = this;
-        ret.then(function (taskret) {
-          // End of task
-          // false, 0, true, ... all the values other than Task and undefined is land in here.
-          // ret is treated as a parameter for resolve
-          if (me.resolve === null) {
-            alert("Invalid state detected");
-          }
-
-          me.resolve(taskret); // Note that resolve will invoke then "later".
-          // finish notification will invoke a next task.
-          // It is required to wait a 1msec to keep order of the "then" and next task call.
-
-          setTimeout(me.queue.finish.bind(me.queue, me), 1);
-        });
-      } else {
-        // End of task
-        // false, 0, true, ... all the values other than Task and undefined is land in here.
-        // ret is treated as a parameter for resolve
-        if (this.resolve === null) {
-          alert("Invalid state detected");
-        }
-
-        this.resolve(ret); // Note that resolve will invoke then "later".
-        // finish notification will invoke a next task.
-        // It is required to wait a 1msec to keep order of the "then" and next task call.
-
-        setTimeout(this.queue.finish.bind(this.queue, this), 1);
-      }
-    }
-  }, {
-    key: "enqueueFunctionCall",
-    value: function enqueueFunctionCall(func, farg, task_type) {
-      return new Task({
-        func: func,
-        farg: farg,
-        i: 0,
-        func_ret: undefined
-      }, function (ctx) {
-        if (ctx.i > 0) return true; // Waste function's result : TODO : Handle function result to then
-
-        var ret = ctx.func.apply(null, ctx.farg);
-        ctx.func_ret = ret;
-        if (ret === undefined) ret = true; // Force to exit 1 time even if the function returns undefined.
-
-        ++ctx.i;
-        return ret;
-      }, task_type); // Make one shot task
-    }
-  }, {
-    key: "_ForeachWorker",
-    value: function _ForeachWorker(wc) {
-      // Temporal queue to serialize following 2 tasks
-      var tempqueue = new TaskQueue();
-      new Task(wc, function (wc2) {
-        return wc2.worker(wc2.loopindex, wc2.looptarget.length, wc2.looptarget[wc2.loopindex], wc2.context);
-      }, 0, tempqueue);
-      var task = new Task(wc, function (wc2) {
-        if (wc2.loopindex == wc2.looptarget.length - 1) {
-          return wc2.context;
-        }
-
-        var newwc = shallowcopy(wc2);
-        newwc.loopindex++;
-        return new Task(newwc, Task._ForeachWorker, null);
-      }, 0, tempqueue);
-      return task;
-    }
-  }, {
-    key: "Foreach",
-    value: function Foreach(looptarget, worker, context, task_type) {
-      var wcontext = {};
-      wcontext.worker = worker;
-      wcontext.context = context;
-      wcontext.looptarget = looptarget;
-      wcontext.loopindex = 0;
-      var task = new Task(wcontext, Task._ForeachWorker, task_type);
-      return task;
-    }
-  }]);
-
-  return Task;
-}(); //
+} //
 // Parser
 //
 
@@ -12104,17 +11934,11 @@ var ReharsalGroup = /*#__PURE__*/function () {
   }, {
     key: "insertBefore",
     value: function insertBefore(elem, newelem) {
-      var i = -1;
-      var block = null;
-
-      for (var _i = 0; _i < this.blocks.length; ++_i) {
-        block = this.blocks[_i];
-        _i = this.blocks[_i].indexOf(elem);
-        if (_i >= 0) break;
-      }
-
-      if (i >= 0) {
-        block.insert(i, newelem);
+      if (elem) {
+        var i = this.blocks.indexOf(elem);
+        this.blocks.insert(i, newelem);
+      } else {
+        this.blocks.push(newelem);
       }
     }
   }]);
@@ -12143,6 +11967,16 @@ var Block = /*#__PURE__*/function () {
     key: "concat",
     value: function concat(newmeasures) {
       this.measures = this.measures.concat(newmeasures);
+    }
+  }, {
+    key: "insertBefore",
+    value: function insertBefore(elem, newelem) {
+      if (elem) {
+        var i = this.measures.indexOf(elem);
+        this.measures.insert(i, newelem);
+      } else {
+        this.measures.push(newelem);
+      }
     }
   }]);
 
@@ -12187,7 +12021,14 @@ var Measure = /*#__PURE__*/function () {
     }
   }, {
     key: "insertBefore",
-    value: function insertBefore() {}
+    value: function insertBefore(elem, newelem) {
+      if (elem) {
+        var i = this.elements.indexOf(elem);
+        this.elements.insert(i, newelem);
+      } else {
+        this.elements.push(newelem);
+      }
+    }
   }]);
 
   return Measure;
@@ -14643,10 +14484,7 @@ var Parser = /*#__PURE__*/function () {
             r.measures[0].macros = _common_common__WEBPACK_IMPORTED_MODULE_1__["deepcopy"](latest_macros);
 
             if (currentReharsalGroup.blocks.length == 0) {
-              currentReharsalGroup.blocks.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["Block"]()); //currentReharsalGroup.blocks[0] = currentReharsalGroup.blocks[0].concat(
-              //    r.measures
-              //);
-
+              currentReharsalGroup.blocks.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["Block"]());
               currentReharsalGroup.blocks[0].concat(r.measures);
             } else {
               if (this.context.contiguous_line_break >= 2) {
@@ -14658,12 +14496,6 @@ var Parser = /*#__PURE__*/function () {
 
               r.measures[0].align = current_align;
               var blocklen = currentReharsalGroup.blocks.length;
-              /*currentReharsalGroup.blocks[
-                  blocklen - 1
-              ] = currentReharsalGroup.blocks[blocklen - 1].concat(
-                  r.measures
-              );*/
-
               currentReharsalGroup.blocks[blocklen - 1].concat(r.measures);
             }
 

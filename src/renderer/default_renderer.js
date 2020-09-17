@@ -894,11 +894,14 @@ export class DefaultRenderer extends Renderer {
         let meas_row_rg_ids = [];
         let meas_row_block_ids = [];
 
+        let reharsal_groups = track.reharsal_groups.filter(e=>e instanceof common.ReharsalGroup);
+
         if(param.row_gen_mode == "default"){
-            for (let i = 0; i < track.reharsal_groups.length; ++i) {
-                let rg = track.reharsal_groups[i];
-                for (var bi = 0; bi < rg.blocks.length; ++bi) {
-                    var block_measures = rg.blocks[bi].measures;
+            for (let i = 0; i < reharsal_groups.length; ++i) {
+                let rg = reharsal_groups[i];
+                let blocks = rg.blocks.filter(e=>e instanceof common.Block);
+                for (var bi = 0; bi < blocks.length; ++bi) {
+                    var block_measures = blocks[bi].measures.filter(e=>e instanceof common.Measure);
                     for (var ml = 0; ml < block_measures.length; ++ml) {
                         var m = block_measures[ml];
                         if(m.raw_new_line){
@@ -933,8 +936,8 @@ export class DefaultRenderer extends Renderer {
             // last reharsal group  and first row of the reharsal group
             // tmp variable : shallow copy of meas_row_list
             let meas_row_list_inv = meas_row_list.slice().reverse();
-            for (let i = 0; i < track.reharsal_groups.length; ++i) {
-                let rg = track.reharsal_groups[i];
+            for (let i = 0; i < reharsal_groups.length; ++i) {
+                let rg = reharsal_groups[i];
                 if(rg.inline){
                     let dst_idx = meas_row_list_inv.findIndex(e=>{return e.meas_row_rg_ids.includes(i-1);});
                     dst_idx = meas_row_list.length - 1 - dst_idx; // Convert to index for non-inversed array
@@ -949,8 +952,8 @@ export class DefaultRenderer extends Renderer {
                 }
             }
         }else if(param.row_gen_mode == "constant_n_meas"){
-            for (let i = 0; i < track.reharsal_groups.length; ++i) {
-                let rg = track.reharsal_groups[i];
+            for (let i = 0; i < reharsal_groups.length; ++i) {
+                let rg = reharsal_groups[i];
                 for (let bi = 0; bi < rg.blocks.length; ++bi) {
                     let block_measures = rg.blocks[bi].measures;
                     for (let ml = 0; ml < block_measures.length; ++ml) {
@@ -992,7 +995,7 @@ export class DefaultRenderer extends Renderer {
             while(true){
                 let meas_index = e.meas_row_rg_ids.findIndex(e=>e==next_reharsal_group_index);
                 if(meas_index < 0) break;
-                e.meas_row[meas_index].renderprop.rg_from_here = track.reharsal_groups[next_reharsal_group_index];
+                e.meas_row[meas_index].renderprop.rg_from_here = reharsal_groups[next_reharsal_group_index];
                 ++next_reharsal_group_index;
             }
 

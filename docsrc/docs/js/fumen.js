@@ -11848,7 +11848,6 @@ var Track = /*#__PURE__*/function () {
     this.reharsal_groups = new Array();
     this.macros = deepcopy(MACRO_DEFAULT);
     this.pre_render_info = {};
-    this.serialize = []; // Store serialized data structure
   } // Utility functions open for external
 
 
@@ -11884,11 +11883,9 @@ var Track = /*#__PURE__*/function () {
     key: "exportCode",
     value: function exportCode() {
       var code = "";
-
-      for (var si = 0; si < this.serialize.length; ++si) {
-        code += this.serialize[si].exportCode();
-      }
-
+      this.reharsal_groups.forEach(function (rg) {
+        code += rg.exportCode();
+      });
       return code;
     }
   }, {
@@ -11917,18 +11914,15 @@ var ReharsalGroup = /*#__PURE__*/function () {
     this.blocks = new Array(); // Blocks in the reharsal groups
 
     this.macros = deepcopy(MACRO_DEFAULT);
-    this.serialize = [];
   }
 
   _createClass(ReharsalGroup, [{
     key: "exportCode",
     value: function exportCode() {
       var code = "";
-
-      for (var si = 0; si < this.serialize.length; ++si) {
-        code += this.serialize[si].exportCode();
-      }
-
+      this.blocks.forEach(function (b) {
+        code += b.exportCode();
+      });
       return code;
     }
   }, {
@@ -11956,11 +11950,9 @@ var Block = /*#__PURE__*/function () {
     key: "exportCode",
     value: function exportCode() {
       var code = "";
-
-      for (var si = 0; si < this.serialize.length; ++si) {
-        code += this.serialize[si].exportCode();
-      }
-
+      this.measures.forEach(function (m) {
+        code += m.exportCode();
+      });
       return code;
     }
   }, {
@@ -12005,18 +11997,15 @@ var Measure = /*#__PURE__*/function () {
     this.renderprop = {}; // Rendering information storage
 
     this.macros = deepcopy(MACRO_DEFAULT);
-    this.serialize = [];
   }
 
   _createClass(Measure, [{
     key: "exportCode",
     value: function exportCode() {
       var code = "";
-
-      for (var si = 0; si < this.serialize.length; ++si) {
-        code += this.serialize[si].exportCode();
-      }
-
+      this.elements.forEach(function (e) {
+        code += e.exportCode();
+      });
       return code;
     }
   }, {
@@ -14109,10 +14098,7 @@ var Parser = /*#__PURE__*/function () {
       // note:
       //   | or || or ||: or :|| at the end of the measure will "not" be consumed.
       var measure = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Measure"]();
-      var serialize = measure.serialize;
       if (trig_token_obj.type == TOKEN_MB) measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundaryMark"](1));else if (trig_token_obj.type == TOKEN_MB_DBL) measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundaryMark"](2));else if (trig_token_obj.type == TOKEN_MB_LOOP_END) measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopEndMark"](trig_token_obj.param));else if (trig_token_obj.type == TOKEN_MB_LOOP_BEGIN) measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopBeginMark"]());else if (trig_token_obj.type == TOKEN_MB_LOOP_BOTH) measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopBothMark"](trig_token_obj.param));else if (trig_token_obj.type == TOKEN_MB_FIN) measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundaryFinMark"]());else if (trig_token_obj.type == TOKEN_MB_DBL_SIMILE) measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundaryDblSimile"]());
-      serialize.push(measure.elements[measure.elements.length - 1]); // Register boundary
-
       var loop_flg = true;
       var atmark_associated_elements = [];
 
@@ -14131,13 +14117,12 @@ var Parser = /*#__PURE__*/function () {
 
       while (loop_flg) {
         var r = this.nextToken(s);
-        if (r.sss.length > 0) serialize.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.sss));
+        if (r.sss.length > 0) measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.sss));
         var m = null;
 
         switch (r.type) {
           case TOKEN_COMMA:
             measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["Space"](1));
-            serialize.push(measure.elements[measure.elements.length - 1]);
             s = r.s;
             break;
 
@@ -14150,21 +14135,18 @@ var Parser = /*#__PURE__*/function () {
             }
 
             measure.elements.push(chord);
-            serialize.push(measure.elements[measure.elements.length - 1]);
             s = r.s;
             break;
 
           case TOKEN_STRING_SQ:
             var comment = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Comment"](r.token);
             measure.elements.push(comment);
-            serialize.push(measure.elements[measure.elements.length - 1]);
             s = r.s;
             break;
 
           case TOKEN_STRING_GRAVE_ACCENT:
             var lyric = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Lyric"](r.token);
             measure.elements.push(lyric);
-            serialize.push(measure.elements[measure.elements.length - 1]);
             s = r.s;
             break;
 
@@ -14176,7 +14158,6 @@ var Parser = /*#__PURE__*/function () {
             }
 
             measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["LongRestIndicator"](parseInt(r.token)));
-            serialize.push(measure.elements[measure.elements.length - 1]);
             s = r.s;
             break;
 
@@ -14185,7 +14166,6 @@ var Parser = /*#__PURE__*/function () {
             //atmark_detected = true;
             atmark_associated_elements.push(measure.elements[measure.elements.length - 1]); // Remember the previous element
 
-            serialize.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
             s = r.s;
             break;
 
@@ -14195,7 +14175,6 @@ var Parser = /*#__PURE__*/function () {
 
             if (rr.rest !== null) {
               measure.elements.push(rr.rest);
-              serialize.push(measure.elements[measure.elements.length - 1]);
               s = rr.s;
               break;
             }
@@ -14214,7 +14193,6 @@ var Parser = /*#__PURE__*/function () {
             }
 
             measure.elements.push(r.chord);
-            serialize.push(measure.elements[measure.elements.length - 1]);
             s = r.s;
             break;
 
@@ -14222,28 +14200,24 @@ var Parser = /*#__PURE__*/function () {
             // Only simile symbol at this moment
             r = this.parseInMeasSimile(r.token, r.type, r.s);
             measure.elements.push(r.simile);
-            serialize.push(measure.elements[measure.elements.length - 1]);
             s = r.s;
             break;
 
           case TOKEN_BRACKET_LA:
             r = this.parseSign(r.type, r.s);
             measure.elements.push(r.sign);
-            serialize.push(measure.elements[measure.elements.length - 1]);
             s = r.s;
             break;
 
           case TOKEN_BRACKET_LR:
             r = this.parseTime(r.type, r.s);
             measure.elements.push(r.time);
-            serialize.push(measure.elements[measure.elements.length - 1]);
             s = r.s;
             break;
 
           case TOKEN_BRACKET_LS:
             r = this.parseLoopIndicator(r.type, r.s);
             measure.elements.push(r.loopIndicator);
-            serialize.push(measure.elements[measure.elements.length - 1]);
             s = r.s;
             break;
           // Boundaries.
@@ -14329,9 +14303,9 @@ var Parser = /*#__PURE__*/function () {
               case TOKEN_END:
               case TOKEN_BACK_SLASH:
                 loop_flg = false; // Register the last boundary to the serialize object of last measure as it is not regisereted.
+                //var lastm = measures[measures.length-1];
+                //lastm.serialize.push(lastm.elements[lastm.elements.length-1]);
 
-                var lastm = measures[measures.length - 1];
-                lastm.serialize.push(lastm.elements[lastm.elements.length - 1]);
                 break;
 
               default:
@@ -14426,10 +14400,11 @@ var Parser = /*#__PURE__*/function () {
         }; // eslint-disable-next-line no-constant-condition
 
         while (true) {
-          r = this.nextToken(code);
-          var serialize = currentReharsalGroup ? currentReharsalGroup.serialize : track.serialize;
-          if (r.sss.length > 0) serialize.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.sss)); // remember skipped spaces
-          //console.log(r);
+          r = this.nextToken(code); //let serialize = currentReharsalGroup ? currentReharsalGroup.serialize : track.serialize;
+          //if(r.sss.length > 0) serialize.push(new common.RawSpaces(r.sss)); // remember skipped spaces
+
+          var currentStorage = currentReharsalGroup ? currentReharsalGroup.blocks : track.reharsal_groups;
+          if (r.sss.length > 0) currentStorage.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.sss)); //console.log(r);
 
           if (r.type == TOKEN_END) {
             break;
@@ -14438,35 +14413,38 @@ var Parser = /*#__PURE__*/function () {
             this.context.contiguous_line_break += 1;
             current_align = "expand"; // default is expand
 
-            serialize.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
+            currentStorage.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
           } else if (r.type == TOKEN_BACK_SLASH) {
             // Expect TOKEN_NL 
-            serialize.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
+            currentStorage.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
             r = this.nextToken(r.s);
             if (r.type != TOKEN_NL) this.onParseError("INVALID CODE DETECTED AFTER BACK SLASH");
             this.context.line += 1;
-            serialize.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.sss));
-            serialize.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token)); // Does not count as line break
+            currentStorage.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.sss));
+            currentStorage.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token)); // Does not count as line break
           } else if (r.type == TOKEN_BRACKET_RA) {
             // Right aligh indicoator > which is outside measure
             current_align = "right";
-            serialize.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
+            currentStorage.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
           } else if (r.type == TOKEN_BRACKET_LA) {
             // Right aligh indicoator > which is outside measure
             current_align = "left";
-            serialize.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
+            currentStorage.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
           } else if (r.type == TOKEN_BRACKET_LS) {
             // Reset latest_macros
             latest_macros = {}; //console.log("Reharsal Mark:"+r.reharsalMarkName);
 
             if (currentReharsalGroup != null) track.reharsal_groups.push(currentReharsalGroup);
-            var inline = this.context.contiguous_line_break <= 1 && track.reharsal_groups.length > 0 && // 1st RG is always non-inline
-            track.reharsal_groups[track.reharsal_groups.length - 1].blocks.length > 0; // previous reharsal group has at least one block(measure)
+            var rgs = track.reharsal_groups.filter(function (e) {
+              return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["ReharsalGroup"];
+            });
+            var inline = this.context.contiguous_line_break <= 1 && rgs.length > 0 && // 1st RG is always non-inline
+            rgs[rgs.length - 1].blocks.length > 0; // previous reharsal group has at least one block(measure)
 
             r = this.parseReharsalMark(r.token, r.s);
-            currentReharsalGroup = new _common_common__WEBPACK_IMPORTED_MODULE_1__["ReharsalGroup"](r.reharsalMarkName, inline);
-            track.serialize.push(currentReharsalGroup);
-            currentReharsalGroup.serialize.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["TemplateString"]("[${name}]", currentReharsalGroup)); //console.log(currentReharsalGroup);
+            currentReharsalGroup = new _common_common__WEBPACK_IMPORTED_MODULE_1__["ReharsalGroup"](r.reharsalMarkName, inline); //track.reharsal_groups.push(currentReharsalGroup);
+
+            currentReharsalGroup.blocks.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["TemplateString"]("[${name}]", currentReharsalGroup)); //console.log(currentReharsalGroup);
 
             this.context.contiguous_line_break = 0;
           } else if ([TOKEN_MB, TOKEN_MB_DBL, TOKEN_MB_LOOP_BEGIN, TOKEN_MB_LOOP_BOTH, TOKEN_MB_FIN, TOKEN_MB_DBL_SIMILE].indexOf(r.type) >= 0) {
@@ -14474,32 +14452,38 @@ var Parser = /*#__PURE__*/function () {
             // then define default anonymous reharsal mark
             // Anonymous reharsal group
             if (currentReharsalGroup == null) {
-              currentReharsalGroup = new _common_common__WEBPACK_IMPORTED_MODULE_1__["ReharsalGroup"]("", false);
-              track.serialize.push(currentReharsalGroup);
+              currentReharsalGroup = new _common_common__WEBPACK_IMPORTED_MODULE_1__["ReharsalGroup"]("", false); //track.serialize.push(currentReharsalGroup);
+
               this.context.contiguous_line_break = 0;
             }
 
             r = this.parseMeasures(r, r.s); // Apply par row macros
 
             r.measures[0].macros = _common_common__WEBPACK_IMPORTED_MODULE_1__["deepcopy"](latest_macros);
+            var blocks = currentReharsalGroup.blocks.filter(function (e) {
+              return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Block"];
+            });
+            var block = null;
 
-            if (currentReharsalGroup.blocks.length == 0) {
-              currentReharsalGroup.blocks.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["Block"]());
-              currentReharsalGroup.blocks[0].concat(r.measures);
+            if (blocks.length == 0) {
+              block = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Block"]();
+              block.concat(r.measures);
+              currentReharsalGroup.blocks.push(block);
             } else {
               if (this.context.contiguous_line_break >= 2) {
-                currentReharsalGroup.blocks.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["Block"]());
+                block = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Block"]();
+                currentReharsalGroup.blocks.push(block);
               } else if (this.context.contiguous_line_break == 1) {
                 // When new line in the fumen code in the middle of a block
+                block = blocks[blocks.length - 1];
                 r.measures[0].raw_new_line = true;
               }
 
               r.measures[0].align = current_align;
-              var blocklen = currentReharsalGroup.blocks.length;
-              currentReharsalGroup.blocks[blocklen - 1].concat(r.measures);
-            }
+              block.concat(r.measures);
+            } //currentReharsalGroup.serialize = currentReharsalGroup.serialize.concat(r.measures);
 
-            currentReharsalGroup.serialize = currentReharsalGroup.serialize.concat(r.measures);
+
             this.context.contiguous_line_break = 0;
           } else if (r.type == TOKEN_PERCENT) {
             // Expression
@@ -14512,7 +14496,7 @@ var Parser = /*#__PURE__*/function () {
             }
 
             latest_macros[r.key] = r.value;
-            serialize.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["Macro"](r.key, r.value));
+            currentStorage.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["Macro"](r.key, r.value));
             this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this macro
           } else {
             console.log(r.token);
@@ -15480,7 +15464,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       var _render_impl = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(track, param) {
         var _this4 = this;
 
-        var global_macros, show_header, show_footer, origin, y_title_offset, y_subtitle_offset, y_artist_offset, x_offset, width, music_context, meas_row_list, accum_block_id, meas_row, meas_row_rg_ids, meas_row_block_ids, i, rg, bi, block_measures, ml, m, meas_row_list_inv, _loop4, _i2, _i3, _rg, _bi, _block_measures, _ml, _m, y_stacks, next_reharsal_group_index, yse, y_base_screening, headerHeight, dammy_music_context, current_accum_block_id, reharsal_x_width_info, pei, x, row_elements_list, _ml2, _m2, elements, geret, yprof, x_width_info, canvas, score_height, y_base, max_header_height, canvaslist, _pei, _row_elements_list3, ylimit, r;
+        var global_macros, show_header, show_footer, origin, y_title_offset, y_subtitle_offset, y_artist_offset, x_offset, width, music_context, meas_row_list, accum_block_id, meas_row, meas_row_rg_ids, meas_row_block_ids, reharsal_groups, i, rg, blocks, bi, block_measures, ml, m, meas_row_list_inv, _loop4, _i2, _i3, _rg, _bi, _block_measures, _ml, _m, y_stacks, next_reharsal_group_index, yse, y_base_screening, headerHeight, dammy_music_context, current_accum_block_id, reharsal_x_width_info, pei, x, row_elements_list, _ml2, _m2, elements, geret, yprof, x_width_info, canvas, score_height, y_base, max_header_height, canvaslist, _pei, _row_elements_list3, ylimit, r;
 
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
@@ -15522,13 +15506,21 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 meas_row = [];
                 meas_row_rg_ids = [];
                 meas_row_block_ids = [];
+                reharsal_groups = track.reharsal_groups.filter(function (e) {
+                  return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["ReharsalGroup"];
+                });
 
                 if (param.row_gen_mode == "default") {
-                  for (i = 0; i < track.reharsal_groups.length; ++i) {
-                    rg = track.reharsal_groups[i];
+                  for (i = 0; i < reharsal_groups.length; ++i) {
+                    rg = reharsal_groups[i];
+                    blocks = rg.blocks.filter(function (e) {
+                      return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Block"];
+                    });
 
-                    for (bi = 0; bi < rg.blocks.length; ++bi) {
-                      block_measures = rg.blocks[bi].measures;
+                    for (bi = 0; bi < blocks.length; ++bi) {
+                      block_measures = blocks[bi].measures.filter(function (e) {
+                        return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Measure"];
+                      });
 
                       for (ml = 0; ml < block_measures.length; ++ml) {
                         m = block_measures[ml];
@@ -15570,7 +15562,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                   meas_row_list_inv = meas_row_list.slice().reverse();
 
                   _loop4 = function _loop4(_i2) {
-                    var rg = track.reharsal_groups[_i2];
+                    var rg = reharsal_groups[_i2];
 
                     if (rg.inline) {
                       var dst_idx = meas_row_list_inv.findIndex(function (e) {
@@ -15592,12 +15584,12 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                     }
                   };
 
-                  for (_i2 = 0; _i2 < track.reharsal_groups.length; ++_i2) {
+                  for (_i2 = 0; _i2 < reharsal_groups.length; ++_i2) {
                     _loop4(_i2);
                   }
                 } else if (param.row_gen_mode == "constant_n_meas") {
-                  for (_i3 = 0; _i3 < track.reharsal_groups.length; ++_i3) {
-                    _rg = track.reharsal_groups[_i3];
+                  for (_i3 = 0; _i3 < reharsal_groups.length; ++_i3) {
+                    _rg = reharsal_groups[_i3];
 
                     for (_bi = 0; _bi < _rg.blocks.length; ++_bi) {
                       _block_measures = _rg.blocks[_bi].measures;
@@ -15644,7 +15636,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                       return e == next_reharsal_group_index;
                     });
                     if (meas_index < 0) break;
-                    e.meas_row[meas_index].renderprop.rg_from_here = track.reharsal_groups[next_reharsal_group_index];
+                    e.meas_row[meas_index].renderprop.rg_from_here = reharsal_groups[next_reharsal_group_index];
                     ++next_reharsal_group_index;
                   }
 
@@ -15727,20 +15719,20 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 reharsal_x_width_info = [];
                 pei = 0;
 
-              case 28:
+              case 29:
                 if (!(pei < yse.length)) {
-                  _context.next = 43;
+                  _context.next = 44;
                   break;
                 }
 
                 if (!(yse[pei].type == "titles")) {
-                  _context.next = 31;
+                  _context.next = 32;
                   break;
                 }
 
-                return _context.abrupt("continue", 40);
+                return _context.abrupt("continue", 41);
 
-              case 31:
+              case 32:
                 x = yse[pei].param.x_offset_left;
 
                 if (!yse[pei].block_ids.includes(current_accum_block_id)) {
@@ -15778,12 +15770,12 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                   this.determine_rooms(yse[pei].param, reharsal_x_width_info);
                 }
 
-              case 40:
+              case 41:
                 ++pei;
-                _context.next = 28;
+                _context.next = 29;
                 break;
 
-              case 43:
+              case 44:
                 y_base_screening += param.y_offset_bottom; // Here y_base_screening means the height of the total score if single page applied.
 
                 if (show_footer) y_base_screening += param.y_footer_offset; // Release memCanvas
@@ -15796,17 +15788,17 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 canvas = this.canvas;
 
                 if (!(canvas == null)) {
-                  _context.next = 52;
+                  _context.next = 53;
                   break;
                 }
 
-                _context.next = 51;
+                _context.next = 52;
                 return this.canvas_provider();
 
-              case 51:
+              case 52:
                 canvas = _context.sent;
 
-              case 52:
+              case 53:
                 _graphic__WEBPACK_IMPORTED_MODULE_3__["SetupHiDPICanvas"](canvas, this.param.paper_width / this.param.text_size, this.param.paper_height > 0 ? this.param.paper_height / this.param.text_size : y_base_screening, this.param.pixel_ratio, this.param.text_size);
                 this.hitManager.setGlobalScale(this.param.text_size, this.param.text_size);
                 score_height = (this.param.paper_height > 0 ? this.param.paper_height / this.param.text_size : y_base_screening) / param.nrow;
@@ -15827,23 +15819,23 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 canvaslist = [canvas];
                 _pei = 0;
 
-              case 60:
+              case 61:
                 if (!(_pei < yse.length)) {
-                  _context.next = 88;
+                  _context.next = 89;
                   break;
                 }
 
                 if (!(yse[_pei].type == "titles")) {
-                  _context.next = 64;
+                  _context.next = 65;
                   break;
                 }
 
-                _context.next = 85;
+                _context.next = 86;
                 break;
 
-              case 64:
+              case 65:
                 if (!(yse[_pei].type == "meas")) {
-                  _context.next = 85;
+                  _context.next = 86;
                   break;
                 }
 
@@ -15852,44 +15844,44 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 r = this.render_measure_row_simplified(x_offset, canvas, yse[_pei].macros, _row_elements_list3, yse[_pei].pm, yse[_pei].nm, y_base, yse[_pei].param, true, yse[_pei].macros.REHARSAL_MARK_POSITION == "Inner", ylimit, music_context);
 
                 if (r) {
-                  _context.next = 84;
+                  _context.next = 85;
                   break;
                 }
 
                 if (!(y_base == origin.y + yse[_pei].param.y_offset_top)) {
-                  _context.next = 73;
+                  _context.next = 74;
                   break;
                 }
 
                 throw "Paper height is too short to fit in single row";
 
-              case 73:
+              case 74:
                 y_base = origin.y + yse[_pei].param.y_offset_top;
 
-              case 74:
+              case 75:
                 this.hitManager.commit(canvas);
-                _context.next = 77;
+                _context.next = 78;
                 return this.canvas_provider();
 
-              case 77:
+              case 78:
                 canvas = _context.sent;
                 canvaslist.push(canvas);
                 _graphic__WEBPACK_IMPORTED_MODULE_3__["SetupHiDPICanvas"](canvas, yse[_pei].param.paper_width / this.param.text_size, yse[_pei].param.paper_height / this.param.text_size, this.param.pixel_ratio, this.param.text_size);
                 if (param.background_color) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasRect"](canvas, 0, 0, this.param.paper_width / this.param.text_size, this.param.paper_height / this.param.text_size, param.background_color); // try again next page
 
                 _pei = _pei - 1;
-                _context.next = 85;
+                _context.next = 86;
                 break;
-
-              case 84:
-                y_base = r.y_base;
 
               case 85:
+                y_base = r.y_base;
+
+              case 86:
                 ++_pei;
-                _context.next = 60;
+                _context.next = 61;
                 break;
 
-              case 88:
+              case 89:
                 if (show_footer) this.render_footer(canvaslist, global_macros.TITLE + "/" + global_macros.ARTIST, this.param.origin.y + score_height - this.param.y_footer_offset);
                 this.hitManager.commit(canvas);
                 return _context.abrupt("return", {
@@ -15897,7 +15889,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                   height: score_height
                 });
 
-              case 91:
+              case 92:
               case "end":
                 return _context.stop();
             }
@@ -18876,14 +18868,18 @@ var Renderer = /*#__PURE__*/function () {
       var simile_body_idx = new Array();
       var simile_measure_wide_idx = new Array();
       var simile_objs = new Array();
+      var musical_elements = m.elements.filter(function (e) {
+        var musicComp = !(e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"]) || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["TemplateString"];
+        return musicComp;
+      });
 
-      for (var ei = 0; ei < m.elements.length; ++ei) {
-        var e = m.elements[ei];
+      for (var ei = 0; ei < musical_elements.length; ++ei) {
+        var e = musical_elements[ei];
 
         if (ei == 0) {
           // First element must be boundary
           header_elements.push(e);
-        } else if (ei == m.elements.length - 1) {
+        } else if (ei == musical_elements.length - 1) {
           // Last element must be boundary
           footer_elements.push(e);
         } else {

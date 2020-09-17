@@ -60,7 +60,6 @@ export class Track {
         this.reharsal_groups = new Array();
         this.macros = deepcopy(MACRO_DEFAULT);
         this.pre_render_info = {};
-        this.serialize = []; // Store serialized data structure
     }
     
     // Utility functions open for external
@@ -85,9 +84,9 @@ export class Track {
 
     exportCode(){
         let code = "";
-        for(let si=0; si<this.serialize.length; ++si){
-            code += this.serialize[si].exportCode();
-        }
+        this.reharsal_groups.forEach(rg=>{
+            code += rg.exportCode();
+        });
         return code;
     }
 
@@ -108,15 +107,13 @@ export class ReharsalGroup {
         //	this.measures = new Array();
         this.blocks = new Array(); // Blocks in the reharsal groups
         this.macros = deepcopy(MACRO_DEFAULT);
-
-        this.serialize = [];
     }
 
     exportCode(){
         let code = "";
-        for(let si=0; si<this.serialize.length; ++si){
-            code += this.serialize[si].exportCode();
-        }
+        this.blocks.forEach(b=>{
+            code += b.exportCode();
+        });
         return code;
     }
 
@@ -137,9 +134,9 @@ export class Block {
 
     exportCode(){
         let code = "";
-        for(let si=0; si<this.serialize.length; ++si){
-            code += this.serialize[si].exportCode();
-        }
+        this.measures.forEach(m=>{
+            code += m.exportCode();
+        });
         return code;
     }
 
@@ -177,15 +174,13 @@ export class Measure {
 
         this.renderprop = {}; // Rendering information storage
         this.macros = deepcopy(MACRO_DEFAULT);
-
-        this.serialize = [];
     }
 
     exportCode(){
         let code = "";
-        for(let si=0; si<this.serialize.length; ++si){
-            code += this.serialize[si].exportCode();
-        }
+        this.elements.forEach(e=>{
+            code += e.exportCode();
+        });
         return code;
     }
 

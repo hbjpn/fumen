@@ -104,12 +104,17 @@ export class Renderer {
         var simile_measure_wide_idx = new Array();
         var simile_objs = new Array();
 
-        for (var ei = 0; ei < m.elements.length; ++ei) {
-            var e = m.elements[ei];
+        let musical_elements = m.elements.filter(e=>{
+            let musicComp =  ! ( e instanceof common.RawSpaces) || (e instanceof common.TemplateString);
+            return musicComp;
+        });
+
+        for (var ei = 0; ei < musical_elements.length; ++ei) {
+            var e = musical_elements[ei];
             if (ei == 0) {
                 // First element must be boundary
                 header_elements.push(e);
-            } else if (ei == m.elements.length - 1) {
+            } else if (ei == musical_elements.length - 1) {
                 // Last element must be boundary
                 footer_elements.push(e);
             } else {

@@ -12425,8 +12425,8 @@ var Chord = /*#__PURE__*/function () {
       }
 
       function tension(ps) {
-        var ds = ["add9", "add2", "#11", "+11", "b13", "-13", "no3", "no5", "#9", "+9", "b9", "-9", "+5", "-5"];
-        var th = [3, 3, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1]; // type and digit split pos
+        var ds = ["add9", "add2", "#11", "+11", "b13", "-13", "no3", "no5", "#9", "+9", "b9", "-9", "+5", "#5", "-5", "b5"];
+        var th = [3, 3, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1]; // type and digit split pos
 
         if (ps.length == 0) return null;
         var r = charStartsWithAmong(ps, ds);

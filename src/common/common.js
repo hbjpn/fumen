@@ -387,7 +387,7 @@ export class Chord {
             let r = null;
 
             //let fs = [root, triad, M, digit, sus, tensionlist, chordend];
-            let fs = [triad, M, digit, sus, tensionlist, chordend];
+            let fs = [triad, M, digit, sus, tensiondelim, tensionlist, chordend];
 
             for(let fi = 0; fi < fs.length; ++fi){
                 r = fs[fi](ps);
@@ -440,6 +440,11 @@ export class Chord {
             }
             return null;
         }
+        function tensiondelim(ps){
+            if(ps.length == 0) return null;
+            if(ps[0] == ",") return {s: ps.substr(1), structure: {type: "tensiondelim", value:","}};
+            return null;
+        }
         // Brnaches in tensionlist
         function tensionlist(ps){
             if(ps.length==0) return null;
@@ -487,13 +492,13 @@ export class Chord {
             return null;
         }
         function tension(ps){
-            let ds = ["add9","add2","#11","+11","b13","-13","no3","no5","#9","+9","b9","-9","+5","-5"];
-            let th = [3,     3,      1,    1,    1,    1,    2,    2,    1,   1,   1,   1,   1,   1  ]; // type and digit split pos
+            let ds = ["add9","add2","#11","+11","b13","-13","no3","no5","#9","+9","b9","-9","+5","#5","-5","b5"];
+            let th = [3,     3,      1,    1,    1,    1,    2,    2,    1,   1,   1,   1,   1,   1,   1,   1  ]; // type and digit split pos
             if(ps.length == 0) return null;
             let r = charStartsWithAmong(ps, ds);
             if(r){
                 return {
-                    s:ps.substr(r.s.length),
+                    s:  ps.substr(r.s.length),
                     structure: {
                         type:"tension", 
                         value:ds[r.index].substr(0, th[r.index]),
@@ -586,6 +591,9 @@ export class Chord {
                     objholder.push({type:r.value, param:r.param});
                     code += r.value + (r.param||"");
                     if(callback) callback(r);
+                    break;
+                case "tensiondelim": 
+                    code += r.value; // ",";
                     break;
                 case "tensionlist":{
                     // normalize +, - to #, b

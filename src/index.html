@@ -117,7 +117,7 @@
                     $('#edit_component_input').val(sel_component.exportCode());
                     $('#edit_component_ok').click(function(){
                       $('#edit_component').modal('hide');       
-                      sel_component.chord_str = $('#edit_component_input').val();
+                      sel_component.init($('#edit_component_input').val());
                       document.getElementById("code").value = track.exportCode(); 
                       window.setTimeout(draw, 1);      
                     });

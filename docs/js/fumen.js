@@ -12190,12 +12190,12 @@ var Chord = /*#__PURE__*/function () {
               for (var j = 0; j < nps.length; ++j) {
                 var note = nps[j].note; //
 
-                code += note.name + note.octave + Chord.accCodeToStr(note.accidental);
+                code += note.name + Chord.accCodeToStr(note.accidental) + note.octave;
                 if (j < nps.length - 1) code += ",";
               }
 
               code += ")";
-              code += ":" + li.base + ".".repeat(li.numdot) + (li.has_tie ? "~" : "");
+              code += ":" + li.base + (li.renpu ? "_" + li.renpu : "") + ".".repeat(li.numdot) + (li.has_tie ? "~" : "");
               if (i < this.note_group_list.length - 1) code += ",";
             }
 
@@ -12203,7 +12203,7 @@ var Chord = /*#__PURE__*/function () {
           } else {
             // simple length indicator
             var _li = this.note_group_list[0].lengthIndicator;
-            code += ":" + _li.base + ".".repeat(_li.numdot) + (_li.has_tie ? "~" : "");
+            code += ":" + _li.base + (_li.renpu ? "_" + _li.renpu : "") + ".".repeat(_li.numdot) + (_li.has_tie ? "~" : "");
           }
         }
 
@@ -12995,19 +12995,23 @@ var Time = /*#__PURE__*/function () {
   return Time;
 }();
 var MeasureBoundary = function MeasureBoundary() {
+  var exportTarget = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
   _classCallCheck(this, MeasureBoundary);
+
+  this.exportTarget = exportTarget;
 };
 var MeasureBoundaryMark = /*#__PURE__*/function (_MeasureBoundary) {
   _inherits(MeasureBoundaryMark, _MeasureBoundary);
 
   var _super = _createSuper(MeasureBoundaryMark);
 
-  function MeasureBoundaryMark(nline) {
+  function MeasureBoundaryMark(nline, exportTarget) {
     var _this;
 
     _classCallCheck(this, MeasureBoundaryMark);
 
-    _this = _super.call(this);
+    _this = _super.call(this, exportTarget);
     _this.nline = nline;
     return _this;
   }
@@ -13015,7 +13019,7 @@ var MeasureBoundaryMark = /*#__PURE__*/function (_MeasureBoundary) {
   _createClass(MeasureBoundaryMark, [{
     key: "exportCode",
     value: function exportCode() {
-      return "|".repeat(this.nline);
+      return this.exportTarget ? "|".repeat(this.nline) : "";
     }
   }]);
 
@@ -13027,15 +13031,17 @@ var LoopBeginMark = /*#__PURE__*/function (_MeasureBoundary2) {
   var _super2 = _createSuper(LoopBeginMark);
 
   function LoopBeginMark() {
+    var exportTarget = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
     _classCallCheck(this, LoopBeginMark);
 
-    return _super2.call(this);
+    return _super2.call(this, exportTarget);
   }
 
   _createClass(LoopBeginMark, [{
     key: "exportCode",
     value: function exportCode() {
-      return "||:";
+      return this.exportTarget ? "||:" : "";
     }
   }]);
 
@@ -13049,9 +13055,11 @@ var LoopEndMark = /*#__PURE__*/function (_MeasureBoundary3) {
   function LoopEndMark(param) {
     var _this2;
 
+    var exportTarget = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+
     _classCallCheck(this, LoopEndMark);
 
-    _this2 = _super3.call(this);
+    _this2 = _super3.call(this, exportTarget);
     _this2.times = param.times;
     _this2.ntimes = param.ntimes;
     return _this2;
@@ -13061,7 +13069,7 @@ var LoopEndMark = /*#__PURE__*/function (_MeasureBoundary3) {
     key: "exportCode",
     value: function exportCode() {
       var ts = this.ntimes ? "xX" : "x".concat(this.times);
-      return ":||" + (ts == "x2" ? "" : ts); // x2 is not explicity stated : TODO : align with what wrote in the code.
+      return this.exportTarget ? ":||" + (ts == "x2" ? "" : ts) : ""; // x2 is not explicity stated : TODO : align with what wrote in the code.
     }
   }]);
 
@@ -13075,9 +13083,11 @@ var LoopBothMark = /*#__PURE__*/function (_MeasureBoundary4) {
   function LoopBothMark(param) {
     var _this3;
 
+    var exportTarget = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+
     _classCallCheck(this, LoopBothMark);
 
-    _this3 = _super4.call(this);
+    _this3 = _super4.call(this, exportTarget);
     _this3.times = param.times;
     _this3.ntimes = param.ntimes;
     return _this3;
@@ -13087,7 +13097,7 @@ var LoopBothMark = /*#__PURE__*/function (_MeasureBoundary4) {
     key: "exportCode",
     value: function exportCode() {
       var ts = this.ntimes ? "xX" : "x".concat(this.times);
-      return ":||:" + (ts == "x2" ? "" : ts); // x2 is not explicity stated : TODO : align with what wrote in the code.
+      return this.exportTarget ? ":||:" + (ts == "x2" ? "" : ts) : ""; // x2 is not explicity stated : TODO : align with what wrote in the code.
     }
   }]);
 
@@ -13099,15 +13109,17 @@ var MeasureBoundaryFinMark = /*#__PURE__*/function (_MeasureBoundary5) {
   var _super5 = _createSuper(MeasureBoundaryFinMark);
 
   function MeasureBoundaryFinMark() {
+    var exportTarget = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
     _classCallCheck(this, MeasureBoundaryFinMark);
 
-    return _super5.call(this);
+    return _super5.call(this, exportTarget);
   }
 
   _createClass(MeasureBoundaryFinMark, [{
     key: "exportCode",
     value: function exportCode() {
-      return "||.";
+      return this.exportTarget ? "||." : "";
     }
   }]);
 
@@ -13119,15 +13131,17 @@ var MeasureBoundaryDblSimile = /*#__PURE__*/function (_MeasureBoundary6) {
   var _super6 = _createSuper(MeasureBoundaryDblSimile);
 
   function MeasureBoundaryDblSimile() {
+    var exportTarget = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
     _classCallCheck(this, MeasureBoundaryDblSimile);
 
-    return _super6.call(this);
+    return _super6.call(this, exportTarget);
   }
 
   _createClass(MeasureBoundaryDblSimile, [{
     key: "exportCode",
     value: function exportCode() {
-      return "./|/.";
+      return this.exportTarget ? "./|/." : "";
     }
   }]);
 
@@ -13833,9 +13847,12 @@ var Parser = /*#__PURE__*/function () {
         return {
           token: w,
           s: s.substr(w.length),
+          // updated string 
           type: TOKEN_WORD,
           ss: skipped_spaces,
-          sss: skipped_spaces_str
+          // number of skipped spaces
+          sss: skipped_spaces_str // skipped spaces string
+
         };
       }
 
@@ -13908,7 +13925,7 @@ var Parser = /*#__PURE__*/function () {
     key: "parseReharsalMark",
     value: function parseReharsalMark(trig_token, s) {
       // prerequisite
-      //   trig_token_type = TOKEN_BRACKET_LS
+      //   trig_token_type = TOKEN_BRACKET_LS, consumed
       // Expects "Word characters"
       // exit state
       //   "]" is consumed.
@@ -14166,7 +14183,9 @@ var Parser = /*#__PURE__*/function () {
             //atmark_detected = true;
             atmark_associated_elements.push(measure.elements[measure.elements.length - 1]); // Remember the previous element
 
-            s = r.s;
+            s = r.s; // This is not registered explicitly as muscal symbol but as non-musical symbol
+
+            measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
             break;
 
           case TOKEN_WORD:
@@ -14221,42 +14240,50 @@ var Parser = /*#__PURE__*/function () {
             s = r.s;
             break;
           // Boundaries.
-          // Not consumed. Not registed to sealize object as it will be registred at as the begin boundary of next measure.
+          // Boundary is not consumed as it will be drawn as the first element of next measure.
+          // Not that if spaces exists before the boundary, spaces are consumed.
           // For the last measure, it still needst to be registed, which is done outside this function. 
 
           case TOKEN_MB:
-            measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundaryMark"](1));
+            measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundaryMark"](1, false));
             loop_flg = false;
+            s = s.substr(r.sss.length);
             break;
 
           case TOKEN_MB_DBL:
-            measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundaryMark"](2));
+            measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundaryMark"](2, false));
             loop_flg = false;
+            s = s.substr(r.sss.length);
             break;
 
           case TOKEN_MB_LOOP_END:
-            measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopEndMark"](r.param));
+            measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopEndMark"](r.param, false));
             loop_flg = false;
+            s = s.substr(r.sss.length);
             break;
 
           case TOKEN_MB_LOOP_BEGIN:
-            measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopBeginMark"]());
+            measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopBeginMark"](false));
             loop_flg = false;
+            s = s.substr(r.sss.length);
             break;
 
           case TOKEN_MB_LOOP_BOTH:
-            measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopBothMark"](r.param));
+            measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopBothMark"](r.param, false));
             loop_flg = false;
+            s = s.substr(r.sss.length);
             break;
 
           case TOKEN_MB_FIN:
-            measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundaryFinMark"]());
+            measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundaryFinMark"](false));
             loop_flg = false;
+            s = s.substr(r.sss.length);
             break;
 
           case TOKEN_MB_DBL_SIMILE:
-            measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundaryDblSimile"]());
+            measure.elements.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundaryDblSimile"](false));
             loop_flg = false;
+            s = s.substr(r.sss.length);
             break;
 
           default:
@@ -14274,10 +14301,10 @@ var Parser = /*#__PURE__*/function () {
     key: "parseMeasures",
     value: function parseMeasures(trig_token_obj, s) {
       // prerequisite :
-      //   trig_token_obj == "|" or "||" or "||:" with params
+      //   trig_token_obj == "|" or "||" or "||:" with params. consumed.
       // Contiguous measures in one row(from raw string perspective) is parsed. Parsing lasts until newline/end/or backslash is detected.
       // After calling this method, context will be out of measure context, that is,
-      // last boundary will be consumed. newline/end/backslash will not be consumed.
+      // last boundary and subsequent single NL will be consumed. 
       var measures = new Array();
       var loop_flg = true;
 
@@ -14285,7 +14312,12 @@ var Parser = /*#__PURE__*/function () {
         var r = this.parseMeasure(trig_token_obj, s);
         s = r.s;
         measures.push(r.measure);
-        r = this.nextToken(s);
+        r = this.nextToken(s); // Not skipped spaces are already consumed.
+
+        if (r.sss.length > 0) {
+          this.onParseError("ERROR_WHILE_PARSE_MEASURES");
+        }
+
         s = r.s;
 
         switch (r.type) {
@@ -14302,11 +14334,37 @@ var Parser = /*#__PURE__*/function () {
               case TOKEN_NL:
               case TOKEN_END:
               case TOKEN_BACK_SLASH:
-                loop_flg = false; // Register the last boundary to the serialize object of last measure as it is not regisereted.
-                //var lastm = measures[measures.length-1];
-                //lastm.serialize.push(lastm.elements[lastm.elements.length-1]);
+                {
+                  loop_flg = false; // Register the last boundary to the serialize object of last measure as it is not regisereted.
 
-                break;
+                  var lastm = measures[measures.length - 1];
+                  var lastb = lastm.elements[lastm.elements.length - 1];
+
+                  if (!(lastb instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundary"])) {
+                    throw "Invalid state";
+                  }
+
+                  lastb.exportTarget = true; // Consume the last NLs
+
+                  if (tr.sss.length > 0) measures.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](tr.sss));
+                  if (tr.type != TOKEN_END) measures.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](tr.token));
+                  s = tr.s; // consme
+
+                  if (tr.type == TOKEN_NL || tr.type == TOKEN_BACK_SLASH) {
+                    this.context.line += 1;
+                    this.context.contiguous_line_break += 1;
+                  }
+
+                  if (tr.type == TOKEN_BACK_SLASH) {
+                    r = this.nextToken(r.s);
+                    if (r.type != TOKEN_NL) this.onParseError("INVALID CODE DETECTED AFTER BACK SLASH");
+                    measures.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.sss));
+                    measures.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
+                    s = tr.s; // consume                               
+                  }
+
+                  break;
+                }
 
               default:
                 // Measure definition is continuing
@@ -14400,11 +14458,9 @@ var Parser = /*#__PURE__*/function () {
         }; // eslint-disable-next-line no-constant-condition
 
         while (true) {
-          r = this.nextToken(code); //let serialize = currentReharsalGroup ? currentReharsalGroup.serialize : track.serialize;
-          //if(r.sss.length > 0) serialize.push(new common.RawSpaces(r.sss)); // remember skipped spaces
-
+          r = this.nextToken(code);
           var currentStorage = currentReharsalGroup ? currentReharsalGroup.blocks : track.reharsal_groups;
-          if (r.sss.length > 0) currentStorage.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.sss)); //console.log(r);
+          if (r.sss.length > 0) currentStorage.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.sss));
 
           if (r.type == TOKEN_END) {
             break;
@@ -14457,17 +14513,14 @@ var Parser = /*#__PURE__*/function () {
               this.context.contiguous_line_break = 0;
             }
 
-            r = this.parseMeasures(r, r.s); // Apply par row macros
-
-            r.measures[0].macros = _common_common__WEBPACK_IMPORTED_MODULE_1__["deepcopy"](latest_macros);
             var blocks = currentReharsalGroup.blocks.filter(function (e) {
               return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Block"];
             });
             var block = null;
+            var is_new_line_middle_of_block = false;
 
             if (blocks.length == 0) {
               block = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Block"]();
-              block.concat(r.measures);
               currentReharsalGroup.blocks.push(block);
             } else {
               if (this.context.contiguous_line_break >= 2) {
@@ -14476,15 +14529,18 @@ var Parser = /*#__PURE__*/function () {
               } else if (this.context.contiguous_line_break == 1) {
                 // When new line in the fumen code in the middle of a block
                 block = blocks[blocks.length - 1];
-                r.measures[0].raw_new_line = true;
+                is_new_line_middle_of_block = true;
               }
-
-              r.measures[0].align = current_align;
-              block.concat(r.measures);
             } //currentReharsalGroup.serialize = currentReharsalGroup.serialize.concat(r.measures);
 
 
             this.context.contiguous_line_break = 0;
+            r = this.parseMeasures(r, r.s); // Apply par row macros
+
+            r.measures[0].macros = _common_common__WEBPACK_IMPORTED_MODULE_1__["deepcopy"](latest_macros);
+            r.measures[0].align = current_align;
+            if (is_new_line_middle_of_block) r.measures[0].raw_new_line = true;
+            block.concat(r.measures);
           } else if (r.type == TOKEN_PERCENT) {
             // Expression
             r = this.parseMacro(r.s);

@@ -11958,7 +11958,11 @@ var Block = /*#__PURE__*/function () {
   }, {
     key: "concat",
     value: function concat(newmeasures) {
-      this.measures = this.measures.concat(newmeasures);
+      // in-place concat.
+      // do not use concat as the object is replaced.
+      for (var i = 0; i < newmeasures.length; ++i) {
+        this.measures.push(newmeasures[i]);
+      }
     }
   }, {
     key: "insertBefore",
@@ -14434,6 +14438,152 @@ var Parser = /*#__PURE__*/function () {
       }
 
       return headers;
+    } // This function can be called with screening purpose then 
+    // do not change the status unless really the string is consumed.
+
+  }, {
+    key: "parseBlock",
+    value: function parseBlock(s, currentReharsalGroup, latest_macros) {
+      // parase until block boundary is found
+      // block boundary = "[" or 2 successive NL or NOL
+      try {
+        var r = null;
+        var loop_cnt = 0;
+        var block = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Block"]();
+        var current_align = "expand";
+        this.context.contiguous_line_break = 0; // This should be done only if NL is really consumed.
+
+        var currentStorage = block.measures;
+        var num_meas_row = 0;
+        var MAX_LOOP = 1000;
+        var end_of_rg = false; // eslint-disable-next-line no-constant-condition
+
+        while (true) {
+          r = this.nextToken(s);
+          if (r.sss.length > 0) currentStorage.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.sss));
+
+          if (r.type == TOKEN_END) {
+            s = r.s; // explicitly consume the last spaces if any.
+
+            end_of_rg = true;
+            break;
+          } else if (r.type == TOKEN_NL) {
+            this.context.line += 1;
+            this.context.contiguous_line_break += 1;
+            current_align = "expand"; // default is expand
+
+            currentStorage.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token)); //if(this.context.contiguous_line_break >= 2) break; Do not break here. If the first non NL element is found, then break.
+          } else if (r.type == TOKEN_BACK_SLASH) {
+            if (this.context.contiguous_line_break >= 2) break; // Expect TOKEN_NL 
+
+            currentStorage.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
+            r = this.nextToken(r.s);
+            if (r.type != TOKEN_NL) this.onParseError("INVALID CODE DETECTED AFTER BACK SLASH");
+            this.context.line += 1;
+            currentStorage.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.sss));
+            currentStorage.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token)); // Does not count as line break
+          } else if (r.type == TOKEN_BRACKET_RA) {
+            if (this.context.contiguous_line_break >= 2) break; // Right aligh indicoator > which is outside measure
+
+            current_align = "right";
+            currentStorage.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
+          } else if (r.type == TOKEN_BRACKET_LA) {
+            if (this.context.contiguous_line_break >= 2) break; // Right aligh indicoator > which is outside measure
+
+            current_align = "left";
+            currentStorage.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
+          } else if (r.type == TOKEN_BRACKET_LS) {
+            // Next reharsal mark detected.
+            // Do not consume.
+            end_of_rg = true;
+            break;
+          } else if ([TOKEN_MB, TOKEN_MB_DBL, TOKEN_MB_LOOP_BEGIN, TOKEN_MB_LOOP_BOTH, TOKEN_MB_FIN, TOKEN_MB_DBL_SIMILE].indexOf(r.type) >= 0) {
+            if (this.context.contiguous_line_break >= 2) break;
+            var is_new_line_middle_of_block = num_meas_row > 0 && this.context.contiguous_line_break == 1;
+            this.context.contiguous_line_break = 0;
+            r = this.parseMeasures(r, r.s); // the last NL has been consumed.
+            // Apply par row macros
+
+            r.measures[0].macros = _common_common__WEBPACK_IMPORTED_MODULE_1__["deepcopy"](latest_macros);
+            r.measures[0].align = current_align;
+            r.measures[0].raw_new_line = is_new_line_middle_of_block; // mark to the first measure
+
+            block.concat(r.measures);
+            ++num_meas_row;
+          } else if (r.type == TOKEN_PERCENT) {
+            // Expression
+            r = this.parseMacro(r.s);
+            currentReharsalGroup.macros[r.key] = r.value;
+            latest_macros[r.key] = r.value;
+            currentStorage.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["Macro"](r.key, r.value));
+            this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this macro
+          } else {
+            console.log(r.token);
+            this.onParseError("ERROR_WHILE_PARSE_MOST_OUTSIDER");
+          }
+
+          s = r.s;
+          loop_cnt++;
+
+          if (loop_cnt >= MAX_LOOP) {
+            throw "Too much elements or infnite loop detected with unkown reason";
+          }
+        }
+
+        return {
+          block: block,
+          s: s,
+          end_of_rg: end_of_rg
+        };
+      } catch (e) {
+        console.error(e);
+        return null;
+      }
+    }
+    /**
+     * Parse reharsal group
+     * @param {String} s 
+     * @param {String} rgtype "normal","inline","anonymous"
+     */
+
+  }, {
+    key: "parseReharsalGroup",
+    value: function parseReharsalGroup(s, rgtype) {
+      try {
+        var r = null;
+        var latest_macros = {};
+        var rgName = "";
+
+        if (rgtype != "anonymous") {
+          r = this.parseReharsalMark(null, s); // "[" shall be already consumed.
+
+          rgName = r.reharsalMarkName;
+          s = r.s;
+        }
+
+        var rg = new _common_common__WEBPACK_IMPORTED_MODULE_1__["ReharsalGroup"](rgName, rgtype == "inline");
+        if (rgtype != "anonymous") rg.blocks.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["TemplateString"]("[${name}]", rg));
+        this.context.contiguous_line_break = 0;
+        var loop_cnt = 0;
+        var MAX_LOOP = 1000; // eslint-disable-next-line no-constant-condition
+
+        while (true) {
+          r = this.parseBlock(s, rg, latest_macros);
+          rg.blocks.push(r.block);
+          s = r.s;
+          ++loop_cnt;
+          if (loop_cnt >= MAX_LOOP) throw "Too much elements or infnite loop detected with unkown reason";
+          if (r.end_of_rg) break;
+        }
+
+        return {
+          rg: rg,
+          s: s
+        };
+      } catch (e) {
+        console.error(e);
+        return null;
+      }
     }
     /**
      * Parse the fumen markdown code
@@ -14449,9 +14599,7 @@ var Parser = /*#__PURE__*/function () {
         var r = null;
         var loop_cnt = 0;
         var track = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Track"]();
-        var currentReharsalGroup = null;
         var latest_macros = {};
-        var current_align = "expand";
         this.context = {
           line: 0,
           contiguous_line_break: 0
@@ -14459,7 +14607,7 @@ var Parser = /*#__PURE__*/function () {
 
         while (true) {
           r = this.nextToken(code);
-          var currentStorage = currentReharsalGroup ? currentReharsalGroup.blocks : track.reharsal_groups;
+          var currentStorage = track.reharsal_groups;
           if (r.sss.length > 0) currentStorage.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.sss));
 
           if (r.type == TOKEN_END) {
@@ -14467,8 +14615,6 @@ var Parser = /*#__PURE__*/function () {
           } else if (r.type == TOKEN_NL) {
             this.context.line += 1;
             this.context.contiguous_line_break += 1;
-            current_align = "expand"; // default is expand
-
             currentStorage.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
           } else if (r.type == TOKEN_BACK_SLASH) {
             // Expect TOKEN_NL 
@@ -14478,79 +14624,27 @@ var Parser = /*#__PURE__*/function () {
             this.context.line += 1;
             currentStorage.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.sss));
             currentStorage.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token)); // Does not count as line break
-          } else if (r.type == TOKEN_BRACKET_RA) {
-            // Right aligh indicoator > which is outside measure
-            current_align = "right";
-            currentStorage.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
-          } else if (r.type == TOKEN_BRACKET_LA) {
-            // Right aligh indicoator > which is outside measure
-            current_align = "left";
-            currentStorage.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
           } else if (r.type == TOKEN_BRACKET_LS) {
             // Reset latest_macros
-            latest_macros = {}; //console.log("Reharsal Mark:"+r.reharsalMarkName);
-
-            if (currentReharsalGroup != null) track.reharsal_groups.push(currentReharsalGroup);
+            latest_macros = {};
             var rgs = track.reharsal_groups.filter(function (e) {
               return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["ReharsalGroup"];
             });
             var inline = this.context.contiguous_line_break <= 1 && rgs.length > 0 && // 1st RG is always non-inline
             rgs[rgs.length - 1].blocks.length > 0; // previous reharsal group has at least one block(measure)
 
-            r = this.parseReharsalMark(r.token, r.s);
-            currentReharsalGroup = new _common_common__WEBPACK_IMPORTED_MODULE_1__["ReharsalGroup"](r.reharsalMarkName, inline); //track.reharsal_groups.push(currentReharsalGroup);
-
-            currentReharsalGroup.blocks.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["TemplateString"]("[${name}]", currentReharsalGroup)); //console.log(currentReharsalGroup);
-
-            this.context.contiguous_line_break = 0;
-          } else if ([TOKEN_MB, TOKEN_MB_DBL, TOKEN_MB_LOOP_BEGIN, TOKEN_MB_LOOP_BOTH, TOKEN_MB_FIN, TOKEN_MB_DBL_SIMILE].indexOf(r.type) >= 0) {
-            // Exepction : If not reharsal mark is defined and the measure is directly specified, 
-            // then define default anonymous reharsal mark
-            // Anonymous reharsal group
-            if (currentReharsalGroup == null) {
-              currentReharsalGroup = new _common_common__WEBPACK_IMPORTED_MODULE_1__["ReharsalGroup"]("", false); //track.serialize.push(currentReharsalGroup);
-
-              this.context.contiguous_line_break = 0;
-            }
-
-            var blocks = currentReharsalGroup.blocks.filter(function (e) {
-              return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Block"];
-            });
-            var block = null;
-            var is_new_line_middle_of_block = false;
-
-            if (blocks.length == 0) {
-              block = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Block"]();
-              currentReharsalGroup.blocks.push(block);
-            } else {
-              if (this.context.contiguous_line_break >= 2) {
-                block = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Block"]();
-                currentReharsalGroup.blocks.push(block);
-              } else if (this.context.contiguous_line_break == 1) {
-                // When new line in the fumen code in the middle of a block
-                block = blocks[blocks.length - 1];
-                is_new_line_middle_of_block = true;
-              }
-            } //currentReharsalGroup.serialize = currentReharsalGroup.serialize.concat(r.measures);
-
-
-            this.context.contiguous_line_break = 0;
-            r = this.parseMeasures(r, r.s); // Apply par row macros
-
-            r.measures[0].macros = _common_common__WEBPACK_IMPORTED_MODULE_1__["deepcopy"](latest_macros);
-            r.measures[0].align = current_align;
-            if (is_new_line_middle_of_block) r.measures[0].raw_new_line = true;
-            block.concat(r.measures);
+            r = this.parseReharsalGroup(r.s, inline ? "inline" : "normal");
+            currentStorage.push(r.rg); //this.context.contiguous_line_break = 0;
+          } else if ([TOKEN_MB, TOKEN_MB_DBL, TOKEN_MB_LOOP_BEGIN, TOKEN_MB_LOOP_BOTH, TOKEN_MB_FIN, TOKEN_MB_DBL_SIMILE, TOKEN_BRACKET_RA, TOKEN_BRACKET_LA].indexOf(r.type) >= 0) {
+            // Measure appears directly withou reharsal group mark.
+            // If not reharsal mark is defined and the measure is directly specified, 
+            // then default anonymous reharsal mark is generated.
+            r = this.parseReharsalGroup(r.s, "anonymous");
+            currentStorage.push(r.rg);
           } else if (r.type == TOKEN_PERCENT) {
             // Expression
             r = this.parseMacro(r.s);
-
-            if (currentReharsalGroup) {
-              currentReharsalGroup.macros[r.key] = r.value;
-            } else {
-              track.macros[r.key] = r.value;
-            }
-
+            track.macros[r.key] = r.value;
             latest_macros[r.key] = r.value;
             currentStorage.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["Macro"](r.key, r.value));
             this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this macro
@@ -14562,11 +14656,6 @@ var Parser = /*#__PURE__*/function () {
           code = r.s;
           loop_cnt++;
           if (loop_cnt >= 1000) break;
-        }
-
-        if (currentReharsalGroup != null) {
-          track.reharsal_groups.push(currentReharsalGroup);
-          currentReharsalGroup = null;
         }
 
         return track;

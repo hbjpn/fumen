@@ -141,7 +141,10 @@ export class Block {
     }
 
     concat(newmeasures){
-        this.measures = this.measures.concat(newmeasures);
+        // in-place concat.
+        // do not use concat as the object is replaced.
+        for(let i = 0; i < newmeasures.length; ++i)
+            this.measures.push(newmeasures[i]);
     }
 
     insertBefore(elem, newelem){

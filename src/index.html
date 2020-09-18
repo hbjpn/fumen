@@ -62,6 +62,36 @@
          history.replaceState('','','index.html?code='+encodeURIComponent(deflate(code)));
       }
 
+      function drawCursor(entries, rect){
+        if(entries.length > 0){
+          let bb = entries[0].bb;
+          let memCanvas = document.getElementById("memcanvas");
+          memCanvas.style.left = (bb.x[0] + rect.left + window.scrollX) + "px";
+          memCanvas.style.top = (bb.y[0] + rect.top + window.scrollY) +"px";
+          memCanvas.style.width = bb.width()+"px";
+          memCanvas.style.height = bb.height()+"px";
+          memCanvas.width = bb.width();
+          memCanvas.height = bb.height();
+          function draw(canvas, rect){
+            
+            let ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            //ctx.globalCompositeOperation = "xor";
+            //新しいパスを開始する
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = "#FF0000";
+
+            ctx.beginPath();
+            //左から20上から20の位置に幅50高さ50の輪郭の四角形を作成する
+            ctx.rect(0, 0, rect.w, rect.h);
+            //現在のパスを輪郭表示する
+            ctx.stroke();
+            //ctx.globalCompositeOperation = "source-over";
+          }
+          draw(memCanvas, bb.get());
+        }
+      }
+
       function draw(){
             var code = document.getElementById("code").value;
             setUrl(code);
@@ -142,39 +172,7 @@
                     y: e.clientY - rect.top
                   };
                   let entries = renderer.getComponent(canvas, point);
-                  if(entries.length > 0){
-                    let bb = entries[0].bb;
-                    let memCanvas = document.getElementById("memcanvas");
-                    memCanvas.style.left = (bb.x[0] + rect.left + window.scrollX) + "px";
-                    memCanvas.style.top = (bb.y[0] + rect.top + window.scrollY) +"px";
-                    memCanvas.style.width = bb.width()+"px";
-                    memCanvas.style.height = bb.height()+"px";
-                    memCanvas.width = bb.width();
-                    memCanvas.height = bb.height();
-                    function draw(canvas, rect){
-                      
-                      let ctx = canvas.getContext("2d");
-                      ctx.clearRect(0, 0, canvas.width, canvas.height);
-                      //ctx.globalCompositeOperation = "xor";
-                      //新しいパスを開始する
-                      ctx.lineWidth = 2;
-                      ctx.strokeStyle = "#FF0000";
-
-                      ctx.beginPath();
-                      //左から20上から20の位置に幅50高さ50の輪郭の四角形を作成する
-                      ctx.rect(0, 0, rect.w, rect.h);
-                      //現在のパスを輪郭表示する
-                      ctx.stroke();
-                      //ctx.globalCompositeOperation = "source-over";
-                    }
-                    draw(memCanvas, bb.get());
-                  }
-                  /*
-                  if(entries.length > 0)
-                    drawCursor(canvas, entries[0]);
-                  else
-                    drawCursor(null, null);
-                  */
+                  drawCursor(entries, rect);
                 });
               })
               //renderer.hitManager._drawBBs();

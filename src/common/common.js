@@ -1255,7 +1255,8 @@ export class HitManager
             return byc.indexOf(val) !== -1;
         })
         .map((val)=>{
-            return p.objs[val]; 
+            return {obj: p.objs[val].obj, 
+                bb: p.objs[val].bb.clone().scale(this.global_scale.x, this.global_scale.y)};
         });
         
         return hit_objs;

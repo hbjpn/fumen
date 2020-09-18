@@ -47,7 +47,7 @@ export class BoundingBox{
         this.x[0] *= sx;
         this.x[1] *= sx;
         this.y[0] *= sy;
-        this.y[0] *= sy;
+        this.y[1] *= sy;
         return this;
     }
     clone(){

@@ -23,45 +23,7 @@
         origImage: null
       };
 
-      // ref : https://stackoverflow.com/questions/3394193/draw-a-cross-at-the-mouses-location-on-a-canvas-non-persistently
-      function drawCursor(canvas, entry)
-      {
-        if(cursor.comp){
-          var ctx = cursor.canvas.getContext('2d')
-          ctx.drawImage(cursor.origImage,0,0, cursor.origImage.width, cursor.origImage.height, 0, 0, 400, 800);
-        }
-        if(canvas){
-          var savedImage = new Image();
-          savedImage.src = canvas.toDataURL("image/png");
-
-          draw(canvas, entry.bb.get());
-          cursor.canvas = canvas;
-          cursor.comp = entry;
-          cursor.rect = entry.bb.get();
-          cursor.origImage = savedImage;
-        }else{
-          cursor.canvas = null;
-          cursor.comp = null;
-          cursor.origImage = null;
-        }
-
-        function draw(canvas, rect){
-          let ctx = canvas.getContext("2d");
-          //ctx.globalCompositeOperation = "xor";
-          //新しいパスを開始する
-          ctx.lineWidth = 2;
-          ctx.strokeStyle = "#FF0000";
-
-          ctx.beginPath();
-          //左から20上から20の位置に幅50高さ50の輪郭の四角形を作成する
-          ctx.rect(rect.x, rect.y, rect.w, rect.h);
-          //現在のパスを輪郭表示する
-          ctx.stroke();
-          //ctx.globalCompositeOperation = "source-over";
-        }
-      }
-
-
+      let margin = 5;
 
       // Compress
       function deflate(val) {
@@ -145,6 +107,8 @@
             };
 
             var renderer = new Fumen.DefaultRenderer(canvas_provider, param);
+            memCanvas = document.getElementById("memcanvas");
+            //memCanvas = renderer.generateInMemoryCanvas(memCanvas);
             renderer.render(track)
             .then(()=>{
               canvaslist.forEach((canvas)=>{
@@ -178,11 +142,39 @@
                     y: e.clientY - rect.top
                   };
                   let entries = renderer.getComponent(canvas, point);
-                  console.log(entries);
+                  if(entries.length > 0){
+                    let bb = entries[0].bb;
+                    let memCanvas = document.getElementById("memcanvas");
+                    memCanvas.style.left = (bb.x[0] + rect.left + window.scrollX) + "px";
+                    memCanvas.style.top = (bb.y[0] + rect.top + window.scrollY) +"px";
+                    memCanvas.style.width = bb.width()+"px";
+                    memCanvas.style.height = bb.height()+"px";
+                    memCanvas.width = bb.width();
+                    memCanvas.height = bb.height();
+                    function draw(canvas, rect){
+                      
+                      let ctx = canvas.getContext("2d");
+                      ctx.clearRect(0, 0, canvas.width, canvas.height);
+                      //ctx.globalCompositeOperation = "xor";
+                      //新しいパスを開始する
+                      ctx.lineWidth = 2;
+                      ctx.strokeStyle = "#FF0000";
+
+                      ctx.beginPath();
+                      //左から20上から20の位置に幅50高さ50の輪郭の四角形を作成する
+                      ctx.rect(0, 0, rect.w, rect.h);
+                      //現在のパスを輪郭表示する
+                      ctx.stroke();
+                      //ctx.globalCompositeOperation = "source-over";
+                    }
+                    draw(memCanvas, bb.get());
+                  }
+                  /*
                   if(entries.length > 0)
                     drawCursor(canvas, entries[0]);
                   else
                     drawCursor(null, null);
+                  */
                 });
               })
               //renderer.hitManager._drawBBs();
@@ -229,9 +221,20 @@ textarea {
   font-family: "Courier"
 }
 
+#memcanvas{
+  position: absolute;
+  top: 100px;
+  left: 200px;
+  z-index: 1000;
+  width: 0px;
+  height: 0px;
+  pointer-events: none; /* disable events so that the element below can be clicked */
+}
+
     </style>
 </head>
 <body>
+  <canvas id="memcanvas"></canvas>
   <!-- <nav class="navbar navbar-dark bg-dark">
     <a class="navbar-brand">Fumen</a>
     <button class="btn btn-outline-success my-2 my-sm-0" onclick="draw()">Render</button>

@@ -205,37 +205,48 @@ export class Renderer {
                 var e = elems[i];
                 switch (e.type) {
                     case "M":
-                        if (e.param !== undefined) _6791113suselem.push(e);
-                        else _3rdelem.push(e);
-                        break;
-                    case "m":
+                        //if (e.param !== undefined) _6791113suselem.push(e);
+                        //else _3rdelem.push(e);
                         _3rdelem.push(e);
-                        _minor_exists = true;
                         break;
-                    case "add":
+                    case "triad":
+                        if(e.value == "+"){
+                            _5thelem.push(e);
+                        }else{
+                            _3rdelem.push(e);
+                        }
+                        if(e.value == "m")
+                            _minor_exists = true;
+                        break;
+                    /*case "add":
                         _6791113suselem.push(e);
-                        break;
+                        break;*/
                     case "sus":
                         _6791113suselem.push(e);
                         break;
                     case "dig":
                         _6791113suselem.push(e);
-                        _6exists |= e.param == "6";
-                        _9exists |= e.param == "9";
-                        _7exists |= e.param == "7";
+                        _6exists |= e.value == "6";
+                        _9exists |= e.value == "9";
+                        _7exists |= e.value == "7";
                         break;
-                    case "b":
-                    case "#":
+                    case "tension":{
+                        //case "b":
+                        //case "#":
                         if (e.param == "5") _5thelem.push(e);
+                        else if(e.value == "add") _6791113suselem.push(e);
                         else _alteredelem.push(e);
-                        _minus5exists |= (e.type=="b" && e.param=="5");
+                        _minus5exists |= (e.value=="b" && e.param=="5");
                         break;
-                    case "dim":
+                    }
+                        
+
+                    /*case "dim":
                         _6791113suselem.push(e);
                         break;
                     case "alt":
                         _alteredelem.push(e);
-                        break;
+                        break;*/
                 }
             }
         }

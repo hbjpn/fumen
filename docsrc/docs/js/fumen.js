@@ -12232,7 +12232,7 @@ var Chord = /*#__PURE__*/function () {
         var structure = [];
         var r = null; //let fs = [root, triad, M, digit, sus, tensionlist, chordend];
 
-        var fs = [triad, M, digit, sus, tensionlist, chordend];
+        var fs = [triad, M, digit, sus, tensiondelim, tensionlist, chordend];
 
         for (var fi = 0; fi < fs.length; ++fi) {
           r = fs[fi](ps);
@@ -12298,6 +12298,7 @@ var Chord = /*#__PURE__*/function () {
 
       function M(ps) {
         if (ps.length >= 1 && ps[0] == "M") {
+          // TODO:maj
           return {
             s: ps.substr(1),
             structure: {
@@ -12342,6 +12343,18 @@ var Chord = /*#__PURE__*/function () {
           };
         }
 
+        return null;
+      }
+
+      function tensiondelim(ps) {
+        if (ps.length == 0) return null;
+        if (ps[0] == ",") return {
+          s: ps.substr(1),
+          structure: {
+            type: "tensiondelim",
+            value: ","
+          }
+        };
         return null;
       } // Brnaches in tensionlist
 
@@ -12537,6 +12550,7 @@ var Chord = /*#__PURE__*/function () {
         }; // Convert to flat data list and export string rather than structured data
 
 
+        var repl = {};
         var code = "";
 
         for (var i = 0; i < p.structure.structure.length; ++i) {
@@ -12544,9 +12558,17 @@ var Chord = /*#__PURE__*/function () {
 
           switch (r.type) {
             case "triad":
+              repl = {
+                "+": "+",
+                "aug": "+",
+                "min": "m",
+                "mi": "m",
+                "m": "m",
+                "dim": "dim"
+              };
               objholder.push({
-                type: r.value,
-                param: r.param
+                type: "triad",
+                value: repl[r.value]
               });
               code += r.value + (r.param || "");
               if (callback) callback(r);
@@ -12555,7 +12577,8 @@ var Chord = /*#__PURE__*/function () {
             case "M":
               objholder.push({
                 type: r.type
-              });
+              }); // true or false
+
               code += r.value;
               if (callback) callback(r);
               break;
@@ -12563,7 +12586,7 @@ var Chord = /*#__PURE__*/function () {
             case "dig":
               objholder.push({
                 type: "dig",
-                param: r.value
+                value: r.value
               });
               code += r.value;
               if (callback) callback(r);
@@ -12571,11 +12594,17 @@ var Chord = /*#__PURE__*/function () {
 
             case "sus":
               objholder.push({
-                type: r.value,
+                type: "sus",
+                value: r.value,
                 param: r.param
               });
               code += r.value + (r.param || "");
               if (callback) callback(r);
+              break;
+
+            case "tensiondelim":
+              code += r.value; // ",";
+
               break;
 
             case "tensionlist":
@@ -12585,16 +12614,16 @@ var Chord = /*#__PURE__*/function () {
                 code += tensionlist(r.value, serialize);
 
                 for (var j = 0; j < serialize.length; ++j) {
-                  var repl = {
+                  repl = {
                     add: "add",
-                    sus: "sus",
                     "+": "#",
                     "-": "b",
                     "#": "#",
                     "b": "b"
                   };
                   objholder.push({
-                    type: repl[serialize[j].value],
+                    "type": "tension",
+                    value: repl[serialize[j].value],
                     param: serialize[j].param
                   });
                 }
@@ -17288,13 +17317,13 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       if (ce._halfdim_exists) {
         // Remove m7 and -5
         _3rdelem = _3rdelem.filter(function (e) {
-          return e.type != "m";
+          return !(e.type == "triad" && e.value == "m");
         });
         _6791113suselem = _6791113suselem.filter(function (e) {
-          return !(e.type == "dig" && e.param == "7");
+          return !(e.type == "dig" && e.value == "7");
         });
         _5thelem = _5thelem.filter(function (e) {
-          return e.type != "b";
+          return !(e.type == "tension" && e.value == "b");
         });
 
         var _r25 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x00d8), B * 0.5, "lb", B * 0.5, !draw);
@@ -17304,38 +17333,40 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       }
 
       _3rdelem.forEach(function (e) {
-        if (e.type == "M" && _6791113suselem.length > 0) {
-          var _r26 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x0394), B * 0.5, "lb", B * 0.5, !draw);
+        if (e.type == "M"
+        /* && _6791113suselem.length > 0*/
+        ) {
+            var _r26 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x0394), B * 0.5, "lb", B * 0.5, !draw);
 
-          lower_width += _r26.width;
-          bb.add_BB(_r26.bb);
-        } else if (e.type == "m") {
+            lower_width += _r26.width;
+            bb.add_BB(_r26.bb);
+          } else if (e.type == "triad" && e.value == "m") {
           var _r27 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x2013), B * 0.5, "lb", B * 0.5, !draw);
 
           lower_width += _r27.width;
           bb.add_BB(_r27.bb);
+        } else if (e.type == "triad" && e.value == "dim") {
+          var _r28 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x004f), B * 0.5, "lb", B * 0.5, !draw);
+
+          lower_width += _r28.width;
+          bb.add_BB(_r28.bb);
         } else {// Unkown type
         }
       });
 
       _6791113suselem.forEach(function (e) {
         if (e.type == "dig") {
-          var _r28 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, e.param, B * 0.5, "lb", B * 0.5, !draw);
-
-          lower_width += _r28.width;
-          bb.add_BB(_r28.bb);
-        } else if (e.type == "sus" || e.type == "add") {
-          var _r29 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, e.type + (e.param ? e.param : ""), B * 0.5, "lb", B * 0.8, !draw);
+          var _r29 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, e.value, B * 0.5, "lb", B * 0.5, !draw);
 
           lower_width += _r29.width;
           bb.add_BB(_r29.bb);
-        } else if (e.type == "dim") {
-          var _r30 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x004f) + (e.param ? e.param : ""), B * 0.5, "lb", B * 0.5, !draw);
+        } else if (e.type == "sus") {
+          var _r30 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, e.type + (e.param ? e.param : ""), B * 0.5, "lb", B * 0.8, !draw);
 
           lower_width += _r30.width;
           bb.add_BB(_r30.bb);
-        } else if (e.type == "M") {
-          var _r31 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x0394) + (e.param ? e.param : ""), B * 0.5, "lb", B * 0.5, !draw);
+        } else if (e.type == "tension" && e.value == "add") {
+          var _r31 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, e.value + (e.param ? e.param : ""), B * 0.5, "lb", B * 0.8, !draw);
 
           lower_width += _r31.width;
           bb.add_BB(_r31.bb);
@@ -17343,44 +17374,49 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       });
 
       _5thelem.forEach(function (e) {
-        if (e.type == "b") {
+        if (e.type == "tension" && e.value == "b") {
           var _r32 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + upper_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, "-5", B * 0.5, "lb", B * 0.5, !draw);
 
           upper_width += _r32.width;
           bb.add_BB(_r32.bb);
-        } else if (e.type == "#") {
+        } else if (e.type == "tension" && e.value == "#") {
           var _r33 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + upper_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, "+5", B * 0.5, "lb", B * 0.5, !draw);
 
           upper_width += _r33.width;
           bb.add_BB(_r33.bb);
+        } else if (e.type == "triad" && e.value == "+") {
+          var _r34 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + upper_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, "+", B * 0.5, "lb", B * 0.5, !draw);
+
+          upper_width += _r34.width;
+          bb.add_BB(_r34.bb);
         }
       });
 
       if (_alteredelem.length > 0) {
         var tensions_pos = Math.max(upper_width, lower_width); // Assume onbass below does not exceed lower_width
 
-        var _r34 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, "(", B * 0.5, "lb", B * 0.5, !draw);
+        var _r35 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, "(", B * 0.5, "lb", B * 0.5, !draw);
 
-        tensions_width += _r34.width;
-        bb.add_BB(_r34.bb);
+        tensions_width += _r35.width;
+        bb.add_BB(_r35.bb);
         var h = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](B * 0.5, null, false, canvas.ratio, canvas.zoom).height;
 
         _alteredelem.forEach(function (e, index) {
-          if (e.type == "b") {
+          if (e.type == "tension" && e.value == "b") {
             if (draw) {
-              var _r35 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266D"], // flat.svg,
-              x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, B * 0.2, h, "lb");
-
-              bb.add_BB(_r35.bb);
-            }
-
-            tensions_width += B * 0.2;
-          } else if (e.type == "#") {
-            if (draw) {
-              var _r36 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266F"], //sharp.svg"],
+              var _r36 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266D"], // flat.svg,
               x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, B * 0.2, h, "lb");
 
               bb.add_BB(_r36.bb);
+            }
+
+            tensions_width += B * 0.2;
+          } else if (e.type == "tension" && e.value == "#") {
+            if (draw) {
+              var _r37 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266F"], //sharp.svg"],
+              x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, B * 0.2, h, "lb");
+
+              bb.add_BB(_r37.bb);
             }
 
             tensions_width += B * 0.2;
@@ -17391,16 +17427,16 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           bb.add_BB(r.bb);
 
           if (index != _alteredelem.length - 1) {
-            var _r37 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, ", ", B * 0.5, "lb", B * 0.5, !draw);
+            var _r38 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, ", ", B * 0.5, "lb", B * 0.5, !draw);
 
-            tensions_width += _r37.width;
-            bb.add_BB(_r37.bb);
+            tensions_width += _r38.width;
+            bb.add_BB(_r38.bb);
           }
         });
 
-        _r34 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, ")", B * 0.5, "lb", B * 0.5, !draw);
-        tensions_width += _r34.width;
-        bb.add_BB(_r34.bb);
+        _r35 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, ")", B * 0.5, "lb", B * 0.5, !draw);
+        tensions_width += _r35.width;
+        bb.add_BB(_r35.bb);
       }
 
       if (onbass != null) {
@@ -17408,16 +17444,16 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         var onbass_pos = param.on_bass_style == "below" ? x : x + lower_width;
         var on_bass_y_offset = param.on_bass_style == "below" ? 0 : lower_onbass_y_offset;
 
-        var _r38 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, onbass_pos, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, "/" + onbass[0], B * 0.45, param.on_bass_style == "below" ? "lt" : "lb", B * 0.5, !draw);
+        var _r39 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, onbass_pos, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, "/" + onbass[0], B * 0.45, param.on_bass_style == "below" ? "lt" : "lb", B * 0.5, !draw);
 
-        onbass_width += _r38.width;
-        bb.add_BB(_r38.bb);
+        onbass_width += _r39.width;
+        bb.add_BB(_r39.bb);
 
         if (onbass.length == 2) {
           if (onbass[1] == "b") {
             if (draw) {
               var rd = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266D"], // flat.svg
-              onbass_pos + onbass_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, B * 0.2, _r38.height, param.on_bass_style == "below" ? "lt" : "lb", true);
+              onbass_pos + onbass_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, B * 0.2, _r39.height, param.on_bass_style == "below" ? "lt" : "lb", true);
               bb.add_BB(rd.bb);
             }
 
@@ -17425,7 +17461,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           } else {
             if (draw) {
               var _rd = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266F"], // sharp.svg 
-              onbass_pos + onbass_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, B * 0.2, _r38.height, param.on_bass_style == "below" ? "lt" : "lb", true);
+              onbass_pos + onbass_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, B * 0.2, _r39.height, param.on_bass_style == "below" ? "lt" : "lb", true);
 
               bb.add_BB(_rd.bb);
             }
@@ -17514,9 +17550,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
           for (var li = 0; li < nline; ++li) {
             if (draw) {
-              var _r39 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + li * barintv, y_body_base, x + li * barintv, y_body_base + row_height);
+              var _r40 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + li * barintv, y_body_base, x + li * barintv, y_body_base + row_height);
 
-              bb.add_BB(_r39.bb);
+              bb.add_BB(_r40.bb);
             }
           }
 
@@ -17529,17 +17565,17 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           actual_boundary = x;
 
           if (draw) {
-            var _r40 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x, y_body_base, x, y_body_base + row_height, {
+            var _r41 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x, y_body_base, x, y_body_base + row_height, {
               width: 2
             });
 
-            bb.add_BB(_r40.bb);
-            _r40 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 3, y_body_base, x + 3, y_body_base + row_height);
-            bb.add_BB(_r40.bb);
-            _r40 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 7, y_body_base + row_height / 4 * 1.5, 1);
-            bb.add_BB(_r40.bb);
-            _r40 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 7, y_body_base + row_height / 4 * 2.5, 1);
-            bb.add_BB(_r40.bb);
+            bb.add_BB(_r41.bb);
+            _r41 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 3, y_body_base, x + 3, y_body_base + row_height);
+            bb.add_BB(_r41.bb);
+            _r41 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 7, y_body_base + row_height / 4 * 1.5, 1);
+            bb.add_BB(_r41.bb);
+            _r41 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 7, y_body_base + row_height / 4 * 2.5, 1);
+            bb.add_BB(_r41.bb);
           }
 
           break;
@@ -17551,26 +17587,26 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           xshift = side == "end" ? 0 : 0;
 
           if (draw) {
-            var _r41 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + xshift, y_body_base + row_height / 4 * 1.5, 1);
+            var _r42 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + xshift, y_body_base + row_height / 4 * 1.5, 1);
 
-            bb.add_BB(_r41.bb);
-            _r41 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + xshift, y_body_base + row_height / 4 * 2.5, 1);
-            bb.add_BB(_r41.bb);
-            _r41 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 4, y_body_base, x + xshift + 4, y_body_base + row_height);
-            bb.add_BB(_r41.bb);
-            _r41 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 7, y_body_base, x + xshift + 7, y_body_base + row_height, {
+            bb.add_BB(_r42.bb);
+            _r42 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + xshift, y_body_base + row_height / 4 * 2.5, 1);
+            bb.add_BB(_r42.bb);
+            _r42 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 4, y_body_base, x + xshift + 4, y_body_base + row_height);
+            bb.add_BB(_r42.bb);
+            _r42 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 7, y_body_base, x + xshift + 7, y_body_base + row_height, {
               width: 2
             });
-            bb.add_BB(_r41.bb);
+            bb.add_BB(_r42.bb);
           }
 
           if (e0.times !== null && (e0.ntimes || e0.times != 2)) {
             var stimes = e0.ntimes == true ? "X" : "" + e0.times;
 
             if (draw) {
-              var _r42 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + xshift + w, y_body_base + row_height + param.xtimes_mark_y_margin, "(" + stimes + " times)", param.base_font_size / 2, "rt");
+              var _r43 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + xshift + w, y_body_base + row_height + param.xtimes_mark_y_margin, "(" + stimes + " times)", param.base_font_size / 2, "rt");
 
-              bb2.add_BB(_r42.bb);
+              bb2.add_BB(_r43.bb);
             }
           }
 
@@ -17582,37 +17618,37 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           actual_boundary = x + w / 2;
 
           if (draw) {
-            var _r43 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x, y_body_base + row_height / 4 * 1.5, 1);
+            var _r44 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x, y_body_base + row_height / 4 * 1.5, 1);
 
-            bb.add_BB(_r43.bb);
-            _r43 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x, y_body_base + row_height / 4 * 2.5, 1);
-            bb.add_BB(_r43.bb);
-            _r43 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 4, y_body_base, x + 4, y_body_base + row_height);
-            bb.add_BB(_r43.bb);
-            _r43 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 7, y_body_base, x + 7, y_body_base + row_height, {
+            bb.add_BB(_r44.bb);
+            _r44 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x, y_body_base + row_height / 4 * 2.5, 1);
+            bb.add_BB(_r44.bb);
+            _r44 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 4, y_body_base, x + 4, y_body_base + row_height);
+            bb.add_BB(_r44.bb);
+            _r44 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 7, y_body_base, x + 7, y_body_base + row_height, {
               width: 2
             });
-            bb.add_BB(_r43.bb);
-            _r43 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 10, y_body_base, x + 10, y_body_base + row_height);
-            bb.add_BB(_r43.bb);
+            bb.add_BB(_r44.bb);
+            _r44 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 10, y_body_base, x + 10, y_body_base + row_height);
+            bb.add_BB(_r44.bb);
           }
 
           if (e0.times !== null && (e0.ntimes || e0.times != 2)) {
             var _stimes = e0.ntimes == true ? "X" : "" + e0.times;
 
             if (draw) {
-              var _r44 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + 8, y_body_base + row_height, "(" + _stimes + " times)", param.base_font_size / 2, "rt");
+              var _r45 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + 8, y_body_base + row_height, "(" + _stimes + " times)", param.base_font_size / 2, "rt");
 
-              bb2.add_BB(_r44.bb);
+              bb2.add_BB(_r45.bb);
             }
           }
 
           if (draw) {
-            var _r45 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 14, y_body_base + row_height / 4 * 1.5, 1);
+            var _r46 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 14, y_body_base + row_height / 4 * 1.5, 1);
 
-            bb.add_BB(_r45.bb);
-            _r45 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 14, y_body_base + row_height / 4 * 2.5, 1);
-            bb.add_BB(_r45.bb);
+            bb.add_BB(_r46.bb);
+            _r46 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 14, y_body_base + row_height / 4 * 2.5, 1);
+            bb.add_BB(_r46.bb);
           }
 
           break;
@@ -17624,13 +17660,13 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           actual_boundary = x + w;
 
           if (draw) {
-            var _r46 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift, y_body_base, x + xshift, y_body_base + row_height);
+            var _r47 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift, y_body_base, x + xshift, y_body_base + row_height);
 
-            bb.add_BB(_r46.bb);
-            _r46 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 3, y_body_base, x + xshift + 3, y_body_base + row_height, {
+            bb.add_BB(_r47.bb);
+            _r47 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 3, y_body_base, x + xshift + 3, y_body_base + row_height, {
               width: 2
             });
-            bb.add_BB(_r46.bb);
+            bb.add_BB(_r47.bb);
           }
 
           break;
@@ -19121,19 +19157,25 @@ var Renderer = /*#__PURE__*/function () {
 
           switch (e.type) {
             case "M":
-              if (e.param !== undefined) _6791113suselem.push(e);else _3rdelem.push(e);
-              break;
-
-            case "m":
+              //if (e.param !== undefined) _6791113suselem.push(e);
+              //else _3rdelem.push(e);
               _3rdelem.push(e);
 
-              _minor_exists = true;
               break;
 
-            case "add":
-              _6791113suselem.push(e);
+            case "triad":
+              if (e.value == "+") {
+                _5thelem.push(e);
+              } else {
+                _3rdelem.push(e);
+              }
 
+              if (e.value == "m") _minor_exists = true;
               break;
+
+            /*case "add":
+                _6791113suselem.push(e);
+                break;*/
 
             case "sus":
               _6791113suselem.push(e);
@@ -19143,26 +19185,26 @@ var Renderer = /*#__PURE__*/function () {
             case "dig":
               _6791113suselem.push(e);
 
-              _6exists |= e.param == "6";
-              _9exists |= e.param == "9";
-              _7exists |= e.param == "7";
+              _6exists |= e.value == "6";
+              _9exists |= e.value == "9";
+              _7exists |= e.value == "7";
               break;
 
-            case "b":
-            case "#":
-              if (e.param == "5") _5thelem.push(e);else _alteredelem.push(e);
-              _minus5exists |= e.type == "b" && e.param == "5";
-              break;
+            case "tension":
+              {
+                //case "b":
+                //case "#":
+                if (e.param == "5") _5thelem.push(e);else if (e.value == "add") _6791113suselem.push(e);else _alteredelem.push(e);
+                _minus5exists |= e.value == "b" && e.param == "5";
+                break;
+              }
 
-            case "dim":
-              _6791113suselem.push(e);
-
-              break;
-
+            /*case "dim":
+                _6791113suselem.push(e);
+                break;
             case "alt":
-              _alteredelem.push(e);
-
-              break;
+                _alteredelem.push(e);
+                break;*/
           }
         }
       }

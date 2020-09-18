@@ -418,7 +418,7 @@ export class Chord {
             return null;
         }
         function M(ps){
-            if(ps.length >= 1 && ps[0] == "M"){
+            if(ps.length >= 1 && ps[0] == "M"){ // TODO:maj
                 return {s:ps.substr(1), structure:{type:"M",value:ps[0]}};
             }
             return null;
@@ -568,27 +568,29 @@ export class Chord {
             };
             // Convert to flat data list and export string rather than structured data
             
+            let repl = {};
             let code = "";
             for(let i = 0; i < p.structure.structure.length; ++i){
                 let r = p.structure.structure[i];
                 switch(r.type){
                 case "triad":
-                    objholder.push({type:r.value, param:r.param});
+                    repl = {"+":"+", "aug":"+","min":"m","mi":"m", "m":"m","dim":"dim"};
+                    objholder.push({type:"triad", value: repl[r.value]});
                     code += r.value + (r.param||"");
                     if(callback) callback(r);
                     break;
                 case "M":
-                    objholder.push({type:r.type});
+                    objholder.push({type:r.type}); // true or false
                     code += r.value;
                     if(callback) callback(r);
                     break;
                 case "dig":
-                    objholder.push({type:"dig", param: r.value});
+                    objholder.push({type:"dig", value:r.value});
                     code += r.value;
                     if(callback) callback(r);
                     break;
                 case "sus":
-                    objholder.push({type:r.value, param:r.param});
+                    objholder.push({type:"sus", value:r.value, param:r.param});
                     code += r.value + (r.param||"");
                     if(callback) callback(r);
                     break;
@@ -600,8 +602,8 @@ export class Chord {
                     let serialize = [];
                     code += tensionlist(r.value, serialize);
                     for(let j=0; j<serialize.length; ++j){
-                        var repl = {add:"add",sus:"sus","+":"#","-":"b","#":"#","b":"b"};
-                        objholder.push({type:repl[serialize[j].value], param:serialize[j].param}); 
+                        repl = {add:"add","+":"#","-":"b","#":"#","b":"b"};
+                        objholder.push({"type":"tension", value:repl[serialize[j].value], param:serialize[j].param}); 
                     }
                     break; 
                 }

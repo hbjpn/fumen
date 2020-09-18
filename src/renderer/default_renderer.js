@@ -2774,9 +2774,9 @@ export class DefaultRenderer extends Renderer {
         // Half diminish is firstly rendered
         if(ce._halfdim_exists){
             // Remove m7 and -5
-            _3rdelem = _3rdelem.filter((e)=>e.type!="m");
-            _6791113suselem = _6791113suselem.filter((e)=>!(e.type=="dig"&&e.param=="7"));
-            _5thelem = _5thelem.filter((e)=>e.type!="b");
+            _3rdelem = _3rdelem.filter((e)=>!(e.type=="triad" && e.value=="m"));
+            _6791113suselem = _6791113suselem.filter((e)=>!(e.type=="dig"&&e.value=="7"));
+            _5thelem = _5thelem.filter((e)=>!(e.type=="tension"&&e.value=="b"));
 
             let r = graphic.CanvasText(
                 canvas,
@@ -2793,7 +2793,7 @@ export class DefaultRenderer extends Renderer {
         }
 
         _3rdelem.forEach(e => {
-            if (e.type == "M" && _6791113suselem.length > 0) {
+            if (e.type == "M"/* && _6791113suselem.length > 0*/) {
                 let r = graphic.CanvasText(
                     canvas,
                     x + lower_width,
@@ -2806,12 +2806,25 @@ export class DefaultRenderer extends Renderer {
                 );
                 lower_width += r.width;
                 bb.add_BB(r.bb);
-            } else if (e.type == "m") {
+            } else if (e.type == "triad" && e.value == "m") {
                 let r = graphic.CanvasText(
                     canvas,
                     x + lower_width,
                     y + param.row_height/2 + rootCharHeight/2 + chord_offset_on_bass + lower_onbass_y_offset,
                     String.fromCharCode(0x2013),
+                    B * 0.5,
+                    "lb",
+                    B * 0.5,
+                    !draw
+                );
+                lower_width += r.width;
+                bb.add_BB(r.bb);
+            } else if (e.type == "triad" && e.value == "dim") {
+                let r = graphic.CanvasText(
+                    canvas,
+                    x + lower_width,
+                    y + param.row_height/2 + rootCharHeight/2 + chord_offset_on_bass + lower_onbass_y_offset,
+                    String.fromCharCode(0x004f),
                     B * 0.5,
                     "lb",
                     B * 0.5,
@@ -2829,7 +2842,7 @@ export class DefaultRenderer extends Renderer {
                     canvas,
                     x + lower_width,
                     y + param.row_height/2 + rootCharHeight/2 + chord_offset_on_bass + lower_onbass_y_offset,
-                    e.param,
+                    e.value,
                     B * 0.5,
                     "lb",
                     B * 0.5,
@@ -2837,7 +2850,7 @@ export class DefaultRenderer extends Renderer {
                 );
                 lower_width += r.width;
                 bb.add_BB(r.bb);
-            } else if (e.type == "sus" || e.type == "add") {
+            } else if (e.type == "sus") {
                 let r = graphic.CanvasText(
                     canvas,
                     x + lower_width,
@@ -2850,28 +2863,15 @@ export class DefaultRenderer extends Renderer {
                 );
                 lower_width += r.width;
                 bb.add_BB(r.bb);
-            } else if (e.type == "dim") {
+            } else if (e.type == "tension" && e.value == "add") {
                 let r = graphic.CanvasText(
                     canvas,
                     x + lower_width,
                     y + param.row_height/2 + rootCharHeight/2 + chord_offset_on_bass + lower_onbass_y_offset,
-                    String.fromCharCode(0x004f) + (e.param ? e.param : ""),
+                    e.value + (e.param ? e.param : ""),
                     B * 0.5,
                     "lb",
-                    B * 0.5,
-                    !draw
-                );
-                lower_width += r.width;
-                bb.add_BB(r.bb);
-            } else if (e.type == "M") {
-                let r = graphic.CanvasText(
-                    canvas,
-                    x + lower_width,
-                    y + param.row_height/2 + rootCharHeight/2 + chord_offset_on_bass + lower_onbass_y_offset,
-                    String.fromCharCode(0x0394) + (e.param ? e.param : ""),
-                    B * 0.5,
-                    "lb",
-                    B * 0.5,
+                    B * 0.8,
                     !draw
                 );
                 lower_width += r.width;
@@ -2879,7 +2879,7 @@ export class DefaultRenderer extends Renderer {
             }
         });
         _5thelem.forEach(e => {
-            if (e.type == "b") {
+            if (e.type == "tension" && e.value == "b") {
                 let r = graphic.CanvasText(
                     canvas,
                     x + upper_width,
@@ -2892,12 +2892,25 @@ export class DefaultRenderer extends Renderer {
                 );
                 upper_width += r.width;
                 bb.add_BB(r.bb);
-            } else if (e.type == "#") {
+            } else if (e.type == "tension" && e.value == "#") {
                 let r = graphic.CanvasText(
                     canvas,
                     x + upper_width,
                     y + param.row_height/2 + chord_offset_on_bass + upper_tension_y_offset,
                     "+5",
+                    B * 0.5,
+                    "lb",
+                    B * 0.5,
+                    !draw
+                );
+                upper_width += r.width;
+                bb.add_BB(r.bb);
+            } else if (e.type == "triad" && e.value == "+") {
+                let r = graphic.CanvasText(
+                    canvas,
+                    x + upper_width,
+                    y + param.row_height/2 + chord_offset_on_bass + upper_tension_y_offset,
+                    "+",
                     B * 0.5,
                     "lb",
                     B * 0.5,
@@ -2924,7 +2937,7 @@ export class DefaultRenderer extends Renderer {
             bb.add_BB(r.bb);
             var h = graphic.GetCharProfile(B * 0.5, null, false, canvas.ratio, canvas.zoom).height;
             _alteredelem.forEach((e, index) => {
-                if (e.type == "b") {
+                if (e.type == "tension" && e.value == "b") {
                     if (draw){
                         let r = graphic.CanvasImage(canvas,
                             graphic.G_imgmap["uni266D"], // flat.svg,
@@ -2937,7 +2950,7 @@ export class DefaultRenderer extends Renderer {
                         bb.add_BB(r.bb);
                     }
                     tensions_width += B * 0.2;
-                } else if (e.type == "#") {
+                } else if (e.type == "tension" && e.value == "#") {
                     if (draw){
                         let r = graphic.CanvasImage(canvas,
                             graphic.G_imgmap["uni266F"], //sharp.svg"],

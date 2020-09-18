@@ -348,18 +348,18 @@ export class Chord {
                         let nps = this.note_group_list[i].note_profiles;
                         for(let j=0; j<nps.length; ++j){
                             let note = nps[j].note; //
-                            code += note.name+note.octave+Chord.accCodeToStr(note.accidental);
+                            code += note.name+Chord.accCodeToStr(note.accidental)+note.octave;
                             if(j < nps.length-1) code += ",";
                         }
                         code += ")";
-                        code += (":"+li.base + ".".repeat(li.numdot) + (li.has_tie?"~":""));
+                        code += (":"+li.base + (li.renpu?"_"+li.renpu:"") + ".".repeat(li.numdot) + (li.has_tie?"~":""));
                         if(i < this.note_group_list.length-1) code += ",";
                     }
                     code += ")";
                 }else{
                     // simple length indicator
                     let li =  this.note_group_list[0].lengthIndicator;
-                    code += (":"+li.base + ".".repeat(li.numdot) + (li.has_tie?"~":""));
+                    code += (":"+li.base + (li.renpu?"_"+li.renpu:"") + ".".repeat(li.numdot) + (li.has_tie?"~":""));
                 }
             }
 

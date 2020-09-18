@@ -805,13 +805,7 @@ export class Parser {
             return null;
         }
     }
-
-
-    /**
-     * Parse reharsal group
-     * @param {String} s 
-     * @param {String} rgtype "normal","inline","anonymous"
-     */
+    
     parseReharsalGroup(s, rgtype)
     {
         // pre-requisite:  

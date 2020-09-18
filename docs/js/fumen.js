@@ -13448,7 +13448,7 @@ var HitManager = /*#__PURE__*/function () {
 
   }, {
     key: "add",
-    value: function add(paper, bb, obj) {
+    value: function add(paper, bb, element) {
       if (bb === undefined) {
         console.warn("bb is null");
         return;
@@ -13471,7 +13471,7 @@ var HitManager = /*#__PURE__*/function () {
 
       this.papers[paper.fumen_canvas_id].objs.push({
         bb: bb,
-        obj: obj
+        element: element
       });
     }
   }, {
@@ -13559,7 +13559,7 @@ var HitManager = /*#__PURE__*/function () {
         return byc.indexOf(val) !== -1;
       }).map(function (val) {
         return {
-          obj: p.objs[val].obj,
+          element: p.objs[val].element,
           bb: p.objs[val].bb.clone().scale(_this6.global_scale.x, _this6.global_scale.y)
         };
       });
@@ -14543,12 +14543,6 @@ var Parser = /*#__PURE__*/function () {
         return null;
       }
     }
-    /**
-     * Parse reharsal group
-     * @param {String} s 
-     * @param {String} rgtype "normal","inline","anonymous"
-     */
-
   }, {
     key: "parseReharsalGroup",
     value: function parseReharsalGroup(s, rgtype) {
@@ -18921,8 +18915,8 @@ var Renderer = /*#__PURE__*/function () {
       console.log("Run renderer");
     }
   }, {
-    key: "getComponent",
-    value: function getComponent(paper, coord) {
+    key: "getElementsByPosition",
+    value: function getElementsByPosition(paper, coord) {
       return this.hitManager.get(paper, coord);
     }
   }, {

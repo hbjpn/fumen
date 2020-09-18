@@ -9,7 +9,7 @@ export class Renderer {
     render() {
         console.log("Run renderer");
     }
-    getComponent(paper, coord){
+    getElementsByPosition(paper, coord){
         return this.hitManager.get(paper, coord);
     }
 

@@ -1146,7 +1146,7 @@ export class HitManager
     // Once you add, you need to call commmit to construct the data
     // Canvas DOM element "paper" has to have unique ID in .fumen_canvas_id property
     // If no fumen_canvas_id is specified, automtically generated with random string.
-    add(paper, bb, obj){
+    add(paper, bb, element){
         if(bb === undefined){
             console.warn("bb is null");
             return;
@@ -1165,7 +1165,7 @@ export class HitManager
                 bottom_y_sorted: []
             };
         }
-        this.papers[paper.fumen_canvas_id].objs.push({bb, obj});
+        this.papers[paper.fumen_canvas_id].objs.push({bb, element});
     }
 
     clear(){
@@ -1255,7 +1255,7 @@ export class HitManager
             return byc.indexOf(val) !== -1;
         })
         .map((val)=>{
-            return {obj: p.objs[val].obj, 
+            return {element: p.objs[val].element, 
                 bb: p.objs[val].bb.clone().scale(this.global_scale.x, this.global_scale.y)};
         });
         

@@ -199,7 +199,8 @@ export class Renderer {
             var _6exists = false,
                 _9exists = false,
                 _7exists = false,
-                _minus5exists = false;
+                _minus5exists = false,
+                _minor_exists = false;
             for (var i = 0; i < elems.length; ++i) {
                 var e = elems[i];
                 switch (e.type) {
@@ -209,6 +210,7 @@ export class Renderer {
                         break;
                     case "m":
                         _3rdelem.push(e);
+                        _minor_exists = true;
                         break;
                     case "add":
                         _6791113suselem.push(e);
@@ -245,7 +247,7 @@ export class Renderer {
             _6791113suselem: _6791113suselem,
             _alteredelem: _alteredelem,
             _6_and_9_exists: _6exists && _9exists,
-            _halfdim_exists: _7exists && _minus5exists
+            _halfdim_exists: _minor_exists && _7exists && _minus5exists
 		};
     }
     

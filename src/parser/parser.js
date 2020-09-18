@@ -814,6 +814,11 @@ export class Parser {
      */
     parseReharsalGroup(s, rgtype)
     {
+        // pre-requisite:  
+        // - "[" (consumed) (for normal or inline)
+        // - boundaries (not consumed) (for anonymous)
+        // - "<" or ">" (not consumed) (for anonymous)
+
         try{
             var r = null;
             var latest_macros = {};
@@ -919,7 +924,7 @@ export class Parser {
                     // Measure appears directly withou reharsal group mark.
                     // If not reharsal mark is defined and the measure is directly specified, 
                     // then default anonymous reharsal mark is generated.
-                    r = this.parseReharsalGroup(r.s, "anonymous");
+                    r = this.parseReharsalGroup(code.substr(r.sss.length), "anonymous");
                     currentStorage.push(r.rg);
                     
 

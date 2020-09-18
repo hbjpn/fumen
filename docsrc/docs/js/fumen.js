@@ -13558,7 +13558,10 @@ var HitManager = /*#__PURE__*/function () {
       }).filter(function (val) {
         return byc.indexOf(val) !== -1;
       }).map(function (val) {
-        return p.objs[val].obj;
+        return {
+          obj: p.objs[val].obj,
+          bb: p.objs[val].bb.clone().scale(_this6.global_scale.x, _this6.global_scale.y)
+        };
       });
       return hit_objs;
     }
@@ -14549,6 +14552,10 @@ var Parser = /*#__PURE__*/function () {
   }, {
     key: "parseReharsalGroup",
     value: function parseReharsalGroup(s, rgtype) {
+      // pre-requisite:  
+      // - "[" (consumed) (for normal or inline)
+      // - boundaries (not consumed) (for anonymous)
+      // - "<" or ">" (not consumed) (for anonymous)
       try {
         var r = null;
         var latest_macros = {};
@@ -14639,7 +14646,7 @@ var Parser = /*#__PURE__*/function () {
             // Measure appears directly withou reharsal group mark.
             // If not reharsal mark is defined and the measure is directly specified, 
             // then default anonymous reharsal mark is generated.
-            r = this.parseReharsalGroup(r.s, "anonymous");
+            r = this.parseReharsalGroup(code.substr(r.sss.length), "anonymous");
             currentStorage.push(r.rg);
           } else if (r.type == TOKEN_PERCENT) {
             // Expression
@@ -18172,7 +18179,7 @@ var BoundingBox = /*#__PURE__*/function () {
       this.x[0] *= sx;
       this.x[1] *= sx;
       this.y[0] *= sy;
-      this.y[0] *= sy;
+      this.y[1] *= sy;
       return this;
     }
   }, {

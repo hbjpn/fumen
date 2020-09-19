@@ -12222,7 +12222,7 @@ var Chord = /*#__PURE__*/function () {
     ROOT ::= ( A|B|C|D|E|F|G ) ("#"|"b") ?
     TENSIONLIST ::= TENSIONGROUP | TENSIONGROUP ","? TENSIONLIST
     TENSIONGROUP ::= TENSION | "(" TENSIONLIST ")" 
-    TENSION ::= ( ("+" ("5"|"9"|"11")) | ("-" ("5"|"9"|"13")) | ("b" ("5"|"9"|"13")) | ("#" ("5"|"9"|"11")) | ("no" ("3" | "5")) | ("add" ("2"|"9")) )
+    TENSION ::= ( ("+" ("5"|"9"|"11")) | ("-" ("5"|"9"|"13")) | ("b" ("5"|"9"|"13")) | ("#" ("5"|"9"|"11")) | ("omit" ("3" | "5")) | ("add" ("2"|"9")) )
     */
 
   }], [{
@@ -12438,8 +12438,8 @@ var Chord = /*#__PURE__*/function () {
       }
 
       function tension(ps) {
-        var ds = ["add9", "add2", "#11", "+11", "b13", "-13", "no3", "no5", "#9", "+9", "b9", "-9", "+5", "#5", "-5", "b5"];
-        var th = [3, 3, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1]; // type and digit split pos
+        var ds = ["omit3", "omit5", "add9", "add2", "#11", "+11", "b13", "-13", "#9", "+9", "b9", "-9", "+5", "#5", "-5", "b5"];
+        var th = [4, 4, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]; // type and digit split pos
 
         if (ps.length == 0) return null;
         var r = charStartsWithAmong(ps, ds);
@@ -12619,7 +12619,8 @@ var Chord = /*#__PURE__*/function () {
                     "+": "#",
                     "-": "b",
                     "#": "#",
-                    "b": "b"
+                    "b": "b",
+                    "omit": "omit"
                   };
                   objholder.push({
                     "type": "tension",
@@ -17402,35 +17403,34 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         var h = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](B * 0.5, null, false, canvas.ratio, canvas.zoom).height;
 
         _alteredelem.forEach(function (e, index) {
-          if (e.type == "tension" && e.value == "b") {
+          if (e.type == "tension" && (e.value == "b" || e.value == "#")) {
             if (draw) {
-              var _r36 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266D"], // flat.svg,
-              x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, B * 0.2, h, "lb");
-
-              bb.add_BB(_r36.bb);
-            }
-
-            tensions_width += B * 0.2;
-          } else if (e.type == "tension" && e.value == "#") {
-            if (draw) {
-              var _r37 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266F"], //sharp.svg"],
+              var _r37 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"][e.value == "b" ? "uni266D" : "uni266F"], // flat.svg,
               x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, B * 0.2, h, "lb");
 
               bb.add_BB(_r37.bb);
             }
 
             tensions_width += B * 0.2;
-          }
 
-          var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, e.param, B * 0.5, "lb", B * 0.5, !draw);
-          tensions_width += r.width;
-          bb.add_BB(r.bb);
+            var _r36 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, e.param, B * 0.5, "lb", B * 0.5, !draw);
 
-          if (index != _alteredelem.length - 1) {
-            var _r38 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, ", ", B * 0.5, "lb", B * 0.5, !draw);
+            tensions_width += _r36.width;
+            bb.add_BB(_r36.bb);
+          } else if (e.type == "tension" && e.value == "omit") {
+            var _r38 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, e.value + e.param, // take same appropach as sus/add.
+            B * 0.5, "lb", B * 0.9, // "omit" is 4 chars then expand a little bit
+            !draw);
 
             tensions_width += _r38.width;
             bb.add_BB(_r38.bb);
+          }
+
+          if (index != _alteredelem.length - 1) {
+            var _r39 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, ", ", B * 0.5, "lb", B * 0.5, !draw);
+
+            tensions_width += _r39.width;
+            bb.add_BB(_r39.bb);
           }
         });
 
@@ -17444,16 +17444,16 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         var onbass_pos = param.on_bass_style == "below" ? x : x + lower_width;
         var on_bass_y_offset = param.on_bass_style == "below" ? 0 : lower_onbass_y_offset;
 
-        var _r39 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, onbass_pos, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, "/" + onbass[0], B * 0.45, param.on_bass_style == "below" ? "lt" : "lb", B * 0.5, !draw);
+        var _r40 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, onbass_pos, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, "/" + onbass[0], B * 0.45, param.on_bass_style == "below" ? "lt" : "lb", B * 0.5, !draw);
 
-        onbass_width += _r39.width;
-        bb.add_BB(_r39.bb);
+        onbass_width += _r40.width;
+        bb.add_BB(_r40.bb);
 
         if (onbass.length == 2) {
           if (onbass[1] == "b") {
             if (draw) {
               var rd = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266D"], // flat.svg
-              onbass_pos + onbass_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, B * 0.2, _r39.height, param.on_bass_style == "below" ? "lt" : "lb", true);
+              onbass_pos + onbass_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, B * 0.2, _r40.height, param.on_bass_style == "below" ? "lt" : "lb", true);
               bb.add_BB(rd.bb);
             }
 
@@ -17461,7 +17461,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           } else {
             if (draw) {
               var _rd = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266F"], // sharp.svg 
-              onbass_pos + onbass_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, B * 0.2, _r39.height, param.on_bass_style == "below" ? "lt" : "lb", true);
+              onbass_pos + onbass_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, B * 0.2, _r40.height, param.on_bass_style == "below" ? "lt" : "lb", true);
 
               bb.add_BB(_rd.bb);
             }
@@ -17550,9 +17550,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
           for (var li = 0; li < nline; ++li) {
             if (draw) {
-              var _r40 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + li * barintv, y_body_base, x + li * barintv, y_body_base + row_height);
+              var _r41 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + li * barintv, y_body_base, x + li * barintv, y_body_base + row_height);
 
-              bb.add_BB(_r40.bb);
+              bb.add_BB(_r41.bb);
             }
           }
 
@@ -17565,17 +17565,17 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           actual_boundary = x;
 
           if (draw) {
-            var _r41 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x, y_body_base, x, y_body_base + row_height, {
+            var _r42 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x, y_body_base, x, y_body_base + row_height, {
               width: 2
             });
 
-            bb.add_BB(_r41.bb);
-            _r41 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 3, y_body_base, x + 3, y_body_base + row_height);
-            bb.add_BB(_r41.bb);
-            _r41 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 7, y_body_base + row_height / 4 * 1.5, 1);
-            bb.add_BB(_r41.bb);
-            _r41 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 7, y_body_base + row_height / 4 * 2.5, 1);
-            bb.add_BB(_r41.bb);
+            bb.add_BB(_r42.bb);
+            _r42 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 3, y_body_base, x + 3, y_body_base + row_height);
+            bb.add_BB(_r42.bb);
+            _r42 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 7, y_body_base + row_height / 4 * 1.5, 1);
+            bb.add_BB(_r42.bb);
+            _r42 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 7, y_body_base + row_height / 4 * 2.5, 1);
+            bb.add_BB(_r42.bb);
           }
 
           break;
@@ -17587,26 +17587,26 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           xshift = side == "end" ? 0 : 0;
 
           if (draw) {
-            var _r42 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + xshift, y_body_base + row_height / 4 * 1.5, 1);
+            var _r43 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + xshift, y_body_base + row_height / 4 * 1.5, 1);
 
-            bb.add_BB(_r42.bb);
-            _r42 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + xshift, y_body_base + row_height / 4 * 2.5, 1);
-            bb.add_BB(_r42.bb);
-            _r42 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 4, y_body_base, x + xshift + 4, y_body_base + row_height);
-            bb.add_BB(_r42.bb);
-            _r42 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 7, y_body_base, x + xshift + 7, y_body_base + row_height, {
+            bb.add_BB(_r43.bb);
+            _r43 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + xshift, y_body_base + row_height / 4 * 2.5, 1);
+            bb.add_BB(_r43.bb);
+            _r43 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 4, y_body_base, x + xshift + 4, y_body_base + row_height);
+            bb.add_BB(_r43.bb);
+            _r43 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 7, y_body_base, x + xshift + 7, y_body_base + row_height, {
               width: 2
             });
-            bb.add_BB(_r42.bb);
+            bb.add_BB(_r43.bb);
           }
 
           if (e0.times !== null && (e0.ntimes || e0.times != 2)) {
             var stimes = e0.ntimes == true ? "X" : "" + e0.times;
 
             if (draw) {
-              var _r43 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + xshift + w, y_body_base + row_height + param.xtimes_mark_y_margin, "(" + stimes + " times)", param.base_font_size / 2, "rt");
+              var _r44 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + xshift + w, y_body_base + row_height + param.xtimes_mark_y_margin, "(" + stimes + " times)", param.base_font_size / 2, "rt");
 
-              bb2.add_BB(_r43.bb);
+              bb2.add_BB(_r44.bb);
             }
           }
 
@@ -17618,37 +17618,37 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           actual_boundary = x + w / 2;
 
           if (draw) {
-            var _r44 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x, y_body_base + row_height / 4 * 1.5, 1);
+            var _r45 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x, y_body_base + row_height / 4 * 1.5, 1);
 
-            bb.add_BB(_r44.bb);
-            _r44 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x, y_body_base + row_height / 4 * 2.5, 1);
-            bb.add_BB(_r44.bb);
-            _r44 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 4, y_body_base, x + 4, y_body_base + row_height);
-            bb.add_BB(_r44.bb);
-            _r44 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 7, y_body_base, x + 7, y_body_base + row_height, {
+            bb.add_BB(_r45.bb);
+            _r45 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x, y_body_base + row_height / 4 * 2.5, 1);
+            bb.add_BB(_r45.bb);
+            _r45 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 4, y_body_base, x + 4, y_body_base + row_height);
+            bb.add_BB(_r45.bb);
+            _r45 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 7, y_body_base, x + 7, y_body_base + row_height, {
               width: 2
             });
-            bb.add_BB(_r44.bb);
-            _r44 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 10, y_body_base, x + 10, y_body_base + row_height);
-            bb.add_BB(_r44.bb);
+            bb.add_BB(_r45.bb);
+            _r45 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 10, y_body_base, x + 10, y_body_base + row_height);
+            bb.add_BB(_r45.bb);
           }
 
           if (e0.times !== null && (e0.ntimes || e0.times != 2)) {
             var _stimes = e0.ntimes == true ? "X" : "" + e0.times;
 
             if (draw) {
-              var _r45 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + 8, y_body_base + row_height, "(" + _stimes + " times)", param.base_font_size / 2, "rt");
+              var _r46 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + 8, y_body_base + row_height, "(" + _stimes + " times)", param.base_font_size / 2, "rt");
 
-              bb2.add_BB(_r45.bb);
+              bb2.add_BB(_r46.bb);
             }
           }
 
           if (draw) {
-            var _r46 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 14, y_body_base + row_height / 4 * 1.5, 1);
+            var _r47 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 14, y_body_base + row_height / 4 * 1.5, 1);
 
-            bb.add_BB(_r46.bb);
-            _r46 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 14, y_body_base + row_height / 4 * 2.5, 1);
-            bb.add_BB(_r46.bb);
+            bb.add_BB(_r47.bb);
+            _r47 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 14, y_body_base + row_height / 4 * 2.5, 1);
+            bb.add_BB(_r47.bb);
           }
 
           break;
@@ -17660,13 +17660,13 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           actual_boundary = x + w;
 
           if (draw) {
-            var _r47 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift, y_body_base, x + xshift, y_body_base + row_height);
+            var _r48 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift, y_body_base, x + xshift, y_body_base + row_height);
 
-            bb.add_BB(_r47.bb);
-            _r47 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 3, y_body_base, x + xshift + 3, y_body_base + row_height, {
+            bb.add_BB(_r48.bb);
+            _r48 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 3, y_body_base, x + xshift + 3, y_body_base + row_height, {
               width: 2
             });
-            bb.add_BB(_r47.bb);
+            bb.add_BB(_r48.bb);
           }
 
           break;
@@ -19194,7 +19194,7 @@ var Renderer = /*#__PURE__*/function () {
               {
                 //case "b":
                 //case "#":
-                if (e.param == "5") _5thelem.push(e);else if (e.value == "add") _6791113suselem.push(e);else _alteredelem.push(e);
+                if (e.value != "omit" && e.param == "5") _5thelem.push(e);else if (e.value == "add") _6791113suselem.push(e);else _alteredelem.push(e);
                 _minus5exists |= e.value == "b" && e.param == "5";
                 break;
               }

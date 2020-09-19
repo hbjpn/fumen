@@ -2937,10 +2937,10 @@ export class DefaultRenderer extends Renderer {
             bb.add_BB(r.bb);
             var h = graphic.GetCharProfile(B * 0.5, null, false, canvas.ratio, canvas.zoom).height;
             _alteredelem.forEach((e, index) => {
-                if (e.type == "tension" && e.value == "b") {
+                if(e.type == "tension" && (e.value == "b" || e.value == "#")){
                     if (draw){
                         let r = graphic.CanvasImage(canvas,
-                            graphic.G_imgmap["uni266D"], // flat.svg,
+                            graphic.G_imgmap[e.value=="b" ? "uni266D" : "uni266F"], // flat.svg,
                             x + tensions_pos + tensions_width,
                             y + param.row_height/2 + chord_offset_on_bass + upper_tension_y_offset,
                             B * 0.2,
@@ -2950,32 +2950,34 @@ export class DefaultRenderer extends Renderer {
                         bb.add_BB(r.bb);
                     }
                     tensions_width += B * 0.2;
-                } else if (e.type == "tension" && e.value == "#") {
-                    if (draw){
-                        let r = graphic.CanvasImage(canvas,
-                            graphic.G_imgmap["uni266F"], //sharp.svg"],
-                            x + tensions_pos + tensions_width,
-                            y + param.row_height/2 + chord_offset_on_bass + upper_tension_y_offset,
-                            B * 0.2,
-                            h,
-                            "lb"
-                        );
-                        bb.add_BB(r.bb);
-                    }
-                    tensions_width += B * 0.2;
+
+                    let r = graphic.CanvasText(
+                        canvas,
+                        x + tensions_pos + tensions_width,
+                        y + param.row_height/2 + chord_offset_on_bass + upper_tension_y_offset,
+                        e.param,
+                        B * 0.5,
+                        "lb",
+                        B * 0.5,
+                        !draw
+                    );
+                    tensions_width += r.width;
+                    bb.add_BB(r.bb);
+                } else if (e.type == "tension" && e.value == "omit"){
+                    let r = graphic.CanvasText(
+                        canvas,
+                        x + tensions_pos + tensions_width,
+                        y + param.row_height/2 + chord_offset_on_bass + upper_tension_y_offset,
+                        e.value + e.param, // take same appropach as sus/add.
+                        B * 0.5,
+                        "lb",
+                        B * 0.9, // "omit" is 4 chars then expand a little bit
+                        !draw
+                    );
+                    tensions_width += r.width;
+                    bb.add_BB(r.bb);
                 }
-                let r = graphic.CanvasText(
-                    canvas,
-                    x + tensions_pos + tensions_width,
-                    y + param.row_height/2 + chord_offset_on_bass + upper_tension_y_offset,
-                    e.param,
-                    B * 0.5,
-                    "lb",
-                    B * 0.5,
-                    !draw
-                );
-                tensions_width += r.width;
-                bb.add_BB(r.bb);
+
                 if (index != _alteredelem.length - 1) {
                     let r = graphic.CanvasText(
                         canvas,

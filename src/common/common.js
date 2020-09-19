@@ -379,7 +379,7 @@ export class Chord {
     ROOT ::= ( A|B|C|D|E|F|G ) ("#"|"b") ?
     TENSIONLIST ::= TENSIONGROUP | TENSIONGROUP ","? TENSIONLIST
     TENSIONGROUP ::= TENSION | "(" TENSIONLIST ")" 
-    TENSION ::= ( ("+" ("5"|"9"|"11")) | ("-" ("5"|"9"|"13")) | ("b" ("5"|"9"|"13")) | ("#" ("5"|"9"|"11")) | ("no" ("3" | "5")) | ("add" ("2"|"9")) )
+    TENSION ::= ( ("+" ("5"|"9"|"11")) | ("-" ("5"|"9"|"13")) | ("b" ("5"|"9"|"13")) | ("#" ("5"|"9"|"11")) | ("omit" ("3" | "5")) | ("add" ("2"|"9")) )
     */
     static parseChordMids(s){
         function parse(ps){
@@ -492,8 +492,8 @@ export class Chord {
             return null;
         }
         function tension(ps){
-            let ds = ["add9","add2","#11","+11","b13","-13","no3","no5","#9","+9","b9","-9","+5","#5","-5","b5"];
-            let th = [3,     3,      1,    1,    1,    1,    2,    2,    1,   1,   1,   1,   1,   1,   1,   1  ]; // type and digit split pos
+            let ds = ["omit3","omit5","add9","add2","#11","+11","b13","-13","#9","+9","b9","-9","+5","#5","-5","b5"];
+            let th = [ 4,      4,      3,     3,     1,    1,    1,    1,    1,   1,   1,   1,   1,   1,   1,   1  ]; // type and digit split pos
             if(ps.length == 0) return null;
             let r = charStartsWithAmong(ps, ds);
             if(r){
@@ -602,7 +602,7 @@ export class Chord {
                     let serialize = [];
                     code += tensionlist(r.value, serialize);
                     for(let j=0; j<serialize.length; ++j){
-                        repl = {add:"add","+":"#","-":"b","#":"#","b":"b"};
+                        repl = {add:"add","+":"#","-":"b","#":"#","b":"b","omit":"omit"};
                         objholder.push({"type":"tension", value:repl[serialize[j].value], param:serialize[j].param}); 
                     }
                     break; 

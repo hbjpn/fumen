@@ -233,7 +233,7 @@ export class Renderer {
                     case "tension":{
                         //case "b":
                         //case "#":
-                        if (e.param == "5") _5thelem.push(e);
+                        if (e.value != "omit" && e.param == "5") _5thelem.push(e);
                         else if(e.value == "add") _6791113suselem.push(e);
                         else _alteredelem.push(e);
                         _minus5exists |= (e.value=="b" && e.param=="5");

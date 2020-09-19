@@ -1,6 +1,7 @@
 %TITLE="Flex Reharsal Group"
 %ARTIST="Fumen Tester"
 
+| A | F |
 [A] 
 | A B | C D | 
 [B] 
@@ -18,3 +19,6 @@
 
 [F]
 | A | C |
+
+[]
+| E | A |

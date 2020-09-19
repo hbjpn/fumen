@@ -12218,11 +12218,11 @@ var Chord = /*#__PURE__*/function () {
     } // More sophiscated method based on BNF based parsing
 
     /*
-    CHORD ::= ROOT ( "m" | "dim"|"aug"|"+")? "M"? ("5" | "6"|"7"|"9"|"11"|"13"|"69")? (("sus" ("4"|"2")? ) | ("add" ("2"|"9")))?  TENSIONLIST* ( EOF | ":" | "/" )
+    CHORD ::= ROOT ( "m" | "dim"|"aug"|"+")? "M"? ("5" | "6"|"7"|"9"|"11"|"13"|"69")? ("sus" ("4"|"2")? )?  ","? TENSIONLIST* ( EOF | ":" | "/" )
     ROOT ::= ( A|B|C|D|E|F|G ) ("#"|"b") ?
     TENSIONLIST ::= TENSIONGROUP | TENSIONGROUP ","? TENSIONLIST
     TENSIONGROUP ::= TENSION | "(" TENSIONLIST ")" 
-    TENSION ::= ( ("+" ("5"|"9"|"11")) | ("-" ("5"|"9"|"13")) | ("b" ("9"|"13")) | ("#" ("9"|"11")) | ("no" ("3" | "5")) )
+    TENSION ::= ( ("+" ("5"|"9"|"11")) | ("-" ("5"|"9"|"13")) | ("b" ("5"|"9"|"13")) | ("#" ("5"|"9"|"11")) | ("no" ("3" | "5")) | ("add" ("2"|"9")) )
     */
 
   }], [{

@@ -1,5 +1,6 @@
+dist/*.html
+dist/lib
 node_modules/
-dist/
 materials/
 release/
 .DS_Sotre

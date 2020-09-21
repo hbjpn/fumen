@@ -17474,9 +17474,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       }
 
       var width = 0;
-      if (param.on_bass_style == "below") // max of overall-upper, overall-lower, overall onbass(below)
+      if (param.on_bass_style == "below") // max of overall-tension, overall-lower, overall onbass(below)
         width = Math.max(Math.max(upper_width, lower_width) + tensions_width, lower_width, onbass_width);else {
-        // max of overall-upper and overall lower
+        // max of overall-tension and overall lower
         width = Math.max(Math.max(upper_width, lower_width) + tensions_width, lower_width + onbass_width);
       }
       return {

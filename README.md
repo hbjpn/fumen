@@ -1,10 +1,8 @@
 # Fumen
 
-Fumen is a markup language and rendering engine for music leadsheet creation with simple, easy and intuitive syntax, supporting various types of compoents used in popular music's leadsheet such as chord symbols, rhythm slashes, rest marks, repeat marks, reharsal marks, comments, lyrics. 
+Fumen is a lightweight markup language and rendering engine for music leadsheet creation with simple, easy and intuitive syntax, supporting various types of compoents used in popular music's leadsheet such as chord symbols, rhythm slashes, rest marks, repeat marks, reharsal marks, comments, lyrics. 
 
-Differnt from the other sheetmusic redenring softwares, Fumen is **specialized for creating quick chord-name based leadsheets** which is oftenly used in popular music contexts.
-
-This is Fumen2 which is a re-creationg of Fumen to improve the rendering times and to improve flexibility of rendering result to support various types of devices(desktop, smarphones etc).
+Differnt from the other sheetmusic redenring softwares, Fumen is **specialized for creating quick chord and rhythm chart based leadsheets** which is oftenly used in popular music contexts.
 
 ## Quick start
 
@@ -14,6 +12,19 @@ Just import fumen.js. No other depending modules !
 ```html
     <script type="text/javascript" src="fumen.js"></script>
 ```
+
+You can also use the released version in jsdeliver CDN
+
+```html
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/hbjpn/fumen@1.1.0/dist/fumen.js"></script>
+```
+
+Minified version :
+
+```html
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/hbjpn/fumen@1.1.0/dist/fumen.min.js"></script>
+```
+
 
 * Javascript
 
@@ -44,3 +55,4 @@ https://hbjpn.github.io/fumen/
 MIT
 
 Fonts are under SIL open font license found in OLF.txt.
+

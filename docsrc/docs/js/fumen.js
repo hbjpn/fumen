@@ -17257,9 +17257,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       var onbass_width = 0;
       var rootCharHeight = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](B, null, false, canvas.ratio, canvas.zoom).height; // Position parameters
 
-      var upper_tension_y_offset = 0; // base line is middle of main chord character
+      var upper_tension_y_offset = 0; // Baseline is middle of main chord character
 
-      var lower_onbass_y_offset = rootCharHeight / 16; // base line is bottom of main chord character. For on bass this applies for normal onbass style. For on bass style of "below", offset 0 is applied.
+      var lower_onbass_y_offset = rootCharHeight / 16; // Slight offset so that on bass does not interfer with tensions. Baseline is bottom of main chord character. For on bass this applies for normal onbass style. For on bass style of "below", offset 0 is applied.
 
       var root = bases[0];
       var onbass = bases[1];
@@ -17468,14 +17468,16 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
             onbass_width += B * 0.2;
           }
-        }
+        } //if(param.on_bass_style != "below")
+        //    lower_width += onbass_width;
 
-        if (param.on_bass_style != "below") lower_width += onbass_width;
       }
 
       var width = 0;
-      if (param.on_bass_style == "below") width = Math.max(upper_width, lower_width, onbass_width) + tensions_width;else {
-        width = Math.max(upper_width, lower_width) + tensions_width;
+      if (param.on_bass_style == "below") // max of overall-upper, overall-lower, overall onbass(below)
+        width = Math.max(Math.max(upper_width, lower_width) + tensions_width, lower_width, onbass_width);else {
+        // max of overall-upper and overall lower
+        width = Math.max(Math.max(upper_width, lower_width) + tensions_width, lower_width + onbass_width);
       }
       return {
         width: width,

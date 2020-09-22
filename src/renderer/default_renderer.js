@@ -460,7 +460,7 @@ export class DefaultRenderer extends Renderer {
                 // find the last measure for which expand is applied, or fallback to #0.
                 let rowdash;
                 for(rowdash=row-1; rowdash>=0; --rowdash){
-                    if(reharsal_x_width_info[rowdash][0].align == "expand") break;
+                    if(reharsal_x_width_info[rowdash][0][0].align == "expand") break;
                 }
                 if(rowdash<0) rowdash=0; // Fallback to #0 even it has right|left align
                 reduced_meas_valid = (reharsal_x_width_info[rowdash][0].length > num_meas);

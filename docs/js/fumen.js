@@ -14677,25 +14677,7 @@ var Parser = /*#__PURE__*/function () {
                     throw "Invalid state";
                   }
 
-                  lastb.exportTarget = true; // Consume the last NLs
-
-                  if (tr.sss.length > 0) measures.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](tr.sss));
-                  if (tr.type != TOKEN_END) measures.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](tr.token));
-                  s = tr.s; // consme
-
-                  if (tr.type == TOKEN_NL || tr.type == TOKEN_BACK_SLASH) {
-                    this.context.line += 1;
-                    this.context.contiguous_line_break += 1;
-                  }
-
-                  if (tr.type == TOKEN_BACK_SLASH) {
-                    r = this.nextToken(r.s);
-                    if (r.type != TOKEN_NL) this.onParseError("INVALID CODE DETECTED AFTER BACK SLASH");
-                    measures.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.sss));
-                    measures.push(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
-                    s = tr.s; // consume                               
-                  }
-
+                  lastb.exportTarget = true;
                   break;
                 }
 
@@ -14829,7 +14811,7 @@ var Parser = /*#__PURE__*/function () {
             if (this.context.contiguous_line_break >= 2) break;
             var is_new_line_middle_of_block = num_meas_row > 0 && this.context.contiguous_line_break == 1;
             this.context.contiguous_line_break = 0;
-            r = this.parseMeasures(r, r.s); // the last NL has been consumed.
+            r = this.parseMeasures(r, r.s); // the last NL has not been consumed.
             // Apply par row macros
 
             r.measures[0].macros = _common_common__WEBPACK_IMPORTED_MODULE_1__["deepcopy"](latest_macros);
@@ -15543,7 +15525,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           var rowdash = void 0;
 
           for (rowdash = row - 1; rowdash >= 0; --rowdash) {
-            if (reharsal_x_width_info[rowdash][0].align == "expand") break;
+            if (reharsal_x_width_info[rowdash][0][0].align == "expand") break;
           }
 
           if (rowdash < 0) rowdash = 0; // Fallback to #0 even it has right|left align

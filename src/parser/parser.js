@@ -628,21 +628,6 @@ export class Parser {
                             }
                             lastb.exportTarget = true;
 
-                            // Consume the last NLs
-                            if(tr.sss.length > 0) measures.push(new common.RawSpaces(tr.sss));
-                            if(tr.type != TOKEN_END) measures.push(new common.RawSpaces(tr.token));
-                            s = tr.s; // consme
-                            if(tr.type == TOKEN_NL || tr.type == TOKEN_BACK_SLASH){
-                                this.context.line += 1;
-                                this.context.contiguous_line_break += 1;
-                            }
-                            if(tr.type == TOKEN_BACK_SLASH){
-                                r = this.nextToken(r.s);
-                                if(r.type != TOKEN_NL) this.onParseError("INVALID CODE DETECTED AFTER BACK SLASH");
-                                measures.push(new common.RawSpaces(r.sss));
-                                measures.push(new common.RawSpaces(r.token));  
-                                s = tr.s; // consume                               
-                            }
                             break;
                         }
                         default:
@@ -772,7 +757,7 @@ export class Parser {
 
                     this.context.contiguous_line_break = 0;
                     
-                    r = this.parseMeasures(r, r.s); // the last NL has been consumed.
+                    r = this.parseMeasures(r, r.s); // the last NL has not been consumed.
                     // Apply par row macros
                     r.measures[0].macros = common.deepcopy(latest_macros);
                     r.measures[0].align = current_align;

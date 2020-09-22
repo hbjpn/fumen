@@ -43,6 +43,13 @@ export class BoundingBox{
         this.y[1] += y1;
         return this;
     }
+    move(dx, dy){
+        this.x[0] += dx;
+        this.x[1] += dx;
+        this.y[0] += dy;
+        this.y[1] += dy;
+        return this;
+    }
     scale(sx, sy){
         this.x[0] *= sx;
         this.x[1] *= sx;

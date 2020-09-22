@@ -55,9 +55,59 @@ export function charStartsWithAmong(s, strlist) {
 
 export var WHOLE_NOTE_LENGTH = 2 * 3 * 5 * 7 * 9 * 11 * 13 * 64;
 
-export class Track {
+export class Node {
+    constructor(){
+        this.childNodes = [];
+        this.parentNode = null;
+    }
+    appendChild(node){
+        node.parentNode = this;
+        this.childNodes.push(node);
+        if(this.childNodes.length >= 2){
+            this.childNodes[this.childNodes.length-2].nextSiblingNode = node;
+            node.previousSiblingNode = this.childNodes[this.childNodes.length-2];
+        }
+    }
+
+    exportCode(){
+        let code = "";
+        this.childNodes.forEach(rg=>{
+            code += rg.exportCode();
+        });
+        return code;
+    }
+
+    insertBefore(node, newNode){
+        if(node){
+            let i = this.childNodes.indexOf(node);
+            this.childNodes.insert(i, newNode);
+        }else{
+            this.childNodes.push(newNode);
+        }
+    }
+}
+
+export class Element extends Node {
+    // Musical
+    constructor(){
+        super();
+        this.childElements = [];
+    }
+    appendChild(node){
+        super.appendChild(node);
+        if(node instanceof Element){
+            this.childElements.push(node);
+            if(this.childElements.length >= 2){
+                this.childElements[this.childElements.length-2].nextSiblingElement = node;
+                node.previousSiblingElement = this.childElements[this.childElements.length-2];
+            }
+        }
+    }
+}
+
+export class Track extends Element {
     constructor() {
-        this.reharsal_groups = new Array();
+        super();
         this.macros = deepcopy(MACRO_DEFAULT);
         this.pre_render_info = {};
     }
@@ -81,85 +131,34 @@ export class Track {
     getVariable(name){
         return this.macros[name];
     }
-
-    exportCode(){
-        let code = "";
-        this.reharsal_groups.forEach(rg=>{
-            code += rg.exportCode();
-        });
-        return code;
-    }
-
-    insertBefore(elem, newelem){
-        if(elem){
-            let i = this.reharsal_groups.indexOf(elem);
-            this.reharsal_groups.insert(i, newelem);
-        }else{
-            this.reharsal_groups.push(newelem);
-        }
-    }
 }
 
-export class ReharsalGroup {
+export class ReharsalGroup extends Element{
     constructor(name, inline=false) {
+        super();
         this.name = name;
         this.inline = inline;
         //	this.measures = new Array();
-        this.blocks = new Array(); // Blocks in the reharsal groups
         this.macros = deepcopy(MACRO_DEFAULT);
-    }
-
-    exportCode(){
-        let code = "";
-        this.blocks.forEach(b=>{
-            code += b.exportCode();
-        });
-        return code;
-    }
-
-    insertBefore(elem, newelem){
-        if(elem){
-            let i = this.blocks.indexOf(elem);
-            this.blocks.insert(i, newelem);
-        }else{
-            this.blocks.push(newelem);
-        }
     }
 }
 
-export class Block {
+export class Block extends Element{
     constructor(){
-        this.measures = new Array();
-    }
-
-    exportCode(){
-        let code = "";
-        this.measures.forEach(m=>{
-            code += m.exportCode();
-        });
-        return code;
+        super();
     }
 
     concat(newmeasures){
         // in-place concat.
         // do not use concat as the object is replaced.
         for(let i = 0; i < newmeasures.length; ++i)
-            this.measures.push(newmeasures[i]);
-    }
-
-    insertBefore(elem, newelem){
-        if(elem){
-            let i = this.measures.indexOf(elem);
-            this.measures.insert(i, newelem);
-        }else{
-            this.measures.push(newelem);
-        }
+            this.appendChild(newmeasures[i]);
     }
 }
 
-export class Measure {
+export class Measure extends Element{
     constructor() {
-        this.elements = new Array();
+        super();
         this.boundary_info = ["n", "n"];
         // "n" : normal boundary
         // "b" : loop Begin boundary
@@ -178,27 +177,11 @@ export class Measure {
         this.renderprop = {}; // Rendering information storage
         this.macros = deepcopy(MACRO_DEFAULT);
     }
-
-    exportCode(){
-        let code = "";
-        this.elements.forEach(e=>{
-            code += e.exportCode();
-        });
-        return code;
-    }
-
-    insertBefore(elem, newelem){
-        if(elem){
-            let i = this.elements.indexOf(elem);
-            this.elements.insert(i, newelem);
-        }else{
-            this.elements.push(newelem);
-        }
-    }
 }
 
-export class Rest{
+export class Rest extends Element{
     constructor(length_s) {
+        super();
         this.length_s = length_s;
         this.note_group_list = [
             { lengthIndicator: Chord.parseLengthIndicator(length_s), note_profiles: null }
@@ -210,8 +193,9 @@ export class Rest{
     }
 }
 
-export class Simile {
+export class Simile extends Element{
     constructor(numslash) {
+        super();
         // NOTE : Double simile on measure boundary is not treated in this class, it is treated as a one of boundary type
         this.numslash = numslash;
         this.renderprop = {};
@@ -222,8 +206,9 @@ export class Simile {
     }
 }
 
-export class Chord {
+export class Chord extends Element {
     constructor(chord_str) {
+        super();
         this.init(chord_str);
     }
 
@@ -873,8 +858,9 @@ export class Chord {
     }
 }
 
-export class LoopIndicator {
+export class LoopIndicator extends Element {
     constructor(indicators) {
+        super();
         // Note : Content of indicators are not always integers.
         // intindicators is storage for integer indicators analyzed from indicators.
         this.indicators = indicators;
@@ -890,16 +876,18 @@ export class LoopIndicator {
     exportCode(){ return `[${this.indicators}]`; }
 }
 
-export class Space{
+export class Space extends Element{
     constructor(length=1){
+        super();
         this.length = length;
         this.renderprop = {};
     }
     exportCode(){ return ",".repeat(this.length); }
 }
 
-export class LongRestIndicator {
+export class LongRestIndicator extends Element {
     constructor(longrestlen) {
+        super();
         this.longrestlen = longrestlen;
     }
     exportCode() {
@@ -907,8 +895,9 @@ export class LongRestIndicator {
     }
 }
 
-export class Time {
+export class Time extends Element {
     constructor(numer, denom) {
+        super();
         this.numer = numer;
         this.denom = denom;
     }
@@ -917,8 +906,9 @@ export class Time {
     }
 }
 
-export class MeasureBoundary {
+export class MeasureBoundary extends Element {
     constructor(exportTarget = true) {
+        super();
         this.exportTarget = exportTarget;
     }
 }
@@ -979,8 +969,10 @@ export class MeasureBoundaryDblSimile  extends MeasureBoundary {
 }
 
 // Signs
-export class DaCapo {
-    constructor() {}
+export class DaCapo extends Element {
+    constructor() {
+        super();
+    }
 
     toString() {
         return "D.C.";
@@ -988,8 +980,9 @@ export class DaCapo {
     exportCode(){ return this.toString(); }
 }
 
-export class DalSegno {
+export class DalSegno extends Element {
     constructor(number, al) {
+        super();
         this.number = number;
         this.al = al; // Either Coda/Fine
     }
@@ -1003,8 +996,9 @@ export class DalSegno {
 
 }
 
-export class Segno {
+export class Segno extends Element{
     constructor(number, opt) {
+        super();
         this.number = number;
         this.opt = opt;
     }
@@ -1014,8 +1008,9 @@ export class Segno {
     }
 }
 
-export class Coda {
+export class Coda extends Element {
     constructor(number) {
+        super();
         this.number = number;
     }
 
@@ -1025,15 +1020,18 @@ export class Coda {
     exportCode(){ return "<"+this.toString()+">"; }
 }
 
-export class ToCoda {
+export class ToCoda extends Element {
     constructor(number) {
+        super();
         this.number = number;
     }
     exportCode(){ return `<to Coda${this.number||""}>`; }
 }
 
-export class Fine {
-    constructor() {}
+export class Fine extends Element {
+    constructor() {
+        super();
+    }
 
     toString() {
         return "Fine";
@@ -1041,8 +1039,9 @@ export class Fine {
     exportCode(){ return "<"+this.toString()+">"; }
 }
 
-export class Comment {
+export class Comment extends Element {
     constructor(comment, chorddep=false) {
+        super();
         this.comment = comment;
         this.chorddep = chorddep; // Dependency for particular chord : true/false
     }
@@ -1050,8 +1049,9 @@ export class Comment {
     exportCode(){ return "'"+this.comment+"'"; } // TODO : quote considrtaion
 }
 
-export class Lyric {
+export class Lyric extends Element {
     constructor(lyric, chorddep=false) {
+        super();
         this.lyric = lyric;
         this.chorddep = chorddep; // Dependency for particular chord : true/false
     }
@@ -1069,8 +1069,30 @@ function isObject(val) {
     return false;
 }
 
-export class Macro {
+// Represents Variable that is explicit shown in the drawing and user can select it.
+export class Title extends Element {
+    constructor(variable){
+        super();
+        this.variable = variable;
+    }
+}
+export class SubTitle extends Element {
+    constructor(variable){
+        super();
+        this.variable = variable;
+    }
+}
+export class Artist extends Element {
+    constructor(variable){
+        super();
+        this.variable = variable;
+    }
+}
+
+// Variables that is used internally. Not explicty shown in the drawing.
+export class Macro extends Node {
     constructor(name, value){
+        super();
         this.name = name;
         this.value = value;
     }
@@ -1094,9 +1116,10 @@ export class Macro {
  * Reperesetnts skipped contiguous spaces/tabs during parsing.
  * Used for serialization.
  */
-export class RawSpaces
+export class RawSpaces extends Node
 {
     constructor(sss){
+        super();
         this.sss = sss;
     }
     exportCode(){
@@ -1104,10 +1127,11 @@ export class RawSpaces
     }
 }
 
-export class TemplateString
+export class TemplateString extends Node
 {
     // dict is hold as reference. Any change in the dict is propagated to exported code
     constructor(tmpl, dict){
+        super();
         this.tmpl = tmpl;
         this.dict = dict;
     }

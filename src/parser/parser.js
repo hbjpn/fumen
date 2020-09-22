@@ -414,21 +414,21 @@ export class Parser {
         var measure = new common.Measure();
 
         if (trig_token_obj.type == TOKEN_MB)
-            measure.elements.push(new common.MeasureBoundaryMark(1));
+            measure.appendChild(new common.MeasureBoundaryMark(1));
         else if (trig_token_obj.type == TOKEN_MB_DBL)
-            measure.elements.push(new common.MeasureBoundaryMark(2));
+            measure.appendChild(new common.MeasureBoundaryMark(2));
         else if (trig_token_obj.type == TOKEN_MB_LOOP_END)
-            measure.elements.push(new common.LoopEndMark(trig_token_obj.param));
+            measure.appendChild(new common.LoopEndMark(trig_token_obj.param));
         else if (trig_token_obj.type == TOKEN_MB_LOOP_BEGIN)
-            measure.elements.push(new common.LoopBeginMark());
+            measure.appendChild(new common.LoopBeginMark());
         else if (trig_token_obj.type == TOKEN_MB_LOOP_BOTH)
-            measure.elements.push(
+            measure.appendChild(
                 new common.LoopBothMark(trig_token_obj.param)
             );
         else if (trig_token_obj.type == TOKEN_MB_FIN)
-            measure.elements.push(new common.MeasureBoundaryFinMark());
+            measure.appendChild(new common.MeasureBoundaryFinMark());
         else if (trig_token_obj.type == TOKEN_MB_DBL_SIMILE)
-            measure.elements.push(new common.MeasureBoundaryDblSimile());
+            measure.appendChild(new common.MeasureBoundaryDblSimile());
 
         var loop_flg = true;
 
@@ -450,12 +450,12 @@ export class Parser {
 
         while (loop_flg) {
             var r = this.nextToken(s);
-            if(r.sss.length > 0) measure.elements.push(new common.RawSpaces(r.sss));
+            if(r.sss.length > 0) measure.appendChild(new common.RawSpaces(r.sss));
 
             var m = null;
             switch (r.type) {
                 case TOKEN_COMMA:
-                    measure.elements.push(new common.Space(1));
+                    measure.appendChild(new common.Space(1));
                     s = r.s;
                     break;
                 case TOKEN_STRING:
@@ -466,17 +466,17 @@ export class Parser {
                         atmark_associated_elements = [];
                     }
 
-                    measure.elements.push(chord);
+                    measure.appendChild(chord);
                     s = r.s;
                     break;
                 case TOKEN_STRING_SQ:
                     var comment = new common.Comment(r.token);
-                    measure.elements.push(comment);
+                    measure.appendChild(comment);
                     s = r.s;
                     break;
                 case TOKEN_STRING_GRAVE_ACCENT:
                     var lyric = new common.Lyric(r.token);
-                    measure.elements.push(lyric);
+                    measure.appendChild(lyric);
                     s = r.s;
                     break;
                 case TOKEN_STRING_HYPHEN:
@@ -484,22 +484,22 @@ export class Parser {
                     if(!m){
                         this.onParseError("ERROR_WHILE_PARSE_LONG_REST");
                     }
-                    measure.elements.push(new common.LongRestIndicator(parseInt(r.token)));
+                    measure.appendChild(new common.LongRestIndicator(parseInt(r.token)));
                     s = r.s;
                     break;
                 case TOKEN_ATMARK:
                     // At mark is now an independent element which associate previous elements to the next elements of atmark.
                     //atmark_detected = true;
-                    atmark_associated_elements.push(measure.elements[measure.elements.length-1]); // Remember the previous element
+                    atmark_associated_elements.push(measure.childElements[measure.childElements.length-1]); // Remember the previous element
                     s = r.s;
                     // This is not registered explicitly as muscal symbol but as non-musical symbol
-                    measure.elements.push(new common.RawSpaces(r.token));
+                    measure.appendChild(new common.RawSpaces(r.token));
                     break;
                 case TOKEN_WORD:
                     // Analyze Rest symbol firstly, if not it is chord.
                     var rr = this.parseRest(r.token, r.type, r.s);
                     if (rr.rest !== null) {
-                        measure.elements.push(rr.rest);
+                        measure.appendChild(rr.rest);
                         s = rr.s;
                         break;
                     }
@@ -515,29 +515,29 @@ export class Parser {
                         atmark_associated_elements = [];
                     }
 
-                    measure.elements.push(r.chord);
+                    measure.appendChild(r.chord);
                     
                     s = r.s;
                     break;
                 case TOKEN_PERIOD:
                     // Only simile symbol at this moment
                     r = this.parseInMeasSimile(r.token, r.type, r.s);
-                    measure.elements.push(r.simile);
+                    measure.appendChild(r.simile);
                     s = r.s;
                     break;
                 case TOKEN_BRACKET_LA:
                     r = this.parseSign(r.type, r.s);
-                    measure.elements.push(r.sign);
+                    measure.appendChild(r.sign);
                     s = r.s;
                     break;
                 case TOKEN_BRACKET_LR:
                     r = this.parseTime(r.type, r.s);
-                    measure.elements.push(r.time);
+                    measure.appendChild(r.time);
                     s = r.s;
                     break;
                 case TOKEN_BRACKET_LS:
                     r = this.parseLoopIndicator(r.type, r.s);
-                    measure.elements.push(r.loopIndicator);
+                    measure.appendChild(r.loopIndicator);
                     s = r.s;
                     break;
                 
@@ -546,37 +546,37 @@ export class Parser {
                 // Not that if spaces exists before the boundary, spaces are consumed.
                  // For the last measure, it still needst to be registed, which is done outside this function. 
                 case TOKEN_MB:
-                    measure.elements.push(new common.MeasureBoundaryMark(1, false));
+                    measure.appendChild(new common.MeasureBoundaryMark(1, false));
                     loop_flg = false;
                     s = s.substr(r.sss.length);
                     break;
                 case TOKEN_MB_DBL:
-                    measure.elements.push(new common.MeasureBoundaryMark(2, false));
+                    measure.appendChild(new common.MeasureBoundaryMark(2, false));
                     loop_flg = false;
                     s = s.substr(r.sss.length);
                     break;
                 case TOKEN_MB_LOOP_END:
-                    measure.elements.push(new common.LoopEndMark(r.param, false));
+                    measure.appendChild(new common.LoopEndMark(r.param, false));
                     loop_flg = false;
                     s = s.substr(r.sss.length);
                     break;
                 case TOKEN_MB_LOOP_BEGIN:
-                    measure.elements.push(new common.LoopBeginMark(false));
+                    measure.appendChild(new common.LoopBeginMark(false));
                     loop_flg = false;
                     s = s.substr(r.sss.length);
                     break;
                 case TOKEN_MB_LOOP_BOTH:
-                    measure.elements.push(new common.LoopBothMark(r.param, false));
+                    measure.appendChild(new common.LoopBothMark(r.param, false));
                     loop_flg = false;
                     s = s.substr(r.sss.length);
                     break;
                 case TOKEN_MB_FIN:
-                    measure.elements.push(new common.MeasureBoundaryFinMark(false));
+                    measure.appendChild(new common.MeasureBoundaryFinMark(false));
                     loop_flg = false;
                     s = s.substr(r.sss.length);
                     break;
                 case TOKEN_MB_DBL_SIMILE:
-                    measure.elements.push(
+                    measure.appendChild(
                         new common.MeasureBoundaryDblSimile(false)
                     );
                     loop_flg = false;
@@ -622,7 +622,7 @@ export class Parser {
                             loop_flg = false;
                             // Register the last boundary to the serialize object of last measure as it is not regisereted.
                             var lastm = measures[measures.length-1];
-                            let lastb = lastm.elements[lastm.elements.length-1];
+                            let lastb = lastm.childElements[lastm.childElements.length-1];
                             if(! (lastb instanceof common.MeasureBoundary)){
                                 throw "Invalid state";
                             }
@@ -710,7 +710,6 @@ export class Parser {
             var current_align = "expand";
 
             this.context.contiguous_line_break = 0; // This should be done only if NL is really consumed.
-            let currentStorage = block.measures;
 
             let num_meas_row = 0;
 
@@ -721,7 +720,7 @@ export class Parser {
             // eslint-disable-next-line no-constant-condition
             while (true) {
                 r = this.nextToken(s);
-                if(r.sss.length > 0) currentStorage.push(new common.RawSpaces(r.sss));
+                if(r.sss.length > 0) block.appendChild(new common.RawSpaces(r.sss));
                 if (r.type == TOKEN_END){
                     s = r.s; // explicitly consume the last spaces if any.
                     end_of_rg = true;
@@ -730,28 +729,28 @@ export class Parser {
                     this.context.line += 1;
                     this.context.contiguous_line_break += 1;
                     current_align = "expand"; // default is expand
-                    currentStorage.push(new common.RawSpaces(r.token)); 
+                    block.appendChild(new common.RawSpaces(r.token)); 
                     //if(this.context.contiguous_line_break >= 2) break; Do not break here. If the first non NL element is found, then break.
                 } else if(r.type == TOKEN_BACK_SLASH){
                     if(this.context.contiguous_line_break >= 2) break;
                     // Expect TOKEN_NL 
-                    currentStorage.push(new common.RawSpaces(r.token)); 
+                    block.appendChild(new common.RawSpaces(r.token)); 
                     r = this.nextToken(r.s);
                     if(r.type != TOKEN_NL) this.onParseError("INVALID CODE DETECTED AFTER BACK SLASH");
                     this.context.line += 1;
-                    currentStorage.push(new common.RawSpaces(r.sss));
-                    currentStorage.push(new common.RawSpaces(r.token)); 
+                    block.appendChild(new common.RawSpaces(r.sss));
+                    block.appendChild(new common.RawSpaces(r.token)); 
                     // Does not count as line break
                 }else if(r.type == TOKEN_BRACKET_RA){
                     if(this.context.contiguous_line_break >= 2) break;
                     // Right aligh indicoator > which is outside measure
                     current_align = "right";
-                    currentStorage.push(new common.RawSpaces(r.token)); 
+                    block.appendChild(new common.RawSpaces(r.token)); 
                 }else if(r.type == TOKEN_BRACKET_LA){
                     if(this.context.contiguous_line_break >= 2) break;
                     // Right aligh indicoator > which is outside measure
                     current_align = "left";
-                    currentStorage.push(new common.RawSpaces(r.token)); 
+                    block.appendChild(new common.RawSpaces(r.token)); 
                 } else if (r.type == TOKEN_BRACKET_LS) {
                     // Next reharsal mark detected.
                     // Do not consume.
@@ -787,7 +786,7 @@ export class Parser {
                     r = this.parseMacro(r.s);
                     currentReharsalGroup.macros[r.key] = r.value;
                     latest_macros[r.key] = r.value;
-                    currentStorage.push(new common.Macro(r.key, r.value));
+                    block.appendChild(new common.Macro(r.key, r.value));
                     this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this macro
                 } else {
                     console.log(r.token);
@@ -827,7 +826,7 @@ export class Parser {
                 rgName, rgtype=="inline");
             
             if(rgtype != "anonymous")
-                rg.blocks.push(new common.TemplateString("[${name}]", rg));
+                rg.appendChild(new common.TemplateString("[${name}]", rg));
             
             this.context.contiguous_line_break = 0;
 
@@ -837,7 +836,7 @@ export class Parser {
             // eslint-disable-next-line no-constant-condition
             while(true){
                 r = this.parseBlock(s, rg, latest_macros);
-                rg.blocks.push(r.block);
+                rg.appendChild(r.block);
                 s = r.s;
                 ++loop_cnt;
                 if (loop_cnt >= MAX_LOOP) throw "Too much elements or infnite loop detected with unkown reason";
@@ -873,35 +872,34 @@ export class Parser {
             // eslint-disable-next-line no-constant-condition
             while (true) {
                 r = this.nextToken(code);
-                let currentStorage = track.reharsal_groups;
-                if(r.sss.length > 0) currentStorage.push(new common.RawSpaces(r.sss));
+                if(r.sss.length > 0) track.appendChild(new common.RawSpaces(r.sss));
                 if (r.type == TOKEN_END){
                     break;
                 }else if (r.type == TOKEN_NL) {
                     this.context.line += 1;
                     this.context.contiguous_line_break += 1;
-                    currentStorage.push(new common.RawSpaces(r.token)); 
+                    track.appendChild(new common.RawSpaces(r.token)); 
                 } else if(r.type == TOKEN_BACK_SLASH){
                     // Expect TOKEN_NL 
-                    currentStorage.push(new common.RawSpaces(r.token)); 
+                    track.appendChild(new common.RawSpaces(r.token)); 
                     r = this.nextToken(r.s);
                     if(r.type != TOKEN_NL) this.onParseError("INVALID CODE DETECTED AFTER BACK SLASH");
                     this.context.line += 1;
-                    currentStorage.push(new common.RawSpaces(r.sss));
-                    currentStorage.push(new common.RawSpaces(r.token)); 
+                    track.appendChild(new common.RawSpaces(r.sss));
+                    track.appendChild(new common.RawSpaces(r.token)); 
                     // Does not count as line break
                 } else if (r.type == TOKEN_BRACKET_LS) {
                     // Reset latest_macros
                     latest_macros = {};
                     
-                    let rgs = track.reharsal_groups.filter(e => e instanceof common.ReharsalGroup);
+                    let rgs = track.childElements.filter(e => e instanceof common.ReharsalGroup);
                     let inline = 
                         this.context.contiguous_line_break<=1 &&
                         rgs.length > 0 && // 1st RG is always non-inline
-                        rgs[rgs.length - 1].blocks.length > 0; // previous reharsal group has at least one block(measure)
+                        rgs[rgs.length - 1].childElements.filter(e=>e instanceof common.Block).length > 0; // previous reharsal group has at least one block(measure)
                 
                     r = this.parseReharsalGroup(r.s, inline?"inline":"normal");
-                    currentStorage.push(r.rg);
+                    track.appendChild(r.rg);
                     //this.context.contiguous_line_break = 0;
                 } else if (
                     [
@@ -919,7 +917,7 @@ export class Parser {
                     // If not reharsal mark is defined and the measure is directly specified, 
                     // then default anonymous reharsal mark is generated.
                     r = this.parseReharsalGroup(code.substr(r.sss.length), "anonymous");
-                    currentStorage.push(r.rg);
+                    track.appendChild(r.rg);
                     
 
                 } else if (r.type == TOKEN_PERCENT) {
@@ -927,7 +925,7 @@ export class Parser {
                     r = this.parseMacro(r.s);
                     track.macros[r.key] = r.value;
                     latest_macros[r.key] = r.value;
-                    currentStorage.push(new common.Macro(r.key, r.value));
+                    track.appendChild(new common.Macro(r.key, r.value));
                     this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this macro
                 } else {
                     console.log(r.token);

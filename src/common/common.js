@@ -78,12 +78,31 @@ export class Node {
     }
 
     insertBefore(node, newNode){
+        newNode.parentNode = this;
         if(node){
             let i = this.childNodes.indexOf(node);
-            this.childNodes.insert(i, newNode);
+            this.childNodes.splice(i, 0, newNode);
+            if(i>1){ // not first
+                this.childNodes[i-1].nextSiblingNode = newNode;
+                newNode.previousSiblingNode = this.childNodes[i-1];
+            }
+            // it is always ensured i+1 elements exists.
+            this.childNodes[i+1].previousSiblingNode = newNode;
+            newNode.nextSiblingNode = this.childNodes[i+1];
         }else{
             this.childNodes.push(newNode);
+            if(this.childNodes.length >= 2){
+                this.childNodes[this.childNodes.length-2].nextSiblingNode = newNode;
+                newNode.previousSiblingNode = this.childNodes[this.childNodes.length-2];
+            }
         }
+    }
+
+    remove(){
+        let i = this.parentNode.childNodes.indexOf(this);
+        this.parentNode.childNodes.splice(i, 1);
+        if(this.previousSiblingNode) this.previousSiblingNode.nextSiblingNode = this.nextSiblingNode;
+        if(this.nextSiblingNode) this.nextSiblingNode.previousSiblingNode = this.previousSiblingNode;
     }
 }
 
@@ -92,6 +111,14 @@ export class Element extends Node {
     constructor(){
         super();
         this.childElements = [];
+    }
+    _reconstruct(){
+        this.childElements = this.childNodes.filter(e=>e instanceof Element);
+        for(let i = 0; i < this.childElements; ++i){
+            this.childElements[i].nextSiblingNode = i+1<this.childElements.length ? this.childElements[i+1]: null;
+            this.childElements[i].previousSiblingNode = i>0 ? this.childElements[i-1] : null;
+            
+        }
     }
     appendChild(node){
         super.appendChild(node);
@@ -102,6 +129,16 @@ export class Element extends Node {
                 node.previousSiblingElement = this.childElements[this.childElements.length-2];
             }
         }
+    }
+    insertBefore(node, newNode){
+        super.insertBefore(node, newNode);
+        // Re-construct all : TODO: improve time
+        this._reconstruct();
+    }
+
+    remove(){
+        super.remove();
+        this._reconstruct();
     }
 }
 

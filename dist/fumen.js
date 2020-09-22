@@ -11881,12 +11881,37 @@ var Node = /*#__PURE__*/function () {
   }, {
     key: "insertBefore",
     value: function insertBefore(node, newNode) {
+      newNode.parentNode = this;
+
       if (node) {
         var i = this.childNodes.indexOf(node);
-        this.childNodes.insert(i, newNode);
+        this.childNodes.splice(i, 0, newNode);
+
+        if (i > 1) {
+          // not first
+          this.childNodes[i - 1].nextSiblingNode = newNode;
+          newNode.previousSiblingNode = this.childNodes[i - 1];
+        } // it is always ensured i+1 elements exists.
+
+
+        this.childNodes[i + 1].previousSiblingNode = newNode;
+        newNode.nextSiblingNode = this.childNodes[i + 1];
       } else {
         this.childNodes.push(newNode);
+
+        if (this.childNodes.length >= 2) {
+          this.childNodes[this.childNodes.length - 2].nextSiblingNode = newNode;
+          newNode.previousSiblingNode = this.childNodes[this.childNodes.length - 2];
+        }
       }
+    }
+  }, {
+    key: "remove",
+    value: function remove() {
+      var i = this.parentNode.childNodes.indexOf(this);
+      this.parentNode.childNodes.splice(i, 1);
+      if (this.previousSiblingNode) this.previousSiblingNode.nextSiblingNode = this.nextSiblingNode;
+      if (this.nextSiblingNode) this.nextSiblingNode.previousSiblingNode = this.previousSiblingNode;
     }
   }]);
 
@@ -11905,11 +11930,22 @@ var Element = /*#__PURE__*/function (_Node) {
 
     _this = _super.call(this);
     _this.childElements = [];
-    _this.parentElement = null;
     return _this;
   }
 
   _createClass(Element, [{
+    key: "_reconstruct",
+    value: function _reconstruct() {
+      this.childElements = this.childNodes.filter(function (e) {
+        return e instanceof Element;
+      });
+
+      for (var i = 0; i < this.childElements; ++i) {
+        this.childElements[i].nextSiblingNode = i + 1 < this.childElements.length ? this.childElements[i + 1] : null;
+        this.childElements[i].previousSiblingNode = i > 0 ? this.childElements[i - 1] : null;
+      }
+    }
+  }, {
     key: "appendChild",
     value: function appendChild(node) {
       _get(_getPrototypeOf(Element.prototype), "appendChild", this).call(this, node);
@@ -11922,6 +11958,21 @@ var Element = /*#__PURE__*/function (_Node) {
           node.previousSiblingElement = this.childElements[this.childElements.length - 2];
         }
       }
+    }
+  }, {
+    key: "insertBefore",
+    value: function insertBefore(node, newNode) {
+      _get(_getPrototypeOf(Element.prototype), "insertBefore", this).call(this, node, newNode); // Re-construct all : TODO: improve time
+
+
+      this._reconstruct();
+    }
+  }, {
+    key: "remove",
+    value: function remove() {
+      _get(_getPrototypeOf(Element.prototype), "remove", this).call(this);
+
+      this._reconstruct();
     }
   }]);
 
@@ -13847,7 +13898,7 @@ var HitManager = /*#__PURE__*/function () {
 /*!**********************!*\
   !*** ./src/index.js ***!
   \**********************/
-/*! exports provided: Parser, DefaultRenderer, SetupHiDPICanvas, GetCharProfile, CanvasTextWithBox, CanvasText, getFontSizeFromHeight, Chord, Rest, MeasureBoundary, Time, Coda, Segno, ToCoda, DalSegno, DaCapo, Simile */
+/*! exports provided: Parser, DefaultRenderer, SetupHiDPICanvas, GetCharProfile, CanvasTextWithBox, CanvasText, getFontSizeFromHeight, Chord, Rest, MeasureBoundary, Time, Coda, Segno, ToCoda, DalSegno, DaCapo, Simile, RawSpaces, TemplateString */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -13891,6 +13942,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DaCapo", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["DaCapo"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Simile", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Simile"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "RawSpaces", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["RawSpaces"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TemplateString", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["TemplateString"]; });
 
 
  //export * from './renderer/default_renderer';

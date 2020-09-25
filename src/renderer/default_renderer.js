@@ -22,11 +22,11 @@ import * as presets from "./presets";
  * @property {int} [title_font_size] Title font size
  * @property {int} [artist_font_size] Artist font size
  * @property {int} [x_offset] Margin of the left and right side of the paper.
- * @property {int} [x_offset_left] Margin of the right side of the paper.
- * @property {int} [x_offset_right] Margin of the left side of the paper.
+ * @property {int} [x_offset_left=null] Margin of the right side of the paper. x_offset applies when null is specified.
+ * @property {int} [x_offset_right=null] Margin of the left side of the paper. x_offset applies when null is specified.
  * @property {int} [y_offset] Margin of the top and bottom side of the paper.
- * @property {int} [y_offset_top=null] Margin of top side of the paper. In case header is drawn, this does not apply.
- * @property {int} [y_offset_bottom=null] Margin of top side of the paper. In case header is drawn, this does not apply
+ * @property {int} [y_offset_top=null] Margin of top side of the paper. y_offset applies when null is specified. In case header is drawn, this does not apply.
+ * @property {int} [y_offset_bottom=null] Margin of top side of the paper. y_offset applies when null is specified. In case header is drawn, this does not apply
  * @property {int} [y_header_margin] Margin of the top y when header is shown (normally, firstpage)
  * @property {int} [y_title_offset] Top offset for title
  * @property {int} [y_subtitle_offset] Top offset for sub-title
@@ -50,6 +50,10 @@ var SR_RENDER_PARAM = {
     y_header_margin     : 2, // Margin between header and first row
     y_offset            : 10,  // Without header
     x_offset            : 10,
+    y_offset_top        : null,  // Without header. Use y_offset as a deafult.
+    y_offset_bottom     : null,  // Without footer. Use y_offset as a deafult.
+    x_offset_left       : null,  // Use x_offset as a default when null is specified.
+    x_offset_right      : null,  // Use x_offset as a default when null is specified.
     y_footer_offset     : 15,
 
     // Font size settings
@@ -806,24 +810,26 @@ export class DefaultRenderer extends Renderer {
     }
 
     drawheader(canvas, stage, x_offset, width, param, global_macros){
-        var max_header_height = 0;
+        let max_header_height = 0;
 
         // Title
-        var ri = graphic.CanvasText(
-            canvas,
-            x_offset + width / 2,
-            param.y_title_offset,
-            global_macros.TITLE,
-            param.title_font_size,
-            "ct",
-            null, stage==1, {"bold":true}
-        );
+        if(global_macros.TITLE != ""){
+            let ri = graphic.CanvasText(
+                canvas,
+                x_offset + width / 2,
+                param.y_title_offset,
+                global_macros.TITLE,
+                param.title_font_size,
+                "ct",
+                null, stage==1, {"bold":true}
+            );
 
-        max_header_height = Math.max(max_header_height, param.y_title_offset + ri.height);
+            max_header_height = Math.max(max_header_height, param.y_title_offset + ri.height);
+        }
 
         // Sub Title
         if (global_macros.SUB_TITLE != ""){
-            ri = graphic.CanvasText(
+            let ri = graphic.CanvasText(
                 canvas,
                 x_offset + width / 2,
                 param.y_subtitle_offset,
@@ -837,17 +843,19 @@ export class DefaultRenderer extends Renderer {
         }
 
         // Artist
-        ri = graphic.CanvasText(
-            canvas,
-            x_offset + width,
-            param.y_artist_offset,
-            global_macros.ARTIST,
-            param.artist_font_size,
-            "rt",
-            null, stage==1, {"bold":false}
-        );
+        if(global_macros.ARTIST != ""){
+            let ri = graphic.CanvasText(
+                canvas,
+                x_offset + width,
+                param.y_artist_offset,
+                global_macros.ARTIST,
+                param.artist_font_size,
+                "rt",
+                null, stage==1, {"bold":false}
+            );
 
-        max_header_height = Math.max(max_header_height, param.y_artist_offset + ri.height);
+            max_header_height = Math.max(max_header_height, param.y_artist_offset + ri.height);
+        }
 
         return max_header_height;
     }
@@ -1066,13 +1074,16 @@ export class DefaultRenderer extends Renderer {
         let yse = y_stacks;
 
         let y_base_screening = origin.y;
-        if(show_header){
+        //if(show_header){
             let headerHeight = this.drawheader(this.memCanvas, 1, x_offset, width, param, global_macros);
-            y_base_screening += headerHeight;
-            y_base_screening += param.y_header_margin;
-        }else{
+            if(headerHeight > 0){
+                y_base_screening += headerHeight;
+                y_base_screening += headerHeight > 0 ? param.y_header_margin : 0;
+            }else{
+        //}else{
             y_base_screening += param.y_offset_top;
-        }
+            }
+        //}
 
         let dammy_music_context = common.deepcopy(music_context); // Maybe not required ?
 
@@ -1174,13 +1185,17 @@ export class DefaultRenderer extends Renderer {
 
         var y_base = origin.y;
 
-        if(show_header){
-            var max_header_height = this.drawheader(canvas, 2, x_offset, width, param, global_macros);
-            y_stacks.push({ type: "titles", height: (max_header_height + param.y_header_margin) });
-            y_base += (max_header_height + param.y_header_margin);
-        }else{
+        //if(show_header){
+            let max_header_height = this.drawheader(canvas, 2, x_offset, width, param, global_macros);
+            if(max_header_height > 0){
+                y_stacks.push({ type: "titles", height: (max_header_height + param.y_header_margin) });
+                y_base += (max_header_height + param.y_header_margin);
+            }else{
+                y_base += param.y_offset_top;
+            }
+        /*}else{
             y_base += param.y_offset_top;
-        }
+        }*/
 
 
         let canvaslist = [canvas];

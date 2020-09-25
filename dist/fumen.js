@@ -11796,10 +11796,9 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
  // Default values for macros
 
 var MACRO_DEFAULT = {
-  "TITLE": "NO TITLE",
+  "TITLE": "",
   "SUB_TITLE": "",
-  "ARTIST": "NO ARTIST",
-  "SHOW_HEADER": "YES",
+  "ARTIST": "",
   "SHOW_FOOTER": "YES",
   "SHOW_STAFF": "AUTO",
   "TRANSPOSE": 0,
@@ -15054,11 +15053,11 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
  * @property {int} [title_font_size] Title font size
  * @property {int} [artist_font_size] Artist font size
  * @property {int} [x_offset] Margin of the left and right side of the paper.
- * @property {int} [x_offset_left] Margin of the right side of the paper.
- * @property {int} [x_offset_right] Margin of the left side of the paper.
+ * @property {int} [x_offset_left=null] Margin of the right side of the paper. x_offset applies when null is specified.
+ * @property {int} [x_offset_right=null] Margin of the left side of the paper. x_offset applies when null is specified.
  * @property {int} [y_offset] Margin of the top and bottom side of the paper.
- * @property {int} [y_offset_top=null] Margin of top side of the paper. In case header is drawn, this does not apply.
- * @property {int} [y_offset_bottom=null] Margin of top side of the paper. In case header is drawn, this does not apply
+ * @property {int} [y_offset_top=null] Margin of top side of the paper. y_offset applies when null is specified. In case header is drawn, this does not apply.
+ * @property {int} [y_offset_bottom=null] Margin of top side of the paper. y_offset applies when null is specified. In case header is drawn, this does not apply
  * @property {int} [y_header_margin] Margin of the top y when header is shown (normally, firstpage)
  * @property {int} [y_title_offset] Top offset for title
  * @property {int} [y_subtitle_offset] Top offset for sub-title
@@ -15093,6 +15092,14 @@ var SR_RENDER_PARAM = {
   y_offset: 10,
   // Without header
   x_offset: 10,
+  y_offset_top: null,
+  // Without header. Use y_offset as a deafult.
+  y_offset_bottom: null,
+  // Without footer. Use y_offset as a deafult.
+  x_offset_left: null,
+  // Use x_offset as a default when null is specified.
+  x_offset_right: null,
+  // Use x_offset as a default when null is specified.
   y_footer_offset: 15,
   // Font size settings
   reharsal_mark_font_size: 12,
@@ -15893,23 +15900,31 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
     value: function drawheader(canvas, stage, x_offset, width, param, global_macros) {
       var max_header_height = 0; // Title
 
-      var ri = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width / 2, param.y_title_offset, global_macros.TITLE, param.title_font_size, "ct", null, stage == 1, {
-        "bold": true
-      });
-      max_header_height = Math.max(max_header_height, param.y_title_offset + ri.height); // Sub Title
+      if (global_macros.TITLE != "") {
+        var ri = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width / 2, param.y_title_offset, global_macros.TITLE, param.title_font_size, "ct", null, stage == 1, {
+          "bold": true
+        });
+        max_header_height = Math.max(max_header_height, param.y_title_offset + ri.height);
+      } // Sub Title
+
 
       if (global_macros.SUB_TITLE != "") {
-        ri = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width / 2, param.y_subtitle_offset, global_macros.SUB_TITLE, param.subtitle_font_size, "ct", null, stage == 1, {
+        var _ri = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width / 2, param.y_subtitle_offset, global_macros.SUB_TITLE, param.subtitle_font_size, "ct", null, stage == 1, {
           "bold": false
         });
-        max_header_height = Math.max(max_header_height, param.y_subtitle_offset + ri.height);
+
+        max_header_height = Math.max(max_header_height, param.y_subtitle_offset + _ri.height);
       } // Artist
 
 
-      ri = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width, param.y_artist_offset, global_macros.ARTIST, param.artist_font_size, "rt", null, stage == 1, {
-        "bold": false
-      });
-      max_header_height = Math.max(max_header_height, param.y_artist_offset + ri.height);
+      if (global_macros.ARTIST != "") {
+        var _ri2 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width, param.y_artist_offset, global_macros.ARTIST, param.artist_font_size, "rt", null, stage == 1, {
+          "bold": false
+        });
+
+        max_header_height = Math.max(max_header_height, param.y_artist_offset + _ri2.height);
+      }
+
       return max_header_height;
     }
   }, {
@@ -16162,15 +16177,18 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 }
 
                 yse = y_stacks;
-                y_base_screening = origin.y;
+                y_base_screening = origin.y; //if(show_header){
 
-                if (show_header) {
-                  headerHeight = this.drawheader(this.memCanvas, 1, x_offset, width, param, global_macros);
+                headerHeight = this.drawheader(this.memCanvas, 1, x_offset, width, param, global_macros);
+
+                if (headerHeight > 0) {
                   y_base_screening += headerHeight;
-                  y_base_screening += param.y_header_margin;
+                  y_base_screening += headerHeight > 0 ? param.y_header_margin : 0;
                 } else {
+                  //}else{
                   y_base_screening += param.y_offset_top;
-                }
+                } //}
+
 
                 dammy_music_context = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](music_context); // Maybe not required ?
 
@@ -16178,20 +16196,20 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 reharsal_x_width_info = [];
                 pei = 0;
 
-              case 29:
+              case 30:
                 if (!(pei < yse.length)) {
-                  _context.next = 44;
+                  _context.next = 45;
                   break;
                 }
 
                 if (!(yse[pei].type == "titles")) {
-                  _context.next = 32;
+                  _context.next = 33;
                   break;
                 }
 
-                return _context.abrupt("continue", 41);
+                return _context.abrupt("continue", 42);
 
-              case 32:
+              case 33:
                 x = yse[pei].param.x_offset_left;
 
                 if (!yse[pei].block_ids.includes(current_accum_block_id)) {
@@ -16229,12 +16247,12 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                   this.determine_rooms(yse[pei].param, reharsal_x_width_info);
                 }
 
-              case 41:
+              case 42:
                 ++pei;
-                _context.next = 29;
+                _context.next = 30;
                 break;
 
-              case 44:
+              case 45:
                 y_base_screening += param.y_offset_bottom; // Here y_base_screening means the height of the total score if single page applied.
 
                 if (show_footer) y_base_screening += param.y_footer_offset; // Release memCanvas
@@ -16247,25 +16265,26 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 canvas = this.canvas;
 
                 if (!(canvas == null)) {
-                  _context.next = 53;
+                  _context.next = 54;
                   break;
                 }
 
-                _context.next = 52;
+                _context.next = 53;
                 return this.canvas_provider();
 
-              case 52:
+              case 53:
                 canvas = _context.sent;
 
-              case 53:
+              case 54:
                 _graphic__WEBPACK_IMPORTED_MODULE_3__["SetupHiDPICanvas"](canvas, this.param.paper_width / this.param.text_size, this.param.paper_height > 0 ? this.param.paper_height / this.param.text_size : y_base_screening, this.param.pixel_ratio, this.param.text_size);
                 this.hitManager.setGlobalScale(this.param.text_size, this.param.text_size);
                 score_height = (this.param.paper_height > 0 ? this.param.paper_height / this.param.text_size : y_base_screening) / param.nrow;
                 if (param.background_color) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasRect"](canvas, 0, 0, this.param.paper_width / this.param.text_size, this.param.paper_height > 0 ? this.param.paper_height / this.param.text_size : y_base_screening, param.background_color);
-                y_base = origin.y;
+                y_base = origin.y; //if(show_header){
 
-                if (show_header) {
-                  max_header_height = this.drawheader(canvas, 2, x_offset, width, param, global_macros);
+                max_header_height = this.drawheader(canvas, 2, x_offset, width, param, global_macros);
+
+                if (max_header_height > 0) {
                   y_stacks.push({
                     type: "titles",
                     height: max_header_height + param.y_header_margin
@@ -16274,27 +16293,31 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 } else {
                   y_base += param.y_offset_top;
                 }
+                /*}else{
+                    y_base += param.y_offset_top;
+                }*/
+
 
                 canvaslist = [canvas];
                 _pei = 0;
 
-              case 61:
+              case 63:
                 if (!(_pei < yse.length)) {
-                  _context.next = 89;
+                  _context.next = 91;
                   break;
                 }
 
                 if (!(yse[_pei].type == "titles")) {
-                  _context.next = 65;
+                  _context.next = 67;
                   break;
                 }
 
-                _context.next = 86;
+                _context.next = 88;
                 break;
 
-              case 65:
+              case 67:
                 if (!(yse[_pei].type == "meas")) {
-                  _context.next = 86;
+                  _context.next = 88;
                   break;
                 }
 
@@ -16303,44 +16326,44 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 r = this.render_measure_row_simplified(x_offset, canvas, yse[_pei].macros, _row_elements_list3, yse[_pei].pm, yse[_pei].nm, y_base, yse[_pei].param, true, yse[_pei].macros.REHARSAL_MARK_POSITION == "Inner", ylimit, music_context);
 
                 if (r) {
-                  _context.next = 85;
+                  _context.next = 87;
                   break;
                 }
 
                 if (!(y_base == origin.y + yse[_pei].param.y_offset_top)) {
-                  _context.next = 74;
+                  _context.next = 76;
                   break;
                 }
 
                 throw "Paper height is too short to fit in single row";
 
-              case 74:
+              case 76:
                 y_base = origin.y + yse[_pei].param.y_offset_top;
 
-              case 75:
+              case 77:
                 this.hitManager.commit(canvas);
-                _context.next = 78;
+                _context.next = 80;
                 return this.canvas_provider();
 
-              case 78:
+              case 80:
                 canvas = _context.sent;
                 canvaslist.push(canvas);
                 _graphic__WEBPACK_IMPORTED_MODULE_3__["SetupHiDPICanvas"](canvas, yse[_pei].param.paper_width / this.param.text_size, yse[_pei].param.paper_height / this.param.text_size, this.param.pixel_ratio, this.param.text_size);
                 if (param.background_color) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasRect"](canvas, 0, 0, this.param.paper_width / this.param.text_size, this.param.paper_height / this.param.text_size, param.background_color); // try again next page
 
                 _pei = _pei - 1;
-                _context.next = 86;
+                _context.next = 88;
                 break;
 
-              case 85:
+              case 87:
                 y_base = r.y_base;
 
-              case 86:
+              case 88:
                 ++_pei;
-                _context.next = 61;
+                _context.next = 63;
                 break;
 
-              case 89:
+              case 91:
                 if (show_footer) this.render_footer(canvaslist, global_macros.TITLE + "/" + global_macros.ARTIST, this.param.origin.y + score_height - this.param.y_footer_offset);
                 this.hitManager.commit(canvas);
                 return _context.abrupt("return", {
@@ -16348,7 +16371,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                   height: score_height
                 });
 
-              case 92:
+              case 94:
               case "end":
                 return _context.stop();
             }

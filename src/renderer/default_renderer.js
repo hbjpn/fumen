@@ -809,16 +809,16 @@ export class DefaultRenderer extends Renderer {
         }
     }
 
-    drawheader(canvas, stage, x_offset, width, param, global_macros){
+    drawheader(canvas, stage, x_offset, width, param, track){
         let max_header_height = 0;
 
         // Title
-        if(global_macros.TITLE != ""){
+        if(track.getVariable("TITLE")){
             let ri = graphic.CanvasText(
                 canvas,
                 x_offset + width / 2,
                 param.y_title_offset,
-                global_macros.TITLE,
+                track.getVariable("TITLE"),
                 param.title_font_size,
                 "ct",
                 null, stage==1, {"bold":true}
@@ -828,12 +828,12 @@ export class DefaultRenderer extends Renderer {
         }
 
         // Sub Title
-        if (global_macros.SUB_TITLE != ""){
+        if (track.getVariable("SUB_TITLE")){
             let ri = graphic.CanvasText(
                 canvas,
                 x_offset + width / 2,
                 param.y_subtitle_offset,
-                global_macros.SUB_TITLE,
+                track.getVariable("SUB_TITLE"),
                 param.subtitle_font_size,
                 "ct",
                 null, stage==1, {"bold":false}
@@ -843,12 +843,12 @@ export class DefaultRenderer extends Renderer {
         }
 
         // Artist
-        if(global_macros.ARTIST != ""){
+        if(track.getVariable("ARTIST")){
             let ri = graphic.CanvasText(
                 canvas,
                 x_offset + width,
                 param.y_artist_offset,
-                global_macros.ARTIST,
+                track.getVariable("ARTIST"),
                 param.artist_font_size,
                 "rt",
                 null, stage==1, {"bold":false}
@@ -861,14 +861,13 @@ export class DefaultRenderer extends Renderer {
     }
 
     async render_impl(track, param) {
-        var global_macros = track.macros; //getGlobalMacros(track);
 
-        if("PARAM" in global_macros){
-            this.merge_param(this.param, global_macros["PARAM"], false); // Merge to defaul param
+        if(track.getVariable("PARAM")){
+            this.merge_param(this.param, track.getVariable("PARAM"), false); // Merge to defaul param
         }
 
-        var show_header = global_macros["SHOW_HEADER"] == "YES";
-        var show_footer = global_macros["SHOW_FOOTER"] == "YES";
+        var show_header = track.getVariable("SHOW_HEADER") == "YES";
+        var show_footer = track.getVariable("SHOW_FOOTER") == "YES";
 
         var origin = param.origin; //{x:0,y:0};
 
@@ -1017,24 +1016,18 @@ export class DefaultRenderer extends Renderer {
             // Determine params to be applied for this. 
             // As of now, 
             //var rg_macros = getMacros(global_macros, track.reharsal_groups[i]);
-            let row_macros = common.deepcopy(global_macros);
-            var param_for_row = this.param; 
+            var param_for_row = common.deepcopy(this.param); 
             let param_for_row_alt = false;
             e.meas_row.forEach(m=>{
-                if(!m.macros) return;
-                for(const [key, value] of Object.entries(m.macros)){
-                    if(key == "PARAM"){
-                        if(!param_for_row_alt){
-                            param_for_row = common.deepcopy(this.param); // Make copy
-                            this.merge_param(param_for_row, value, false); // Overwrite 
-                            param_for_row_alt = true;
-                        }else{
-                            this.merge_param(param_for_row, value, true); // Update 
-                        }
-                        
+                let mparam = m.getVariable("PARAM");
+                if(mparam){
+                    if(!param_for_row_alt){
+                        this.merge_param(param_for_row, common.deepcopy(mparam), false); // Overwrite 
+                        param_for_row_alt = true;
                     }else{
-                        row_macros[key] = value;
+                        this.merge_param(param_for_row, common.deepcopy(mparam), true); // Update 
                     }
+                    
                 }
             });
                         
@@ -1048,7 +1041,7 @@ export class DefaultRenderer extends Renderer {
                 pm: prev_measure,
                 //rg: track.reharsal_groups[i],
                 //rg_id : i,
-                macros: global_macros, // TODO : Macros for each row...?
+                //macros: global_macros, // TODO : Macros for each row...?
                 param: param_for_row,
                 //block_id: bi,
                 //row_id_in_block: row_id_in_block-1 // Already incremented then row id is minus 1
@@ -1075,7 +1068,7 @@ export class DefaultRenderer extends Renderer {
 
         let y_base_screening = origin.y;
         //if(show_header){
-            let headerHeight = this.drawheader(this.memCanvas, 1, x_offset, width, param, global_macros);
+            let headerHeight = this.drawheader(this.memCanvas, 1, x_offset, width, param, track);
             if(headerHeight > 0){
                 y_base_screening += headerHeight;
                 y_base_screening += headerHeight > 0 ? param.y_header_margin : 0;
@@ -1124,17 +1117,18 @@ export class DefaultRenderer extends Renderer {
            // y-screening is done in stage 2 as well : TODO : Make it once
            // Do it in the dammy position y = 0;
            var yprof = this.screening_y_areas(
-               row_elements_list, 0, yse[pei].param, yse[pei].macros.SHOW_STAFF, 
-               yse[pei].macros.REHARSAL_MARK_POSITION == "Inner");
+               row_elements_list, 0, yse[pei].param, 
+               yse[pei].cont[0].getVariable("SHOW_STAFF"), 
+               yse[pei].cont[0].getVariable("REHARSAL_MARK_POSITION")=="Inner");
             
             // yprof.end.y means the row total height
             y_base_screening += yprof.end.y;
 
            // Screening x elements and determine the rendering policy for x-axis.
            var x_width_info = this.screening_x_areas(
+               track,
                x,
                this.memCanvas,
-               yse[pei].macros,
                row_elements_list,
                yse[pei].pm,
                yse[pei].nm,
@@ -1186,7 +1180,7 @@ export class DefaultRenderer extends Renderer {
         var y_base = origin.y;
 
         //if(show_header){
-            let max_header_height = this.drawheader(canvas, 2, x_offset, width, param, global_macros);
+            let max_header_height = this.drawheader(canvas, 2, x_offset, width, param, track);
             if(max_header_height > 0){
                 y_stacks.push({ type: "titles", height: (max_header_height + param.y_header_margin) });
                 y_base += (max_header_height + param.y_header_margin);
@@ -1213,16 +1207,16 @@ export class DefaultRenderer extends Renderer {
                     : null;
                 
                 let r = this.render_measure_row_simplified(
+                    track,
                     x_offset,
                     canvas,
-                    yse[pei].macros,
                     row_elements_list,
                     yse[pei].pm,
                     yse[pei].nm,
                     y_base,
                     yse[pei].param,
                     true,
-                    yse[pei].macros.REHARSAL_MARK_POSITION == "Inner",
+                    yse[pei].cont[0].getVariable("REHARSAL_MARK_POSITION")=="Inner",
                     ylimit,
                     music_context
                 );
@@ -1260,7 +1254,7 @@ export class DefaultRenderer extends Renderer {
         }
 
         if(show_footer)
-            this.render_footer(canvaslist, global_macros.TITLE + "/" + global_macros.ARTIST,
+            this.render_footer(canvaslist, track.getVariable("TITLE") + "/" + track.getVariable("ARTIST"),
                 this.param.origin.y + score_height - this.param.y_footer_offset);
         
         this.hitManager.commit(canvas);
@@ -1366,9 +1360,9 @@ export class DefaultRenderer extends Renderer {
     }
 
     screening_x_areas(
+        track,
         x,
         paper,
-        macros,
         row_elements_list,
         prev_measure,
         next_measure,
@@ -1376,9 +1370,9 @@ export class DefaultRenderer extends Renderer {
         param,
         music_context
     ){
-        var transpose = macros.TRANSPOSE;
-        var half_type = macros.KEY_TYPE;
-        var key = macros.KEY;
+        var transpose = track.getVariable("TRANSPOSE");
+        var half_type = track.getVariable("KEY_TYPE");
+        var key = track.getVariable("KEY");
 
         var total_width = param.paper_width / param.text_size - (param.x_offset_left + param.x_offset_right);
 
@@ -1930,9 +1924,9 @@ export class DefaultRenderer extends Renderer {
 
 
     render_measure_row_simplified(
+        track,
         x,
         paper,
-        macros,
         row_elements_list,
         prev_measure,
         next_measure,
@@ -1943,11 +1937,11 @@ export class DefaultRenderer extends Renderer {
         ylimit,
         music_context
     ) {
-        var x_global_scale = macros.X_GLOBAL_SCALE;
-        var transpose = macros.TRANSPOSE;
-        var half_type = macros.KEY_TYPE;
-        var key = macros.KEY;
-        var show_staff = macros.SHOW_STAFF;
+        var x_global_scale = track.getVariable("X_GLOBAL_SCALE");
+        var transpose = track.getVariable("TRANSPOSE");
+        var half_type = track.getVariable("KEY_TYPE");
+        var key = track.getVariable("KEY");
+        var show_staff = track.getVariable("SHOW_STAFF");
 
         /* Reference reserved width for empty measures or chord symbol without base names*/
         var C7_width = 20;

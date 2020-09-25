@@ -758,8 +758,8 @@ export class Parser {
                     this.context.contiguous_line_break = 0;
                     
                     r = this.parseMeasures(r, r.s); // the last NL has not been consumed.
-                    // Apply par row macros
-                    r.measures[0].macros = common.deepcopy(latest_macros);
+                    // Apply par row variable
+                    r.measures[0].variables = common.shallowcopy(latest_macros);
                     r.measures[0].align = current_align;
                     r.measures[0].raw_new_line = is_new_line_middle_of_block; // mark to the first measure
                     block.concat(r.measures);
@@ -769,9 +769,10 @@ export class Parser {
                 } else if (r.type == TOKEN_PERCENT) {
                     // Expression
                     r = this.parseMacro(r.s);
-                    currentReharsalGroup.macros[r.key] = r.value;
-                    latest_macros[r.key] = r.value;
-                    block.appendChild(new common.Macro(r.key, r.value));
+                    let variable = new common.Macro(r.key, r.value);
+                    //block.setVariable(r.key, r.value); Do not do this as with this, only the last variable will be valid.
+                    latest_macros[r.key] = variable;
+                    block.appendChild(variable);
                     this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this macro
                 } else {
                     console.log(r.token);
@@ -799,7 +800,7 @@ export class Parser {
 
         try{
             var r = null;
-            var latest_macros = {};
+            var latest_macros = {}; // Do not inherit from previous reharsal group
         
             let rgName = "";
             if(rgtype != "anonymous"){
@@ -847,8 +848,6 @@ export class Parser {
 
             var track = new common.Track();
 
-            var latest_macros = {};
-
             this.context = {
                 line: 0,
                 contiguous_line_break: 0,
@@ -874,9 +873,7 @@ export class Parser {
                     track.appendChild(new common.RawSpaces(r.token)); 
                     // Does not count as line break
                 } else if (r.type == TOKEN_BRACKET_LS) {
-                    // Reset latest_macros
-                    latest_macros = {};
-                    
+                    // Reset latest_macros                    
                     let rgs = track.childElements.filter(e => e instanceof common.ReharsalGroup);
                     let inline = 
                         this.context.contiguous_line_break<=1 &&
@@ -901,6 +898,7 @@ export class Parser {
                     // Measure appears directly withou reharsal group mark.
                     // If not reharsal mark is defined and the measure is directly specified, 
                     // then default anonymous reharsal mark is generated.
+                    // For all the variables specified before these symbols are treated as a global macro.
                     r = this.parseReharsalGroup(code.substr(r.sss.length), "anonymous");
                     track.appendChild(r.rg);
                     
@@ -908,9 +906,8 @@ export class Parser {
                 } else if (r.type == TOKEN_PERCENT) {
                     // Expression
                     r = this.parseMacro(r.s);
-                    track.macros[r.key] = r.value;
-                    latest_macros[r.key] = r.value;
-                    track.appendChild(new common.Macro(r.key, r.value));
+                    let variable = track.setVariable(r.key, r.value); // Auto generate object
+                    track.appendChild(variable);
                     this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this macro
                 } else {
                     console.log(r.token);

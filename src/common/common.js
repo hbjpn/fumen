@@ -1,6 +1,6 @@
 import "@babel/polyfill";
 
-// Default values for macros
+// Default values for variables
 
 let MACRO_DEFAULT = {
     "TITLE" : "",
@@ -58,6 +58,7 @@ export class Node {
     constructor(){
         this.childNodes = [];
         this.parentNode = null;
+        this.variables = {};
     }
     appendChild(node){
         node.parentNode = this;
@@ -74,6 +75,19 @@ export class Node {
             code += rg.exportCode();
         });
         return code;
+    }
+
+    getVariable(key){
+        if(key in this.variables) return this.variables[key].value;
+        if(this.parentNode) return this.parentNode.getVariable(key);
+        return null;
+    }
+
+    setVariable(key, value){
+        if(key in this.variables) this.variables[key].value = deepcopy(value);
+        else this.variables[key] = new Macro(key, value);
+
+        return this.variables[key];
     }
 
     insertBefore(node, newNode){
@@ -144,28 +158,20 @@ export class Element extends Node {
 export class Track extends Element {
     constructor() {
         super();
-        this.macros = deepcopy(MACRO_DEFAULT);
+        for(let key in MACRO_DEFAULT){
+            this.setVariable(key, MACRO_DEFAULT[key]);
+        }
         this.pre_render_info = {};
     }
     
     // Utility functions open for external
     getKey() {
-        if(Number.isInteger(this.macros["TRANSPOSE"])){
-            let transposed_key = Chord.getTransposedKeyFromOffset(this.macros["KEY"], this.macros["TRANSPOSE"], this.macros["KEY_TYPE"]);
-            return {key:transposed_key, originalKey:this.macros["KEY"]};
+        if(Number.isInteger(this.getVariable("TRANSPOSE"))){
+            let transposed_key = Chord.getTransposedKeyFromOffset(this.getVariable("KEY"), this.getVariable("TRANSPOSE"), this.getVariable("KEY_TYPE"));
+            return {key:transposed_key, originalKey:this.getVariable("KEY")};
         }else{
-            return {key:this.macros["TRANSPOSE"], originalKey:this.macros["KEY"]};
+            return {key:this.getVariable("TRANSPOSE"), originalKey:this.getVariable("KEY")};
         }
-    }
-
-    setVariable(obj){
-        for(let key in obj){
-            this.macros[key] = deepcopy(obj[key]);
-        }
-    }
-
-    getVariable(name){
-        return this.macros[name];
     }
 }
 
@@ -174,8 +180,6 @@ export class ReharsalGroup extends Element{
         super();
         this.name = name;
         this.inline = inline;
-        //	this.measures = new Array();
-        this.macros = deepcopy(MACRO_DEFAULT);
     }
 }
 
@@ -211,7 +215,6 @@ export class Measure extends Element{
         this.align = "expand"; // expand, left, right
 
         this.renderprop = {}; // Rendering information storage
-        this.macros = deepcopy(MACRO_DEFAULT);
     }
 }
 
@@ -1130,7 +1133,7 @@ export class Macro extends Node {
     constructor(name, value){
         super();
         this.name = name;
-        this.value = value;
+        this.value = deepcopy(value);
     }
     exportCode(){
         let vtype = typeof(this.value);

@@ -11793,7 +11793,7 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
- // Default values for macros
+ // Default values for variables
 
 var MACRO_DEFAULT = {
   "TITLE": "",
@@ -11855,6 +11855,7 @@ var Node = /*#__PURE__*/function () {
 
     this.childNodes = [];
     this.parentNode = null;
+    this.variables = {};
   }
 
   _createClass(Node, [{
@@ -11876,6 +11877,19 @@ var Node = /*#__PURE__*/function () {
         code += rg.exportCode();
       });
       return code;
+    }
+  }, {
+    key: "getVariable",
+    value: function getVariable(key) {
+      if (key in this.variables) return this.variables[key].value;
+      if (this.parentNode) return this.parentNode.getVariable(key);
+      return null;
+    }
+  }, {
+    key: "setVariable",
+    value: function setVariable(key, value) {
+      if (key in this.variables) this.variables[key].value = deepcopy(value);else this.variables[key] = new Macro(key, value);
+      return this.variables[key];
     }
   }, {
     key: "insertBefore",
@@ -11988,7 +12002,11 @@ var Track = /*#__PURE__*/function (_Element) {
     _classCallCheck(this, Track);
 
     _this2 = _super2.call(this);
-    _this2.macros = deepcopy(MACRO_DEFAULT);
+
+    for (var key in MACRO_DEFAULT) {
+      _this2.setVariable(key, MACRO_DEFAULT[key]);
+    }
+
     _this2.pre_render_info = {};
     return _this2;
   } // Utility functions open for external
@@ -11997,30 +12015,18 @@ var Track = /*#__PURE__*/function (_Element) {
   _createClass(Track, [{
     key: "getKey",
     value: function getKey() {
-      if (Number.isInteger(this.macros["TRANSPOSE"])) {
-        var transposed_key = Chord.getTransposedKeyFromOffset(this.macros["KEY"], this.macros["TRANSPOSE"], this.macros["KEY_TYPE"]);
+      if (Number.isInteger(this.getVariable("TRANSPOSE"))) {
+        var transposed_key = Chord.getTransposedKeyFromOffset(this.getVariable("KEY"), this.getVariable("TRANSPOSE"), this.getVariable("KEY_TYPE"));
         return {
           key: transposed_key,
-          originalKey: this.macros["KEY"]
+          originalKey: this.getVariable("KEY")
         };
       } else {
         return {
-          key: this.macros["TRANSPOSE"],
-          originalKey: this.macros["KEY"]
+          key: this.getVariable("TRANSPOSE"),
+          originalKey: this.getVariable("KEY")
         };
       }
-    }
-  }, {
-    key: "setVariable",
-    value: function setVariable(obj) {
-      for (var key in obj) {
-        this.macros[key] = deepcopy(obj[key]);
-      }
-    }
-  }, {
-    key: "getVariable",
-    value: function getVariable(name) {
-      return this.macros[name];
     }
   }]);
 
@@ -12040,9 +12046,7 @@ var ReharsalGroup = /*#__PURE__*/function (_Element2) {
 
     _this3 = _super3.call(this);
     _this3.name = name;
-    _this3.inline = inline; //	this.measures = new Array();
-
-    _this3.macros = deepcopy(MACRO_DEFAULT);
+    _this3.inline = inline;
     return _this3;
   }
 
@@ -12100,7 +12104,6 @@ var Measure = /*#__PURE__*/function (_Element4) {
 
     _this4.renderprop = {}; // Rendering information storage
 
-    _this4.macros = deepcopy(MACRO_DEFAULT);
     return _this4;
   }
 
@@ -13637,7 +13640,7 @@ var Macro = /*#__PURE__*/function (_Node2) {
 
     _this25 = _super31.call(this);
     _this25.name = name;
-    _this25.value = value;
+    _this25.value = deepcopy(value);
     return _this25;
   }
 
@@ -14811,9 +14814,9 @@ var Parser = /*#__PURE__*/function () {
             var is_new_line_middle_of_block = num_meas_row > 0 && this.context.contiguous_line_break == 1;
             this.context.contiguous_line_break = 0;
             r = this.parseMeasures(r, r.s); // the last NL has not been consumed.
-            // Apply par row macros
+            // Apply par row variable
 
-            r.measures[0].macros = _common_common__WEBPACK_IMPORTED_MODULE_1__["deepcopy"](latest_macros);
+            r.measures[0].variables = _common_common__WEBPACK_IMPORTED_MODULE_1__["shallowcopy"](latest_macros);
             r.measures[0].align = current_align;
             r.measures[0].raw_new_line = is_new_line_middle_of_block; // mark to the first measure
 
@@ -14822,9 +14825,10 @@ var Parser = /*#__PURE__*/function () {
           } else if (r.type == TOKEN_PERCENT) {
             // Expression
             r = this.parseMacro(r.s);
-            currentReharsalGroup.macros[r.key] = r.value;
-            latest_macros[r.key] = r.value;
-            block.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["Macro"](r.key, r.value));
+            var variable = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Macro"](r.key, r.value); //block.setVariable(r.key, r.value); Do not do this as with this, only the last variable will be valid.
+
+            latest_macros[r.key] = variable;
+            block.appendChild(variable);
             this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this macro
           } else {
             console.log(r.token);
@@ -14858,7 +14862,8 @@ var Parser = /*#__PURE__*/function () {
       // - "<" or ">" (not consumed) (for anonymous)
       try {
         var r = null;
-        var latest_macros = {};
+        var latest_macros = {}; // Do not inherit from previous reharsal group
+
         var rgName = "";
 
         if (rgtype != "anonymous") {
@@ -14906,7 +14911,6 @@ var Parser = /*#__PURE__*/function () {
         var r = null;
         var loop_cnt = 0;
         var track = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Track"]();
-        var latest_macros = {};
         this.context = {
           line: 0,
           contiguous_line_break: 0
@@ -14931,8 +14935,7 @@ var Parser = /*#__PURE__*/function () {
             track.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.sss));
             track.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token)); // Does not count as line break
           } else if (r.type == TOKEN_BRACKET_LS) {
-            // Reset latest_macros
-            latest_macros = {};
+            // Reset latest_macros                    
             var rgs = track.childElements.filter(function (e) {
               return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["ReharsalGroup"];
             });
@@ -14947,14 +14950,15 @@ var Parser = /*#__PURE__*/function () {
             // Measure appears directly withou reharsal group mark.
             // If not reharsal mark is defined and the measure is directly specified, 
             // then default anonymous reharsal mark is generated.
+            // For all the variables specified before these symbols are treated as a global macro.
             r = this.parseReharsalGroup(code.substr(r.sss.length), "anonymous");
             track.appendChild(r.rg);
           } else if (r.type == TOKEN_PERCENT) {
             // Expression
             r = this.parseMacro(r.s);
-            track.macros[r.key] = r.value;
-            latest_macros[r.key] = r.value;
-            track.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["Macro"](r.key, r.value));
+            var variable = track.setVariable(r.key, r.value); // Auto generate object
+
+            track.appendChild(variable);
             this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this macro
           } else {
             console.log(r.token);
@@ -15897,19 +15901,19 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
     }
   }, {
     key: "drawheader",
-    value: function drawheader(canvas, stage, x_offset, width, param, global_macros) {
+    value: function drawheader(canvas, stage, x_offset, width, param, track) {
       var max_header_height = 0; // Title
 
-      if (global_macros.TITLE != "") {
-        var ri = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width / 2, param.y_title_offset, global_macros.TITLE, param.title_font_size, "ct", null, stage == 1, {
+      if (track.getVariable("TITLE")) {
+        var ri = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width / 2, param.y_title_offset, track.getVariable("TITLE"), param.title_font_size, "ct", null, stage == 1, {
           "bold": true
         });
         max_header_height = Math.max(max_header_height, param.y_title_offset + ri.height);
       } // Sub Title
 
 
-      if (global_macros.SUB_TITLE != "") {
-        var _ri = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width / 2, param.y_subtitle_offset, global_macros.SUB_TITLE, param.subtitle_font_size, "ct", null, stage == 1, {
+      if (track.getVariable("SUB_TITLE")) {
+        var _ri = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width / 2, param.y_subtitle_offset, track.getVariable("SUB_TITLE"), param.subtitle_font_size, "ct", null, stage == 1, {
           "bold": false
         });
 
@@ -15917,8 +15921,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       } // Artist
 
 
-      if (global_macros.ARTIST != "") {
-        var _ri2 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width, param.y_artist_offset, global_macros.ARTIST, param.artist_font_size, "rt", null, stage == 1, {
+      if (track.getVariable("ARTIST")) {
+        var _ri2 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width, param.y_artist_offset, track.getVariable("ARTIST"), param.artist_font_size, "rt", null, stage == 1, {
           "bold": false
         });
 
@@ -15933,20 +15937,18 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       var _render_impl = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(track, param) {
         var _this4 = this;
 
-        var global_macros, show_header, show_footer, origin, y_title_offset, y_subtitle_offset, y_artist_offset, x_offset, width, music_context, meas_row_list, accum_block_id, meas_row, meas_row_rg_ids, meas_row_block_ids, reharsal_groups, i, rg, blocks, bi, block_measures, ml, m, meas_row_list_inv, _loop4, _i2, _i3, _rg, _blocks, _bi, _block_measures, _ml, _m, y_stacks, next_reharsal_group_index, yse, y_base_screening, headerHeight, dammy_music_context, current_accum_block_id, reharsal_x_width_info, pei, x, row_elements_list, _ml2, _m2, elements, geret, yprof, x_width_info, canvas, score_height, y_base, max_header_height, canvaslist, _pei, _row_elements_list3, ylimit, r;
+        var show_header, show_footer, origin, y_title_offset, y_subtitle_offset, y_artist_offset, x_offset, width, music_context, meas_row_list, accum_block_id, meas_row, meas_row_rg_ids, meas_row_block_ids, reharsal_groups, i, rg, blocks, bi, block_measures, ml, m, meas_row_list_inv, _loop4, _i2, _i3, _rg, _blocks, _bi, _block_measures, _ml, _m, y_stacks, next_reharsal_group_index, yse, y_base_screening, headerHeight, dammy_music_context, current_accum_block_id, reharsal_x_width_info, pei, x, row_elements_list, _ml2, _m2, elements, geret, yprof, x_width_info, canvas, score_height, y_base, max_header_height, canvaslist, _pei, _row_elements_list3, ylimit, r;
 
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
-                global_macros = track.macros; //getGlobalMacros(track);
-
-                if ("PARAM" in global_macros) {
-                  this.merge_param(this.param, global_macros["PARAM"], false); // Merge to defaul param
+                if (track.getVariable("PARAM")) {
+                  this.merge_param(this.param, track.getVariable("PARAM"), false); // Merge to defaul param
                 }
 
-                show_header = global_macros["SHOW_HEADER"] == "YES";
-                show_footer = global_macros["SHOW_FOOTER"] == "YES";
+                show_header = track.getVariable("SHOW_HEADER") == "YES";
+                show_footer = track.getVariable("SHOW_FOOTER") == "YES";
                 origin = param.origin; //{x:0,y:0};
 
                 y_title_offset = origin.y + param.y_title_offset;
@@ -16121,31 +16123,20 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                   // As of now, 
                   //var rg_macros = getMacros(global_macros, track.reharsal_groups[i]);
 
-                  var row_macros = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](global_macros);
-                  var param_for_row = _this4.param;
+                  var param_for_row = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](_this4.param);
                   var param_for_row_alt = false;
                   e.meas_row.forEach(function (m) {
-                    if (!m.macros) return;
+                    var mparam = m.getVariable("PARAM");
 
-                    for (var _i4 = 0, _Object$entries2 = Object.entries(m.macros); _i4 < _Object$entries2.length; _i4++) {
-                      var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i4], 2),
-                          key = _Object$entries2$_i[0],
-                          value = _Object$entries2$_i[1];
-
-                      if (key == "PARAM") {
-                        if (!param_for_row_alt) {
-                          param_for_row = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](_this4.param); // Make copy
-
-                          _this4.merge_param(param_for_row, value, false); // Overwrite 
+                    if (mparam) {
+                      if (!param_for_row_alt) {
+                        _this4.merge_param(param_for_row, _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](mparam), false); // Overwrite 
 
 
-                          param_for_row_alt = true;
-                        } else {
-                          _this4.merge_param(param_for_row, value, true); // Update 
-
-                        }
+                        param_for_row_alt = true;
                       } else {
-                        row_macros[key] = value;
+                        _this4.merge_param(param_for_row, _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](mparam), true); // Update 
+
                       }
                     }
                   });
@@ -16159,8 +16150,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                     pm: prev_measure,
                     //rg: track.reharsal_groups[i],
                     //rg_id : i,
-                    macros: global_macros,
-                    // TODO : Macros for each row...?
+                    //macros: global_macros, // TODO : Macros for each row...?
                     param: param_for_row //block_id: bi,
                     //row_id_in_block: row_id_in_block-1 // Already incremented then row id is minus 1
 
@@ -16179,7 +16169,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 yse = y_stacks;
                 y_base_screening = origin.y; //if(show_header){
 
-                headerHeight = this.drawheader(this.memCanvas, 1, x_offset, width, param, global_macros);
+                headerHeight = this.drawheader(this.memCanvas, 1, x_offset, width, param, track);
 
                 if (headerHeight > 0) {
                   y_base_screening += headerHeight;
@@ -16196,20 +16186,20 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 reharsal_x_width_info = [];
                 pei = 0;
 
-              case 30:
+              case 29:
                 if (!(pei < yse.length)) {
-                  _context.next = 45;
+                  _context.next = 44;
                   break;
                 }
 
                 if (!(yse[pei].type == "titles")) {
-                  _context.next = 33;
+                  _context.next = 32;
                   break;
                 }
 
-                return _context.abrupt("continue", 42);
+                return _context.abrupt("continue", 41);
 
-              case 33:
+              case 32:
                 x = yse[pei].param.x_offset_left;
 
                 if (!yse[pei].block_ids.includes(current_accum_block_id)) {
@@ -16235,11 +16225,11 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 // Do it in the dammy position y = 0;
 
 
-                yprof = this.screening_y_areas(row_elements_list, 0, yse[pei].param, yse[pei].macros.SHOW_STAFF, yse[pei].macros.REHARSAL_MARK_POSITION == "Inner"); // yprof.end.y means the row total height
+                yprof = this.screening_y_areas(row_elements_list, 0, yse[pei].param, yse[pei].cont[0].getVariable("SHOW_STAFF"), yse[pei].cont[0].getVariable("REHARSAL_MARK_POSITION") == "Inner"); // yprof.end.y means the row total height
 
                 y_base_screening += yprof.end.y; // Screening x elements and determine the rendering policy for x-axis.
 
-                x_width_info = this.screening_x_areas(x, this.memCanvas, yse[pei].macros, row_elements_list, yse[pei].pm, yse[pei].nm, yprof, yse[pei].param, dammy_music_context);
+                x_width_info = this.screening_x_areas(track, x, this.memCanvas, row_elements_list, yse[pei].pm, yse[pei].nm, yprof, yse[pei].param, dammy_music_context);
                 reharsal_x_width_info.push([row_elements_list, x_width_info]);
 
                 if (pei == yse.length - 1) {
@@ -16247,12 +16237,12 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                   this.determine_rooms(yse[pei].param, reharsal_x_width_info);
                 }
 
-              case 42:
+              case 41:
                 ++pei;
-                _context.next = 30;
+                _context.next = 29;
                 break;
 
-              case 45:
+              case 44:
                 y_base_screening += param.y_offset_bottom; // Here y_base_screening means the height of the total score if single page applied.
 
                 if (show_footer) y_base_screening += param.y_footer_offset; // Release memCanvas
@@ -16265,24 +16255,24 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 canvas = this.canvas;
 
                 if (!(canvas == null)) {
-                  _context.next = 54;
+                  _context.next = 53;
                   break;
                 }
 
-                _context.next = 53;
+                _context.next = 52;
                 return this.canvas_provider();
 
-              case 53:
+              case 52:
                 canvas = _context.sent;
 
-              case 54:
+              case 53:
                 _graphic__WEBPACK_IMPORTED_MODULE_3__["SetupHiDPICanvas"](canvas, this.param.paper_width / this.param.text_size, this.param.paper_height > 0 ? this.param.paper_height / this.param.text_size : y_base_screening, this.param.pixel_ratio, this.param.text_size);
                 this.hitManager.setGlobalScale(this.param.text_size, this.param.text_size);
                 score_height = (this.param.paper_height > 0 ? this.param.paper_height / this.param.text_size : y_base_screening) / param.nrow;
                 if (param.background_color) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasRect"](canvas, 0, 0, this.param.paper_width / this.param.text_size, this.param.paper_height > 0 ? this.param.paper_height / this.param.text_size : y_base_screening, param.background_color);
                 y_base = origin.y; //if(show_header){
 
-                max_header_height = this.drawheader(canvas, 2, x_offset, width, param, global_macros);
+                max_header_height = this.drawheader(canvas, 2, x_offset, width, param, track);
 
                 if (max_header_height > 0) {
                   y_stacks.push({
@@ -16301,77 +16291,77 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 canvaslist = [canvas];
                 _pei = 0;
 
-              case 63:
+              case 62:
                 if (!(_pei < yse.length)) {
-                  _context.next = 91;
+                  _context.next = 90;
                   break;
                 }
 
                 if (!(yse[_pei].type == "titles")) {
-                  _context.next = 67;
+                  _context.next = 66;
                   break;
                 }
 
-                _context.next = 88;
+                _context.next = 87;
                 break;
 
-              case 67:
+              case 66:
                 if (!(yse[_pei].type == "meas")) {
-                  _context.next = 88;
+                  _context.next = 87;
                   break;
                 }
 
                 _row_elements_list3 = yse[_pei].cont;
                 ylimit = this.canvas_provider != null ? score_height - yse[_pei].param.y_offset_bottom - (show_footer ? yse[_pei].param.y_footer_offset : 0) : null;
-                r = this.render_measure_row_simplified(x_offset, canvas, yse[_pei].macros, _row_elements_list3, yse[_pei].pm, yse[_pei].nm, y_base, yse[_pei].param, true, yse[_pei].macros.REHARSAL_MARK_POSITION == "Inner", ylimit, music_context);
+                r = this.render_measure_row_simplified(track, x_offset, canvas, _row_elements_list3, yse[_pei].pm, yse[_pei].nm, y_base, yse[_pei].param, true, yse[_pei].cont[0].getVariable("REHARSAL_MARK_POSITION") == "Inner", ylimit, music_context);
 
                 if (r) {
-                  _context.next = 87;
+                  _context.next = 86;
                   break;
                 }
 
                 if (!(y_base == origin.y + yse[_pei].param.y_offset_top)) {
-                  _context.next = 76;
+                  _context.next = 75;
                   break;
                 }
 
                 throw "Paper height is too short to fit in single row";
 
-              case 76:
+              case 75:
                 y_base = origin.y + yse[_pei].param.y_offset_top;
 
-              case 77:
+              case 76:
                 this.hitManager.commit(canvas);
-                _context.next = 80;
+                _context.next = 79;
                 return this.canvas_provider();
 
-              case 80:
+              case 79:
                 canvas = _context.sent;
                 canvaslist.push(canvas);
                 _graphic__WEBPACK_IMPORTED_MODULE_3__["SetupHiDPICanvas"](canvas, yse[_pei].param.paper_width / this.param.text_size, yse[_pei].param.paper_height / this.param.text_size, this.param.pixel_ratio, this.param.text_size);
                 if (param.background_color) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasRect"](canvas, 0, 0, this.param.paper_width / this.param.text_size, this.param.paper_height / this.param.text_size, param.background_color); // try again next page
 
                 _pei = _pei - 1;
-                _context.next = 88;
+                _context.next = 87;
                 break;
 
-              case 87:
+              case 86:
                 y_base = r.y_base;
 
-              case 88:
+              case 87:
                 ++_pei;
-                _context.next = 63;
+                _context.next = 62;
                 break;
 
-              case 91:
-                if (show_footer) this.render_footer(canvaslist, global_macros.TITLE + "/" + global_macros.ARTIST, this.param.origin.y + score_height - this.param.y_footer_offset);
+              case 90:
+                if (show_footer) this.render_footer(canvaslist, track.getVariable("TITLE") + "/" + track.getVariable("ARTIST"), this.param.origin.y + score_height - this.param.y_footer_offset);
                 this.hitManager.commit(canvas);
                 return _context.abrupt("return", {
                   pages: canvaslist.length,
                   height: score_height
                 });
 
-              case 94:
+              case 93:
               case "end":
                 return _context.stop();
             }
@@ -16493,12 +16483,12 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
     }
   }, {
     key: "screening_x_areas",
-    value: function screening_x_areas(x, paper, macros, row_elements_list, prev_measure, next_measure, yprof, param, music_context) {
+    value: function screening_x_areas(track, x, paper, row_elements_list, prev_measure, next_measure, yprof, param, music_context) {
       var _this5 = this;
 
-      var transpose = macros.TRANSPOSE;
-      var half_type = macros.KEY_TYPE;
-      var key = macros.KEY;
+      var transpose = track.getVariable("TRANSPOSE");
+      var half_type = track.getVariable("KEY_TYPE");
+      var key = track.getVariable("KEY");
       var total_width = param.paper_width / param.text_size - (param.x_offset_left + param.x_offset_right);
       var dammy_rs_area_height = 24; // any value is ok
       // Determine the width of each measure
@@ -17010,14 +17000,14 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
     }
   }, {
     key: "render_measure_row_simplified",
-    value: function render_measure_row_simplified(x, paper, macros, row_elements_list, prev_measure, next_measure, y_base, param, draw, inner_reharsal_mark, ylimit, music_context) {
+    value: function render_measure_row_simplified(track, x, paper, row_elements_list, prev_measure, next_measure, y_base, param, draw, inner_reharsal_mark, ylimit, music_context) {
       var _this7 = this;
 
-      var x_global_scale = macros.X_GLOBAL_SCALE;
-      var transpose = macros.TRANSPOSE;
-      var half_type = macros.KEY_TYPE;
-      var key = macros.KEY;
-      var show_staff = macros.SHOW_STAFF;
+      var x_global_scale = track.getVariable("X_GLOBAL_SCALE");
+      var transpose = track.getVariable("TRANSPOSE");
+      var half_type = track.getVariable("KEY_TYPE");
+      var key = track.getVariable("KEY");
+      var show_staff = track.getVariable("SHOW_STAFF");
       /* Reference reserved width for empty measures or chord symbol without base names*/
 
       var C7_width = 20; // interval of 5 lines

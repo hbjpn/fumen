@@ -197,7 +197,7 @@ export class DefaultRenderer extends Renderer {
         canvaslist.forEach((canvas,pageidx)=>{
             // Page number footer
             let footerstr =
-                songname + " - " + (pageidx + 1) + " of " + canvaslist.length;
+                (songname ? (songname + " - ") : "") + (pageidx + 1) + " of " + canvaslist.length;
             graphic.CanvasText(
                 canvas,
                 this.param.origin.x + score_width / 2,
@@ -1230,9 +1230,18 @@ export class DefaultRenderer extends Renderer {
             }
         }
 
-        if(show_footer)
-            this.render_footer(canvaslist, track.getVariable("TITLE") + "/" + track.getVariable("ARTIST"),
+        if(show_footer){
+            let songname = null;
+            let title = track.getVariable("TITLE");
+            let artist = track.getVariable("ARTIST");
+            if(title){
+                songname = title;
+                if(artist) songname += "/" + artist;
+            }
+
+            this.render_footer(canvaslist, songname,
                 this.param.origin.y + score_height - this.param.y_footer_offset);
+        }
         
         this.hitManager.commit(canvas);
 

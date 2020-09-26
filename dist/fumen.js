@@ -11796,9 +11796,9 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
  // Default values for variables
 
 var MACRO_DEFAULT = {
-  "TITLE": "",
-  "SUB_TITLE": "",
-  "ARTIST": "",
+  "TITLE": null,
+  "SUB_TITLE": null,
+  "ARTIST": null,
   "SHOW_FOOTER": "YES",
   "SHOW_STAFF": "AUTO",
   "TRANSPOSE": 0,
@@ -15291,7 +15291,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       var score_width = this.param.paper_width / this.param.text_size / this.param.ncol;
       canvaslist.forEach(function (canvas, pageidx) {
         // Page number footer
-        var footerstr = songname + " - " + (pageidx + 1) + " of " + canvaslist.length;
+        var footerstr = (songname ? songname + " - " : "") + (pageidx + 1) + " of " + canvaslist.length;
         _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, _this3.param.origin.x + score_width / 2, y, footerstr, 12, "ct");
       });
     }
@@ -15933,7 +15933,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       var _render_impl = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(track) {
         var _this4 = this;
 
-        var show_footer, origin, x_offset, width, music_context, meas_row_list, accum_block_id, meas_row, meas_row_rg_ids, meas_row_block_ids, reharsal_groups, i, rg, blocks, bi, block_measures, ml, m, meas_row_list_inv, _loop4, _i2, _i3, _rg, _blocks, _bi, _block_measures, _ml, _m, y_stacks, next_reharsal_group_index, yse, y_base_screening, headerHeight, dammy_music_context, current_accum_block_id, reharsal_x_width_info, pei, x, row_elements_list, _ml2, _m2, elements, geret, yprof, x_width_info, canvas, score_height, y_base, max_header_height, canvaslist, _pei, _row_elements_list3, ylimit, r;
+        var show_footer, origin, x_offset, width, music_context, meas_row_list, accum_block_id, meas_row, meas_row_rg_ids, meas_row_block_ids, reharsal_groups, i, rg, blocks, bi, block_measures, ml, m, meas_row_list_inv, _loop4, _i2, _i3, _rg, _blocks, _bi, _block_measures, _ml, _m, y_stacks, next_reharsal_group_index, yse, y_base_screening, headerHeight, dammy_music_context, current_accum_block_id, reharsal_x_width_info, pei, x, row_elements_list, _ml2, _m2, elements, geret, yprof, x_width_info, canvas, score_height, y_base, max_header_height, canvaslist, _pei, _row_elements_list3, ylimit, r, songname, title, artist;
 
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
@@ -16334,7 +16334,19 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 break;
 
               case 86:
-                if (show_footer) this.render_footer(canvaslist, track.getVariable("TITLE") + "/" + track.getVariable("ARTIST"), this.param.origin.y + score_height - this.param.y_footer_offset);
+                if (show_footer) {
+                  songname = null;
+                  title = track.getVariable("TITLE");
+                  artist = track.getVariable("ARTIST");
+
+                  if (title) {
+                    songname = title;
+                    if (artist) songname += "/" + artist;
+                  }
+
+                  this.render_footer(canvaslist, songname, this.param.origin.y + score_height - this.param.y_footer_offset);
+                }
+
                 this.hitManager.commit(canvas);
                 return _context.abrupt("return", {
                   pages: canvaslist.length,

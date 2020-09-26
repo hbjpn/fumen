@@ -3,9 +3,9 @@ import "@babel/polyfill";
 // Default values for variables
 
 let MACRO_DEFAULT = {
-    "TITLE" : "",
-    "SUB_TITLE": "",
-    "ARTIST" : "",
+    "TITLE" : null,
+    "SUB_TITLE": null,
+    "ARTIST" : null,
     "SHOW_FOOTER": "YES",
     "SHOW_STAFF": "AUTO",
     "TRANSPOSE" : 0,

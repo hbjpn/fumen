@@ -15277,9 +15277,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       var _this2 = this;
 
       this.track = track;
-      var param = this.param;
       return _graphic__WEBPACK_IMPORTED_MODULE_3__["PreloadJsonFont"]().then(function () {
-        return _this2.render_impl(track, param);
+        return _this2.render_impl(track);
       });
     }
   }, {
@@ -15512,7 +15511,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         e.renderprop.meas_num_flexible_rooms = x_width_info[mi].meas_num_flexible_rooms;
         row_total_width += x_width_info[mi].measure_width;
       });
-      if (reduced_meas_valid && row_elements_list[0].align == "right") row_elements_list[0].renderprop.left_margin = total_width - row_total_width; //console.log("alpha = " + alpha);
+      if (reduced_meas_valid && row_elements_list[0].align == "right") row_elements_list[0].renderprop.left_margin = total_width - row_total_width;
     }
   }, {
     key: "determine_rooms",
@@ -15575,7 +15574,6 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         var _row = 0;
 
         while (_row < reharsal_x_width_info.length) {
-          //console.log("row :" + row);
           var _num_meas = reharsal_x_width_info[_row][0].length; // Group the rows with :
           //     1. the same number of measures from #row
           //     2. Having right align mark and having less than 1st row
@@ -15750,7 +15748,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             }
           }
 
-          _row += act_num_grouped_rows; //console.log("row updated : " + row + " / " + act_num_grouped_rows);
+          _row += act_num_grouped_rows;
 
           if (act_num_grouped_rows <= 0) {
             throw "Something wrong with the code";
@@ -15828,10 +15826,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             var c = HALF_INT_COMP / denom;
             var b = -HALF_INT_COMP * ZERO_INT_COMP / denom;
             var a = ZERO_INT_COMP * HALF_INT_COMP * (ZERO_INT_COMP - HALF_INT_COMP) / denom / denom;
-            var Tc = a / (Number(param.inner_vertical_align_intensity) + c) + b; //let Tc = param.inner_vertical_align_intensity * ( Tc_min - Tc_max ) + Tc_max;
-            //console.log("Tc_min = " + Tc_min.toFixed(2) + " Tc_max = " + Tc_max.toFixed(2) + " Tc = " + Tc.toFixed(2));
-            //console.log("Tc_org_min = " + Tc_org_min.toFixed(2) + " Tc_org_max = " + Tc_org_max.toFixed(2));
-            // Determining optimum alpha
+            var Tc = a / (Number(param.inner_vertical_align_intensity) + c) + b; // Determining optimum alpha
 
             var max_widened = -10000000;
             var min_narrowed = 1000000;
@@ -15901,32 +15896,32 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
     }
   }, {
     key: "drawheader",
-    value: function drawheader(canvas, stage, x_offset, width, param, track) {
+    value: function drawheader(canvas, stage, x_offset, width, track) {
       var max_header_height = 0; // Title
 
       if (track.getVariable("TITLE")) {
-        var ri = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width / 2, param.y_title_offset, track.getVariable("TITLE"), param.title_font_size, "ct", null, stage == 1, {
+        var ri = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width / 2, this.param.y_title_offset, track.getVariable("TITLE"), this.param.title_font_size, "ct", null, stage == 1, {
           "bold": true
         });
-        max_header_height = Math.max(max_header_height, param.y_title_offset + ri.height);
+        max_header_height = Math.max(max_header_height, this.param.y_title_offset + ri.height);
       } // Sub Title
 
 
       if (track.getVariable("SUB_TITLE")) {
-        var _ri = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width / 2, param.y_subtitle_offset, track.getVariable("SUB_TITLE"), param.subtitle_font_size, "ct", null, stage == 1, {
+        var _ri = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width / 2, this.param.y_subtitle_offset, track.getVariable("SUB_TITLE"), this.param.subtitle_font_size, "ct", null, stage == 1, {
           "bold": false
         });
 
-        max_header_height = Math.max(max_header_height, param.y_subtitle_offset + _ri.height);
+        max_header_height = Math.max(max_header_height, this.param.y_subtitle_offset + _ri.height);
       } // Artist
 
 
       if (track.getVariable("ARTIST")) {
-        var _ri2 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width, param.y_artist_offset, track.getVariable("ARTIST"), param.artist_font_size, "rt", null, stage == 1, {
+        var _ri2 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width, this.param.y_artist_offset, track.getVariable("ARTIST"), this.param.artist_font_size, "rt", null, stage == 1, {
           "bold": false
         });
 
-        max_header_height = Math.max(max_header_height, param.y_artist_offset + _ri2.height);
+        max_header_height = Math.max(max_header_height, this.param.y_artist_offset + _ri2.height);
       }
 
       return max_header_height;
@@ -15934,7 +15929,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
   }, {
     key: "render_impl",
     value: function () {
-      var _render_impl = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(track, param) {
+      var _render_impl = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(track) {
         var _this4 = this;
 
         var show_header, show_footer, origin, y_title_offset, y_subtitle_offset, y_artist_offset, x_offset, width, music_context, meas_row_list, accum_block_id, meas_row, meas_row_rg_ids, meas_row_block_ids, reharsal_groups, i, rg, blocks, bi, block_measures, ml, m, meas_row_list_inv, _loop4, _i2, _i3, _rg, _blocks, _bi, _block_measures, _ml, _m, y_stacks, next_reharsal_group_index, yse, y_base_screening, headerHeight, dammy_music_context, current_accum_block_id, reharsal_x_width_info, pei, x, row_elements_list, _ml2, _m2, elements, geret, yprof, x_width_info, canvas, score_height, y_base, max_header_height, canvaslist, _pei, _row_elements_list3, ylimit, r;
@@ -15949,13 +15944,13 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
                 show_header = track.getVariable("SHOW_HEADER") == "YES";
                 show_footer = track.getVariable("SHOW_FOOTER") == "YES";
-                origin = param.origin; //{x:0,y:0};
+                origin = this.param.origin; //{x:0,y:0};
 
-                y_title_offset = origin.y + param.y_title_offset;
-                y_subtitle_offset = origin.y + param.y_subtitle_offset;
-                y_artist_offset = origin.y + param.y_artist_offset;
-                x_offset = origin.x + param.x_offset_left;
-                width = param.paper_width / this.param.text_size / param.ncol - (param.x_offset_left + param.x_offset_right); // Music context
+                y_title_offset = origin.y + this.param.y_title_offset;
+                y_subtitle_offset = origin.y + this.param.y_subtitle_offset;
+                y_artist_offset = origin.y + this.param.y_artist_offset;
+                x_offset = origin.x + this.param.x_offset_left;
+                width = this.param.paper_width / this.param.text_size / this.param.ncol - (this.param.x_offset_left + this.param.x_offset_right); // Music context
 
                 music_context = {
                   accidental_info: {},
@@ -15981,7 +15976,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                   return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["ReharsalGroup"];
                 });
 
-                if (param.row_gen_mode == "default") {
+                if (this.param.row_gen_mode == "default") {
                   for (i = 0; i < reharsal_groups.length; ++i) {
                     rg = reharsal_groups[i];
                     blocks = rg.childElements.filter(function (e) {
@@ -16058,7 +16053,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                   for (_i2 = 0; _i2 < reharsal_groups.length; ++_i2) {
                     _loop4(_i2);
                   }
-                } else if (param.row_gen_mode == "constant_n_meas") {
+                } else if (this.param.row_gen_mode == "constant_n_meas") {
                   for (_i3 = 0; _i3 < reharsal_groups.length; ++_i3) {
                     _rg = reharsal_groups[_i3];
                     _blocks = _rg.childElements.filter(function (e) {
@@ -16076,7 +16071,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                         meas_row_rg_ids.push(_i3);
                         meas_row_block_ids.push(accum_block_id);
 
-                        if (meas_row.length == param.row_gen_n_meas) {
+                        if (meas_row.length == this.param.row_gen_n_meas) {
                           meas_row_list.push({
                             meas_row: meas_row,
                             meas_row_rg_ids: meas_row_rg_ids,
@@ -16148,12 +16143,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                     block_ids: e.meas_row_block_ids,
                     nm: next_measure,
                     pm: prev_measure,
-                    //rg: track.reharsal_groups[i],
-                    //rg_id : i,
                     //macros: global_macros, // TODO : Macros for each row...?
-                    param: param_for_row //block_id: bi,
-                    //row_id_in_block: row_id_in_block-1 // Already incremented then row id is minus 1
-
+                    param: param_for_row
                   });
                 }); // ---------------------
                 // Stage 1 : Screening
@@ -16167,18 +16158,15 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 }
 
                 yse = y_stacks;
-                y_base_screening = origin.y; //if(show_header){
-
-                headerHeight = this.drawheader(this.memCanvas, 1, x_offset, width, param, track);
+                y_base_screening = origin.y;
+                headerHeight = this.drawheader(this.memCanvas, 1, x_offset, width, track);
 
                 if (headerHeight > 0) {
                   y_base_screening += headerHeight;
-                  y_base_screening += headerHeight > 0 ? param.y_header_margin : 0;
+                  y_base_screening += headerHeight > 0 ? this.param.y_header_margin : 0;
                 } else {
-                  //}else{
-                  y_base_screening += param.y_offset_top;
-                } //}
-
+                  y_base_screening += this.param.y_offset_top;
+                }
 
                 dammy_music_context = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](music_context); // Maybe not required ?
 
@@ -16243,9 +16231,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 break;
 
               case 44:
-                y_base_screening += param.y_offset_bottom; // Here y_base_screening means the height of the total score if single page applied.
+                y_base_screening += this.param.y_offset_bottom; // Here y_base_screening means the height of the total score if single page applied.
 
-                if (show_footer) y_base_screening += param.y_footer_offset; // Release memCanvas
+                if (show_footer) y_base_screening += this.param.y_footer_offset; // Release memCanvas
 
                 _graphic__WEBPACK_IMPORTED_MODULE_3__["ReleaseCanvas"](this.memCanvas);
                 this.memCanvas = null; // ----------------------
@@ -16268,25 +16256,20 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
               case 53:
                 _graphic__WEBPACK_IMPORTED_MODULE_3__["SetupHiDPICanvas"](canvas, this.param.paper_width / this.param.text_size, this.param.paper_height > 0 ? this.param.paper_height / this.param.text_size : y_base_screening, this.param.pixel_ratio, this.param.text_size);
                 this.hitManager.setGlobalScale(this.param.text_size, this.param.text_size);
-                score_height = (this.param.paper_height > 0 ? this.param.paper_height / this.param.text_size : y_base_screening) / param.nrow;
-                if (param.background_color) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasRect"](canvas, 0, 0, this.param.paper_width / this.param.text_size, this.param.paper_height > 0 ? this.param.paper_height / this.param.text_size : y_base_screening, param.background_color);
-                y_base = origin.y; //if(show_header){
-
-                max_header_height = this.drawheader(canvas, 2, x_offset, width, param, track);
+                score_height = (this.param.paper_height > 0 ? this.param.paper_height / this.param.text_size : y_base_screening) / this.param.nrow;
+                if (this.param.background_color) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasRect"](canvas, 0, 0, this.param.paper_width / this.param.text_size, this.param.paper_height > 0 ? this.param.paper_height / this.param.text_size : y_base_screening, this.param.background_color);
+                y_base = origin.y;
+                max_header_height = this.drawheader(canvas, 2, x_offset, width, track);
 
                 if (max_header_height > 0) {
                   y_stacks.push({
                     type: "titles",
-                    height: max_header_height + param.y_header_margin
+                    height: max_header_height + this.param.y_header_margin
                   });
-                  y_base += max_header_height + param.y_header_margin;
+                  y_base += max_header_height + this.param.y_header_margin;
                 } else {
-                  y_base += param.y_offset_top;
+                  y_base += this.param.y_offset_top;
                 }
-                /*}else{
-                    y_base += param.y_offset_top;
-                }*/
-
 
                 canvaslist = [canvas];
                 _pei = 0;
@@ -16339,7 +16322,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 canvas = _context.sent;
                 canvaslist.push(canvas);
                 _graphic__WEBPACK_IMPORTED_MODULE_3__["SetupHiDPICanvas"](canvas, yse[_pei].param.paper_width / this.param.text_size, yse[_pei].param.paper_height / this.param.text_size, this.param.pixel_ratio, this.param.text_size);
-                if (param.background_color) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasRect"](canvas, 0, 0, this.param.paper_width / this.param.text_size, this.param.paper_height / this.param.text_size, param.background_color); // try again next page
+                if (this.param.background_color) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasRect"](canvas, 0, 0, this.param.paper_width / this.param.text_size, this.param.paper_height / this.param.text_size, this.param.background_color); // try again next page
 
                 _pei = _pei - 1;
                 _context.next = 87;
@@ -16369,7 +16352,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         }, _callee, this);
       }));
 
-      function render_impl(_x, _x2) {
+      function render_impl(_x) {
         return _render_impl.apply(this, arguments);
       }
 
@@ -16904,12 +16887,6 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 _draw_scale5 = _scale16[0];
                 _elem_width4 = _scale16[1];
               }
-              /*if(draw && draw_scale<1){
-                  x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
-              }else if(draw)
-                  x += (e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index+ei]); 
-              */
-
 
               if (draw) {
                 x += _elem_width4;
@@ -16930,10 +16907,6 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           if (draw) this_group_start_index += element_group.elems.length; // This count should be same as num_flexible_rooms;
         }
       });
-      /*if(draw && draw_scale<1){
-          paper.getContext("2d").scale(1/draw_scale, 1);
-      }*/
-
       return {
         x: x,
         fixed_width: fixed_width,
@@ -17433,8 +17406,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           4: "uniE4E5",
           8: "uniE4E6"
         };
-        var img = _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"][namemap[rd <= 4 ? rd : 8]]; //var img = graphic.G_imgmap["assets/img/rest" + (rd <= 4 ? rd : 8) + ".svg"];
-
+        var img = _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"][namemap[rd <= 4 ? rd : 8]];
         var s = img.height / heights[rd];
 
         if (rd <= 4) {
@@ -17453,8 +17425,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         for (var di = 0; di < numdot; ++di) {
           _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](paper, x + dot_xoffsets[rd] + di * 5, y_body_or_rs_base + row_height / 2 - _5i / 2, 1);
         }
-      } //return { bounding_box:{x:x,y:y_body_or_rs_base, w:10, h:row_height }}; // TODO : Impelment correctly
-
+      }
 
       return {
         bb: new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"](x, y_body_or_rs_base, 10, row_height)

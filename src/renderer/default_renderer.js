@@ -186,11 +186,9 @@ export class DefaultRenderer extends Renderer {
     render(track) {
         this.track = track;
 
-        var param = this.param;
-        
         return graphic.PreloadJsonFont()
         .then(()=>{
-            return this.render_impl(track, param);
+            return this.render_impl(track);
         });
     }
 
@@ -440,7 +438,6 @@ export class DefaultRenderer extends Renderer {
         });
         if(reduced_meas_valid && row_elements_list[0].align == "right")
             row_elements_list[0].renderprop.left_margin = total_width - row_total_width;
-        //console.log("alpha = " + alpha);
     }
 
     determine_rooms(param, reharsal_x_width_info){
@@ -505,7 +502,6 @@ export class DefaultRenderer extends Renderer {
             let row = 0;
             
             while (row < reharsal_x_width_info.length){
-                //console.log("row :" + row);
                 let num_meas = reharsal_x_width_info[row][0].length;
 
                 // Group the rows with :
@@ -673,7 +669,6 @@ export class DefaultRenderer extends Renderer {
                 }
 
                 row += act_num_grouped_rows;
-                //console.log("row updated : " + row + " / " + act_num_grouped_rows);
                 if(act_num_grouped_rows <= 0){
                     throw "Something wrong with the code";
                 }
@@ -749,9 +744,6 @@ export class DefaultRenderer extends Renderer {
                     let b = -HALF_INT_COMP * ZERO_INT_COMP / denom;
                     let a = ZERO_INT_COMP * HALF_INT_COMP * (ZERO_INT_COMP - HALF_INT_COMP) / denom / denom;
                     let Tc = a/(Number(param.inner_vertical_align_intensity)+c)+b;
-                    //let Tc = param.inner_vertical_align_intensity * ( Tc_min - Tc_max ) + Tc_max;
-                    //console.log("Tc_min = " + Tc_min.toFixed(2) + " Tc_max = " + Tc_max.toFixed(2) + " Tc = " + Tc.toFixed(2));
-                    //console.log("Tc_org_min = " + Tc_org_min.toFixed(2) + " Tc_org_max = " + Tc_org_max.toFixed(2));
 
                     // Determining optimum alpha
                     let max_widened = -10000000;
@@ -809,7 +801,7 @@ export class DefaultRenderer extends Renderer {
         }
     }
 
-    drawheader(canvas, stage, x_offset, width, param, track){
+    drawheader(canvas, stage, x_offset, width, track){
         let max_header_height = 0;
 
         // Title
@@ -817,14 +809,14 @@ export class DefaultRenderer extends Renderer {
             let ri = graphic.CanvasText(
                 canvas,
                 x_offset + width / 2,
-                param.y_title_offset,
+                this.param.y_title_offset,
                 track.getVariable("TITLE"),
-                param.title_font_size,
+                this.param.title_font_size,
                 "ct",
                 null, stage==1, {"bold":true}
             );
 
-            max_header_height = Math.max(max_header_height, param.y_title_offset + ri.height);
+            max_header_height = Math.max(max_header_height, this.param.y_title_offset + ri.height);
         }
 
         // Sub Title
@@ -832,14 +824,14 @@ export class DefaultRenderer extends Renderer {
             let ri = graphic.CanvasText(
                 canvas,
                 x_offset + width / 2,
-                param.y_subtitle_offset,
+                this.param.y_subtitle_offset,
                 track.getVariable("SUB_TITLE"),
-                param.subtitle_font_size,
+                this.param.subtitle_font_size,
                 "ct",
                 null, stage==1, {"bold":false}
             );
 
-            max_header_height = Math.max(max_header_height, param.y_subtitle_offset + ri.height);
+            max_header_height = Math.max(max_header_height, this.param.y_subtitle_offset + ri.height);
         }
 
         // Artist
@@ -847,20 +839,20 @@ export class DefaultRenderer extends Renderer {
             let ri = graphic.CanvasText(
                 canvas,
                 x_offset + width,
-                param.y_artist_offset,
+                this.param.y_artist_offset,
                 track.getVariable("ARTIST"),
-                param.artist_font_size,
+                this.param.artist_font_size,
                 "rt",
                 null, stage==1, {"bold":false}
             );
 
-            max_header_height = Math.max(max_header_height, param.y_artist_offset + ri.height);
+            max_header_height = Math.max(max_header_height, this.param.y_artist_offset + ri.height);
         }
 
         return max_header_height;
     }
 
-    async render_impl(track, param) {
+    async render_impl(track) {
 
         if(track.getVariable("PARAM")){
             this.merge_param(this.param, track.getVariable("PARAM"), false); // Merge to defaul param
@@ -869,14 +861,14 @@ export class DefaultRenderer extends Renderer {
         var show_header = track.getVariable("SHOW_HEADER") == "YES";
         var show_footer = track.getVariable("SHOW_FOOTER") == "YES";
 
-        var origin = param.origin; //{x:0,y:0};
+        var origin = this.param.origin; //{x:0,y:0};
 
-        var y_title_offset = origin.y + param.y_title_offset;
-        var y_subtitle_offset = origin.y + param.y_subtitle_offset;
-        var y_artist_offset = origin.y + param.y_artist_offset;
-        var x_offset = origin.x + param.x_offset_left;
-        var width = param.paper_width / this.param.text_size / param.ncol
-            - ( param.x_offset_left + param.x_offset_right );
+        var y_title_offset = origin.y + this.param.y_title_offset;
+        var y_subtitle_offset = origin.y + this.param.y_subtitle_offset;
+        var y_artist_offset = origin.y + this.param.y_artist_offset;
+        var x_offset = origin.x + this.param.x_offset_left;
+        var width = this.param.paper_width / this.param.text_size / this.param.ncol
+            - ( this.param.x_offset_left + this.param.x_offset_right );
 
         // Music context
         var music_context = {
@@ -903,7 +895,7 @@ export class DefaultRenderer extends Renderer {
 
         let reharsal_groups = track.childElements.filter(e=>e instanceof common.ReharsalGroup);
 
-        if(param.row_gen_mode == "default"){
+        if(this.param.row_gen_mode == "default"){
             for (let i = 0; i < reharsal_groups.length; ++i) {
                 let rg = reharsal_groups[i];
                 let blocks = rg.childElements.filter(e=>e instanceof common.Block);
@@ -958,7 +950,7 @@ export class DefaultRenderer extends Renderer {
                     meas_row_list_inv = meas_row_list.slice().reverse();
                 }
             }
-        }else if(param.row_gen_mode == "constant_n_meas"){
+        }else if(this.param.row_gen_mode == "constant_n_meas"){
             for (let i = 0; i < reharsal_groups.length; ++i) {
                 let rg = reharsal_groups[i];
                 let blocks = rg.childElements.filter(e=>e instanceof common.Block);
@@ -969,7 +961,7 @@ export class DefaultRenderer extends Renderer {
                         meas_row.push(m);
                         meas_row_rg_ids.push(i);
                         meas_row_block_ids.push(accum_block_id);
-                        if(meas_row.length == param.row_gen_n_meas){
+                        if(meas_row.length == this.param.row_gen_n_meas){
                             meas_row_list.push({
                                 meas_row: meas_row,
                                 meas_row_rg_ids: meas_row_rg_ids,
@@ -1039,12 +1031,8 @@ export class DefaultRenderer extends Renderer {
                 block_ids : e.meas_row_block_ids,
                 nm: next_measure,
                 pm: prev_measure,
-                //rg: track.reharsal_groups[i],
-                //rg_id : i,
                 //macros: global_macros, // TODO : Macros for each row...?
                 param: param_for_row,
-                //block_id: bi,
-                //row_id_in_block: row_id_in_block-1 // Already incremented then row id is minus 1
             });
         });
 
@@ -1067,16 +1055,14 @@ export class DefaultRenderer extends Renderer {
         let yse = y_stacks;
 
         let y_base_screening = origin.y;
-        //if(show_header){
-            let headerHeight = this.drawheader(this.memCanvas, 1, x_offset, width, param, track);
-            if(headerHeight > 0){
-                y_base_screening += headerHeight;
-                y_base_screening += headerHeight > 0 ? param.y_header_margin : 0;
-            }else{
-        //}else{
-            y_base_screening += param.y_offset_top;
-            }
-        //}
+        
+        let headerHeight = this.drawheader(this.memCanvas, 1, x_offset, width, track);
+        if(headerHeight > 0){
+            y_base_screening += headerHeight;
+            y_base_screening += headerHeight > 0 ? this.param.y_header_margin : 0;
+        }else{
+            y_base_screening += this.param.y_offset_top;
+        }
 
         let dammy_music_context = common.deepcopy(music_context); // Maybe not required ?
 
@@ -1143,8 +1129,8 @@ export class DefaultRenderer extends Renderer {
                this.determine_rooms(yse[pei].param, reharsal_x_width_info);
            }
        }
-       y_base_screening += param.y_offset_bottom; // Here y_base_screening means the height of the total score if single page applied.
-       if(show_footer) y_base_screening += param.y_footer_offset;
+       y_base_screening += this.param.y_offset_bottom; // Here y_base_screening means the height of the total score if single page applied.
+       if(show_footer) y_base_screening += this.param.y_footer_offset;
 
        // Release memCanvas
        graphic.ReleaseCanvas(this.memCanvas);
@@ -1169,28 +1155,23 @@ export class DefaultRenderer extends Renderer {
 
         var score_height = (this.param.paper_height > 0 ? 
             this.param.paper_height/this.param.text_size : y_base_screening)
-            / param.nrow;
+            / this.param.nrow;
 
-        if(param.background_color)
+        if(this.param.background_color)
             graphic.CanvasRect(canvas, 0, 0, 
                 this.param.paper_width / this.param.text_size, 
                 (this.param.paper_height > 0 ? this.param.paper_height/this.param.text_size : y_base_screening), 
-                param.background_color);
+                this.param.background_color);
 
         var y_base = origin.y;
 
-        //if(show_header){
-            let max_header_height = this.drawheader(canvas, 2, x_offset, width, param, track);
-            if(max_header_height > 0){
-                y_stacks.push({ type: "titles", height: (max_header_height + param.y_header_margin) });
-                y_base += (max_header_height + param.y_header_margin);
-            }else{
-                y_base += param.y_offset_top;
-            }
-        /*}else{
-            y_base += param.y_offset_top;
-        }*/
-
+        let max_header_height = this.drawheader(canvas, 2, x_offset, width, track);
+        if(max_header_height > 0){
+            y_stacks.push({ type: "titles", height: (max_header_height + this.param.y_header_margin) });
+            y_base += (max_header_height + this.param.y_header_margin);
+        }else{
+            y_base += this.param.y_offset_top;
+        }
 
         let canvaslist = [canvas];
 
@@ -1239,11 +1220,11 @@ export class DefaultRenderer extends Renderer {
                         this.param.text_size
                     );
                     
-                    if(param.background_color)
+                    if(this.param.background_color)
                         graphic.CanvasRect(canvas, 0, 0, 
                             this.param.paper_width / this.param.text_size, 
                             this.param.paper_height / this.param.text_size, 
-                            param.background_color);
+                            this.param.background_color);
 
                     // try again next page
                     pei = pei - 1;
@@ -1833,11 +1814,6 @@ export class DefaultRenderer extends Renderer {
                         if(draw) [draw_scale, elem_width] =
                             scale(e.renderprop.w, m.renderprop.room_per_elem[this_group_start_index+ei]);
                         
-                        /*if(draw && draw_scale<1){
-                            x += e.renderprop.w * draw_scale + 0; // In case scaling apply no room apply.
-                        }else if(draw)
-                            x += (e.renderprop.w + m.renderprop.room_per_elem[this_group_start_index+ei]); 
-                        */
                         if(draw){
                             x += elem_width;
                             unscale(draw_scale);
@@ -1855,10 +1831,6 @@ export class DefaultRenderer extends Renderer {
                 if(draw) this_group_start_index += element_group.elems.length; // This count should be same as num_flexible_rooms;
             }
         });
-
-        /*if(draw && draw_scale<1){
-            paper.getContext("2d").scale(1/draw_scale, 1);
-        }*/
 
         return {x:x, fixed_width:fixed_width, num_flexible_rooms:num_flexible_rooms, fixed_width_details:fixed_width_details};
     }
@@ -2543,7 +2515,6 @@ export class DefaultRenderer extends Renderer {
         if(draw){
             let namemap = {1:"uniE4F4", 2:"uniE4F5", 4:"uniE4E5", 8:"uniE4E6"};
             var img = graphic.G_imgmap[namemap[(rd <= 4 ? rd : 8)]];
-            //var img = graphic.G_imgmap["assets/img/rest" + (rd <= 4 ? rd : 8) + ".svg"];
             var s = img.height / heights[rd];
             if (rd <= 4) {
                 ctx.drawImage(
@@ -2578,7 +2549,6 @@ export class DefaultRenderer extends Renderer {
             }
         }
 
-        //return { bounding_box:{x:x,y:y_body_or_rs_base, w:10, h:row_height }}; // TODO : Impelment correctly
         return { bb: new graphic.BoundingBox(x,y_body_or_rs_base, 10, row_height)}; // TODO : Impelment correctly
     }
 

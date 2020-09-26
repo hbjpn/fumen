@@ -858,14 +858,10 @@ export class DefaultRenderer extends Renderer {
             this.merge_param(this.param, track.getVariable("PARAM"), false); // Merge to defaul param
         }
 
-        var show_header = track.getVariable("SHOW_HEADER") == "YES";
         var show_footer = track.getVariable("SHOW_FOOTER") == "YES";
 
         var origin = this.param.origin; //{x:0,y:0};
 
-        var y_title_offset = origin.y + this.param.y_title_offset;
-        var y_subtitle_offset = origin.y + this.param.y_subtitle_offset;
-        var y_artist_offset = origin.y + this.param.y_artist_offset;
         var x_offset = origin.x + this.param.x_offset_left;
         var width = this.param.paper_width / this.param.text_size / this.param.ncol
             - ( this.param.x_offset_left + this.param.x_offset_right );
@@ -1354,8 +1350,6 @@ export class DefaultRenderer extends Renderer {
         var transpose = track.getVariable("TRANSPOSE");
         var half_type = track.getVariable("KEY_TYPE");
         var key = track.getVariable("KEY");
-
-        var total_width = param.paper_width / param.text_size - (param.x_offset_left + param.x_offset_right);
 
         let dammy_rs_area_height = 24; // any value is ok
 

@@ -759,7 +759,8 @@ export class Parser {
                     
                     r = this.parseMeasures(r, r.s); // the last NL has not been consumed.
                     // Apply par row variable
-                    r.measures[0].variables = common.shallowcopy(latest_macros);
+                    r.measures.forEach(m=>{ m.variables = common.shallowcopy(latest_macros);});
+                    //r.measures[0].variables = common.shallowcopy(latest_macros);
                     r.measures[0].align = current_align;
                     r.measures[0].raw_new_line = is_new_line_middle_of_block; // mark to the first measure
                     block.concat(r.measures);

@@ -1204,7 +1204,7 @@ export class HitManager
             p.objs.forEach(entry=>{
                 ctx.fillStyle = "rgb(0, 0, 255, 0.5)";
                 ctx.fillRect(entry.bb.x[0], entry.bb.y[0], entry.bb.width(), entry.bb.height());
-                console.log("BB dump : " + [entry.bb.x[0], entry.bb.y[0], entry.bb.width(), entry.bb.height()]);
+                //console.log("BB dump : " + [entry.bb.x[0], entry.bb.y[0], entry.bb.width(), entry.bb.height()]);
             });
         }
     }

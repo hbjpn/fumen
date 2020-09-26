@@ -848,10 +848,13 @@ export class Renderer {
                                 (psm.renderprop.meas_end_x - (prev_coord.x[ci][3] + sdx)  + 5),
                                 100];
 
-                            console.group("Tie");
-                            console.log(brace_points);
-                            console.log(clip_rect);
-                            console.groupEnd();
+                            // eslint-disable-next-line no-constant-condition
+                            if(false){
+                                console.group("Tie");
+                                console.log(brace_points);
+                                console.log(clip_rect);
+                                console.groupEnd();
+                            }
                             
                             // In case the previous paper is in the same paper, "draw_scale" is currently applied,
                             // then temporaryly deactivate scaling.
@@ -865,9 +868,6 @@ export class Renderer {
                             graphic.CanvasbBzierCurve(music_context.tie_info.rs_prev_tie_paper,
                                 brace_points, false, false, 
                                 {"clip-rect":clip_rect});
-
-                            //if(paper == music_context.tie_info.rs_prev_tie_paper)
-                            //    music_context.tie_info.rs_prev_tie_paper.getContext("2d").scale(draw_scale, 1.0);
 
                             brace_points = [
                                 [meas_start_x - 20, y + dy],
@@ -1033,8 +1033,7 @@ export class Renderer {
 
                     for (var fi = 1; fi < numflag; ++fi) {
                         // fi=0 is alread drawn by common balken
-                        //o = paper.path(svgLine(pss[0], rs_y_base+barlen-fi*flagintv, pss[0] + dir * blen, rs_y_base+barlen-fi*flagintv)).attr({'stroke-width':balken_width});
-
+                        
                         graphic.CanvasLine(paper,
                             pssx,
                             slope * pssx +

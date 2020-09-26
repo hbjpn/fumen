@@ -245,7 +245,7 @@ export class DefaultRenderer extends Renderer {
         let room_per_meas_even_ratio_meas = []; // room per measure for each meas in case even division of width for each measure
         // Used for optimize type = 1 
         let room_per_elem_uniform_ratio = (total_width - fixed_width_others) / fixed_width_flexbile_only;
-        console.log("S for type1 = " + room_per_elem_uniform_ratio);
+        //console.log("S for type1 = " + room_per_elem_uniform_ratio);
         
         for(let mi=0; mi < num_meas; ++mi){
             let fixed_width_flexbile_only_details = common.deepcopy(x_width_info[mi]["body_fixed_width_details"]);
@@ -1055,7 +1055,7 @@ export class DefaultRenderer extends Renderer {
         let yse = y_stacks;
 
         let y_base_screening = origin.y;
-        
+
         let headerHeight = this.drawheader(this.memCanvas, 1, x_offset, width, track);
         if(headerHeight > 0){
             y_base_screening += headerHeight;

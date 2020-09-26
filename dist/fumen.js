@@ -13750,8 +13750,7 @@ var HitManager = /*#__PURE__*/function () {
         var ctx = p.paper.getContext("2d");
         p.objs.forEach(function (entry) {
           ctx.fillStyle = "rgb(0, 0, 255, 0.5)";
-          ctx.fillRect(entry.bb.x[0], entry.bb.y[0], entry.bb.width(), entry.bb.height());
-          console.log("BB dump : " + [entry.bb.x[0], entry.bb.y[0], entry.bb.width(), entry.bb.height()]);
+          ctx.fillRect(entry.bb.x[0], entry.bb.y[0], entry.bb.width(), entry.bb.height()); //console.log("BB dump : " + [entry.bb.x[0], entry.bb.y[0], entry.bb.width(), entry.bb.height()]);
         });
       };
 
@@ -15331,8 +15330,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       var room_per_meas_even_ratio_meas = []; // room per measure for each meas in case even division of width for each measure
       // Used for optimize type = 1 
 
-      var room_per_elem_uniform_ratio = (total_width - fixed_width_others) / fixed_width_flexbile_only;
-      console.log("S for type1 = " + room_per_elem_uniform_ratio);
+      var room_per_elem_uniform_ratio = (total_width - fixed_width_others) / fixed_width_flexbile_only; //console.log("S for type1 = " + room_per_elem_uniform_ratio);
 
       for (var mi = 0; mi < num_meas; ++mi) {
         var fixed_width_flexbile_only_details = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](x_width_info[mi]["body_fixed_width_details"]);
@@ -19964,11 +19962,9 @@ var Renderer = /*#__PURE__*/function () {
                 // Crossing measure row. Previous RS mark could be on another page.
                 // Make sure to create curve on the paper on which previous RS is drawn.
                 brace_points = [[prev_coord.x[_ci][3] + sdx, prev_coord.y[_ci] + _dy2], [prev_coord.x[_ci][3] + sdx, prev_coord.y[_ci] - round + _dy2], [psm.renderprop.meas_end_x + 20, prev_coord.y[_ci] - round + _dy2], [psm.renderprop.meas_end_x + 20, prev_coord.y[_ci] + _dy2]];
-                var clip_rect = [prev_coord.x[_ci][3] + sdx, prev_coord.y[_ci] - 50, psm.renderprop.meas_end_x - (prev_coord.x[_ci][3] + sdx) + 5, 100];
-                console.group("Tie");
-                console.log(brace_points);
-                console.log(clip_rect);
-                console.groupEnd(); // In case the previous paper is in the same paper, "draw_scale" is currently applied,
+                var clip_rect = [prev_coord.x[_ci][3] + sdx, prev_coord.y[_ci] - 50, psm.renderprop.meas_end_x - (prev_coord.x[_ci][3] + sdx) + 5, 100]; // eslint-disable-next-line no-constant-condition
+
+                if (false) {} // In case the previous paper is in the same paper, "draw_scale" is currently applied,
                 // then temporaryly deactivate scaling.
                 // In case of differnt paper, such paper shall already be reverted back to scaling=1, 
                 // no need to do anything.
@@ -19977,11 +19973,10 @@ var Renderer = /*#__PURE__*/function () {
                 //if(paper == music_context.tie_info.rs_prev_tie_paper)
                 //    music_context.tie_info.rs_prev_tie_paper.getContext("2d").scale(1.0/draw_scale, 1.0);
 
+
                 _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasbBzierCurve"](music_context.tie_info.rs_prev_tie_paper, brace_points, false, false, {
                   "clip-rect": clip_rect
-                }); //if(paper == music_context.tie_info.rs_prev_tie_paper)
-                //    music_context.tie_info.rs_prev_tie_paper.getContext("2d").scale(draw_scale, 1.0);
-
+                });
                 brace_points = [[meas_start_x - 20, y + _dy2], [meas_start_x - 20, y - round + _dy2], [xs[_ci][0] + edx, y - round + _dy2], [xs[_ci][0] + edx, y + _dy2]];
                 clip_rect = [meas_start_x - 5, y - 50, x - (meas_start_x - 5), 100]; //paper.getContext("2d").scale(1.0/draw_scale, 1.0);
 
@@ -20108,7 +20103,6 @@ var Renderer = /*#__PURE__*/function () {
 
             for (var fi = 1; fi < numflag; ++fi) {
               // fi=0 is alread drawn by common balken
-              //o = paper.path(svgLine(pss[0], rs_y_base+barlen-fi*flagintv, pss[0] + dir * blen, rs_y_base+barlen-fi*flagintv)).attr({'stroke-width':balken_width});
               _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasLine"](paper, pssx, slope * pssx + intercept + (upper_flag ? +1 : -1) * fi * param.note_flag_interval, pssx + dir * blen, slope * (pssx + dir * blen) + intercept + (upper_flag ? +1 : -1) * fi * param.note_flag_interval, {
                 width: param.balken_width
               });

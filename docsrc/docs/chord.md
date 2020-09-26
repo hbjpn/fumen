@@ -28,7 +28,6 @@ Chord symbol indicates the chord names. Various chord name types as shown in the
 Also, chord symbols can be specified followed by duration indicator. Please see the section of [duration indicator](duration-indicator.md).
 
 <!-- fumen:start -->
-%SHOW_HEADER="NO"
 %SHOW_FOOTER="NO"
 
 [Basic chords]

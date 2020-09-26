@@ -4,7 +4,6 @@
 | (4/4)          | Time signature. Single integer for denominator and nominator can be specified. | 
 
 <!-- fumen:start -->
-%SHOW_HEADER="NO"
 %SHOW_FOOTER="NO"
 
 [A]

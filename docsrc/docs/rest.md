@@ -12,7 +12,6 @@ Two types of rest symbols are supported. Normal rests and long rests.
 | -2- | Long rests with duration of 2 measures. Arbitral integer can be specified within hyphens. |
 
 <!-- fumen:start -->
-%SHOW_HEADER="NO"
 %SHOW_FOOTER="NO"
 
 [Normal rests]

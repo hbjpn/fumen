@@ -15,7 +15,6 @@ In additionion to the measure boundary mark with repeat sign, following repeat s
 | .//.          | Simile mark(double) |
 
 <!-- fumen:start -->
-%SHOW_HEADER="NO"
 %SHOW_FOOTER="NO"
 
 [A]

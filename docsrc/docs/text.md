@@ -10,7 +10,6 @@ Several types of text drawings are defined.
 
 
 <!-- fumen:start -->
-%SHOW_HEADER="NO"
 %SHOW_FOOTER="NO"
 
 [A]

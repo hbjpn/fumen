@@ -89,11 +89,11 @@ An Object to specify prameters for rendering engine
 | [title_font_size] | <code>int</code> |  | Title font size |
 | [artist_font_size] | <code>int</code> |  | Artist font size |
 | [x_offset] | <code>int</code> |  | Margin of the left and right side of the paper. |
-| [x_offset_left] | <code>int</code> |  | Margin of the right side of the paper. |
-| [x_offset_right] | <code>int</code> |  | Margin of the left side of the paper. |
+| [x_offset_left] | <code>int</code> | <code></code> | Margin of the right side of the paper. x_offset applies when null is specified. |
+| [x_offset_right] | <code>int</code> | <code></code> | Margin of the left side of the paper. x_offset applies when null is specified. |
 | [y_offset] | <code>int</code> |  | Margin of the top and bottom side of the paper. |
-| [y_offset_top] | <code>int</code> | <code></code> | Margin of top side of the paper. In case header is drawn, this does not apply. |
-| [y_offset_bottom] | <code>int</code> | <code></code> | Margin of top side of the paper. In case header is drawn, this does not apply |
+| [y_offset_top] | <code>int</code> | <code></code> | Margin of top side of the paper. y_offset applies when null is specified. In case header is drawn, this does not apply. |
+| [y_offset_bottom] | <code>int</code> | <code></code> | Margin of top side of the paper. y_offset applies when null is specified. In case header is drawn, this does not apply |
 | [y_header_margin] | <code>int</code> |  | Margin of the top y when header is shown (normally, firstpage) |
 | [y_title_offset] | <code>int</code> |  | Top offset for title |
 | [y_subtitle_offset] | <code>int</code> |  | Top offset for sub-title |

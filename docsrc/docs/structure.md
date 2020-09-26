@@ -32,7 +32,6 @@ In the default renderer :
 - Reharsal group mark with empty name is not rendered.
 
 <!-- fumen:start -->
-%SHOW_HEADER="NO"
 %SHOW_FOOTER="NO"
 
 
@@ -53,7 +52,6 @@ Set of measures with continuous rows (i.e. seprately by single linebreak) inside
 How to render differnt blocks is up to each renderer implementation. In the default renderer, block is treated as a unit to apply the rendering optimization process. For example, the default renderending try to  vertically align the measure boundaries as much as possible for better readability, but only among the measure rows within a single block. Hence, the measures in differnt blocks may have differnt measure boudnary positions.
 
 <!-- fumen:start -->
-%SHOW_HEADER="NO"
 %SHOW_FOOTER="NO"
 
 [A]
@@ -86,7 +84,6 @@ This is to indicate the renderer to rendere the measure row by fill out in a tot
 In the default renderer, left align and right align marks are only valid when the number of measures in the nearest upper row without alignment mark have more measures in the measure row. 
 
 <!-- fumen:start -->
-%SHOW_HEADER="NO"
 %SHOW_FOOTER="NO"
 
 [A]

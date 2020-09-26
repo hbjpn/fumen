@@ -584,8 +584,7 @@
 <p>In the default renderer :
 - in-line reharsal mark and its first measure row is rendered in the same row of the last row of previous reharsal group.
 - Reharsal group mark with empty name is not rendered.</p>
-<p><div class='fumenbox'><textarea class='fumencode'>%SHOW_HEADER="NO"
-%SHOW_FOOTER="NO"
+<p><div class='fumenbox'><textarea class='fumencode'>%SHOW_FOOTER="NO"
 
 
 | B |
@@ -600,8 +599,7 @@
 <h2 id="block">Block</h2>
 <p>Set of measures with continuous rows (i.e. seprately by single linebreak) inside a reharsal group are grouped as a "block". Two or more of line breaks between measures means the measure rows above and below line breaks will belong to differnt blocks.</p>
 <p>How to render differnt blocks is up to each renderer implementation. In the default renderer, block is treated as a unit to apply the rendering optimization process. For example, the default renderending try to  vertically align the measure boundaries as much as possible for better readability, but only among the measure rows within a single block. Hence, the measures in differnt blocks may have differnt measure boudnary positions.</p>
-<p><div class='fumenbox'><textarea class='fumencode'>%SHOW_HEADER="NO"
-%SHOW_FOOTER="NO"
+<p><div class='fumenbox'><textarea class='fumencode'>%SHOW_FOOTER="NO"
 
 [A]
 | A | B | C | D |
@@ -640,8 +638,7 @@
 </table>
 <p>This is to indicate the renderer to rendere the measure row by fill out in a total wide, by aligning to leftside or aligning to right side. Details on the outcome of rendering due to these marks are up to renderer implemenation. </p>
 <p>In the default renderer, left align and right align marks are only valid when the number of measures in the nearest upper row without alignment mark have more measures in the measure row. </p>
-<p><div class='fumenbox'><textarea class='fumencode'>%SHOW_HEADER="NO"
-%SHOW_FOOTER="NO"
+<p><div class='fumenbox'><textarea class='fumencode'>%SHOW_FOOTER="NO"
 
 [A]
 ||: A | B |[1.] C | D :||

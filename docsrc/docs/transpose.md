@@ -6,7 +6,6 @@ Transpose is done by either of following ways :
 - Specify base key by "%KEY" variable and transpose interval (integer) by "%TRANSPOSE" varitable and prefered key type(flat or sharp) by "%KEY_TYPE" variable.
 
 <!-- fumen:start -->
-%SHOW_HEADER="NO"
 %SHOW_FOOTER="NO"
 %KEY="C"
 %TRANSPOSE="Db"
@@ -16,7 +15,6 @@ Transpose is done by either of following ways :
 <!-- fumen:end -->
 
 <!-- fumen:start -->
-%SHOW_HEADER="NO"
 %SHOW_FOOTER="NO"
 %KEY="C"
 %TRANSPOSE=1

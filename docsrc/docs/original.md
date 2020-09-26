@@ -32,7 +32,6 @@ In the default renderer :
 - Reharsal group mark with empty name is not rendered.
 
 <!-- fumen:start -->
-%SHOW_HEADER="NO"
 %SHOW_FOOTER="NO"
 
 
@@ -126,7 +125,6 @@ Bounded by measure boundary marks, various type of components can be specified.
 Chord symbol indicates the chord names.
 
 <!-- fumen:start -->
-%SHOW_HEADER="NO"
 %SHOW_FOOTER="NO"
 
 [A]
@@ -162,7 +160,6 @@ In additionion to the measure boundary mark with repeat sign, following repeat s
 | \<Fine\>      | Fine. |
 
 <!-- fumen:start -->
-%SHOW_HEADER="NO"
 %SHOW_FOOTER="NO"
 
 [A]
@@ -181,7 +178,6 @@ In additionion to the measure boundary mark with repeat sign, following repeat s
 | [1.]           | Indicates the part valid for 1st repeat. Any integer can be specifeid. Normally, used with measure boundary with repeat sign. |
 
 <!-- fumen:start -->
-%SHOW_HEADER="NO"
 %SHOW_FOOTER="NO"
 
 [A]
@@ -217,7 +213,6 @@ Transpose is done by speifying either of followings :
 - Specify base key by "%KEY" and transpose interval (integer) by "%TRANSPOSE" and prefered key type(flat or sharp) by "%KEY_TYPE".
 
 <!-- fumen:start -->
-%SHOW_HEADER="NO"
 %SHOW_FOOTER="NO"
 %KEY="C"
 %TRANSPOSE="Db"
@@ -227,7 +222,6 @@ Transpose is done by speifying either of followings :
 <!-- fumen:end -->
 
 <!-- fumen:start -->
-%SHOW_HEADER="NO"
 %SHOW_FOOTER="NO"
 %KEY="C"
 %TRANSPOSE=1

@@ -18,7 +18,6 @@ Duration indicator is colon ":" followed by numbers and optional periods indicat
 
 
 <!-- fumen:start -->
-%SHOW_HEADER="NO"
 %SHOW_FOOTER="NO"
 
 [Chords]

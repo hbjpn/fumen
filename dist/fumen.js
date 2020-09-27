@@ -13906,7 +13906,7 @@ var HitManager = /*#__PURE__*/function () {
 /*!**********************!*\
   !*** ./src/index.js ***!
   \**********************/
-/*! exports provided: Parser, DefaultRenderer, SetupHiDPICanvas, GetCharProfile, CanvasTextWithBox, CanvasText, getFontSizeFromHeight, Chord, Rest, MeasureBoundary, Time, Coda, Segno, ToCoda, DalSegno, DaCapo, Simile, Variable, RawSpaces, TemplateString */
+/*! exports provided: Parser, DefaultRenderer, SetupHiDPICanvas, GetCharProfile, CanvasTextWithBox, CanvasText, getFontSizeFromHeight, Chord, Rest, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, Time, Coda, Segno, ToCoda, DalSegno, DaCapo, Simile, Variable, RawSpaces, TemplateString */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -13936,6 +13936,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Rest", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Rest"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MeasureBoundary", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["MeasureBoundary"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MeasureBoundaryMark", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["MeasureBoundaryMark"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "LoopBeginMark", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["LoopBeginMark"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "LoopEndMark", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["LoopEndMark"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "LoopBothMark", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["LoopBothMark"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MeasureBoundaryFinMark", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["MeasureBoundaryFinMark"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MeasureBoundaryDblSimile", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["MeasureBoundaryDblSimile"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Time", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Time"]; });
 

@@ -11,7 +11,9 @@ export { CanvasText } from "./renderer/graphic";
 export { getFontSizeFromHeight } from "./renderer/graphic";
 
 // Export Component Classes
-export { Chord, Rest, 
-    MeasureBoundary, 
-    MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile,
+export {
+    ReharsalGroup, Block,
+    Chord, Rest, LongRestIndicator, Comment, Lyric,
+    MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile,
+    LoopIndicator,
     Time, Coda, Segno, ToCoda, DalSegno, DaCapo, Simile, Variable, RawSpaces, TemplateString } from "./common/common";

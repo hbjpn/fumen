@@ -1608,7 +1608,7 @@ export class DefaultRenderer extends Renderer {
                     if(draw) this.hitManager.add(paper, cr.bb.scale(draw_scale,1), e0);
 
                     if (draw && e0.exceptinal_comment !== null) {
-                        graphic.CanvasText(
+                        let r = graphic.CanvasText(
                             paper,
                             x / draw_scale,
                             yprof.mu.y + yprof.mu.height,
@@ -1616,11 +1616,12 @@ export class DefaultRenderer extends Renderer {
                             param.base_font_size / 2,
                             "lb"
                         );
+                        this.hitManager.add(paper, r.bb.scale(draw_scale,1), e0.exceptinal_comment);
                     }
                     if (draw && e0.lyric !== null) {
                         var llist = e0.lyric.lyric.split("/");
                         for (var li = 0; li < llist.length; ++li) {
-                            graphic.CanvasText(
+                            let r = graphic.CanvasText(
                                 paper,
                                 x / draw_scale,
                                 yprof.ml.y + li * param.ml_row_height,
@@ -1628,6 +1629,7 @@ export class DefaultRenderer extends Renderer {
                                 param.base_font_size / 3,
                                 "lt"
                             );
+                            this.hitManager.add(paper, r.bb.scale(draw_scale,1), e0.lyric);
                         }
                     }
 
@@ -1726,7 +1728,7 @@ export class DefaultRenderer extends Renderer {
                         );
 
                         if (draw && e.exceptinal_comment !== null) {
-                            graphic.CanvasText(
+                            let r = graphic.CanvasText(
                                 paper,
                                 x / draw_scale,
                                 yprof.mu.y + yprof.mu.height,
@@ -1734,11 +1736,12 @@ export class DefaultRenderer extends Renderer {
                                 param.base_font_size / 2,
                                 "lb"
                             );
+                            this.hitManager.add(paper, r.bb.scale(draw_scale,1), e.exceptinal_comment);
                         }
                         if (draw && e.lyric !== null) {
                             var llist = e.lyric.lyric.split("/");
                             for (var li = 0; li < llist.length; ++li) {
-                                graphic.CanvasText(
+                                let r = graphic.CanvasText(
                                     paper,
                                     x / draw_scale,
                                     yprof.ml.y + li * param.ml_row_height,
@@ -1746,6 +1749,7 @@ export class DefaultRenderer extends Renderer {
                                     param.base_font_size / 3,
                                     "lt"
                                 );
+                                this.hitManager.add(paper, r.bb.scale(draw_scale,1), e.lyric);
                             }
                         }
                        if(draw){

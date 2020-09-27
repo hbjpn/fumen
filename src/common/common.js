@@ -227,6 +227,9 @@ export class Measure extends Element{
 export class Rest extends Element{
     constructor(length_s) {
         super();
+        this.init(length_s);
+    }
+    init(length_s){
         this.length_s = length_s;
         this.note_group_list = [
             { lengthIndicator: Chord.parseLengthIndicator(length_s), note_profiles: null }

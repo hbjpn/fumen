@@ -9,8 +9,6 @@ import * as common from "../common/common";
 import * as graphic from "./graphic";
 import * as presets from "./presets";
 
-//import { getGlobalMacros, getMacros } from "../parser/parser";
-
 /**
  * @typedef RenderParam
  * @global
@@ -817,6 +815,8 @@ export class DefaultRenderer extends Renderer {
             );
 
             max_header_height = Math.max(max_header_height, this.param.y_title_offset + ri.height);
+
+            this.hitManager.add(canvas, ri.bb, track.getVariableObject("TITLE"));
         }
 
         // Sub Title
@@ -832,6 +832,8 @@ export class DefaultRenderer extends Renderer {
             );
 
             max_header_height = Math.max(max_header_height, this.param.y_subtitle_offset + ri.height);
+
+            this.hitManager.add(canvas, ri.bb, track.getVariableObject("SUB_TITLE"));
         }
 
         // Artist
@@ -847,6 +849,8 @@ export class DefaultRenderer extends Renderer {
             );
 
             max_header_height = Math.max(max_header_height, this.param.y_artist_offset + ri.height);
+
+            this.hitManager.add(canvas, ri.bb, track.getVariableObject("ARTIST"));
         }
 
         return max_header_height;
@@ -1003,7 +1007,6 @@ export class DefaultRenderer extends Renderer {
 
             // Determine params to be applied for this. 
             // As of now, 
-            //var rg_macros = getMacros(global_macros, track.reharsal_groups[i]);
             var param_for_row = common.deepcopy(this.param); 
             let param_for_row_alt = false;
             e.meas_row.forEach(m=>{
@@ -1027,7 +1030,6 @@ export class DefaultRenderer extends Renderer {
                 block_ids : e.meas_row_block_ids,
                 nm: next_measure,
                 pm: prev_measure,
-                //macros: global_macros, // TODO : Macros for each row...?
                 param: param_for_row,
             });
         });

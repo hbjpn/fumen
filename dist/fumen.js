@@ -11707,7 +11707,7 @@ module.exports = function (module) {
 /*!******************************!*\
   !*** ./src/common/common.js ***!
   \******************************/
-/*! exports provided: shallowcopy, deepcopy, myLog2, charIsIn, charStartsWithAmong, WHOLE_NOTE_LENGTH, Node, Element, Track, ReharsalGroup, Block, Measure, Rest, Simile, Chord, LoopIndicator, Space, LongRestIndicator, Time, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, DaCapo, DalSegno, Segno, Coda, ToCoda, Fine, Comment, Lyric, Title, SubTitle, Artist, Macro, RawSpaces, TemplateString, HitManager */
+/*! exports provided: shallowcopy, deepcopy, myLog2, charIsIn, charStartsWithAmong, WHOLE_NOTE_LENGTH, Node, Element, Track, ReharsalGroup, Block, Measure, Rest, Simile, Chord, LoopIndicator, Space, LongRestIndicator, Time, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, DaCapo, DalSegno, Segno, Coda, ToCoda, Fine, Comment, Lyric, Title, SubTitle, Artist, Variable, RawSpaces, TemplateString, HitManager */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11749,7 +11749,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Title", function() { return Title; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SubTitle", function() { return SubTitle; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Artist", function() { return Artist; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Macro", function() { return Macro; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Variable", function() { return Variable; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RawSpaces", function() { return RawSpaces; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TemplateString", function() { return TemplateString; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HitManager", function() { return HitManager; });
@@ -11795,7 +11795,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
  // Default values for variables
 
-var MACRO_DEFAULT = {
+var VARIABLE_DEFAULT = {
   "TITLE": null,
   "SUB_TITLE": null,
   "ARTIST": null,
@@ -11881,14 +11881,21 @@ var Node = /*#__PURE__*/function () {
   }, {
     key: "getVariable",
     value: function getVariable(key) {
-      if (key in this.variables) return this.variables[key].value;
-      if (this.parentNode) return this.parentNode.getVariable(key);
+      var variable = this.getVariableObject(key);
+      if (variable) return variable.value;
+      return null;
+    }
+  }, {
+    key: "getVariableObject",
+    value: function getVariableObject(key) {
+      if (key in this.variables) return this.variables[key];
+      if (this.parentNode) return this.parentNode.getVariableObject(key);
       return null;
     }
   }, {
     key: "setVariable",
     value: function setVariable(key, value) {
-      if (key in this.variables) this.variables[key].value = deepcopy(value);else this.variables[key] = new Macro(key, value);
+      if (key in this.variables) this.variables[key].value = deepcopy(value);else this.variables[key] = new Variable(key, value);
       return this.variables[key];
     }
   }, {
@@ -12003,8 +12010,8 @@ var Track = /*#__PURE__*/function (_Element) {
 
     _this2 = _super2.call(this);
 
-    for (var key in MACRO_DEFAULT) {
-      _this2.setVariable(key, MACRO_DEFAULT[key]);
+    for (var key in VARIABLE_DEFAULT) {
+      _this2.setVariable(key, VARIABLE_DEFAULT[key]);
     }
 
     _this2.pre_render_info = {};
@@ -13628,15 +13635,15 @@ var Artist = /*#__PURE__*/function (_Element23) {
   return Artist;
 }(Element); // Variables that is used internally. Not explicty shown in the drawing.
 
-var Macro = /*#__PURE__*/function (_Node2) {
-  _inherits(Macro, _Node2);
+var Variable = /*#__PURE__*/function (_Node2) {
+  _inherits(Variable, _Node2);
 
-  var _super31 = _createSuper(Macro);
+  var _super31 = _createSuper(Variable);
 
-  function Macro(name, value) {
+  function Variable(name, value) {
     var _this25;
 
-    _classCallCheck(this, Macro);
+    _classCallCheck(this, Variable);
 
     _this25 = _super31.call(this);
     _this25.name = name;
@@ -13644,7 +13651,7 @@ var Macro = /*#__PURE__*/function (_Node2) {
     return _this25;
   }
 
-  _createClass(Macro, [{
+  _createClass(Variable, [{
     key: "exportCode",
     value: function exportCode() {
       var vtype = _typeof(this.value);
@@ -13653,13 +13660,13 @@ var Macro = /*#__PURE__*/function (_Node2) {
       if (vtype == "string") code += "\"".concat(this.value, "\"");else if (vtype == "number") code += "".concat(this.value);else if (isObject(this.value)) {
         code += JSON.stringify(this.value);
       } else {
-        throw "Error on export code for Macro";
+        throw "Error on export code for Variable";
       }
       return code;
     }
   }]);
 
-  return Macro;
+  return Variable;
 }(Node);
 /**
  * Reperesetnts skipped contiguous spaces/tabs during parsing.
@@ -14701,18 +14708,18 @@ var Parser = /*#__PURE__*/function () {
       };
     }
   }, {
-    key: "parseMacro",
-    value: function parseMacro(s) {
+    key: "parseVariable",
+    value: function parseVariable(s) {
       // prerequisite :
       //   trig_token_obj == TOKEN_PERCENT
       var key = null;
       var value = null;
       var r = this.nextToken(s);
-      if (r.type != TOKEN_WORD) this.onParseError("ERROR_WHILE_PARSE_MACRO");
+      if (r.type != TOKEN_WORD) this.onParseError("ERROR_WHILE_PARSE_VARIABLE");
       key = r.token;
       s = r.s;
       r = this.nextToken(s);
-      if (r.type != TOKEN_EQUAL) this.onParseError("ERROR_WHILE_PARSE_MACRO");
+      if (r.type != TOKEN_EQUAL) this.onParseError("ERROR_WHILE_PARSE_VARIABLE");
       s = r.s; // Parse as JSON decodables : String, Numbers, objects, arrays.
 
       var v_s = "";
@@ -14724,7 +14731,7 @@ var Parser = /*#__PURE__*/function () {
       try {
         value = JSON.parse(v_s);
       } catch (e) {
-        this.onParseError("ERROR_WHILE_PARSE_MACRO_VALUE");
+        this.onParseError("ERROR_WHILE_PARSE_VARIABLE_VALUE");
       }
 
       s = s.substr(v_s.length);
@@ -14737,15 +14744,15 @@ var Parser = /*#__PURE__*/function () {
   }, {
     key: "glanceHeader",
     value: function glanceHeader(s) {
-      var targetMacros = ["TITLE", "ARTIST"];
+      var targetKeys = ["TITLE", "ARTIST"];
       var headers = {};
       var c = s.split("\n");
 
       for (var i = 0; i < c.length; ++i) {
         if (c[i].length > 0 && c[i][0] == "%") {
-          var r = this.parseMacro(c[i].substr(1));
-          if (targetMacros.indexOf(r.key) >= 0) headers[r.key] = r.value;
-          if (headers.length == targetMacros.length) break;
+          var r = this.parseVariable(c[i].substr(1));
+          if (targetKeys.indexOf(r.key) >= 0) headers[r.key] = r.value;
+          if (headers.length == targetKeys.length) break;
         }
       }
 
@@ -14755,7 +14762,7 @@ var Parser = /*#__PURE__*/function () {
 
   }, {
     key: "parseBlock",
-    value: function parseBlock(s, currentReharsalGroup, latest_macros) {
+    value: function parseBlock(s, currentReharsalGroup, latest_variables) {
       // parase until block boundary is found
       // block boundary = "[" or 2 successive NL or NOL
       try {
@@ -14813,11 +14820,11 @@ var Parser = /*#__PURE__*/function () {
             var is_new_line_middle_of_block = num_meas_row > 0 && this.context.contiguous_line_break == 1;
             this.context.contiguous_line_break = 0;
             r = this.parseMeasures(r, r.s); // the last NL has not been consumed.
-            // Apply par row variable
+            // Apply the variables valid at this point for each measures
 
             r.measures.forEach(function (m) {
-              m.variables = _common_common__WEBPACK_IMPORTED_MODULE_1__["shallowcopy"](latest_macros);
-            }); //r.measures[0].variables = common.shallowcopy(latest_macros);
+              m.variables = _common_common__WEBPACK_IMPORTED_MODULE_1__["shallowcopy"](latest_variables);
+            }); // For the first measure, set align and new line mark.
 
             r.measures[0].align = current_align;
             r.measures[0].raw_new_line = is_new_line_middle_of_block; // mark to the first measure
@@ -14826,12 +14833,12 @@ var Parser = /*#__PURE__*/function () {
             ++num_meas_row;
           } else if (r.type == TOKEN_PERCENT) {
             // Expression
-            r = this.parseMacro(r.s);
-            var variable = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Macro"](r.key, r.value); //block.setVariable(r.key, r.value); Do not do this as with this, only the last variable will be valid.
+            r = this.parseVariable(r.s);
+            var variable = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Variable"](r.key, r.value); //block.setVariable(r.key, r.value); Do not do this as with this, only the last variable will be valid.
 
-            latest_macros[r.key] = variable;
+            latest_variables[r.key] = variable;
             block.appendChild(variable);
-            this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this macro
+            this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this variable
           } else {
             console.log(r.token);
             this.onParseError("ERROR_WHILE_PARSE_MOST_OUTSIDER");
@@ -14864,7 +14871,7 @@ var Parser = /*#__PURE__*/function () {
       // - "<" or ">" (not consumed) (for anonymous)
       try {
         var r = null;
-        var latest_macros = {}; // Do not inherit from previous reharsal group
+        var latest_variables = {}; // Do not inherit from previous reharsal group
 
         var rgName = "";
 
@@ -14882,7 +14889,7 @@ var Parser = /*#__PURE__*/function () {
         var MAX_LOOP = 1000; // eslint-disable-next-line no-constant-condition
 
         while (true) {
-          r = this.parseBlock(s, rg, latest_macros);
+          r = this.parseBlock(s, rg, latest_variables);
           rg.appendChild(r.block);
           s = r.s;
           ++loop_cnt;
@@ -14937,7 +14944,6 @@ var Parser = /*#__PURE__*/function () {
             track.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.sss));
             track.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token)); // Does not count as line break
           } else if (r.type == TOKEN_BRACKET_LS) {
-            // Reset latest_macros                    
             var rgs = track.childElements.filter(function (e) {
               return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["ReharsalGroup"];
             });
@@ -14952,16 +14958,16 @@ var Parser = /*#__PURE__*/function () {
             // Measure appears directly withou reharsal group mark.
             // If not reharsal mark is defined and the measure is directly specified, 
             // then default anonymous reharsal mark is generated.
-            // For all the variables specified before these symbols are treated as a global macro.
+            // For all the variables specified before these symbols are treated as a global variable.
             r = this.parseReharsalGroup(code.substr(r.sss.length), "anonymous");
             track.appendChild(r.rg);
           } else if (r.type == TOKEN_PERCENT) {
             // Expression
-            r = this.parseMacro(r.s);
+            r = this.parseVariable(r.s);
             var variable = track.setVariable(r.key, r.value); // Auto generate object
 
             track.appendChild(variable);
-            this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this macro
+            this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this variable
           } else {
             console.log(r.token);
             this.onParseError("ERROR_WHILE_PARSE_MOST_OUTSIDER");
@@ -15046,7 +15052,6 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 
 
 
- //import { getGlobalMacros, getMacros } from "../parser/parser";
 
 /**
  * @typedef RenderParam
@@ -15905,6 +15910,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           "bold": true
         });
         max_header_height = Math.max(max_header_height, this.param.y_title_offset + ri.height);
+        this.hitManager.add(canvas, ri.bb, track.getVariableObject("TITLE"));
       } // Sub Title
 
 
@@ -15914,6 +15920,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         });
 
         max_header_height = Math.max(max_header_height, this.param.y_subtitle_offset + _ri.height);
+        this.hitManager.add(canvas, _ri.bb, track.getVariableObject("SUB_TITLE"));
       } // Artist
 
 
@@ -15923,6 +15930,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         });
 
         max_header_height = Math.max(max_header_height, this.param.y_artist_offset + _ri2.height);
+        this.hitManager.add(canvas, _ri2.bb, track.getVariableObject("ARTIST"));
       }
 
       return max_header_height;
@@ -16113,7 +16121,6 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                   var next_measures = i < meas_row_list.length - 1 ? meas_row_list[i + 1].meas_row : null;
                   var next_measure = next_measures ? next_measures[0] : null; // Determine params to be applied for this. 
                   // As of now, 
-                  //var rg_macros = getMacros(global_macros, track.reharsal_groups[i]);
 
                   var param_for_row = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](_this4.param);
                   var param_for_row_alt = false;
@@ -16140,7 +16147,6 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                     block_ids: e.meas_row_block_ids,
                     nm: next_measure,
                     pm: prev_measure,
-                    //macros: global_macros, // TODO : Macros for each row...?
                     param: param_for_row
                   });
                 }); // ---------------------

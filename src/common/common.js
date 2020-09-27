@@ -2,7 +2,7 @@ import "@babel/polyfill";
 
 // Default values for variables
 
-let MACRO_DEFAULT = {
+let VARIABLE_DEFAULT = {
     "TITLE" : null,
     "SUB_TITLE": null,
     "ARTIST" : null,
@@ -78,14 +78,20 @@ export class Node {
     }
 
     getVariable(key){
-        if(key in this.variables) return this.variables[key].value;
-        if(this.parentNode) return this.parentNode.getVariable(key);
+        let variable = this.getVariableObject(key);
+        if(variable) return variable.value;
+        return null;
+    }
+
+    getVariableObject(key){
+        if(key in this.variables) return this.variables[key];
+        if(this.parentNode) return this.parentNode.getVariableObject(key);
         return null;
     }
 
     setVariable(key, value){
         if(key in this.variables) this.variables[key].value = deepcopy(value);
-        else this.variables[key] = new Macro(key, value);
+        else this.variables[key] = new Variable(key, value);
 
         return this.variables[key];
     }
@@ -158,8 +164,8 @@ export class Element extends Node {
 export class Track extends Element {
     constructor() {
         super();
-        for(let key in MACRO_DEFAULT){
-            this.setVariable(key, MACRO_DEFAULT[key]);
+        for(let key in VARIABLE_DEFAULT){
+            this.setVariable(key, VARIABLE_DEFAULT[key]);
         }
         this.pre_render_info = {};
     }
@@ -1129,7 +1135,7 @@ export class Artist extends Element {
 }
 
 // Variables that is used internally. Not explicty shown in the drawing.
-export class Macro extends Node {
+export class Variable extends Node {
     constructor(name, value){
         super();
         this.name = name;
@@ -1145,7 +1151,7 @@ export class Macro extends Node {
         else if(isObject(this.value)){
             code += JSON.stringify(this.value);
         }else{
-            throw "Error on export code for Macro";
+            throw "Error on export code for Variable";
         }
         return code;
     }

@@ -644,17 +644,17 @@ export class Parser {
         return { measures: measures, s: s };
     }
 
-    parseMacro(s) {
+    parseVariable(s) {
         // prerequisite :
         //   trig_token_obj == TOKEN_PERCENT
         var key = null;
         var value = null;
         var r = this.nextToken(s);
-        if (r.type != TOKEN_WORD) this.onParseError("ERROR_WHILE_PARSE_MACRO");
+        if (r.type != TOKEN_WORD) this.onParseError("ERROR_WHILE_PARSE_VARIABLE");
         key = r.token;
         s = r.s;
         r = this.nextToken(s);
-        if (r.type != TOKEN_EQUAL) this.onParseError("ERROR_WHILE_PARSE_MACRO");
+        if (r.type != TOKEN_EQUAL) this.onParseError("ERROR_WHILE_PARSE_VARIABLE");
         s = r.s;
         // Parse as JSON decodables : String, Numbers, objects, arrays.
         var v_s = "";
@@ -662,21 +662,21 @@ export class Parser {
         try{
             value = JSON.parse(v_s);
         }catch(e){
-            this.onParseError("ERROR_WHILE_PARSE_MACRO_VALUE");
+            this.onParseError("ERROR_WHILE_PARSE_VARIABLE_VALUE");
         }
         s = s.substr(v_s.length);
         return { key: key, value: value, s: s };
     }
 
     glanceHeader(s) {
-        var targetMacros = ["TITLE", "ARTIST"];
+        var targetKeys = ["TITLE", "ARTIST"];
         var headers = {};
         var c = s.split("\n");
         for (var i = 0; i < c.length; ++i) {
             if (c[i].length > 0 && c[i][0] == "%") {
-                var r = this.parseMacro(c[i].substr(1));
-                if (targetMacros.indexOf(r.key) >= 0) headers[r.key] = r.value;
-                if (headers.length == targetMacros.length) break;
+                var r = this.parseVariable(c[i].substr(1));
+                if (targetKeys.indexOf(r.key) >= 0) headers[r.key] = r.value;
+                if (headers.length == targetKeys.length) break;
             }
         }
         return headers;
@@ -684,7 +684,7 @@ export class Parser {
 
     // This function can be called with screening purpose then 
     // do not change the status unless really the string is consumed.
-    parseBlock(s, currentReharsalGroup, latest_macros){
+    parseBlock(s, currentReharsalGroup, latest_variables){
         // parase until block boundary is found
         // block boundary = "[" or 2 successive NL or NOL
         try{
@@ -758,9 +758,10 @@ export class Parser {
                     this.context.contiguous_line_break = 0;
                     
                     r = this.parseMeasures(r, r.s); // the last NL has not been consumed.
-                    // Apply par row variable
-                    r.measures.forEach(m=>{ m.variables = common.shallowcopy(latest_macros);});
-                    //r.measures[0].variables = common.shallowcopy(latest_macros);
+                    // Apply the variables valid at this point for each measures
+                    r.measures.forEach(m=>{ m.variables = common.shallowcopy(latest_variables);});
+
+                    // For the first measure, set align and new line mark.
                     r.measures[0].align = current_align;
                     r.measures[0].raw_new_line = is_new_line_middle_of_block; // mark to the first measure
                     block.concat(r.measures);
@@ -769,12 +770,12 @@ export class Parser {
 
                 } else if (r.type == TOKEN_PERCENT) {
                     // Expression
-                    r = this.parseMacro(r.s);
-                    let variable = new common.Macro(r.key, r.value);
+                    r = this.parseVariable(r.s);
+                    let variable = new common.Variable(r.key, r.value);
                     //block.setVariable(r.key, r.value); Do not do this as with this, only the last variable will be valid.
-                    latest_macros[r.key] = variable;
+                    latest_variables[r.key] = variable;
                     block.appendChild(variable);
-                    this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this macro
+                    this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this variable
                 } else {
                     console.log(r.token);
                     this.onParseError("ERROR_WHILE_PARSE_MOST_OUTSIDER");
@@ -801,7 +802,7 @@ export class Parser {
 
         try{
             var r = null;
-            var latest_macros = {}; // Do not inherit from previous reharsal group
+            var latest_variables = {}; // Do not inherit from previous reharsal group
         
             let rgName = "";
             if(rgtype != "anonymous"){
@@ -822,7 +823,7 @@ export class Parser {
 
             // eslint-disable-next-line no-constant-condition
             while(true){
-                r = this.parseBlock(s, rg, latest_macros);
+                r = this.parseBlock(s, rg, latest_variables);
                 rg.appendChild(r.block);
                 s = r.s;
                 ++loop_cnt;
@@ -874,7 +875,6 @@ export class Parser {
                     track.appendChild(new common.RawSpaces(r.token)); 
                     // Does not count as line break
                 } else if (r.type == TOKEN_BRACKET_LS) {
-                    // Reset latest_macros                    
                     let rgs = track.childElements.filter(e => e instanceof common.ReharsalGroup);
                     let inline = 
                         this.context.contiguous_line_break<=1 &&
@@ -899,17 +899,17 @@ export class Parser {
                     // Measure appears directly withou reharsal group mark.
                     // If not reharsal mark is defined and the measure is directly specified, 
                     // then default anonymous reharsal mark is generated.
-                    // For all the variables specified before these symbols are treated as a global macro.
+                    // For all the variables specified before these symbols are treated as a global variable.
                     r = this.parseReharsalGroup(code.substr(r.sss.length), "anonymous");
                     track.appendChild(r.rg);
                     
 
                 } else if (r.type == TOKEN_PERCENT) {
                     // Expression
-                    r = this.parseMacro(r.s);
+                    r = this.parseVariable(r.s);
                     let variable = track.setVariable(r.key, r.value); // Auto generate object
                     track.appendChild(variable);
-                    this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this macro
+                    this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this variable
                 } else {
                     console.log(r.token);
                     this.onParseError("ERROR_WHILE_PARSE_MOST_OUTSIDER");

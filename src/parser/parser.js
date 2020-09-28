@@ -40,6 +40,7 @@ var TOKEN_PERIOD = 42; // .
 
 var WORD_DEFINIITON_GENERAL = /^(\w[\w¥.,\-+#:]*)/;
 var WORD_DEFINITION_IN_REHARSAL_MARK = /^[^[\]]*/;
+var WORD_DEFINITION_IN_LOOP_IND_GENERIC = /^[^[\]]*/;
 var WORD_DEFINITION_CHORD_SYMBOL = /^[\w.,\-+#/():~]*/;
 
 export class Parser {
@@ -257,6 +258,7 @@ export class Parser {
     parseLoopIndicator(trig_token_type, s) {
         // prerequisite
         //   trig_token_type = TOKEN_BRACKET_LS
+        /*
         var loop_flg = true;
         var indicators = new Array();
         while (loop_flg) {
@@ -270,9 +272,15 @@ export class Parser {
             if (r.type == TOKEN_BRACKET_RS) break;
             else if (r.type != TOKEN_COMMA)
                 this.onParseError("ERROR_WHILE_PARSE_LOOP_INDICATOR");
+        }*/
+        let m = s.match(WORD_DEFINITION_IN_LOOP_IND_GENERIC);
+        if (m != null) {
+            let loopIndStr = m[0];
+            var r = this.nextToken(s.substr(m[0].length));
+            if (r.type == TOKEN_BRACKET_RS)
+                return { loopIndicator: new common.LoopIndicator(loopIndStr), s: r.s };
         }
-
-        return { loopIndicator: new common.LoopIndicator(indicators), s: s };
+        this.onParseError("Invalid loop indicator");
     }
 
     parseTime(trig_token_type, s) {

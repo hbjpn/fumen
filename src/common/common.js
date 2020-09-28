@@ -907,21 +907,26 @@ export class Chord extends Element {
 }
 
 export class LoopIndicator extends Element {
-    constructor(indicators) {
+    constructor(loopIndStr) {
         super();
+        this.init(loopIndStr);
+    }
+
+    init(loopIndStr){
         // Note : Content of indicators are not always integers.
         // intindicators is storage for integer indicators analyzed from indicators.
-        this.indicators = indicators;
+        this.indstr = loopIndStr;
         this.intindicators = [];
         var intrg = new RegExp(/(\d+)/);
-        for (var i = 0; i < this.indicators.length; ++i) {
-            let m = this.indicators[i].match(intrg);
+        let indicators = this.indstr.split(",");
+        for (var i = 0; i < indicators.length; ++i) {
+            let m = indicators[i].match(intrg);
             if (m) {
                 this.intindicators.push(parseInt(m[0]));
             }
         }
     }
-    exportCode(){ return `[${this.indicators}]`; }
+    exportCode(){ return `[${this.indstr}]`; }
 }
 
 export class Space extends Element{

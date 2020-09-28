@@ -13076,33 +13076,40 @@ var LoopIndicator = /*#__PURE__*/function (_Element8) {
 
   var _super9 = _createSuper(LoopIndicator);
 
-  function LoopIndicator(indicators) {
+  function LoopIndicator(loopIndStr) {
     var _this8;
 
     _classCallCheck(this, LoopIndicator);
 
-    _this8 = _super9.call(this); // Note : Content of indicators are not always integers.
-    // intindicators is storage for integer indicators analyzed from indicators.
+    _this8 = _super9.call(this);
 
-    _this8.indicators = indicators;
-    _this8.intindicators = [];
-    var intrg = new RegExp(/(\d+)/);
-
-    for (var i = 0; i < _this8.indicators.length; ++i) {
-      var m = _this8.indicators[i].match(intrg);
-
-      if (m) {
-        _this8.intindicators.push(parseInt(m[0]));
-      }
-    }
+    _this8.init(loopIndStr);
 
     return _this8;
   }
 
   _createClass(LoopIndicator, [{
+    key: "init",
+    value: function init(loopIndStr) {
+      // Note : Content of indicators are not always integers.
+      // intindicators is storage for integer indicators analyzed from indicators.
+      this.indstr = loopIndStr;
+      this.intindicators = [];
+      var intrg = new RegExp(/(\d+)/);
+      var indicators = this.indstr.split(",");
+
+      for (var i = 0; i < indicators.length; ++i) {
+        var m = indicators[i].match(intrg);
+
+        if (m) {
+          this.intindicators.push(parseInt(m[0]));
+        }
+      }
+    }
+  }, {
     key: "exportCode",
     value: function exportCode() {
-      return "[".concat(this.indicators, "]");
+      return "[".concat(this.indstr, "]");
     }
   }]);
 
@@ -14086,6 +14093,7 @@ var TOKEN_PERIOD = 42; // .
 
 var WORD_DEFINIITON_GENERAL = /^(\w[\w¥.,\-+#:]*)/;
 var WORD_DEFINITION_IN_REHARSAL_MARK = /^[^[\]]*/;
+var WORD_DEFINITION_IN_LOOP_IND_GENERIC = /^[^[\]]*/;
 var WORD_DEFINITION_CHORD_SYMBOL = /^[\w.,\-+#/():~]*/;
 var Parser = /*#__PURE__*/function () {
   /**
@@ -14321,23 +14329,34 @@ var Parser = /*#__PURE__*/function () {
     value: function parseLoopIndicator(trig_token_type, s) {
       // prerequisite
       //   trig_token_type = TOKEN_BRACKET_LS
+
+      /*
       var loop_flg = true;
       var indicators = new Array();
-
       while (loop_flg) {
-        var r = this.nextToken(s);
-        if (r.type != TOKEN_WORD) this.onParseError("ERROR_WHILE_PARSE_LOOP_INDICATOR");
-        indicators.push(r.token);
-        s = r.s;
-        r = this.nextToken(s);
-        s = r.s;
-        if (r.type == TOKEN_BRACKET_RS) break;else if (r.type != TOKEN_COMMA) this.onParseError("ERROR_WHILE_PARSE_LOOP_INDICATOR");
+          var r = this.nextToken(s);
+          if (r.type != TOKEN_WORD)
+              this.onParseError("ERROR_WHILE_PARSE_LOOP_INDICATOR");
+          indicators.push(r.token);
+          s = r.s;
+          r = this.nextToken(s);
+          s = r.s;
+          if (r.type == TOKEN_BRACKET_RS) break;
+          else if (r.type != TOKEN_COMMA)
+              this.onParseError("ERROR_WHILE_PARSE_LOOP_INDICATOR");
+      }*/
+      var m = s.match(WORD_DEFINITION_IN_LOOP_IND_GENERIC);
+
+      if (m != null) {
+        var loopIndStr = m[0];
+        var r = this.nextToken(s.substr(m[0].length));
+        if (r.type == TOKEN_BRACKET_RS) return {
+          loopIndicator: new _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopIndicator"](loopIndStr),
+          s: r.s
+        };
       }
 
-      return {
-        loopIndicator: new _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopIndicator"](indicators),
-        s: s
-      };
+      this.onParseError("Invalid loop indicator");
     }
   }, {
     key: "parseTime",
@@ -17212,7 +17231,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             fx = meas_start_x + (meas_end_x - meas_start_x) * 0.7;
             _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, sx, ly, sx, ly + oy);
             _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, sx, ly, fx, ly);
-            s = _e3.indicators.join(",");
+            s = _e3.indstr;
 
             var _r14 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, sx + 2, ly + oy / 2, s, param.base_font_size / 3, "lm");
 

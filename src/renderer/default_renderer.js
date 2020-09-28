@@ -2217,7 +2217,7 @@ export class DefaultRenderer extends Renderer {
                     var fx = meas_start_x + (meas_end_x - meas_start_x) * 0.7;
                     graphic.CanvasLine(paper, sx, ly, sx, ly + oy);
                     graphic.CanvasLine(paper, sx, ly, fx, ly);
-                    var s = e.indicators.join(",");
+                    var s = e.indstr;
                     let r = graphic.CanvasText(
                         paper,
                         sx + 2,

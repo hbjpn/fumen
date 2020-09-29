@@ -938,7 +938,7 @@ export class Space extends Element{
     exportCode(){ return ",".repeat(this.length); }
 }
 
-export class LongRestIndicator extends Element {
+export class LongRest extends Element {
     constructor(longrestlen) {
         super();
         this.longrestlen = longrestlen;
@@ -1036,6 +1036,10 @@ export class DaCapo extends Element {
 export class DalSegno extends Element {
     constructor(number, al) {
         super();
+        this.init(number, al);
+    }
+
+    init(number, al){
         this.number = number;
         this.al = al; // Either Coda/Fine
     }
@@ -1241,6 +1245,7 @@ export class HitManager
         if(paper.fumen_canvas_id === undefined){
             paper.fumen_canvas_id = this._uuid();
         }
+        if(bb.width() <= 4) bb = bb.clone().expand(2,2,0,0);
 
         if(! (paper.fumen_canvas_id in this.papers)){
             this.papers[paper.fumen_canvas_id] = {

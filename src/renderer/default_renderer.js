@@ -2066,8 +2066,8 @@ export class DefaultRenderer extends Renderer {
                     m.renderprop.paper = paper;
                     x += e.renderprop.w;
                     meas_start_x_actual_boundary = r.actual_boundary;
-                    if(r.bb.width()>0) this.hitManager.add(paper, r.bb, e);
-                    if(r.bb2.width()>0) this.hitManager.add(paper, r.bb2, e);
+                    if(r.bb) this.hitManager.add(paper, r.bb, e);
+                    if(r.bb2) this.hitManager.add(paper, r.bb2, e);
                 } else if (e instanceof common.Time) {
                     let chord_str_height = graphic.GetCharProfile(
                         param.base_font_size, null, false, paper.ratio, paper.zoom).height;
@@ -2148,8 +2148,8 @@ export class DefaultRenderer extends Renderer {
 
                     m.renderprop.ex = x;
                     x += e.renderprop.w;
-                    if(r.bb.width()>0) this.hitManager.add(paper, r.bb, e);
-                    if(r.bb2.width()>0) this.hitManager.add(paper, r.bb2, e);
+                    if(r.bb) this.hitManager.add(paper, r.bb, e);
+                    if(r.bb2) this.hitManager.add(paper, r.bb2, e);
                 } else if (e instanceof common.DaCapo) {
                     let r = graphic.CanvasText(
                         paper,
@@ -2227,7 +2227,7 @@ export class DefaultRenderer extends Renderer {
                         "lm"
                     );
                     if(draw) this.hitManager.add(paper, r.bb, e);
-                } else if (e instanceof common.LongRestIndicator) {
+                } else if (e instanceof common.LongRest) {
                     let height = yprof.rs.detected ? param.rs_area_height : param.row_height;
                     let sx =
                         meas_start_x +
@@ -3124,7 +3124,7 @@ export class DefaultRenderer extends Renderer {
 
         if (side == "end" && !is_row_edge) {
             // If this is not the last measure in this line, then does not draw the boundary. Draw in the "begin" side of next measure.
-            return { drawn:false, width: 0, actual_boundary : 0, bb:bb, bb2:bb2 };
+            return { drawn:false, width: 0, actual_boundary : 0, bb:null, bb2:null };
         }
 
         if (is_row_edge === null || is_row_edge == false) {
@@ -3376,7 +3376,7 @@ export class DefaultRenderer extends Renderer {
             default:
                 throw "Internal error";
         }
-        return { drawn: true, width: w, actual_boundary: actual_boundary, bb:bb, bb2:bb2 };
+        return { drawn: true, width: w, actual_boundary: actual_boundary, bb:bb, bb2:bb2.width()>0?bb2:null };
     }
 
 

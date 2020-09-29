@@ -11707,7 +11707,7 @@ module.exports = function (module) {
 /*!******************************!*\
   !*** ./src/common/common.js ***!
   \******************************/
-/*! exports provided: shallowcopy, deepcopy, myLog2, charIsIn, charStartsWithAmong, WHOLE_NOTE_LENGTH, Node, Element, Track, ReharsalGroup, Block, Measure, Rest, Simile, Chord, LoopIndicator, Space, LongRestIndicator, Time, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, DaCapo, DalSegno, Segno, Coda, ToCoda, Fine, Comment, Lyric, Title, SubTitle, Artist, Variable, RawSpaces, TemplateString, HitManager */
+/*! exports provided: shallowcopy, deepcopy, myLog2, charIsIn, charStartsWithAmong, WHOLE_NOTE_LENGTH, Node, Element, Track, ReharsalGroup, Block, Measure, Rest, Simile, Chord, LoopIndicator, Space, LongRest, Time, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, DaCapo, DalSegno, Segno, Coda, ToCoda, Fine, Comment, Lyric, Title, SubTitle, Artist, Variable, RawSpaces, TemplateString, HitManager */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11729,7 +11729,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Chord", function() { return Chord; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LoopIndicator", function() { return LoopIndicator; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Space", function() { return Space; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LongRestIndicator", function() { return LongRestIndicator; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LongRest", function() { return LongRest; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Time", function() { return Time; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MeasureBoundary", function() { return MeasureBoundary; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MeasureBoundaryMark", function() { return MeasureBoundaryMark; });
@@ -13142,29 +13142,29 @@ var Space = /*#__PURE__*/function (_Element9) {
 
   return Space;
 }(Element);
-var LongRestIndicator = /*#__PURE__*/function (_Element10) {
-  _inherits(LongRestIndicator, _Element10);
+var LongRest = /*#__PURE__*/function (_Element10) {
+  _inherits(LongRest, _Element10);
 
-  var _super11 = _createSuper(LongRestIndicator);
+  var _super11 = _createSuper(LongRest);
 
-  function LongRestIndicator(longrestlen) {
+  function LongRest(longrestlen) {
     var _this10;
 
-    _classCallCheck(this, LongRestIndicator);
+    _classCallCheck(this, LongRest);
 
     _this10 = _super11.call(this);
     _this10.longrestlen = longrestlen;
     return _this10;
   }
 
-  _createClass(LongRestIndicator, [{
+  _createClass(LongRest, [{
     key: "exportCode",
     value: function exportCode() {
       return "-".concat(this.longrestlen, "-");
     }
   }]);
 
-  return LongRestIndicator;
+  return LongRest;
 }(Element);
 var Time = /*#__PURE__*/function (_Element11) {
   _inherits(Time, _Element11);
@@ -13393,13 +13393,19 @@ var DalSegno = /*#__PURE__*/function (_Element14) {
     _classCallCheck(this, DalSegno);
 
     _this16 = _super21.call(this);
-    _this16.number = number;
-    _this16.al = al; // Either Coda/Fine
+
+    _this16.init(number, al);
 
     return _this16;
   }
 
   _createClass(DalSegno, [{
+    key: "init",
+    value: function init(number, al) {
+      this.number = number;
+      this.al = al; // Either Coda/Fine
+    }
+  }, {
     key: "toString",
     value: function toString() {
       var dss = "D.S." + (this.number === null ? "" : this.number);
@@ -13802,6 +13808,8 @@ var HitManager = /*#__PURE__*/function () {
         paper.fumen_canvas_id = this._uuid();
       }
 
+      if (bb.width() <= 4) bb = bb.clone().expand(2, 2, 0, 0);
+
       if (!(paper.fumen_canvas_id in this.papers)) {
         this.papers[paper.fumen_canvas_id] = {
           paper: paper,
@@ -13920,7 +13928,7 @@ var HitManager = /*#__PURE__*/function () {
 /*!**********************!*\
   !*** ./src/index.js ***!
   \**********************/
-/*! exports provided: Parser, DefaultRenderer, SetupHiDPICanvas, GetCharProfile, CanvasTextWithBox, CanvasText, getFontSizeFromHeight, ReharsalGroup, Block, Chord, Rest, LongRestIndicator, Comment, Lyric, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, LoopIndicator, Time, Coda, Segno, ToCoda, DalSegno, DaCapo, Simile, Variable, RawSpaces, TemplateString */
+/*! exports provided: Parser, DefaultRenderer, SetupHiDPICanvas, GetCharProfile, CanvasTextWithBox, CanvasText, getFontSizeFromHeight, ReharsalGroup, Block, Chord, Rest, LongRest, Comment, Lyric, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, LoopIndicator, Time, Coda, Segno, ToCoda, DalSegno, DaCapo, Fine, Simile, Variable, RawSpaces, TemplateString */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -13953,7 +13961,7 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Rest", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Rest"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "LongRestIndicator", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["LongRestIndicator"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "LongRest", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["LongRest"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Comment", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Comment"]; });
 
@@ -13986,6 +13994,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DalSegno", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["DalSegno"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DaCapo", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["DaCapo"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Fine", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Fine"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Simile", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Simile"]; });
 
@@ -14567,7 +14577,7 @@ var Parser = /*#__PURE__*/function () {
               this.onParseError("ERROR_WHILE_PARSE_LONG_REST");
             }
 
-            measure.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["LongRestIndicator"](parseInt(r.token)));
+            measure.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["LongRest"](parseInt(r.token)));
             s = r.s;
             break;
 
@@ -17154,8 +17164,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             m.renderprop.paper = paper;
             x += e.renderprop.w;
             meas_start_x_actual_boundary = _r8.actual_boundary;
-            if (_r8.bb.width() > 0) _this7.hitManager.add(paper, _r8.bb, e);
-            if (_r8.bb2.width() > 0) _this7.hitManager.add(paper, _r8.bb2, e);
+            if (_r8.bb) _this7.hitManager.add(paper, _r8.bb, e);
+            if (_r8.bb2) _this7.hitManager.add(paper, _r8.bb2, e);
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Time"]) {
             var chord_str_height = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](param.base_font_size, null, false, paper.ratio, paper.zoom).height;
             var row_height = yprof.rs.detected ? param.rs_area_height : param.row_height;
@@ -17193,8 +17203,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
             m.renderprop.ex = x;
             x += _e2.renderprop.w;
-            if (_r9.bb.width() > 0) _this7.hitManager.add(paper, _r9.bb, _e2);
-            if (_r9.bb2.width() > 0) _this7.hitManager.add(paper, _r9.bb2, _e2);
+            if (_r9.bb) _this7.hitManager.add(paper, _r9.bb, _e2);
+            if (_r9.bb2) _this7.hitManager.add(paper, _r9.bb2, _e2);
           } else if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DaCapo"]) {
             var _r10 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, repeat_mark_y_base, _e2.toString(), param.base_font_size / 2, "rb");
 
@@ -17236,7 +17246,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             var _r14 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, sx + 2, ly + oy / 2, s, param.base_font_size / 3, "lm");
 
             if (draw) _this7.hitManager.add(paper, _r14.bb, _e3);
-          } else if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["LongRestIndicator"]) {
+          } else if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["LongRest"]) {
             var height = yprof.rs.detected ? param.rs_area_height : param.row_height;
 
             var _sx = meas_start_x + header_width; // header_width does not include header_body_margin
@@ -17865,8 +17875,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           drawn: false,
           width: 0,
           actual_boundary: 0,
-          bb: bb,
-          bb2: bb2
+          bb: null,
+          bb2: null
         };
       }
 
@@ -18032,7 +18042,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         width: w,
         actual_boundary: actual_boundary,
         bb: bb,
-        bb2: bb2
+        bb2: bb2.width() > 0 ? bb2 : null
       };
     }
   }]);
@@ -19421,7 +19431,7 @@ var Renderer = /*#__PURE__*/function () {
             body_elements.push(e);
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopIndicator"]) {
             measure_wide_elements.push(e);
-          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["LongRestIndicator"]) {
+          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["LongRest"]) {
             measure_wide_elements.push(e);
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Simile"]) {
             // Simile is body elements when at least one another body element(including another simile) exsits, otherwise measure wide elements.

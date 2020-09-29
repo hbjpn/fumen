@@ -121,7 +121,7 @@ export class Renderer {
                     body_elements.push(e);
                 } else if (e instanceof common.LoopIndicator) {
                     measure_wide_elements.push(e);
-                } else if (e instanceof common.LongRestIndicator) {
+                } else if (e instanceof common.LongRest) {
                     measure_wide_elements.push(e);
                 } else if (e instanceof common.Simile) {
                     // Simile is body elements when at least one another body element(including another simile) exsits, otherwise measure wide elements.

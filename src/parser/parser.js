@@ -492,7 +492,7 @@ export class Parser {
                     if(!m){
                         this.onParseError("ERROR_WHILE_PARSE_LONG_REST");
                     }
-                    measure.appendChild(new common.LongRestIndicator(parseInt(r.token)));
+                    measure.appendChild(new common.LongRest(parseInt(r.token)));
                     s = r.s;
                     break;
                 case TOKEN_ATMARK:

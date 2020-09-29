@@ -120,7 +120,7 @@ function Sequencer(track, cb_play, cb_stop, param) {
         var longrest = null;
         for (var ei = 0; ei < elems.measure_wide.length; ++ei) {
             var e = elems.measure_wide[ei];
-            if (e instanceof LongRestIndicator) {
+            if (e instanceof LongRest) {
                 longrest = parseInt(e.longrestlen);
             }
         }

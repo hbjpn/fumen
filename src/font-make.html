@@ -48,11 +48,15 @@ function createSvgFile(charsvg, bbox, addXmlHeader=true, id=null)
     return svgFileCont;
 }
 
-function downloadAsSvg(svgdataurl)
+function downloadAsSvg(charsvg, fn)
 {
+    let bbox = getBBox(charsvg);
+    let svgCont = createSvgFile(charsvg, bbox, true, null);
+    let svgDataUrl = svgdataurl(svgCont);
+
     const a = document.createElement('a');
-    a.href = svgdataurl;
-    a.download = 'gen.svg';
+    a.href = svgDataUrl;
+    a.download = fn+".svg";
     a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
@@ -128,6 +132,9 @@ function addCanvas(charsvg,glyphname,fontFamily)
         ratio = Math.min(ratio, baseSize/img.height);
         // As the viewbox is already setup in svg file itself, start position can be (0,0)
         ctx.drawImage(img, 0, 0, bbox.width, bbox.height, 0, 0,ratio*img.width,ratio*img.height);
+        canvas.addEventListener("click", function(){
+            downloadAsSvg(charsvg, glyphname);
+        });
     });
 }
 

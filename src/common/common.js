@@ -101,7 +101,7 @@ export class Node {
         if(node){
             let i = this.childNodes.indexOf(node);
             this.childNodes.splice(i, 0, newNode);
-            if(i>1){ // not first
+            if(i>=1){ // not first
                 this.childNodes[i-1].nextSiblingNode = newNode;
                 newNode.previousSiblingNode = this.childNodes[i-1];
             }

@@ -64,9 +64,9 @@ var SR_RENDER_PARAM = {
     // Font configs. Please refer to CSS font configs for the meaning of each variable. http://www.htmq.com/style/font.shtml .
     // Font size config is done separately above. Gives as array with priority order.  
     repeat_mark_font: [{
-        //"font-family": "'Times New Roman'", // make sure to include quation for font name.
+        "font-family": "'Times New Roman'", // make sure to include quation for font name.
         //"font-style": "italic",
-        //"font-weight": "bold"
+        "font-weight": "bold"
     }],
     title_font: [{
         "font-weight": "bold"
@@ -2290,7 +2290,8 @@ export class DefaultRenderer extends Renderer {
                             param.base_font_size / 2,
                             "ct",
                             undefined,
-                            !draw
+                            !draw,
+                            {font:param.repeat_mark_font}
                         );
                         bb.add_BB(r.bb);
 
@@ -3314,10 +3315,10 @@ export class DefaultRenderer extends Renderer {
                         let r = graphic.CanvasText(
                             canvas,
                             x + 8,
-                            y_body_base + row_height,
+                            y_body_base + row_height + param.xtimes_mark_y_margin,
                             "(" + stimes + " times)",
                             param.base_font_size / 2,
-                            "rt"
+                            "rt", null, null, {font:param.repeat_mark_font}
                         );
                         bb2.add_BB(r.bb);
                     }

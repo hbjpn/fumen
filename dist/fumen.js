@@ -1,6 +1,6 @@
 
 /*!
-fumen v2.0.0Beta
+fumen v1.2.0
 
 The MIT License (MIT)
 
@@ -15208,9 +15208,11 @@ var SR_RENDER_PARAM = {
   // Chord symbol font size
   // Font configs. Please refer to CSS font configs for the meaning of each variable. http://www.htmq.com/style/font.shtml .
   // Font size config is done separately above. Gives as array with priority order.  
-  repeat_mark_font: [{//"font-family": "'Times New Roman'", // make sure to include quation for font name.
+  repeat_mark_font: [{
+    "font-family": "'Times New Roman'",
+    // make sure to include quation for font name.
     //"font-style": "italic",
-    //"font-weight": "bold"
+    "font-weight": "bold"
   }],
   title_font: [{
     "font-weight": "bold"
@@ -17315,7 +17317,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 width: "1"
               });
               bb.add_BB(_r15.bb);
-              _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, (_sx + _fx) / 2, y_body_or_rs_base, _e3.longrestlen, param.base_font_size / 2, "ct", undefined, !draw);
+              _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, (_sx + _fx) / 2, y_body_or_rs_base, _e3.longrestlen, param.base_font_size / 2, "ct", undefined, !draw, {
+                font: param.repeat_mark_font
+              });
               bb.add_BB(_r15.bb);
 
               _this7.hitManager.add(paper, bb, _e3);
@@ -18035,7 +18039,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             var _stimes = e0.ntimes == true ? "X" : "" + e0.times;
 
             if (draw) {
-              var _r50 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + 8, y_body_base + row_height, "(" + _stimes + " times)", param.base_font_size / 2, "rt");
+              var _r50 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + 8, y_body_base + row_height + param.xtimes_mark_y_margin, "(" + _stimes + " times)", param.base_font_size / 2, "rt", null, null, {
+                font: param.repeat_mark_font
+              });
 
               bb2.add_BB(_r50.bb);
             }

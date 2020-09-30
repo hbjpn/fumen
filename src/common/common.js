@@ -1022,15 +1022,24 @@ export class MeasureBoundaryDblSimile  extends MeasureBoundary {
 }
 
 // Signs
+
 export class DaCapo extends Element {
-    constructor() {
+    constructor(al) {
         super();
+        this.init(al);
+    }
+
+    init(al){
+        this.al = al; // Either Coda/Fine
     }
 
     toString() {
-        return "D.C.";
+        var dss = "D.C.";
+        var als = this.al === null ? "" : " al " + this.al.toString();
+        return dss + als;
     }
-    exportCode(){ return this.toString(); }
+    exportCode(){ return "<"+this.toString()+">"; }
+
 }
 
 export class DalSegno extends Element {

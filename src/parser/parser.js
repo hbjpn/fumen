@@ -331,7 +331,19 @@ export class Parser {
         if (r.token == "Fine") {
             sign = new common.Fine();
         } else if (r.token == "D.C.") {
-            sign = new common.DaCapo();
+            let al = null;
+            r = this.nextToken(r.s, WORD_DEFINIITON_GENERAL);
+            if (r.type != TOKEN_END) {
+                if (r.type != TOKEN_WORD) throw "Invalid token after D.C.(1)";
+                if (r.token != "al") throw "Invalid token after D.C.(2)";
+                r = this.nextToken(r.s, WORD_DEFINIITON_GENERAL);
+                if (r.type != TOKEN_WORD) throw "Invalid token after al";
+                if (r.token == "Fine") al = new common.Fine();
+                else if ((m = r.token.match(regCoda)) !== null)
+                    al = new common.Coda(m[1] === undefined ? null : m[1]);
+                else throw "Invalid token after al(2)";
+            }
+            sign = new common.DaCapo(al);
         } else if ((m = r.token.match(regCoda)) !== null) {
             sign = new common.Coda(m[1] === undefined ? null : m[1]);
         } else if ((m = r.token.match(regSegno)) !== null) {

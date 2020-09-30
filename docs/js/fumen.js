@@ -1,6 +1,6 @@
 
 /*!
-fumen v2.0.0Beta
+fumen v1.2.0
 
 The MIT License (MIT)
 
@@ -11707,7 +11707,7 @@ module.exports = function (module) {
 /*!******************************!*\
   !*** ./src/common/common.js ***!
   \******************************/
-/*! exports provided: shallowcopy, deepcopy, myLog2, charIsIn, charStartsWithAmong, WHOLE_NOTE_LENGTH, Node, Element, Track, ReharsalGroup, Block, Measure, Rest, Simile, Chord, LoopIndicator, Space, LongRestIndicator, Time, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, DaCapo, DalSegno, Segno, Coda, ToCoda, Fine, Comment, Lyric, Title, SubTitle, Artist, Macro, RawSpaces, TemplateString, HitManager */
+/*! exports provided: shallowcopy, deepcopy, myLog2, charIsIn, charStartsWithAmong, WHOLE_NOTE_LENGTH, Node, Element, Track, ReharsalGroup, Block, Measure, Rest, Simile, Chord, LoopIndicator, Space, LongRest, Time, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, DaCapo, DalSegno, Segno, Coda, ToCoda, Fine, Comment, Lyric, Title, SubTitle, Artist, Variable, RawSpaces, TemplateString, HitManager */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11729,7 +11729,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Chord", function() { return Chord; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LoopIndicator", function() { return LoopIndicator; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Space", function() { return Space; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LongRestIndicator", function() { return LongRestIndicator; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LongRest", function() { return LongRest; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Time", function() { return Time; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MeasureBoundary", function() { return MeasureBoundary; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MeasureBoundaryMark", function() { return MeasureBoundaryMark; });
@@ -11749,7 +11749,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Title", function() { return Title; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SubTitle", function() { return SubTitle; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Artist", function() { return Artist; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Macro", function() { return Macro; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Variable", function() { return Variable; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RawSpaces", function() { return RawSpaces; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TemplateString", function() { return TemplateString; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HitManager", function() { return HitManager; });
@@ -11795,7 +11795,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
  // Default values for variables
 
-var MACRO_DEFAULT = {
+var VARIABLE_DEFAULT = {
   "TITLE": null,
   "SUB_TITLE": null,
   "ARTIST": null,
@@ -11881,14 +11881,21 @@ var Node = /*#__PURE__*/function () {
   }, {
     key: "getVariable",
     value: function getVariable(key) {
-      if (key in this.variables) return this.variables[key].value;
-      if (this.parentNode) return this.parentNode.getVariable(key);
+      var variable = this.getVariableObject(key);
+      if (variable) return variable.value;
+      return null;
+    }
+  }, {
+    key: "getVariableObject",
+    value: function getVariableObject(key) {
+      if (key in this.variables) return this.variables[key];
+      if (this.parentNode) return this.parentNode.getVariableObject(key);
       return null;
     }
   }, {
     key: "setVariable",
     value: function setVariable(key, value) {
-      if (key in this.variables) this.variables[key].value = deepcopy(value);else this.variables[key] = new Macro(key, value);
+      if (key in this.variables) this.variables[key].value = deepcopy(value);else this.variables[key] = new Variable(key, value);
       return this.variables[key];
     }
   }, {
@@ -11900,7 +11907,7 @@ var Node = /*#__PURE__*/function () {
         var i = this.childNodes.indexOf(node);
         this.childNodes.splice(i, 0, newNode);
 
-        if (i > 1) {
+        if (i >= 1) {
           // not first
           this.childNodes[i - 1].nextSiblingNode = newNode;
           newNode.previousSiblingNode = this.childNodes[i - 1];
@@ -12003,8 +12010,8 @@ var Track = /*#__PURE__*/function (_Element) {
 
     _this2 = _super2.call(this);
 
-    for (var key in MACRO_DEFAULT) {
-      _this2.setVariable(key, MACRO_DEFAULT[key]);
+    for (var key in VARIABLE_DEFAULT) {
+      _this2.setVariable(key, VARIABLE_DEFAULT[key]);
     }
 
     _this2.pre_render_info = {};
@@ -12120,16 +12127,23 @@ var Rest = /*#__PURE__*/function (_Element5) {
     _classCallCheck(this, Rest);
 
     _this5 = _super6.call(this);
-    _this5.length_s = length_s;
-    _this5.note_group_list = [{
-      lengthIndicator: Chord.parseLengthIndicator(length_s),
-      note_profiles: null
-    }];
-    _this5.renderprop = {};
+
+    _this5.init(length_s);
+
     return _this5;
   }
 
   _createClass(Rest, [{
+    key: "init",
+    value: function init(length_s) {
+      this.length_s = length_s;
+      this.note_group_list = [{
+        lengthIndicator: Chord.parseLengthIndicator(length_s),
+        note_profiles: null
+      }];
+      this.renderprop = {};
+    }
+  }, {
     key: "exportCode",
     value: function exportCode() {
       return "r:".concat(this.length_s);
@@ -13062,33 +13076,40 @@ var LoopIndicator = /*#__PURE__*/function (_Element8) {
 
   var _super9 = _createSuper(LoopIndicator);
 
-  function LoopIndicator(indicators) {
+  function LoopIndicator(loopIndStr) {
     var _this8;
 
     _classCallCheck(this, LoopIndicator);
 
-    _this8 = _super9.call(this); // Note : Content of indicators are not always integers.
-    // intindicators is storage for integer indicators analyzed from indicators.
+    _this8 = _super9.call(this);
 
-    _this8.indicators = indicators;
-    _this8.intindicators = [];
-    var intrg = new RegExp(/(\d+)/);
-
-    for (var i = 0; i < _this8.indicators.length; ++i) {
-      var m = _this8.indicators[i].match(intrg);
-
-      if (m) {
-        _this8.intindicators.push(parseInt(m[0]));
-      }
-    }
+    _this8.init(loopIndStr);
 
     return _this8;
   }
 
   _createClass(LoopIndicator, [{
+    key: "init",
+    value: function init(loopIndStr) {
+      // Note : Content of indicators are not always integers.
+      // intindicators is storage for integer indicators analyzed from indicators.
+      this.indstr = loopIndStr;
+      this.intindicators = [];
+      var intrg = new RegExp(/(\d+)/);
+      var indicators = this.indstr.split(",");
+
+      for (var i = 0; i < indicators.length; ++i) {
+        var m = indicators[i].match(intrg);
+
+        if (m) {
+          this.intindicators.push(parseInt(m[0]));
+        }
+      }
+    }
+  }, {
     key: "exportCode",
     value: function exportCode() {
-      return "[".concat(this.indicators, "]");
+      return "[".concat(this.indstr, "]");
     }
   }]);
 
@@ -13121,29 +13142,29 @@ var Space = /*#__PURE__*/function (_Element9) {
 
   return Space;
 }(Element);
-var LongRestIndicator = /*#__PURE__*/function (_Element10) {
-  _inherits(LongRestIndicator, _Element10);
+var LongRest = /*#__PURE__*/function (_Element10) {
+  _inherits(LongRest, _Element10);
 
-  var _super11 = _createSuper(LongRestIndicator);
+  var _super11 = _createSuper(LongRest);
 
-  function LongRestIndicator(longrestlen) {
+  function LongRest(longrestlen) {
     var _this10;
 
-    _classCallCheck(this, LongRestIndicator);
+    _classCallCheck(this, LongRest);
 
     _this10 = _super11.call(this);
     _this10.longrestlen = longrestlen;
     return _this10;
   }
 
-  _createClass(LongRestIndicator, [{
+  _createClass(LongRest, [{
     key: "exportCode",
     value: function exportCode() {
       return "-".concat(this.longrestlen, "-");
     }
   }]);
 
-  return LongRestIndicator;
+  return LongRest;
 }(Element);
 var Time = /*#__PURE__*/function (_Element11) {
   _inherits(Time, _Element11);
@@ -13341,21 +13362,34 @@ var DaCapo = /*#__PURE__*/function (_Element13) {
 
   var _super20 = _createSuper(DaCapo);
 
-  function DaCapo() {
+  function DaCapo(al) {
+    var _this16;
+
     _classCallCheck(this, DaCapo);
 
-    return _super20.call(this);
+    _this16 = _super20.call(this);
+
+    _this16.init(al);
+
+    return _this16;
   }
 
   _createClass(DaCapo, [{
+    key: "init",
+    value: function init(al) {
+      this.al = al; // Either Coda/Fine
+    }
+  }, {
     key: "toString",
     value: function toString() {
-      return "D.C.";
+      var dss = "D.C.";
+      var als = this.al === null ? "" : " al " + this.al.toString();
+      return dss + als;
     }
   }, {
     key: "exportCode",
     value: function exportCode() {
-      return this.toString();
+      return "<" + this.toString() + ">";
     }
   }]);
 
@@ -13367,18 +13401,24 @@ var DalSegno = /*#__PURE__*/function (_Element14) {
   var _super21 = _createSuper(DalSegno);
 
   function DalSegno(number, al) {
-    var _this16;
+    var _this17;
 
     _classCallCheck(this, DalSegno);
 
-    _this16 = _super21.call(this);
-    _this16.number = number;
-    _this16.al = al; // Either Coda/Fine
+    _this17 = _super21.call(this);
 
-    return _this16;
+    _this17.init(number, al);
+
+    return _this17;
   }
 
   _createClass(DalSegno, [{
+    key: "init",
+    value: function init(number, al) {
+      this.number = number;
+      this.al = al; // Either Coda/Fine
+    }
+  }, {
     key: "toString",
     value: function toString() {
       var dss = "D.S." + (this.number === null ? "" : this.number);
@@ -13400,14 +13440,14 @@ var Segno = /*#__PURE__*/function (_Element15) {
   var _super22 = _createSuper(Segno);
 
   function Segno(number, opt) {
-    var _this17;
+    var _this18;
 
     _classCallCheck(this, Segno);
 
-    _this17 = _super22.call(this);
-    _this17.number = number;
-    _this17.opt = opt;
-    return _this17;
+    _this18 = _super22.call(this);
+    _this18.number = number;
+    _this18.opt = opt;
+    return _this18;
   }
 
   _createClass(Segno, [{
@@ -13426,13 +13466,13 @@ var Coda = /*#__PURE__*/function (_Element16) {
   var _super23 = _createSuper(Coda);
 
   function Coda(number) {
-    var _this18;
+    var _this19;
 
     _classCallCheck(this, Coda);
 
-    _this18 = _super23.call(this);
-    _this18.number = number;
-    return _this18;
+    _this19 = _super23.call(this);
+    _this19.number = number;
+    return _this19;
   }
 
   _createClass(Coda, [{
@@ -13455,13 +13495,13 @@ var ToCoda = /*#__PURE__*/function (_Element17) {
   var _super24 = _createSuper(ToCoda);
 
   function ToCoda(number) {
-    var _this19;
+    var _this20;
 
     _classCallCheck(this, ToCoda);
 
-    _this19 = _super24.call(this);
-    _this19.number = number;
-    return _this19;
+    _this20 = _super24.call(this);
+    _this20.number = number;
+    return _this20;
   }
 
   _createClass(ToCoda, [{
@@ -13504,17 +13544,17 @@ var Comment = /*#__PURE__*/function (_Element19) {
   var _super26 = _createSuper(Comment);
 
   function Comment(comment) {
-    var _this20;
+    var _this21;
 
     var chorddep = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
     _classCallCheck(this, Comment);
 
-    _this20 = _super26.call(this);
-    _this20.comment = comment;
-    _this20.chorddep = chorddep; // Dependency for particular chord : true/false
+    _this21 = _super26.call(this);
+    _this21.comment = comment;
+    _this21.chorddep = chorddep; // Dependency for particular chord : true/false
 
-    return _this20;
+    return _this21;
   }
 
   _createClass(Comment, [{
@@ -13538,17 +13578,17 @@ var Lyric = /*#__PURE__*/function (_Element20) {
   var _super27 = _createSuper(Lyric);
 
   function Lyric(lyric) {
-    var _this21;
+    var _this22;
 
     var chorddep = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
     _classCallCheck(this, Lyric);
 
-    _this21 = _super27.call(this);
-    _this21.lyric = lyric;
-    _this21.chorddep = chorddep; // Dependency for particular chord : true/false
+    _this22 = _super27.call(this);
+    _this22.lyric = lyric;
+    _this22.chorddep = chorddep; // Dependency for particular chord : true/false
 
-    return _this21;
+    return _this22;
   }
 
   _createClass(Lyric, [{
@@ -13582,13 +13622,13 @@ var Title = /*#__PURE__*/function (_Element21) {
   var _super28 = _createSuper(Title);
 
   function Title(variable) {
-    var _this22;
+    var _this23;
 
     _classCallCheck(this, Title);
 
-    _this22 = _super28.call(this);
-    _this22.variable = variable;
-    return _this22;
+    _this23 = _super28.call(this);
+    _this23.variable = variable;
+    return _this23;
   }
 
   return Title;
@@ -13599,13 +13639,13 @@ var SubTitle = /*#__PURE__*/function (_Element22) {
   var _super29 = _createSuper(SubTitle);
 
   function SubTitle(variable) {
-    var _this23;
+    var _this24;
 
     _classCallCheck(this, SubTitle);
 
-    _this23 = _super29.call(this);
-    _this23.variable = variable;
-    return _this23;
+    _this24 = _super29.call(this);
+    _this24.variable = variable;
+    return _this24;
   }
 
   return SubTitle;
@@ -13616,35 +13656,35 @@ var Artist = /*#__PURE__*/function (_Element23) {
   var _super30 = _createSuper(Artist);
 
   function Artist(variable) {
-    var _this24;
+    var _this25;
 
     _classCallCheck(this, Artist);
 
-    _this24 = _super30.call(this);
-    _this24.variable = variable;
-    return _this24;
+    _this25 = _super30.call(this);
+    _this25.variable = variable;
+    return _this25;
   }
 
   return Artist;
 }(Element); // Variables that is used internally. Not explicty shown in the drawing.
 
-var Macro = /*#__PURE__*/function (_Node2) {
-  _inherits(Macro, _Node2);
+var Variable = /*#__PURE__*/function (_Node2) {
+  _inherits(Variable, _Node2);
 
-  var _super31 = _createSuper(Macro);
+  var _super31 = _createSuper(Variable);
 
-  function Macro(name, value) {
-    var _this25;
+  function Variable(name, value) {
+    var _this26;
 
-    _classCallCheck(this, Macro);
+    _classCallCheck(this, Variable);
 
-    _this25 = _super31.call(this);
-    _this25.name = name;
-    _this25.value = deepcopy(value);
-    return _this25;
+    _this26 = _super31.call(this);
+    _this26.name = name;
+    _this26.value = deepcopy(value);
+    return _this26;
   }
 
-  _createClass(Macro, [{
+  _createClass(Variable, [{
     key: "exportCode",
     value: function exportCode() {
       var vtype = _typeof(this.value);
@@ -13653,13 +13693,13 @@ var Macro = /*#__PURE__*/function (_Node2) {
       if (vtype == "string") code += "\"".concat(this.value, "\"");else if (vtype == "number") code += "".concat(this.value);else if (isObject(this.value)) {
         code += JSON.stringify(this.value);
       } else {
-        throw "Error on export code for Macro";
+        throw "Error on export code for Variable";
       }
       return code;
     }
   }]);
 
-  return Macro;
+  return Variable;
 }(Node);
 /**
  * Reperesetnts skipped contiguous spaces/tabs during parsing.
@@ -13672,13 +13712,13 @@ var RawSpaces = /*#__PURE__*/function (_Node3) {
   var _super32 = _createSuper(RawSpaces);
 
   function RawSpaces(sss) {
-    var _this26;
+    var _this27;
 
     _classCallCheck(this, RawSpaces);
 
-    _this26 = _super32.call(this);
-    _this26.sss = sss;
-    return _this26;
+    _this27 = _super32.call(this);
+    _this27.sss = sss;
+    return _this27;
   }
 
   _createClass(RawSpaces, [{
@@ -13697,24 +13737,24 @@ var TemplateString = /*#__PURE__*/function (_Node4) {
 
   // dict is hold as reference. Any change in the dict is propagated to exported code
   function TemplateString(tmpl, dict) {
-    var _this27;
+    var _this28;
 
     _classCallCheck(this, TemplateString);
 
-    _this27 = _super33.call(this);
-    _this27.tmpl = tmpl;
-    _this27.dict = dict;
-    return _this27;
+    _this28 = _super33.call(this);
+    _this28.tmpl = tmpl;
+    _this28.dict = dict;
+    return _this28;
   }
 
   _createClass(TemplateString, [{
     key: "exportCode",
     value: function exportCode() {
-      var _this28 = this;
+      var _this29 = this;
 
       var tpl = deepcopy(this.tmpl);
       Object.keys(this.dict).forEach(function (k) {
-        tpl = tpl.replace(new RegExp("\\${" + k + "}", "g"), _this28.dict[k]);
+        tpl = tpl.replace(new RegExp("\\${" + k + "}", "g"), _this29.dict[k]);
       });
       return tpl;
     }
@@ -13743,10 +13783,10 @@ var HitManager = /*#__PURE__*/function () {
   }, {
     key: "_drawBBs",
     value: function _drawBBs() {
-      var _this29 = this;
+      var _this30 = this;
 
       var _loop = function _loop(paper_id) {
-        var p = _this29.papers[paper_id];
+        var p = _this30.papers[paper_id];
         var ctx = p.paper.getContext("2d");
         p.objs.forEach(function (entry) {
           ctx.fillStyle = "rgb(0, 0, 255, 0.5)";
@@ -13780,6 +13820,8 @@ var HitManager = /*#__PURE__*/function () {
       if (paper.fumen_canvas_id === undefined) {
         paper.fumen_canvas_id = this._uuid();
       }
+
+      if (bb.width() <= 4) bb = bb.clone().expand(2, 2, 0, 0);
 
       if (!(paper.fumen_canvas_id in this.papers)) {
         this.papers[paper.fumen_canvas_id] = {
@@ -13849,25 +13891,25 @@ var HitManager = /*#__PURE__*/function () {
   }, {
     key: "get",
     value: function get(paper, coord) {
-      var _this30 = this;
+      var _this31 = this;
 
       if (!(paper.fumen_canvas_id in this.papers)) return;
       var p = this.papers[paper.fumen_canvas_id];
       var len = p.objs.length;
       var lx_end = p.left_x_sorted.findIndex(function (n) {
-        return p.objs[n].bb.x[0] > coord.x / _this30.global_scale.x;
+        return p.objs[n].bb.x[0] > coord.x / _this31.global_scale.x;
       });
       if (lx_end == 0) return [];else if (lx_end == -1) lx_end = len - 1;else lx_end -= 1;
       var rx_start = p.right_x_sorted.findIndex(function (n) {
-        return p.objs[n].bb.x[1] >= coord.x / _this30.global_scale.x;
+        return p.objs[n].bb.x[1] >= coord.x / _this31.global_scale.x;
       });
       if (rx_start == -1) return [];
       var ty_end = p.top_y_sorted.findIndex(function (n) {
-        return p.objs[n].bb.y[0] > coord.y / _this30.global_scale.y;
+        return p.objs[n].bb.y[0] > coord.y / _this31.global_scale.y;
       });
       if (ty_end == 0) return [];else if (ty_end == -1) ty_end = len - 1;else ty_end -= 1;
       var by_start = p.bottom_y_sorted.findIndex(function (n) {
-        return p.objs[n].bb.y[1] >= coord.y / _this30.global_scale.y;
+        return p.objs[n].bb.y[1] >= coord.y / _this31.global_scale.y;
       });
       if (by_start == -1) return [];
       var lxc = p.left_x_sorted.slice(0, lx_end + 1);
@@ -13883,7 +13925,7 @@ var HitManager = /*#__PURE__*/function () {
       }).map(function (val) {
         return {
           element: p.objs[val].element,
-          bb: p.objs[val].bb.clone().scale(_this30.global_scale.x, _this30.global_scale.y)
+          bb: p.objs[val].bb.clone().scale(_this31.global_scale.x, _this31.global_scale.y)
         };
       });
       return hit_objs;
@@ -13899,7 +13941,7 @@ var HitManager = /*#__PURE__*/function () {
 /*!**********************!*\
   !*** ./src/index.js ***!
   \**********************/
-/*! exports provided: Parser, DefaultRenderer, SetupHiDPICanvas, GetCharProfile, CanvasTextWithBox, CanvasText, getFontSizeFromHeight, Chord, Rest, MeasureBoundary, Time, Coda, Segno, ToCoda, DalSegno, DaCapo, Simile, RawSpaces, TemplateString */
+/*! exports provided: Parser, DefaultRenderer, SetupHiDPICanvas, GetCharProfile, CanvasTextWithBox, CanvasText, getFontSizeFromHeight, ReharsalGroup, Block, Chord, Rest, LongRest, Comment, Lyric, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, LoopIndicator, Time, Coda, Segno, ToCoda, DalSegno, DaCapo, Fine, Simile, Variable, RawSpaces, TemplateString */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -13924,11 +13966,35 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "getFontSizeFromHeight", function() { return _renderer_graphic__WEBPACK_IMPORTED_MODULE_3__["getFontSizeFromHeight"]; });
 
 /* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./common/common */ "./src/common/common.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ReharsalGroup", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["ReharsalGroup"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Block", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Block"]; });
+
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Chord", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Chord"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Rest", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Rest"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "LongRest", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["LongRest"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Comment", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Comment"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Lyric", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Lyric"]; });
+
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MeasureBoundary", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["MeasureBoundary"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MeasureBoundaryMark", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["MeasureBoundaryMark"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "LoopBeginMark", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["LoopBeginMark"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "LoopEndMark", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["LoopEndMark"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "LoopBothMark", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["LoopBothMark"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MeasureBoundaryFinMark", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["MeasureBoundaryFinMark"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MeasureBoundaryDblSimile", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["MeasureBoundaryDblSimile"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "LoopIndicator", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["LoopIndicator"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Time", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Time"]; });
 
@@ -13942,7 +14008,11 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DaCapo", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["DaCapo"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Fine", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Fine"]; });
+
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Simile", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Simile"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Variable", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Variable"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "RawSpaces", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["RawSpaces"]; });
 
@@ -14046,6 +14116,7 @@ var TOKEN_PERIOD = 42; // .
 
 var WORD_DEFINIITON_GENERAL = /^(\w[\w¥.,\-+#:]*)/;
 var WORD_DEFINITION_IN_REHARSAL_MARK = /^[^[\]]*/;
+var WORD_DEFINITION_IN_LOOP_IND_GENERIC = /^[^[\]]*/;
 var WORD_DEFINITION_CHORD_SYMBOL = /^[\w.,\-+#/():~]*/;
 var Parser = /*#__PURE__*/function () {
   /**
@@ -14281,23 +14352,34 @@ var Parser = /*#__PURE__*/function () {
     value: function parseLoopIndicator(trig_token_type, s) {
       // prerequisite
       //   trig_token_type = TOKEN_BRACKET_LS
+
+      /*
       var loop_flg = true;
       var indicators = new Array();
-
       while (loop_flg) {
-        var r = this.nextToken(s);
-        if (r.type != TOKEN_WORD) this.onParseError("ERROR_WHILE_PARSE_LOOP_INDICATOR");
-        indicators.push(r.token);
-        s = r.s;
-        r = this.nextToken(s);
-        s = r.s;
-        if (r.type == TOKEN_BRACKET_RS) break;else if (r.type != TOKEN_COMMA) this.onParseError("ERROR_WHILE_PARSE_LOOP_INDICATOR");
+          var r = this.nextToken(s);
+          if (r.type != TOKEN_WORD)
+              this.onParseError("ERROR_WHILE_PARSE_LOOP_INDICATOR");
+          indicators.push(r.token);
+          s = r.s;
+          r = this.nextToken(s);
+          s = r.s;
+          if (r.type == TOKEN_BRACKET_RS) break;
+          else if (r.type != TOKEN_COMMA)
+              this.onParseError("ERROR_WHILE_PARSE_LOOP_INDICATOR");
+      }*/
+      var m = s.match(WORD_DEFINITION_IN_LOOP_IND_GENERIC);
+
+      if (m != null) {
+        var loopIndStr = m[0];
+        var r = this.nextToken(s.substr(m[0].length));
+        if (r.type == TOKEN_BRACKET_RS) return {
+          loopIndicator: new _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopIndicator"](loopIndStr),
+          s: r.s
+        };
       }
 
-      return {
-        loopIndicator: new _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopIndicator"](indicators),
-        s: s
-      };
+      this.onParseError("Invalid loop indicator");
     }
   }, {
     key: "parseTime",
@@ -14347,7 +14429,18 @@ var Parser = /*#__PURE__*/function () {
       if (r.token == "Fine") {
         sign = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Fine"]();
       } else if (r.token == "D.C.") {
-        sign = new _common_common__WEBPACK_IMPORTED_MODULE_1__["DaCapo"]();
+        var _al = null;
+        r = this.nextToken(r.s, WORD_DEFINIITON_GENERAL);
+
+        if (r.type != TOKEN_END) {
+          if (r.type != TOKEN_WORD) throw "Invalid token after D.C.(1)";
+          if (r.token != "al") throw "Invalid token after D.C.(2)";
+          r = this.nextToken(r.s, WORD_DEFINIITON_GENERAL);
+          if (r.type != TOKEN_WORD) throw "Invalid token after al";
+          if (r.token == "Fine") _al = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Fine"]();else if ((m = r.token.match(regCoda)) !== null) _al = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Coda"](m[1] === undefined ? null : m[1]);else throw "Invalid token after al(2)";
+        }
+
+        sign = new _common_common__WEBPACK_IMPORTED_MODULE_1__["DaCapo"](_al);
       } else if ((m = r.token.match(regCoda)) !== null) {
         sign = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Coda"](m[1] === undefined ? null : m[1]);
       } else if ((m = r.token.match(regSegno)) !== null) {
@@ -14508,7 +14601,7 @@ var Parser = /*#__PURE__*/function () {
               this.onParseError("ERROR_WHILE_PARSE_LONG_REST");
             }
 
-            measure.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["LongRestIndicator"](parseInt(r.token)));
+            measure.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["LongRest"](parseInt(r.token)));
             s = r.s;
             break;
 
@@ -14701,18 +14794,18 @@ var Parser = /*#__PURE__*/function () {
       };
     }
   }, {
-    key: "parseMacro",
-    value: function parseMacro(s) {
+    key: "parseVariable",
+    value: function parseVariable(s) {
       // prerequisite :
       //   trig_token_obj == TOKEN_PERCENT
       var key = null;
       var value = null;
       var r = this.nextToken(s);
-      if (r.type != TOKEN_WORD) this.onParseError("ERROR_WHILE_PARSE_MACRO");
+      if (r.type != TOKEN_WORD) this.onParseError("ERROR_WHILE_PARSE_VARIABLE");
       key = r.token;
       s = r.s;
       r = this.nextToken(s);
-      if (r.type != TOKEN_EQUAL) this.onParseError("ERROR_WHILE_PARSE_MACRO");
+      if (r.type != TOKEN_EQUAL) this.onParseError("ERROR_WHILE_PARSE_VARIABLE");
       s = r.s; // Parse as JSON decodables : String, Numbers, objects, arrays.
 
       var v_s = "";
@@ -14724,7 +14817,7 @@ var Parser = /*#__PURE__*/function () {
       try {
         value = JSON.parse(v_s);
       } catch (e) {
-        this.onParseError("ERROR_WHILE_PARSE_MACRO_VALUE");
+        this.onParseError("ERROR_WHILE_PARSE_VARIABLE_VALUE");
       }
 
       s = s.substr(v_s.length);
@@ -14737,15 +14830,15 @@ var Parser = /*#__PURE__*/function () {
   }, {
     key: "glanceHeader",
     value: function glanceHeader(s) {
-      var targetMacros = ["TITLE", "ARTIST"];
+      var targetKeys = ["TITLE", "ARTIST"];
       var headers = {};
       var c = s.split("\n");
 
       for (var i = 0; i < c.length; ++i) {
         if (c[i].length > 0 && c[i][0] == "%") {
-          var r = this.parseMacro(c[i].substr(1));
-          if (targetMacros.indexOf(r.key) >= 0) headers[r.key] = r.value;
-          if (headers.length == targetMacros.length) break;
+          var r = this.parseVariable(c[i].substr(1));
+          if (targetKeys.indexOf(r.key) >= 0) headers[r.key] = r.value;
+          if (headers.length == targetKeys.length) break;
         }
       }
 
@@ -14755,7 +14848,7 @@ var Parser = /*#__PURE__*/function () {
 
   }, {
     key: "parseBlock",
-    value: function parseBlock(s, currentReharsalGroup, latest_macros) {
+    value: function parseBlock(s, currentReharsalGroup, latest_variables) {
       // parase until block boundary is found
       // block boundary = "[" or 2 successive NL or NOL
       try {
@@ -14813,11 +14906,11 @@ var Parser = /*#__PURE__*/function () {
             var is_new_line_middle_of_block = num_meas_row > 0 && this.context.contiguous_line_break == 1;
             this.context.contiguous_line_break = 0;
             r = this.parseMeasures(r, r.s); // the last NL has not been consumed.
-            // Apply par row variable
+            // Apply the variables valid at this point for each measures
 
             r.measures.forEach(function (m) {
-              m.variables = _common_common__WEBPACK_IMPORTED_MODULE_1__["shallowcopy"](latest_macros);
-            }); //r.measures[0].variables = common.shallowcopy(latest_macros);
+              m.variables = _common_common__WEBPACK_IMPORTED_MODULE_1__["shallowcopy"](latest_variables);
+            }); // For the first measure, set align and new line mark.
 
             r.measures[0].align = current_align;
             r.measures[0].raw_new_line = is_new_line_middle_of_block; // mark to the first measure
@@ -14826,12 +14919,12 @@ var Parser = /*#__PURE__*/function () {
             ++num_meas_row;
           } else if (r.type == TOKEN_PERCENT) {
             // Expression
-            r = this.parseMacro(r.s);
-            var variable = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Macro"](r.key, r.value); //block.setVariable(r.key, r.value); Do not do this as with this, only the last variable will be valid.
+            r = this.parseVariable(r.s);
+            var variable = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Variable"](r.key, r.value); //block.setVariable(r.key, r.value); Do not do this as with this, only the last variable will be valid.
 
-            latest_macros[r.key] = variable;
+            latest_variables[r.key] = variable;
             block.appendChild(variable);
-            this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this macro
+            this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this variable
           } else {
             console.log(r.token);
             this.onParseError("ERROR_WHILE_PARSE_MOST_OUTSIDER");
@@ -14864,7 +14957,7 @@ var Parser = /*#__PURE__*/function () {
       // - "<" or ">" (not consumed) (for anonymous)
       try {
         var r = null;
-        var latest_macros = {}; // Do not inherit from previous reharsal group
+        var latest_variables = {}; // Do not inherit from previous reharsal group
 
         var rgName = "";
 
@@ -14882,7 +14975,7 @@ var Parser = /*#__PURE__*/function () {
         var MAX_LOOP = 1000; // eslint-disable-next-line no-constant-condition
 
         while (true) {
-          r = this.parseBlock(s, rg, latest_macros);
+          r = this.parseBlock(s, rg, latest_variables);
           rg.appendChild(r.block);
           s = r.s;
           ++loop_cnt;
@@ -14937,7 +15030,6 @@ var Parser = /*#__PURE__*/function () {
             track.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.sss));
             track.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token)); // Does not count as line break
           } else if (r.type == TOKEN_BRACKET_LS) {
-            // Reset latest_macros                    
             var rgs = track.childElements.filter(function (e) {
               return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["ReharsalGroup"];
             });
@@ -14952,16 +15044,16 @@ var Parser = /*#__PURE__*/function () {
             // Measure appears directly withou reharsal group mark.
             // If not reharsal mark is defined and the measure is directly specified, 
             // then default anonymous reharsal mark is generated.
-            // For all the variables specified before these symbols are treated as a global macro.
+            // For all the variables specified before these symbols are treated as a global variable.
             r = this.parseReharsalGroup(code.substr(r.sss.length), "anonymous");
             track.appendChild(r.rg);
           } else if (r.type == TOKEN_PERCENT) {
             // Expression
-            r = this.parseMacro(r.s);
+            r = this.parseVariable(r.s);
             var variable = track.setVariable(r.key, r.value); // Auto generate object
 
             track.appendChild(variable);
-            this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this macro
+            this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this variable
           } else {
             console.log(r.token);
             this.onParseError("ERROR_WHILE_PARSE_MOST_OUTSIDER");
@@ -15046,7 +15138,6 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 
 
 
- //import { getGlobalMacros, getMacros } from "../parser/parser";
 
 /**
  * @typedef RenderParam
@@ -15115,6 +15206,17 @@ var SR_RENDER_PARAM = {
   // 
   base_font_size: 28,
   // Chord symbol font size
+  // Font configs. Please refer to CSS font configs for the meaning of each variable. http://www.htmq.com/style/font.shtml .
+  // Font size config is done separately above. Gives as array with priority order.  
+  repeat_mark_font: [{
+    "font-family": "'Times New Roman'",
+    // make sure to include quation for font name.
+    //"font-style": "italic",
+    "font-weight": "bold"
+  }],
+  title_font: [{
+    "font-weight": "bold"
+  }],
   // Row Settings 
   /// Vertical settings
   row_height: 28,
@@ -15160,11 +15262,6 @@ var SR_RENDER_PARAM = {
   // Margin between header and body (x-direction)
   body_footer_margin: 2,
   // Margin between body and footer (x-direction)
-  repeat_mark_font: {
-    "font-family": "Times New Roman",
-    "font-style": "italic",
-    "font-weight": "bold"
-  },
   // Chord settings
   on_bass_style: "right",
   // right|below
@@ -15902,27 +15999,26 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
       if (track.getVariable("TITLE")) {
         var ri = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width / 2, this.param.y_title_offset, track.getVariable("TITLE"), this.param.title_font_size, "ct", null, stage == 1, {
-          "bold": true
+          font: this.param.title_font
         });
         max_header_height = Math.max(max_header_height, this.param.y_title_offset + ri.height);
+        this.hitManager.add(canvas, ri.bb, track.getVariableObject("TITLE"));
       } // Sub Title
 
 
       if (track.getVariable("SUB_TITLE")) {
-        var _ri = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width / 2, this.param.y_subtitle_offset, track.getVariable("SUB_TITLE"), this.param.subtitle_font_size, "ct", null, stage == 1, {
-          "bold": false
-        });
+        var _ri = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width / 2, this.param.y_subtitle_offset, track.getVariable("SUB_TITLE"), this.param.subtitle_font_size, "ct", null, stage == 1);
 
         max_header_height = Math.max(max_header_height, this.param.y_subtitle_offset + _ri.height);
+        this.hitManager.add(canvas, _ri.bb, track.getVariableObject("SUB_TITLE"));
       } // Artist
 
 
       if (track.getVariable("ARTIST")) {
-        var _ri2 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width, this.param.y_artist_offset, track.getVariable("ARTIST"), this.param.artist_font_size, "rt", null, stage == 1, {
-          "bold": false
-        });
+        var _ri2 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x_offset + width, this.param.y_artist_offset, track.getVariable("ARTIST"), this.param.artist_font_size, "rt", null, stage == 1);
 
         max_header_height = Math.max(max_header_height, this.param.y_artist_offset + _ri2.height);
+        this.hitManager.add(canvas, _ri2.bb, track.getVariableObject("ARTIST"));
       }
 
       return max_header_height;
@@ -16113,7 +16209,6 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                   var next_measures = i < meas_row_list.length - 1 ? meas_row_list[i + 1].meas_row : null;
                   var next_measure = next_measures ? next_measures[0] : null; // Determine params to be applied for this. 
                   // As of now, 
-                  //var rg_macros = getMacros(global_macros, track.reharsal_groups[i]);
 
                   var param_for_row = _common_common__WEBPACK_IMPORTED_MODULE_2__["deepcopy"](_this4.param);
                   var param_for_row_alt = false;
@@ -16140,7 +16235,6 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                     block_ids: e.meas_row_block_ids,
                     nm: next_measure,
                     pm: prev_measure,
-                    //macros: global_macros, // TODO : Macros for each row...?
                     param: param_for_row
                   });
                 }); // ---------------------
@@ -16703,14 +16797,18 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             if (draw) _this6.hitManager.add(paper, cr.bb.scale(_draw_scale, 1), e0);
 
             if (draw && e0.exceptinal_comment !== null) {
-              _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / _draw_scale, yprof.mu.y + yprof.mu.height, e0.exceptinal_comment.comment, param.base_font_size / 2, "lb");
+              var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / _draw_scale, yprof.mu.y + yprof.mu.height, e0.exceptinal_comment.comment, param.base_font_size / 2, "lb");
+
+              _this6.hitManager.add(paper, r.bb.scale(_draw_scale, 1), e0.exceptinal_comment);
             }
 
             if (draw && e0.lyric !== null) {
               var llist = e0.lyric.lyric.split("/");
 
               for (var li = 0; li < llist.length; ++li) {
-                _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / _draw_scale, yprof.ml.y + li * param.ml_row_height, llist[li], param.base_font_size / 3, "lt");
+                var _r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / _draw_scale, yprof.ml.y + li * param.ml_row_height, llist[li], param.base_font_size / 3, "lt");
+
+                _this6.hitManager.add(paper, _r.bb.scale(_draw_scale, 1), e0.lyric);
               }
             }
           } else {
@@ -16796,14 +16894,18 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
               var _cr = _this6.render_chord_simplified(draw, e, transpose, half_type, key, paper, x / _draw_scale2, yprof.body.y, param, C7_width);
 
               if (draw && e.exceptinal_comment !== null) {
-                _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / _draw_scale2, yprof.mu.y + yprof.mu.height, e.exceptinal_comment.comment, param.base_font_size / 2, "lb");
+                var _r2 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / _draw_scale2, yprof.mu.y + yprof.mu.height, e.exceptinal_comment.comment, param.base_font_size / 2, "lb");
+
+                _this6.hitManager.add(paper, _r2.bb.scale(_draw_scale2, 1), e.exceptinal_comment);
               }
 
               if (draw && e.lyric !== null) {
                 var llist = e.lyric.lyric.split("/");
 
                 for (var li = 0; li < llist.length; ++li) {
-                  _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / _draw_scale2, yprof.ml.y + li * param.ml_row_height, llist[li], param.base_font_size / 3, "lt");
+                  var _r3 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x / _draw_scale2, yprof.ml.y + li * param.ml_row_height, llist[li], param.base_font_size / 3, "lt");
+
+                  _this6.hitManager.add(paper, _r3.bb.scale(_draw_scale2, 1), e.lyric);
                 }
               }
 
@@ -16900,9 +17002,10 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 x += _elem_width4;
                 unscale(_draw_scale5);
               } else {
-                var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, 0, 0, "M", param.base_font_size, "lt", 0.5 * param.base_font_size, true, null); // width parameter needs to be aligned with chord rendering
+                var _r4 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, 0, 0, "M", param.base_font_size, "lt", 0.5 * param.base_font_size, true, null); // width parameter needs to be aligned with chord rendering
 
-                e.renderprop.w = e.length * r.width;
+
+                e.renderprop.w = e.length * _r4.width;
                 fixed_width += e.renderprop.w;
                 fixed_width_details.push({
                   type: "flex",
@@ -17031,7 +17134,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
         if (m.renderprop && m.renderprop.rg_from_here && m.renderprop.rg_from_here.name != "") {
           var reharsal_group = m.renderprop.rg_from_here;
-          var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasTextWithBox"](paper, meas_base_x, inner_reharsal_mark ? yprof.mu.y : yprof.rm.y, reharsal_group.name, param.reharsal_mark_font_size, 2, _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](param.reharsal_mark_font_size, null, false, paper.ratio, paper.zoom).height);
+          var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasTextWithBox"](paper, meas_base_x, inner_reharsal_mark ? yprof.mu.y : yprof.rm.y, reharsal_group.name, param.reharsal_mark_font_size, 2, _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](param.reharsal_mark_font_size, null, paper.ratio, paper.zoom).height);
           if (draw) _this7.hitManager.add(paper, r.bb, reharsal_group);
           if (inner_reharsal_mark) mh_offset += r.bb.width() + 2;
         }
@@ -17040,25 +17143,25 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           var e = elements.header[ei];
 
           if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Coda"]) {
-            var _r = _this7.draw_coda_plain(paper, meas_base_x + mh_offset, yprof.mu.y + yprof.mu.height, "lb", e, param.base_font_size);
+            var _r5 = _this7.draw_coda_plain(paper, meas_base_x + mh_offset, yprof.mu.y + yprof.mu.height, "lb", e, param.base_font_size);
 
-            mh_offset += _r.bb.width();
+            mh_offset += _r5.bb.width();
 
-            _this7.hitManager.add(paper, _r.bb, e);
+            _this7.hitManager.add(paper, _r5.bb, e);
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Segno"]) {
-            var _r2 = _this7.draw_segno_plain(paper, meas_base_x + mh_offset, yprof.mu.y + yprof.mu.height, e, param.base_font_size);
+            var _r6 = _this7.draw_segno_plain(paper, meas_base_x + mh_offset, yprof.mu.y + yprof.mu.height, e, param.base_font_size);
 
-            mh_offset += _r2.width;
+            mh_offset += _r6.width;
 
-            _this7.hitManager.add(paper, _r2.bb, e);
+            _this7.hitManager.add(paper, _r6.bb, e);
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Comment"]) {
             // If this comment is associated with a chord with exceptional comment, not rendered here.
             if (!e.chorddep) {
-              var _r3 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, meas_base_x + mh_offset, yprof.mu.y + yprof.mu.height, e.comment, param.base_font_size / 2, "lb");
+              var _r7 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, meas_base_x + mh_offset, yprof.mu.y + yprof.mu.height, e.comment, param.base_font_size / 2, "lb");
 
-              mh_offset += _r3.width;
+              mh_offset += _r7.width;
 
-              _this7.hitManager.add(paper, _r3.bb, e);
+              _this7.hitManager.add(paper, _r7.bb, e);
             }
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Lyric"]) {
             if (draw) {
@@ -17079,18 +17182,18 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             var pm = ml == 0 ? prev_measure : row_elements_list[ml - 1];
             var ne = pm ? pm.childElements[pm.childElements.length - 1] : null;
 
-            var _r4 = _this7.draw_boundary_simplified("begin", ne, e, ml == 0, //m.raw_new_line,
+            var _r8 = _this7.draw_boundary_simplified("begin", ne, e, ml == 0, //m.raw_new_line,
             paper, x, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, param, true);
 
             m.renderprop.y = y_body_or_rs_base;
             m.renderprop.sx = x;
             m.renderprop.paper = paper;
             x += e.renderprop.w;
-            meas_start_x_actual_boundary = _r4.actual_boundary;
-            if (_r4.bb.width() > 0) _this7.hitManager.add(paper, _r4.bb, e);
-            if (_r4.bb2.width() > 0) _this7.hitManager.add(paper, _r4.bb2, e);
+            meas_start_x_actual_boundary = _r8.actual_boundary;
+            if (_r8.bb) _this7.hitManager.add(paper, _r8.bb, e);
+            if (_r8.bb2) _this7.hitManager.add(paper, _r8.bb2, e);
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Time"]) {
-            var chord_str_height = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](param.base_font_size, null, false, paper.ratio, paper.zoom).height;
+            var chord_str_height = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](param.base_font_size, null, paper.ratio, paper.zoom).height;
             var row_height = yprof.rs.detected ? param.rs_area_height : param.row_height;
             var cont_height = yprof.rs.detected ? param.rs_area_height : chord_str_height;
             var left_margin = 2;
@@ -17121,31 +17224,39 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             nm = ml == row_elements_list.length - 1 ? next_measure : row_elements_list[ml + 1];
             ne = nm ? nm.childElements[0] : null;
 
-            var _r5 = _this7.draw_boundary_simplified("end", _e2, ne, ml == row_elements_list.length - 1, //nm ? nm.raw_new_line : false,
+            var _r9 = _this7.draw_boundary_simplified("end", _e2, ne, ml == row_elements_list.length - 1, //nm ? nm.raw_new_line : false,
             paper, x, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, param, true);
 
             m.renderprop.ex = x;
             x += _e2.renderprop.w;
-            if (_r5.bb.width() > 0) _this7.hitManager.add(paper, _r5.bb, _e2);
-            if (_r5.bb2.width() > 0) _this7.hitManager.add(paper, _r5.bb2, _e2);
+            if (_r9.bb) _this7.hitManager.add(paper, _r9.bb, _e2);
+            if (_r9.bb2) _this7.hitManager.add(paper, _r9.bb2, _e2);
           } else if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DaCapo"]) {
-            var _r6 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, repeat_mark_y_base, _e2.toString(), param.base_font_size / 2, "rb");
+            var _r10 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, repeat_mark_y_base, _e2.toString(), param.base_font_size / 2, "rb", null, null, {
+              font: param.repeat_mark_font
+            });
 
-            _this7.hitManager.add(paper, _r6.bb, _e2);
+            _this7.hitManager.add(paper, _r10.bb, _e2);
           } else if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DalSegno"]) {
-            var _r7 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, repeat_mark_y_base, _e2.toString(), param.base_font_size / 2, "rb");
+            var _r11 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, repeat_mark_y_base, _e2.toString(), param.base_font_size / 2, "rb", null, null, {
+              font: param.repeat_mark_font
+            });
 
-            _this7.hitManager.add(paper, _r7.bb, _e2);
+            _this7.hitManager.add(paper, _r11.bb, _e2);
           } else if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["ToCoda"]) {
-            var _r8 = _this7.draw_coda_plain(paper, x, repeat_mark_y_base, "rb", _e2, param.base_font_size);
+            var _r12 = _this7.draw_coda_plain(paper, x, repeat_mark_y_base, "rb", _e2, param.base_font_size);
 
-            var rt = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x - _r8.bb.width(), repeat_mark_y_base, "To", param.base_font_size / 2, "rb");
+            var rt = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x - _r12.bb.width(), repeat_mark_y_base, "To", param.base_font_size / 2, "rb", null, null, {
+              font: param.repeat_mark_font
+            });
 
-            _this7.hitManager.add(paper, _r8.bb.add_BB(rt.bb), _e2);
+            _this7.hitManager.add(paper, _r12.bb.add_BB(rt.bb), _e2);
           } else if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Fine"]) {
-            var _r9 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, repeat_mark_y_base, _e2.toString(), param.base_font_size / 2, "rb");
+            var _r13 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, repeat_mark_y_base, _e2.toString(), param.base_font_size / 2, "rb", null, null, {
+              font: param.repeat_mark_font
+            });
 
-            _this7.hitManager.add(paper, _r9.bb, _e2);
+            _this7.hitManager.add(paper, _r13.bb, _e2);
           } else {
             throw "Unkown instance of footer elements";
           }
@@ -17164,12 +17275,14 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             fx = meas_start_x + (meas_end_x - meas_start_x) * 0.7;
             _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, sx, ly, sx, ly + oy);
             _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, sx, ly, fx, ly);
-            s = _e3.indicators.join(",");
+            s = _e3.indstr;
 
-            var _r10 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, sx + 2, ly + oy / 2, s, param.base_font_size / 3, "lm");
+            var _r14 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, sx + 2, ly + oy / 2, s, param.base_font_size / 3, "lm", null, null, {
+              font: param.repeat_mark_font
+            });
 
-            if (draw) _this7.hitManager.add(paper, _r10.bb, _e3);
-          } else if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["LongRestIndicator"]) {
+            if (draw) _this7.hitManager.add(paper, _r14.bb, _e3);
+          } else if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["LongRest"]) {
             var height = yprof.rs.detected ? param.rs_area_height : param.row_height;
 
             var _sx = meas_start_x + header_width; // header_width does not include header_body_margin
@@ -17191,21 +17304,23 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             if (draw) {
               var bb = new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"]();
 
-              var _r11 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, lx, y_body_or_rs_base + height / 2 + yshift, rx, y_body_or_rs_base + height / 2 + yshift, {
+              var _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, lx, y_body_or_rs_base + height / 2 + yshift, rx, y_body_or_rs_base + height / 2 + yshift, {
                 width: height / 5
               });
 
-              bb.add_BB(_r11.bb);
-              _r11 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, lx, y_body_or_rs_base + rh * vlmargin + yshift, lx, y_body_or_rs_base + rh - rh * vlmargin + yshift, {
+              bb.add_BB(_r15.bb);
+              _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, lx, y_body_or_rs_base + rh * vlmargin + yshift, lx, y_body_or_rs_base + rh - rh * vlmargin + yshift, {
                 width: "1"
               });
-              bb.add_BB(_r11.bb);
-              _r11 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, rx, y_body_or_rs_base + rh * vlmargin + yshift, rx, y_body_or_rs_base + rh - rh * vlmargin + yshift, {
+              bb.add_BB(_r15.bb);
+              _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, rx, y_body_or_rs_base + rh * vlmargin + yshift, rx, y_body_or_rs_base + rh - rh * vlmargin + yshift, {
                 width: "1"
               });
-              bb.add_BB(_r11.bb);
-              _r11 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, (_sx + _fx) / 2, y_body_or_rs_base, _e3.longrestlen, param.base_font_size / 2, "ct", undefined, !draw);
-              bb.add_BB(_r11.bb);
+              bb.add_BB(_r15.bb);
+              _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, (_sx + _fx) / 2, y_body_or_rs_base, _e3.longrestlen, param.base_font_size / 2, "ct", undefined, !draw, {
+                font: param.repeat_mark_font
+              });
+              bb.add_BB(_r15.bb);
 
               _this7.hitManager.add(paper, bb, _e3);
             } //rest_or_long_rests_detected |= true;
@@ -17217,9 +17332,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
             var _fx2 = meas_end_x - footer_width;
 
-            var _r12 = _this7.render_simile_mark_plain(draw, paper, (_sx2 + _fx2) / 2, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, _e3.numslash, false, "c");
+            var _r16 = _this7.render_simile_mark_plain(draw, paper, (_sx2 + _fx2) / 2, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, _e3.numslash, false, "c");
 
-            if (draw) _this7.hitManager.add(paper, _r12.bb, _e3);
+            if (draw) _this7.hitManager.add(paper, _r16.bb, _e3);
           } else {
             throw "Unkown measure wide instance detected";
           }
@@ -17288,17 +17403,21 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       bb.add_BB(r.bb);
 
       if (segno.number !== null) {
-        var _r13 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, lx, y, segno.number, text_size, "lb");
+        var _r17 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, lx, y, segno.number, text_size, "lb", null, null, {
+          font: this.param.repeat_mark_font
+        });
 
-        lx += _r13.width;
-        bb.add_BB(_r13.bb);
+        lx += _r17.width;
+        bb.add_BB(_r17.bb);
       }
 
       if (segno.opt !== null) {
-        var _r14 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, lx, y, "(" + segno.opt + ")", text_size, "lb");
+        var _r18 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, lx, y, "(" + segno.opt + ")", text_size, "lb", null, null, {
+          font: this.param.repeat_mark_font
+        });
 
-        lx += _r14.width;
-        bb.add_BB(_r14.bb);
+        lx += _r18.width;
+        bb.add_BB(_r18.bb);
       }
 
       return {
@@ -17325,11 +17444,13 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
       if (align[0] == "r") {
         if (coda.number !== null) {
-          var _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, y, //img_y + img_height,
-          coda.number, text_size, "rb");
+          var _r19 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x, y, //img_y + img_height,
+          coda.number, text_size, "rb", null, null, {
+            font: this.param.repeat_mark_font
+          });
 
-          width += _r15.width;
-          bb.add_BB(_r15.bb);
+          width += _r19.width;
+          bb.add_BB(_r19.bb);
         }
 
         var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uniE048"], //coda.svg
@@ -17337,18 +17458,20 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         width += img_width;
         bb.add_BB(r.bb);
       } else if (align[0] == "l") {
-        var _r16 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uniE048"], // coda.svg
+        var _r20 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uniE048"], // coda.svg
         x, y, img_width, img_height, "lb", true);
 
         width += img_width;
-        bb.add_BB(_r16.bb);
+        bb.add_BB(_r20.bb);
 
         if (coda.number !== null) {
-          var _r17 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x + width, y, //img_y + img_height,
-          coda.number, text_size, "lb");
+          var _r21 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, x + width, y, //img_y + img_height,
+          coda.number, text_size, "lb", null, null, {
+            font: this.param.repeat_mark_font
+          });
 
-          width += _r17.width;
-          bb.add_BB(_r17.bb);
+          width += _r21.width;
+          bb.add_BB(_r21.bb);
         }
       } else {
         throw "NOT SUPPORTED";
@@ -17461,32 +17584,32 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         bb.add_BB(r.bb);
       }
 
-      for (var _r18 = 0; _r18 < numslash; ++_r18) {
+      for (var _r22 = 0; _r22 < numslash; ++_r22) {
         var y = y_body_base + row_height / 2;
-        x += (h + i) * _r18;
+        x += (h + i) * _r22;
 
         if (draw) {
           var points = [[x, y + _5lines_intv * 1], [x + h, y + _5lines_intv * 1], [x + h + H, y - _5lines_intv * 1], [x + H, y - _5lines_intv * 1]];
 
-          var _r19 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasPolygon"](paper, points, true, true);
+          var _r23 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasPolygon"](paper, points, true, true);
 
-          bb.add_BB(_r19.bb);
+          bb.add_BB(_r23.bb);
         }
       }
 
       if (draw) {
-        var _r20 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](paper, x + h + H - cm, y_body_base + row_height / 2 + _5lines_intv * 0.5, cr);
+        var _r24 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](paper, x + h + H - cm, y_body_base + row_height / 2 + _5lines_intv * 0.5, cr);
 
-        bb.add_BB(_r20.bb);
+        bb.add_BB(_r24.bb);
       }
 
       if (put_boundary) {
         if (draw) {
-          var _r21 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, x0 + width / 2, y_body_base, x0 + width / 2, y_body_base + row_height, {
+          var _r25 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, x0 + width / 2, y_body_base, x0 + width / 2, y_body_base + row_height, {
             width: 1
           });
 
-          bb.add_BB(_r21.bb);
+          bb.add_BB(_r25.bb);
         }
       }
 
@@ -17530,7 +17653,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       var lower_width = 0;
       var tensions_width = 0;
       var onbass_width = 0;
-      var rootCharHeight = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](B, null, false, canvas.ratio, canvas.zoom).height; // Position parameters
+      var rootCharHeight = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](B, null, canvas.ratio, canvas.zoom).height; // Position parameters
 
       var upper_tension_y_offset = 0; // Baseline is middle of main chord character
 
@@ -17550,9 +17673,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       var space_char_width = 0.3;
 
       if (root) {
-        var _r22 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x, y + param.row_height / 2 + chord_offset_on_bass, root[0], B, "lm", B * char_width_scale, !draw);
+        var _r26 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x, y + param.row_height / 2 + chord_offset_on_bass, root[0], B, "lm", B * char_width_scale, !draw);
 
-        bb.add_BB(_r22.bb);
+        bb.add_BB(_r26.bb);
         upper_width = B * main_char_width;
         lower_width = B * main_char_width;
 
@@ -17562,19 +17685,19 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
           if (root[1] == "b") {
             if (draw) {
-              var _r23 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266D"], // flat.svg
+              var _r27 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266D"], // flat.svg
               x + upper_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, acc_width, acc_height, "lb");
 
-              bb.add_BB(_r23.bb);
+              bb.add_BB(_r27.bb);
             }
 
             upper_width += acc_width;
           } else {
             if (draw) {
-              var _r24 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266F"], // sharp.svg
+              var _r28 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266F"], // sharp.svg
               x + upper_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, acc_width, acc_height, "lb");
 
-              bb.add_BB(_r24.bb);
+              bb.add_BB(_r28.bb);
             }
 
             upper_width += acc_width;
@@ -17602,116 +17725,116 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           return !(e.type == "tension" && e.value == "b");
         });
 
-        var _r25 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x00d8), B * 0.5, "lb", B * 0.5, !draw);
+        var _r29 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x00d8), B * 0.5, "lb", B * 0.5, !draw);
 
-        lower_width += _r25.width;
-        bb.add_BB(_r25.bb);
+        lower_width += _r29.width;
+        bb.add_BB(_r29.bb);
       }
 
       _3rdelem.forEach(function (e) {
         if (e.type == "M"
         /* && _6791113suselem.length > 0*/
         ) {
-            var _r26 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x0394), B * 0.5, "lb", B * 0.5, !draw);
+            var _r30 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x0394), B * 0.5, "lb", B * 0.5, !draw);
 
-            lower_width += _r26.width;
-            bb.add_BB(_r26.bb);
+            lower_width += _r30.width;
+            bb.add_BB(_r30.bb);
           } else if (e.type == "triad" && e.value == "m") {
-          var _r27 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x2013), B * 0.5, "lb", B * 0.5, !draw);
+          var _r31 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x2013), B * 0.5, "lb", B * 0.5, !draw);
 
-          lower_width += _r27.width;
-          bb.add_BB(_r27.bb);
+          lower_width += _r31.width;
+          bb.add_BB(_r31.bb);
         } else if (e.type == "triad" && e.value == "dim") {
-          var _r28 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x004f), B * 0.5, "lb", B * 0.5, !draw);
+          var _r32 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, String.fromCharCode(0x004f), B * 0.5, "lb", B * 0.5, !draw);
 
-          lower_width += _r28.width;
-          bb.add_BB(_r28.bb);
+          lower_width += _r32.width;
+          bb.add_BB(_r32.bb);
         } else {// Unkown type
         }
       });
 
       _6791113suselem.forEach(function (e) {
         if (e.type == "dig") {
-          var _r29 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, e.value, B * 0.5, "lb", B * 0.5, !draw);
+          var _r33 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, e.value, B * 0.5, "lb", B * 0.5, !draw);
 
-          lower_width += _r29.width;
-          bb.add_BB(_r29.bb);
+          lower_width += _r33.width;
+          bb.add_BB(_r33.bb);
         } else if (e.type == "sus") {
-          var _r30 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, e.type + (e.param ? e.param : ""), B * 0.5, "lb", B * 0.8, !draw);
+          var _r34 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, e.type + (e.param ? e.param : ""), B * 0.5, "lb", B * 0.8, !draw);
 
-          lower_width += _r30.width;
-          bb.add_BB(_r30.bb);
+          lower_width += _r34.width;
+          bb.add_BB(_r34.bb);
         } else if (e.type == "tension" && e.value == "add") {
-          var _r31 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, e.value + (e.param ? e.param : ""), B * 0.5, "lb", B * 0.8, !draw);
+          var _r35 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + lower_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + lower_onbass_y_offset, e.value + (e.param ? e.param : ""), B * 0.5, "lb", B * 0.8, !draw);
 
-          lower_width += _r31.width;
-          bb.add_BB(_r31.bb);
+          lower_width += _r35.width;
+          bb.add_BB(_r35.bb);
         }
       });
 
       _5thelem.forEach(function (e) {
         if (e.type == "tension" && e.value == "b") {
-          var _r32 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + upper_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, "-5", B * 0.5, "lb", B * 0.5, !draw);
+          var _r36 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + upper_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, "-5", B * 0.5, "lb", B * 0.5, !draw);
 
-          upper_width += _r32.width;
-          bb.add_BB(_r32.bb);
+          upper_width += _r36.width;
+          bb.add_BB(_r36.bb);
         } else if (e.type == "tension" && e.value == "#") {
-          var _r33 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + upper_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, "+5", B * 0.5, "lb", B * 0.5, !draw);
+          var _r37 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + upper_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, "+5", B * 0.5, "lb", B * 0.5, !draw);
 
-          upper_width += _r33.width;
-          bb.add_BB(_r33.bb);
+          upper_width += _r37.width;
+          bb.add_BB(_r37.bb);
         } else if (e.type == "triad" && e.value == "+") {
-          var _r34 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + upper_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, "+", B * 0.5, "lb", B * 0.5, !draw);
+          var _r38 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + upper_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, "+", B * 0.5, "lb", B * 0.5, !draw);
 
-          upper_width += _r34.width;
-          bb.add_BB(_r34.bb);
+          upper_width += _r38.width;
+          bb.add_BB(_r38.bb);
         }
       });
 
       if (_alteredelem.length > 0) {
         var tensions_pos = Math.max(upper_width, lower_width); // Assume onbass below does not exceed lower_width
 
-        var _r35 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, "(", B * 0.5, "lb", B * 0.5, !draw);
+        var _r39 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, "(", B * 0.5, "lb", B * 0.5, !draw);
 
-        tensions_width += _r35.width;
-        bb.add_BB(_r35.bb);
-        var h = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](B * 0.5, null, false, canvas.ratio, canvas.zoom).height;
+        tensions_width += _r39.width;
+        bb.add_BB(_r39.bb);
+        var h = _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](B * 0.5, null, canvas.ratio, canvas.zoom).height;
 
         _alteredelem.forEach(function (e, index) {
           if (e.type == "tension" && (e.value == "b" || e.value == "#")) {
             if (draw) {
-              var _r37 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"][e.value == "b" ? "uni266D" : "uni266F"], // flat.svg,
+              var _r41 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"][e.value == "b" ? "uni266D" : "uni266F"], // flat.svg,
               x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, B * 0.2, h, "lb");
 
-              bb.add_BB(_r37.bb);
+              bb.add_BB(_r41.bb);
             }
 
             tensions_width += B * 0.2;
 
-            var _r36 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, e.param, B * 0.5, "lb", B * 0.5, !draw);
+            var _r40 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, e.param, B * 0.5, "lb", B * 0.5, !draw);
 
-            tensions_width += _r36.width;
-            bb.add_BB(_r36.bb);
+            tensions_width += _r40.width;
+            bb.add_BB(_r40.bb);
           } else if (e.type == "tension" && e.value == "omit") {
-            var _r38 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, e.value + e.param, // take same appropach as sus/add.
+            var _r42 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, e.value + e.param, // take same appropach as sus/add.
             B * 0.5, "lb", B * 0.9, // "omit" is 4 chars then expand a little bit
             !draw);
 
-            tensions_width += _r38.width;
-            bb.add_BB(_r38.bb);
+            tensions_width += _r42.width;
+            bb.add_BB(_r42.bb);
           }
 
           if (index != _alteredelem.length - 1) {
-            var _r39 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, ", ", B * 0.5, "lb", B * 0.5, !draw);
+            var _r43 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, ", ", B * 0.5, "lb", B * 0.5, !draw);
 
-            tensions_width += _r39.width;
-            bb.add_BB(_r39.bb);
+            tensions_width += _r43.width;
+            bb.add_BB(_r43.bb);
           }
         });
 
-        _r35 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, ")", B * 0.5, "lb", B * 0.5, !draw);
-        tensions_width += _r35.width;
-        bb.add_BB(_r35.bb);
+        _r39 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + tensions_pos + tensions_width, y + param.row_height / 2 + chord_offset_on_bass + upper_tension_y_offset, ")", B * 0.5, "lb", B * 0.5, !draw);
+        tensions_width += _r39.width;
+        bb.add_BB(_r39.bb);
       }
 
       if (onbass != null) {
@@ -17719,16 +17842,16 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         var onbass_pos = param.on_bass_style == "below" ? x : x + lower_width;
         var on_bass_y_offset = param.on_bass_style == "below" ? 0 : lower_onbass_y_offset;
 
-        var _r40 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, onbass_pos, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, "/" + onbass[0], B * 0.45, param.on_bass_style == "below" ? "lt" : "lb", B * 0.5, !draw);
+        var _r44 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, onbass_pos, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, "/" + onbass[0], B * 0.45, param.on_bass_style == "below" ? "lt" : "lb", B * 0.5, !draw);
 
-        onbass_width += _r40.width;
-        bb.add_BB(_r40.bb);
+        onbass_width += _r44.width;
+        bb.add_BB(_r44.bb);
 
         if (onbass.length == 2) {
           if (onbass[1] == "b") {
             if (draw) {
               var rd = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266D"], // flat.svg
-              onbass_pos + onbass_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, B * 0.2, _r40.height, param.on_bass_style == "below" ? "lt" : "lb", true);
+              onbass_pos + onbass_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, B * 0.2, _r44.height, param.on_bass_style == "below" ? "lt" : "lb", true);
               bb.add_BB(rd.bb);
             }
 
@@ -17736,7 +17859,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           } else {
             if (draw) {
               var _rd = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasImage"](canvas, _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"]["uni266F"], // sharp.svg 
-              onbass_pos + onbass_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, B * 0.2, _r40.height, param.on_bass_style == "below" ? "lt" : "lb", true);
+              onbass_pos + onbass_width, y + param.row_height / 2 + rootCharHeight / 2 + chord_offset_on_bass + on_bass_below_a_margin + on_bass_y_offset, B * 0.2, _r44.height, param.on_bass_style == "below" ? "lt" : "lb", true);
 
               bb.add_BB(_rd.bb);
             }
@@ -17798,8 +17921,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           drawn: false,
           width: 0,
           actual_boundary: 0,
-          bb: bb,
-          bb2: bb2
+          bb: null,
+          bb2: null
         };
       }
 
@@ -17827,9 +17950,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
           for (var li = 0; li < nline; ++li) {
             if (draw) {
-              var _r41 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + li * barintv, y_body_base, x + li * barintv, y_body_base + row_height);
+              var _r45 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + li * barintv, y_body_base, x + li * barintv, y_body_base + row_height);
 
-              bb.add_BB(_r41.bb);
+              bb.add_BB(_r45.bb);
             }
           }
 
@@ -17842,17 +17965,17 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           actual_boundary = x;
 
           if (draw) {
-            var _r42 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x, y_body_base, x, y_body_base + row_height, {
+            var _r46 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x, y_body_base, x, y_body_base + row_height, {
               width: 2
             });
 
-            bb.add_BB(_r42.bb);
-            _r42 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 3, y_body_base, x + 3, y_body_base + row_height);
-            bb.add_BB(_r42.bb);
-            _r42 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 7, y_body_base + row_height / 4 * 1.5, 1);
-            bb.add_BB(_r42.bb);
-            _r42 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 7, y_body_base + row_height / 4 * 2.5, 1);
-            bb.add_BB(_r42.bb);
+            bb.add_BB(_r46.bb);
+            _r46 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 3, y_body_base, x + 3, y_body_base + row_height);
+            bb.add_BB(_r46.bb);
+            _r46 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 7, y_body_base + row_height / 4 * 1.5, 1);
+            bb.add_BB(_r46.bb);
+            _r46 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 7, y_body_base + row_height / 4 * 2.5, 1);
+            bb.add_BB(_r46.bb);
           }
 
           break;
@@ -17864,26 +17987,28 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           xshift = side == "end" ? 0 : 0;
 
           if (draw) {
-            var _r43 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + xshift, y_body_base + row_height / 4 * 1.5, 1);
+            var _r47 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + xshift, y_body_base + row_height / 4 * 1.5, 1);
 
-            bb.add_BB(_r43.bb);
-            _r43 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + xshift, y_body_base + row_height / 4 * 2.5, 1);
-            bb.add_BB(_r43.bb);
-            _r43 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 4, y_body_base, x + xshift + 4, y_body_base + row_height);
-            bb.add_BB(_r43.bb);
-            _r43 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 7, y_body_base, x + xshift + 7, y_body_base + row_height, {
+            bb.add_BB(_r47.bb);
+            _r47 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + xshift, y_body_base + row_height / 4 * 2.5, 1);
+            bb.add_BB(_r47.bb);
+            _r47 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 4, y_body_base, x + xshift + 4, y_body_base + row_height);
+            bb.add_BB(_r47.bb);
+            _r47 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 7, y_body_base, x + xshift + 7, y_body_base + row_height, {
               width: 2
             });
-            bb.add_BB(_r43.bb);
+            bb.add_BB(_r47.bb);
           }
 
           if (e0.times !== null && (e0.ntimes || e0.times != 2)) {
             var stimes = e0.ntimes == true ? "X" : "" + e0.times;
 
             if (draw) {
-              var _r44 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + xshift + w, y_body_base + row_height + param.xtimes_mark_y_margin, "(" + stimes + " times)", param.base_font_size / 2, "rt");
+              var _r48 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + xshift + w, y_body_base + row_height + param.xtimes_mark_y_margin, "(" + stimes + " times)", param.base_font_size / 2, "rt", null, null, {
+                font: param.repeat_mark_font
+              });
 
-              bb2.add_BB(_r44.bb);
+              bb2.add_BB(_r48.bb);
             }
           }
 
@@ -17895,37 +18020,39 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           actual_boundary = x + w / 2;
 
           if (draw) {
-            var _r45 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x, y_body_base + row_height / 4 * 1.5, 1);
+            var _r49 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x, y_body_base + row_height / 4 * 1.5, 1);
 
-            bb.add_BB(_r45.bb);
-            _r45 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x, y_body_base + row_height / 4 * 2.5, 1);
-            bb.add_BB(_r45.bb);
-            _r45 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 4, y_body_base, x + 4, y_body_base + row_height);
-            bb.add_BB(_r45.bb);
-            _r45 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 7, y_body_base, x + 7, y_body_base + row_height, {
+            bb.add_BB(_r49.bb);
+            _r49 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x, y_body_base + row_height / 4 * 2.5, 1);
+            bb.add_BB(_r49.bb);
+            _r49 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 4, y_body_base, x + 4, y_body_base + row_height);
+            bb.add_BB(_r49.bb);
+            _r49 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 7, y_body_base, x + 7, y_body_base + row_height, {
               width: 2
             });
-            bb.add_BB(_r45.bb);
-            _r45 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 10, y_body_base, x + 10, y_body_base + row_height);
-            bb.add_BB(_r45.bb);
+            bb.add_BB(_r49.bb);
+            _r49 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + 10, y_body_base, x + 10, y_body_base + row_height);
+            bb.add_BB(_r49.bb);
           }
 
           if (e0.times !== null && (e0.ntimes || e0.times != 2)) {
             var _stimes = e0.ntimes == true ? "X" : "" + e0.times;
 
             if (draw) {
-              var _r46 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + 8, y_body_base + row_height, "(" + _stimes + " times)", param.base_font_size / 2, "rt");
+              var _r50 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, x + 8, y_body_base + row_height + param.xtimes_mark_y_margin, "(" + _stimes + " times)", param.base_font_size / 2, "rt", null, null, {
+                font: param.repeat_mark_font
+              });
 
-              bb2.add_BB(_r46.bb);
+              bb2.add_BB(_r50.bb);
             }
           }
 
           if (draw) {
-            var _r47 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 14, y_body_base + row_height / 4 * 1.5, 1);
+            var _r51 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 14, y_body_base + row_height / 4 * 1.5, 1);
 
-            bb.add_BB(_r47.bb);
-            _r47 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 14, y_body_base + row_height / 4 * 2.5, 1);
-            bb.add_BB(_r47.bb);
+            bb.add_BB(_r51.bb);
+            _r51 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasCircle"](canvas, x + 14, y_body_base + row_height / 4 * 2.5, 1);
+            bb.add_BB(_r51.bb);
           }
 
           break;
@@ -17937,13 +18064,13 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           actual_boundary = x + w;
 
           if (draw) {
-            var _r48 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift, y_body_base, x + xshift, y_body_base + row_height);
+            var _r52 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift, y_body_base, x + xshift, y_body_base + row_height);
 
-            bb.add_BB(_r48.bb);
-            _r48 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 3, y_body_base, x + xshift + 3, y_body_base + row_height, {
+            bb.add_BB(_r52.bb);
+            _r52 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](canvas, x + xshift + 3, y_body_base, x + xshift + 3, y_body_base + row_height, {
               width: 2
             });
-            bb.add_BB(_r48.bb);
+            bb.add_BB(_r52.bb);
           }
 
           break;
@@ -17965,7 +18092,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         width: w,
         actual_boundary: actual_boundary,
         bb: bb,
-        bb2: bb2
+        bb2: bb2.width() > 0 ? bb2 : null
       };
     }
   }]);
@@ -18381,7 +18508,7 @@ var fontData = {
 /*!*********************************!*\
   !*** ./src/renderer/graphic.js ***!
   \*********************************/
-/*! exports provided: BoundingBox, CanvasRect, CanvasCircle, CanvasLine, CanvasPolygon, CanvasbBzierCurve, CanvasPath, fontDesc, GetCharProfile, CanvasText, CanvasTextWithBox, CanvasImage, svgLine, svgPath, svgArcBezie, GetPixelRatio, SetupHiDPICanvas, getFontSizeFromHeight, ReleaseCanvas, G_imgmap, PreloadImages, PreloadJsonFont */
+/*! exports provided: BoundingBox, CanvasRect, CanvasCircle, CanvasLine, CanvasPolygon, CanvasbBzierCurve, CanvasPath, fontDescSingle, fontDesc, GetCharProfile, CanvasText, CanvasTextWithBox, CanvasImage, svgLine, svgPath, svgArcBezie, GetPixelRatio, SetupHiDPICanvas, getFontSizeFromHeight, ReleaseCanvas, G_imgmap, PreloadImages, PreloadJsonFont */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -18393,6 +18520,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CanvasPolygon", function() { return CanvasPolygon; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CanvasbBzierCurve", function() { return CanvasbBzierCurve; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CanvasPath", function() { return CanvasPath; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "fontDescSingle", function() { return fontDescSingle; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "fontDesc", function() { return fontDesc; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GetCharProfile", function() { return GetCharProfile; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CanvasText", function() { return CanvasText; });
@@ -18689,12 +18817,35 @@ function CanvasPath(canvas, svgpathdata) {
          }
      }
      */
+} // confs as array
+
+function fontDescSingle(fsize, conf) {
+  //fontfamily,bold) {
+  var sc = "";
+  if (conf && conf["font-weight"]) sc += conf["font-weight"] + " ";
+  if (conf && conf["font-style"]) sc += conf["font-style"] + " ";
+  if (conf && conf["font-variant"]) sc += conf["font-variant"] + " ";
+  sc += fsize + "px ";
+  sc += conf && conf["font-family"] || "'Arial'"; // not the original config shoud have quotation mark if it means concrete font name. For generic name, quoation is not needed.
+
+  return sc;
+} // confs as array
+
+function fontDesc(fsize, confs) {
+  //fontfamily,bold) {
+  //return  (bold?"bold ":"")+fsize + "px '" + (fontfamily?fontfamily:"Arial") + "'";
+  var s = "";
+  if (!confs) return fsize + "px " + "'Arial'"; // Use default settings
+
+  confs.forEach(function (conf, i) {
+    var sc = fontDescSingle(fsize, conf);
+    s += sc;
+    if (i < confs.length - 1) s += ",";
+  });
+  return s;
 }
-function fontDesc(fsize, fontfamily, bold) {
-  return (bold ? "bold " : "") + fsize + "px '" + (fontfamily ? fontfamily : "Arial") + "'";
-}
-function GetCharProfile(fsize, fontfamily, bold, ratio, zoom) {
-  var font = fontDesc(fsize, fontfamily, bold);
+function GetCharProfile(fsize, confs, ratio, zoom) {
+  var font = fontDesc(fsize, confs);
   var refstr = font + "/" + ratio + "/" + zoom;
   var yroom = null;
   if (refstr in G_y_char_offsets) yroom = G_y_char_offsets[refstr];else {
@@ -18730,7 +18881,8 @@ function CanvasText(canvas, x, y, text, fsize, align, xwidth, notdraw, opt) {
 
   };
   var orgfont = context.font;
-  var font = fontDesc(fsize, opt ? opt.fontfamily : null, opt ? opt.bold : null);
+  var font = fontDesc(fsize, opt && opt.font); //opt?opt.fontfamily:null,opt?opt.bold:null);
+
   var yadjust = 0;
   var yroom = null;
   context.font = font; //bold + fsize + "px '" + fontfamily + "'";
@@ -18741,7 +18893,7 @@ function CanvasText(canvas, x, y, text, fsize, align, xwidth, notdraw, opt) {
     // DO othing
     context.textBaseline = tb[align[1]]; //tb[align[1]];
   } else {
-    yroom = GetCharProfile(fsize, opt ? opt.fontfamily : null, opt ? opt.bold : null, canvas.ratio, canvas.zoom);
+    yroom = GetCharProfile(fsize, opt && opt.font, canvas.ratio, canvas.zoom);
 
     if (align[1] == "t") {
       yadjust = -yroom.top_room;
@@ -19354,7 +19506,7 @@ var Renderer = /*#__PURE__*/function () {
             body_elements.push(e);
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopIndicator"]) {
             measure_wide_elements.push(e);
-          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["LongRestIndicator"]) {
+          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["LongRest"]) {
             measure_wide_elements.push(e);
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Simile"]) {
             // Simile is body elements when at least one another body element(including another simile) exsits, otherwise measure wide elements.

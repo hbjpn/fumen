@@ -60,6 +60,17 @@ var SR_RENDER_PARAM = {
     subtitle_font_size      : 12,
     artist_font_size        : 14, // 
     base_font_size          : 28, // Chord symbol font size
+    
+    // Font configs. Please refer to CSS font configs for the meaning of each variable. http://www.htmq.com/style/font.shtml .
+    // Font size config is done separately above. Gives as array with priority order.  
+    repeat_mark_font: [{
+        //"font-family": "'Times New Roman'", // make sure to include quation for font name.
+        //"font-style": "italic",
+        //"font-weight": "bold"
+    }],
+    title_font: [{
+        "font-weight": "bold"
+    }],
 
     // Row Settings 
     /// Vertical settings
@@ -88,12 +99,6 @@ var SR_RENDER_PARAM = {
     // Horizontal settings
     header_body_margin  : 2, // Margin between header and body (x-direction)
     body_footer_margin  : 2, // Margin between body and footer (x-direction)
-
-    repeat_mark_font: {
-        "font-family": "Times New Roman",
-        "font-style": "italic",
-        "font-weight": "bold"
-    },
 
     // Chord settings
     on_bass_style           : "right", // right|below
@@ -811,7 +816,7 @@ export class DefaultRenderer extends Renderer {
                 track.getVariable("TITLE"),
                 this.param.title_font_size,
                 "ct",
-                null, stage==1, {"bold":true}
+                null, stage==1, {font:this.param.title_font}
             );
 
             max_header_height = Math.max(max_header_height, this.param.y_title_offset + ri.height);
@@ -828,7 +833,7 @@ export class DefaultRenderer extends Renderer {
                 track.getVariable("SUB_TITLE"),
                 this.param.subtitle_font_size,
                 "ct",
-                null, stage==1, {"bold":false}
+                null, stage==1
             );
 
             max_header_height = Math.max(max_header_height, this.param.y_subtitle_offset + ri.height);
@@ -845,7 +850,7 @@ export class DefaultRenderer extends Renderer {
                 track.getVariable("ARTIST"),
                 this.param.artist_font_size,
                 "rt",
-                null, stage==1, {"bold":false}
+                null, stage==1
             );
 
             max_header_height = Math.max(max_header_height, this.param.y_artist_offset + ri.height);
@@ -1985,7 +1990,7 @@ export class DefaultRenderer extends Renderer {
                     reharsal_group.name,
                     param.reharsal_mark_font_size,
                     2, 
-                    graphic.GetCharProfile(param.reharsal_mark_font_size, null, false, paper.ratio, paper.zoom).height
+                    graphic.GetCharProfile(param.reharsal_mark_font_size, null, paper.ratio, paper.zoom).height
                 );
                 if(draw) this.hitManager.add(paper, r.bb, reharsal_group);
 
@@ -2070,7 +2075,7 @@ export class DefaultRenderer extends Renderer {
                     if(r.bb2) this.hitManager.add(paper, r.bb2, e);
                 } else if (e instanceof common.Time) {
                     let chord_str_height = graphic.GetCharProfile(
-                        param.base_font_size, null, false, paper.ratio, paper.zoom).height;
+                        param.base_font_size, null, paper.ratio, paper.zoom).height;
                     let row_height = yprof.rs.detected ?param.rs_area_height : param.row_height;
                     let cont_height = yprof.rs.detected ?param.rs_area_height : chord_str_height;
                     let left_margin = 2;
@@ -2157,7 +2162,7 @@ export class DefaultRenderer extends Renderer {
                         repeat_mark_y_base,
                         e.toString(),
                         param.base_font_size / 2,
-                        "rb"
+                        "rb", null, null, {font:param.repeat_mark_font}
                     );
                     this.hitManager.add(paper, r.bb, e);
                 } else if (e instanceof common.DalSegno) {
@@ -2167,7 +2172,7 @@ export class DefaultRenderer extends Renderer {
                         repeat_mark_y_base,
                         e.toString(),
                         param.base_font_size / 2,
-                        "rb"
+                        "rb", null, null, {font:param.repeat_mark_font}
                     );
                     this.hitManager.add(paper, r.bb, e);
                 } else if (e instanceof common.ToCoda) {
@@ -2185,7 +2190,7 @@ export class DefaultRenderer extends Renderer {
                         repeat_mark_y_base,
                         "To",
                         param.base_font_size / 2,
-                        "rb"
+                        "rb", null, null, {font:param.repeat_mark_font}
                     );
                     this.hitManager.add(paper, r.bb.add_BB(rt.bb), e);
                 } else if (e instanceof common.Fine) {
@@ -2195,7 +2200,7 @@ export class DefaultRenderer extends Renderer {
                         repeat_mark_y_base,
                         e.toString(),
                         param.base_font_size / 2,
-                        "rb"
+                        "rb", null, null, {font:param.repeat_mark_font}
                     );
                     this.hitManager.add(paper, r.bb, e);
                 } else {
@@ -2224,7 +2229,7 @@ export class DefaultRenderer extends Renderer {
                         ly + oy/2,
                         s,
                         param.base_font_size / 3,
-                        "lm"
+                        "lm", null, null, {font:param.repeat_mark_font}
                     );
                     if(draw) this.hitManager.add(paper, r.bb, e);
                 } else if (e instanceof common.LongRest) {
@@ -2362,6 +2367,7 @@ export class DefaultRenderer extends Renderer {
                 segno.number,
                 text_size,
                 "lb"
+                , null, null, {font:this.param.repeat_mark_font}
             );
             lx += r.width;
             bb.add_BB(r.bb);
@@ -2374,6 +2380,7 @@ export class DefaultRenderer extends Renderer {
                 "(" + segno.opt + ")",
                 text_size,
                 "lb"
+                , null, null, {font:this.param.repeat_mark_font}
             );
             lx += r.width;
             bb.add_BB(r.bb);
@@ -2404,7 +2411,7 @@ export class DefaultRenderer extends Renderer {
                     y, //img_y + img_height,
                     coda.number,
                     text_size,
-                    "rb"
+                    "rb", null, null, {font:this.param.repeat_mark_font}
                 );
                 width += r.width;
                 bb.add_BB(r.bb);
@@ -2437,7 +2444,8 @@ export class DefaultRenderer extends Renderer {
                     y, //img_y + img_height,
                     coda.number,
                     text_size,
-                    "lb"
+                    "lb",
+                    null, null, {font:this.param.repeat_mark_font}
                 );
                 width += r.width;
                 bb.add_BB(r.bb);
@@ -2682,7 +2690,7 @@ export class DefaultRenderer extends Renderer {
         var tensions_width = 0;
         var onbass_width = 0;
 
-        var rootCharHeight = graphic.GetCharProfile(B, null, false, canvas.ratio, canvas.zoom).height;
+        var rootCharHeight = graphic.GetCharProfile(B, null, canvas.ratio, canvas.zoom).height;
 
 
         // Position parameters
@@ -2924,7 +2932,7 @@ export class DefaultRenderer extends Renderer {
             );
             tensions_width += r.width;
             bb.add_BB(r.bb);
-            var h = graphic.GetCharProfile(B * 0.5, null, false, canvas.ratio, canvas.zoom).height;
+            var h = graphic.GetCharProfile(B * 0.5, null, canvas.ratio, canvas.zoom).height;
             _alteredelem.forEach((e, index) => {
                 if(e.type == "tension" && (e.value == "b" || e.value == "#")){
                     if (draw){
@@ -3248,7 +3256,7 @@ export class DefaultRenderer extends Renderer {
                             y_body_base + row_height + param.xtimes_mark_y_margin,
                             "(" + stimes + " times)",
                             param.base_font_size / 2,
-                            "rt"
+                            "rt", null, null, {font:param.repeat_mark_font}
                         );
                         bb2.add_BB(r.bb);
                     }

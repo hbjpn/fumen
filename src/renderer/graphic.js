@@ -222,12 +222,32 @@ export function CanvasPath(canvas, svgpathdata, fill=false, opt) {
     */
 }
 
-export function fontDesc(fsize,fontfamily,bold) {
-    return  (bold?"bold ":"")+fsize + "px '" + (fontfamily?fontfamily:"Arial") + "'";
+// confs as array
+export function fontDescSingle(fsize,conf){ //fontfamily,bold) {
+    let sc = "";
+    if(conf && conf["font-weight"])  sc += (conf["font-weight"]+" ");
+    if(conf && conf["font-style"])   sc += (conf["font-style"]+ " ");
+    if(conf && conf["font-variant"]) sc += (conf["font-variant"]+ " ");
+    sc += (fsize+ "px ");
+    sc += ((conf && conf["font-family"])||"'Arial'"); // not the original config shoud have quotation mark if it means concrete font name. For generic name, quoation is not needed.
+    return sc;
 }
 
-export function GetCharProfile(fsize,fontfamily,bold,ratio,zoom) {
-    let font = fontDesc(fsize,fontfamily,bold);
+// confs as array
+export function fontDesc(fsize,confs){ //fontfamily,bold) {
+    //return  (bold?"bold ":"")+fsize + "px '" + (fontfamily?fontfamily:"Arial") + "'";
+    let s = "";
+    if(!confs) return fsize+ "px "+"'Arial'"; // Use default settings
+    confs.forEach((conf,i)=>{
+        let sc = fontDescSingle(fsize, conf);
+        s += sc;
+        if(i < confs.length-1) s += ",";
+    });
+    return s;
+}
+
+export function GetCharProfile(fsize,confs,ratio,zoom) {
+    let font = fontDesc(fsize,confs);
     let refstr = font+"/"+ratio+"/"+zoom;
 
     let yroom = null;
@@ -262,7 +282,7 @@ export function CanvasText(canvas, x, y, text, fsize, align, xwidth, notdraw, op
         d: "top" // default
     };
     var orgfont = context.font;
-    let font = fontDesc(fsize, opt?opt.fontfamily:null,opt?opt.bold:null);
+    let font = fontDesc(fsize, opt && opt.font); //opt?opt.fontfamily:null,opt?opt.bold:null);
 
     let yadjust = 0;
     let yroom = null;
@@ -275,7 +295,7 @@ export function CanvasText(canvas, x, y, text, fsize, align, xwidth, notdraw, op
         context.textBaseline = tb[align[1]]; //tb[align[1]];
     
     }else{
-        yroom = GetCharProfile(fsize, opt?opt.fontfamily:null,opt?opt.bold:null,canvas.ratio,canvas.zoom);
+        yroom = GetCharProfile(fsize, opt && opt.font, canvas.ratio,canvas.zoom);
 
 
         if (align[1] == "t") {

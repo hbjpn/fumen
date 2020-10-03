@@ -123,6 +123,16 @@ export class Node {
         if(this.previousSiblingNode) this.previousSiblingNode.nextSiblingNode = this.nextSiblingNode;
         if(this.nextSiblingNode) this.nextSiblingNode.previousSiblingNode = this.previousSiblingNode;
     }
+
+    find(cond, recurse=false){
+        let ret = this.childNodes.filter(cond);
+        if(recurse){
+            this.childNodes.forEach(c=>{
+                ret = ret.concat( c.find(cond, recurse) );
+            });
+        }
+        return ret;
+    }
 }
 
 export class Element extends Node {
@@ -1207,6 +1217,27 @@ export class TemplateString extends Node
             tpl = tpl.replace(new RegExp("\\${" + k + "}","g"), this.dict[k]);
         });
         return tpl;
+    }
+}
+
+/**
+ * Virtual/Abstract element used for GUI based editting. Not appears explicitly in the original code nor in rendered image.
+ * Only used in HitManager
+ */
+export class VirtualElement
+{
+}
+
+/**
+ * Represents the concept of row in the renderer
+ * How to use this is up to renderer
+ */
+export class GenericRow extends VirtualElement
+{
+    constructor(type, param){
+        super();
+        this.type = type;
+        this.param = param; // Any element can be associated.
     }
 }
 

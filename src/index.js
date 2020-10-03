@@ -16,4 +16,6 @@ export {
     Chord, Rest, LongRest, Comment, Lyric,
     MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile,
     LoopIndicator,
-    Time, Coda, Segno, ToCoda, DalSegno, DaCapo, Fine, Simile, Variable, RawSpaces, TemplateString } from "./common/common";
+    Time, Coda, Segno, ToCoda, DalSegno, DaCapo, Fine, Simile, Variable,
+    RawSpaces, TemplateString,
+    GenericRow } from "./common/common";

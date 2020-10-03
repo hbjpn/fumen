@@ -1232,6 +1232,16 @@ export class DefaultRenderer extends Renderer {
                     // try again next page
                     pei = pei - 1;
                 } else {
+                    let rb = [row_elements_list[0], row_elements_list[row_elements_list.length-1]];
+                    if(r.rm_detected){
+                        if(row_elements_list[0].renderprop.rg_from_here) rb[0] = row_elements_list[0].renderprop.rg_from_here;
+                        this.hitManager.add(canvas, 
+                            new graphic.BoundingBox(0, y_base, this.param.paper_width / this.param.text_size, r.mu_y - y_base),
+                            new common.GenericRow("RM", rb));
+                    }
+                    this.hitManager.add(canvas, 
+                        new graphic.BoundingBox(0, r.mu_y, this.param.paper_width / this.param.text_size, r.y_base - r.mu_y),
+                        new common.GenericRow("BODY", rb));
                     y_base = r.y_base;
                 }
             }
@@ -1937,9 +1947,7 @@ export class DefaultRenderer extends Renderer {
 
         var yprof = this.screening_y_areas(row_elements_list, y_base, param, show_staff, 
             inner_reharsal_mark);
-
-        var y_next_base = yprof.end.y;
-
+        
         var y_body_or_rs_base = yprof.rs.detected ? yprof.rs.y : yprof.body.y;
         var repeat_mark_y_base = yprof.rs.detected ? 
             yprof.rs.y - param.repeat_mark_y_margin :
@@ -1947,7 +1955,7 @@ export class DefaultRenderer extends Renderer {
             
 
         // if ylimit is specified, and drawing region surpass that limit, do not render
-        if (ylimit !== null && y_next_base > ylimit) {
+        if (ylimit !== null && yprof.end.y > ylimit) {
             return null;
         }
 
@@ -2341,7 +2349,7 @@ export class DefaultRenderer extends Renderer {
         }
 
         // return {y_base:y_base + param.row_height + param.row_margin};
-        return { y_base: y_next_base };
+        return { rm_detected: yprof.rm.detected, mu_y: yprof.mu.y, y_base: yprof.end.y };
     }
 
     draw_segno_plain(paper, x, y, segno, B) {

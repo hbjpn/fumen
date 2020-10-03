@@ -124,6 +124,13 @@ export class Node {
         if(this.nextSiblingNode) this.nextSiblingNode.previousSiblingNode = this.previousSiblingNode;
     }
 
+    forEach(cb){
+        // removal tolerable for each
+        let cs = [];
+        this.childNodes.forEach(n=>cs.push(n));
+        cs.forEach(cb);
+    }
+
     find(cond, recurse=false){
         let ret = this.childNodes.filter(cond);
         if(recurse){
@@ -196,6 +203,11 @@ export class ReharsalGroup extends Element{
         super();
         this.name = name;
         this.inline = inline;
+    }
+    exportCode(){
+        let code = "["+this.name+"]\n";
+        code += super.exportCode();
+        return code;
     }
 }
 

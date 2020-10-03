@@ -11936,6 +11936,16 @@ var Node = /*#__PURE__*/function () {
       if (this.nextSiblingNode) this.nextSiblingNode.previousSiblingNode = this.previousSiblingNode;
     }
   }, {
+    key: "forEach",
+    value: function forEach(cb) {
+      // removal tolerable for each
+      var cs = [];
+      this.childNodes.forEach(function (n) {
+        return cs.push(n);
+      });
+      cs.forEach(cb);
+    }
+  }, {
     key: "find",
     value: function find(cond) {
       var recurse = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
@@ -12072,6 +12082,15 @@ var ReharsalGroup = /*#__PURE__*/function (_Element2) {
     _this3.inline = inline;
     return _this3;
   }
+
+  _createClass(ReharsalGroup, [{
+    key: "exportCode",
+    value: function exportCode() {
+      var code = "[" + this.name + "]\n";
+      code += _get(_getPrototypeOf(ReharsalGroup.prototype), "exportCode", this).call(this);
+      return code;
+    }
+  }]);
 
   return ReharsalGroup;
 }(Element);
@@ -13989,7 +14008,7 @@ var HitManager = /*#__PURE__*/function () {
 /*!**********************!*\
   !*** ./src/index.js ***!
   \**********************/
-/*! exports provided: Parser, DefaultRenderer, SetupHiDPICanvas, GetCharProfile, CanvasTextWithBox, CanvasText, getFontSizeFromHeight, ReharsalGroup, Block, Chord, Rest, LongRest, Comment, Lyric, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, LoopIndicator, Time, Coda, Segno, ToCoda, DalSegno, DaCapo, Fine, Simile, Variable, RawSpaces, TemplateString, GenericRow */
+/*! exports provided: Parser, DefaultRenderer, SetupHiDPICanvas, GetCharProfile, CanvasTextWithBox, CanvasText, getFontSizeFromHeight, ReharsalGroup, Block, Measure, Chord, Rest, LongRest, Comment, Lyric, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, LoopIndicator, Time, Coda, Segno, ToCoda, DalSegno, DaCapo, Fine, Simile, Variable, RawSpaces, TemplateString, GenericRow */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -14017,6 +14036,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ReharsalGroup", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["ReharsalGroup"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Block", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Block"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Measure", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Measure"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Chord", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Chord"]; });
 
@@ -15018,8 +15039,9 @@ var Parser = /*#__PURE__*/function () {
           s = r.s;
         }
 
-        var rg = new _common_common__WEBPACK_IMPORTED_MODULE_1__["ReharsalGroup"](rgName, rgtype == "inline");
-        if (rgtype != "anonymous") rg.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["TemplateString"]("[${name}]", rg));
+        var rg = new _common_common__WEBPACK_IMPORTED_MODULE_1__["ReharsalGroup"](rgName, rgtype == "inline"); //if(rgtype != "anonymous")
+        //    rg.appendChild(new common.TemplateString("[${name}]", rg));
+
         this.context.contiguous_line_break = 0;
         var loop_cnt = 0;
         var MAX_LOOP = 1000; // eslint-disable-next-line no-constant-condition

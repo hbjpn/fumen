@@ -833,8 +833,8 @@ export class Parser {
             let rg = new common.ReharsalGroup(
                 rgName, rgtype=="inline");
             
-            if(rgtype != "anonymous")
-                rg.appendChild(new common.TemplateString("[${name}]", rg));
+            //if(rgtype != "anonymous")
+            //    rg.appendChild(new common.TemplateString("[${name}]", rg));
             
             this.context.contiguous_line_break = 0;
 

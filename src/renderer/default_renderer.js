@@ -1232,8 +1232,8 @@ export class DefaultRenderer extends Renderer {
                     // try again next page
                     pei = pei - 1;
                 } else {
-                    let rb = [row_elements_list[0], row_elements_list[row_elements_list.length-1]];
                     if(r.rm_detected){
+                        let rb = [row_elements_list[0], row_elements_list[row_elements_list.length-1]];
                         if(row_elements_list[0].renderprop.rg_from_here) rb[0] = row_elements_list[0].renderprop.rg_from_here;
                         this.hitManager.add(canvas, 
                             new graphic.BoundingBox(0, y_base, this.param.paper_width / this.param.text_size, r.mu_y - y_base),
@@ -1241,7 +1241,7 @@ export class DefaultRenderer extends Renderer {
                     }
                     this.hitManager.add(canvas, 
                         new graphic.BoundingBox(0, r.mu_y, this.param.paper_width / this.param.text_size, r.y_base - r.mu_y),
-                        new common.GenericRow("BODY", rb));
+                        new common.GenericRow("BODY", [row_elements_list[0], row_elements_list[row_elements_list.length-1]]));
                     y_base = r.y_base;
                 }
             }

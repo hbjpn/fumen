@@ -16417,7 +16417,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
               case 58:
                 if (!(_pei < yse.length)) {
-                  _context.next = 89;
+                  _context.next = 88;
                   break;
                 }
 
@@ -16426,12 +16426,12 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                   break;
                 }
 
-                _context.next = 86;
+                _context.next = 85;
                 break;
 
               case 62:
                 if (!(yse[_pei].type == "meas")) {
-                  _context.next = 86;
+                  _context.next = 85;
                   break;
                 }
 
@@ -16466,26 +16466,25 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 if (this.param.background_color) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasRect"](canvas, 0, 0, this.param.paper_width / this.param.text_size, this.param.paper_height / this.param.text_size, this.param.background_color); // try again next page
 
                 _pei = _pei - 1;
-                _context.next = 86;
+                _context.next = 85;
                 break;
 
               case 82:
-                rb = [_row_elements_list3[0], _row_elements_list3[_row_elements_list3.length - 1]];
-
                 if (r.rm_detected) {
+                  rb = [_row_elements_list3[0], _row_elements_list3[_row_elements_list3.length - 1]];
                   if (_row_elements_list3[0].renderprop.rg_from_here) rb[0] = _row_elements_list3[0].renderprop.rg_from_here;
                   this.hitManager.add(canvas, new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"](0, y_base, this.param.paper_width / this.param.text_size, r.mu_y - y_base), new _common_common__WEBPACK_IMPORTED_MODULE_2__["GenericRow"]("RM", rb));
                 }
 
-                this.hitManager.add(canvas, new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"](0, r.mu_y, this.param.paper_width / this.param.text_size, r.y_base - r.mu_y), new _common_common__WEBPACK_IMPORTED_MODULE_2__["GenericRow"]("BODY", rb));
+                this.hitManager.add(canvas, new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"](0, r.mu_y, this.param.paper_width / this.param.text_size, r.y_base - r.mu_y), new _common_common__WEBPACK_IMPORTED_MODULE_2__["GenericRow"]("BODY", [_row_elements_list3[0], _row_elements_list3[_row_elements_list3.length - 1]]));
                 y_base = r.y_base;
 
-              case 86:
+              case 85:
                 ++_pei;
                 _context.next = 58;
                 break;
 
-              case 89:
+              case 88:
                 if (show_footer) {
                   songname = null;
                   title = track.getVariable("TITLE");
@@ -16505,7 +16504,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                   height: score_height
                 });
 
-              case 92:
+              case 91:
               case "end":
                 return _context.stop();
             }

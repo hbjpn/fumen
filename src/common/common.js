@@ -1087,29 +1087,34 @@ export class MeasureBoundary extends Element {
     }
     // Factory function to make a new boundary from 2 boundaries
     static combine(b0, b1){
+        // s,d,b,e,B,f,r,n
+        // 8C2 = 56
+        // define priority order, then define some exceptions
+        let priority = {n:0, s:1, d:2, f:3, r:4, b:5, e:6, B:7};
         let combineRule = {
-            ss: ()=>new MeasureBoundaryMark(1),
-            sd: ()=>new MeasureBoundaryMark(2),
-            sb: ()=>new LoopBeginMark(),
-            sn: ()=>new MeasureBoundaryMark(1),
-            ds: ()=>new MeasureBoundaryMark(2),
-            dd: ()=>new MeasureBoundaryMark(2),
-            db: ()=>new LoopBeginMark(),
-            dn: ()=>new MeasureBoundaryMark(2),
-            es: ()=>new LoopEndMark({ntimes:b0.ntimes, times:b0.times}),
-            ed: ()=>new LoopEndMark({ntimes:b0.ntimes, times:b0.times}),
-            ee: ()=>new LoopEndMark({ntimes:b0.ntimes, times:b0.times}), // Normally this should not happen
-            eb: ()=>new LoopBothMark({ntimes:b0.ntimes, times:b0.times}),
-            en: ()=>new LoopEndMark({ntimes:b0.ntimes, times:b0.times}),
-            bb: ()=>new LoopBeginMark(), // Normally this hould not happen
-            BB: ()=>new LoopBothMark({ntimes:b0.ntimes, times:b0.times}), // Normally this hould not happen
-            fn: ()=>new MeasureBoundaryFinMark(),
-            rr: ()=>new MeasureBoundaryDblSimile(),
-            ns: ()=>new MeasureBoundaryMark(1),
-            nd: ()=>new MeasureBoundaryMark(2),
-            nb: ()=>new LoopBeginMark(),
+            eb: ()=>new LoopBothMark({ntimes:b0.ntimes, times:b0.times})
         };
-        let newB = combineRule[b0.typestr+b1.typestr]();
+        let factory = {
+            s: ()=>new MeasureBoundaryMark(1),
+            d: ()=>new MeasureBoundaryMark(2),
+            b: ()=>new LoopBeginMark(),
+            e: ()=>new LoopEndMark({ntimes:b0.ntimes, times:b0.times}),
+            B: ()=>new LoopBothMark({ntimes:b0.ntimes, times:b0.times}),
+            f: ()=>new MeasureBoundaryFinMark(),
+            r: ()=>new MeasureBoundaryDblSimile(),
+            n: ()=>null
+        };
+        let key = b0.typestr+b1.typestr;
+        let newB = null;
+        if(key in combineRule){
+            newB = combineRule[key]();
+        }else{
+            if(priority[b0.typestr] < priority[b1.typestr]){
+                newB = factory[b1.typestr]();
+            }else{
+                newB = factory[b0.typestr]();
+            }
+        }
         return newB;
     }
 }
@@ -1146,7 +1151,7 @@ export class LoopEndMark  extends MeasureBoundary {
         this.typestr = "e";
     }
     exportCode() {
-        let ts = this.ntimes?"xX":`x${this.times}`;
+        let ts = this.ntimes?"xX":(this.times?"":`x${this.times}`);
         return this.exportTarget ? ":||"+(ts=="x2"?"":ts) : "";// x2 is not explicity stated : TODO : align with what wrote in the code.
     }
 }
@@ -1159,7 +1164,7 @@ export class LoopBothMark  extends MeasureBoundary {
         this.typestr = "B";
     }
     exportCode() {
-        let ts = this.ntimes?"xX":`x${this.times}`;
+        let ts = this.ntimes?"xX":(this.times?"":`x${this.times}`);
         return this.exportTarget ? ":||:"+(ts=="x2"?"":ts) : ""; // x2 is not explicity stated : TODO : align with what wrote in the code.
     }
 }

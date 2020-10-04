@@ -13365,90 +13365,72 @@ var MeasureBoundary = /*#__PURE__*/function (_Element12) {
   _createClass(MeasureBoundary, null, [{
     key: "combine",
     value: function combine(b0, b1) {
+      // s,d,b,e,B,f,r,n
+      // 8C2 = 56
+      // define priority order, then define some exceptions
+      var priority = {
+        n: 0,
+        s: 1,
+        d: 2,
+        f: 3,
+        r: 4,
+        b: 5,
+        e: 6,
+        B: 7
+      };
       var combineRule = {
-        ss: function ss() {
-          return new MeasureBoundaryMark(1);
-        },
-        sd: function sd() {
-          return new MeasureBoundaryMark(2);
-        },
-        sb: function sb() {
-          return new LoopBeginMark();
-        },
-        sn: function sn() {
-          return new MeasureBoundaryMark(1);
-        },
-        ds: function ds() {
-          return new MeasureBoundaryMark(2);
-        },
-        dd: function dd() {
-          return new MeasureBoundaryMark(2);
-        },
-        db: function db() {
-          return new LoopBeginMark();
-        },
-        dn: function dn() {
-          return new MeasureBoundaryMark(2);
-        },
-        es: function es() {
-          return new LoopEndMark({
-            ntimes: b0.ntimes,
-            times: b0.times
-          });
-        },
-        ed: function ed() {
-          return new LoopEndMark({
-            ntimes: b0.ntimes,
-            times: b0.times
-          });
-        },
-        ee: function ee() {
-          return new LoopEndMark({
-            ntimes: b0.ntimes,
-            times: b0.times
-          });
-        },
-        // Normally this should not happen
         eb: function eb() {
           return new LoopBothMark({
             ntimes: b0.ntimes,
             times: b0.times
           });
+        }
+      };
+      var factory = {
+        s: function s() {
+          return new MeasureBoundaryMark(1);
         },
-        en: function en() {
+        d: function d() {
+          return new MeasureBoundaryMark(2);
+        },
+        b: function b() {
+          return new LoopBeginMark();
+        },
+        e: function e() {
           return new LoopEndMark({
             ntimes: b0.ntimes,
             times: b0.times
           });
         },
-        bb: function bb() {
-          return new LoopBeginMark();
-        },
-        // Normally this hould not happen
-        BB: function BB() {
+        B: function B() {
           return new LoopBothMark({
             ntimes: b0.ntimes,
             times: b0.times
           });
         },
-        // Normally this hould not happen
-        fn: function fn() {
+        f: function f() {
           return new MeasureBoundaryFinMark();
         },
-        rr: function rr() {
+        r: function r() {
           return new MeasureBoundaryDblSimile();
         },
-        ns: function ns() {
-          return new MeasureBoundaryMark(1);
-        },
-        nd: function nd() {
-          return new MeasureBoundaryMark(2);
-        },
-        nb: function nb() {
-          return new LoopBeginMark();
+        n: function n() {
+          return null;
         }
       };
-      var newB = combineRule[b0.typestr + b1.typestr]();
+      var key = b0.typestr + b1.typestr;
+      var newB = null;
+
+      if (key in combineRule) {
+        newB = combineRule[key]();
+      } else {
+        if (priority[b0.typestr] < priority[b1.typestr]) {
+          newB = factory[b1.typestr]();
+        } else {
+          newB = factory[b0.typestr]();
+        }
+      }
+
       return newB;
     }
   }]);
@@ -13533,7 +13515,7 @@ var LoopEndMark = /*#__PURE__*/function (_MeasureBoundary3) {
   _createClass(LoopEndMark, [{
     key: "exportCode",
     value: function exportCode() {
-      var ts = this.ntimes ? "xX" : "x".concat(this.times);
+      var ts = this.ntimes ? "xX" : this.times ? "" : "x".concat(this.times);
       return this.exportTarget ? ":||" + (ts == "x2" ? "" : ts) : ""; // x2 is not explicity stated : TODO : align with what wrote in the code.
     }
   }]);
@@ -13562,7 +13544,7 @@ var LoopBothMark = /*#__PURE__*/function (_MeasureBoundary4) {
   _createClass(LoopBothMark, [{
     key: "exportCode",
     value: function exportCode() {
-      var ts = this.ntimes ? "xX" : "x".concat(this.times);
+      var ts = this.ntimes ? "xX" : this.times ? "" : "x".concat(this.times);
       return this.exportTarget ? ":||:" + (ts == "x2" ? "" : ts) : ""; // x2 is not explicity stated : TODO : align with what wrote in the code.
     }
   }]);

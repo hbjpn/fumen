@@ -431,10 +431,16 @@ export class Chord extends Element {
     }
 
     exportCode(){
+        let code = "";
+        if(this.exceptinal_comment){
+            code += this.exceptinal_comment.exportCode() + "@ ";
+        }
+        if(this.lyric){
+            code += this.lyric.exportCode() + "@ ";
+        }
         if(this.is_valid_chord){
             // construct from the raw data.
             // Keep the original strign as much as possible.
-            let code = "";
             if(this.note_base) code += this.note_base;
             if(this.sharp_flat) code += this.sharp_flat;
             if(this.mid_elems) code += Chord.chordMidSerialize(this.mid_elems)[1];
@@ -468,7 +474,7 @@ export class Chord extends Element {
             return code;
             //return this.chord_str;
         }else{
-            return `"${this.chord_str}"`;
+            return code+`"${this.chord_str}"`;
         }
     }
 

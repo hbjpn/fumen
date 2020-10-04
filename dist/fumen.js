@@ -12059,6 +12059,27 @@ var Track = /*#__PURE__*/function (_Element) {
         };
       }
     }
+  }, {
+    key: "exportCode",
+    value: function exportCode() {
+      var rgcnt = 0;
+      var code = "";
+      this.childNodes.forEach(function (e) {
+        if (e instanceof ReharsalGroup) {
+          if (rgcnt > 0) {
+            code += "\n";
+            if (!e.inline) code += "\n";
+          }
+
+          code += e.exportCode();
+          ++rgcnt;
+        } else {
+          // could be Variable
+          code += e.exportCode();
+        }
+      });
+      return code;
+    }
   }]);
 
   return Track;
@@ -12084,10 +12105,19 @@ var ReharsalGroup = /*#__PURE__*/function (_Element2) {
   _createClass(ReharsalGroup, [{
     key: "exportCode",
     value: function exportCode() {
-      var code = "\n";
-      if (!this.inline) code += "\n";
+      var code = "";
+      var blockcnt = 0;
       code += "[" + this.name + "]\n";
-      code += _get(_getPrototypeOf(ReharsalGroup.prototype), "exportCode", this).call(this);
+      this.childNodes.forEach(function (e) {
+        if (e instanceof Block) {
+          if (blockcnt > 0) code += "\n\n";
+          code += e.exportCode();
+          ++blockcnt;
+        } else {
+          // could be Variable
+          code += e.exportCode();
+        }
+      });
       return code;
     }
   }]);

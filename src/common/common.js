@@ -196,6 +196,25 @@ export class Track extends Element {
             return {key:this.getVariable("TRANSPOSE"), originalKey:this.getVariable("KEY")};
         }
     }
+
+    exportCode(){
+        let rgcnt = 0;
+        let code = "";
+        this.childNodes.forEach(e=>{
+            if(e instanceof ReharsalGroup){
+                if(rgcnt > 0){
+                    code += "\n";
+                    if(!e.inline) code += "\n";
+                }
+                code += e.exportCode();
+                ++rgcnt;
+            }else{
+                // could be Variable
+                code += e.exportCode();
+            }
+        });
+        return code;
+    }
 }
 
 export class ReharsalGroup extends Element{
@@ -205,10 +224,19 @@ export class ReharsalGroup extends Element{
         this.inline = inline;
     }
     exportCode(){
-        let code = "\n";
-        if(!this.inline) code += "\n";
+        let code = "";
+        let blockcnt = 0;
         code += "["+this.name+"]\n";
-        code += super.exportCode();
+        this.childNodes.forEach(e=>{
+            if(e instanceof Block){
+                if(blockcnt > 0) code += "\n\n";
+                code += e.exportCode();
+                ++blockcnt;
+            }else{
+                // could be Variable
+                code += e.exportCode();
+            }
+        });
         return code;
     }
 }

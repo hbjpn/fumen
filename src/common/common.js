@@ -142,6 +142,18 @@ export class Node {
         }
         return ret;
     }
+    findFirstOf(cond){
+        for(let i = 0; i < this.childNodes.length; ++i){
+            if(cond(this.childNodes[i])) return this.childNodes[i];
+        }
+        return null;
+    }
+    findLastOf(cond){
+        for(let i = this.childNodes.length-1; i >=0; --i){
+            if(cond(this.childNodes[i])) return this.childNodes[i];
+        }
+        return null;
+    }
 }
 
 export class Element extends Node {

@@ -11960,6 +11960,24 @@ var Node = /*#__PURE__*/function () {
 
       return ret;
     }
+  }, {
+    key: "findFirstOf",
+    value: function findFirstOf(cond) {
+      for (var i = 0; i < this.childNodes.length; ++i) {
+        if (cond(this.childNodes[i])) return this.childNodes[i];
+      }
+
+      return null;
+    }
+  }, {
+    key: "findLastOf",
+    value: function findLastOf(cond) {
+      for (var i = this.childNodes.length - 1; i >= 0; --i) {
+        if (cond(this.childNodes[i])) return this.childNodes[i];
+      }
+
+      return null;
+    }
   }]);
 
   return Node;

@@ -271,19 +271,8 @@ export class Block extends Element{
 export class Measure extends Element{
     constructor() {
         super();
-        this.boundary_info = ["n", "n"];
-        // "n" : normal boundary
-        // "b" : loop Begin boundary
-        // "e" : loop End boundary
-        // "d" : Double line boundary
 
-        this.header_width = 0;
-        this.body_width = 0;
-        this.footer_width = 0;
-
-        this.body_scaling = 1.0;
         this.raw_new_line = false; // Raw "new line" mark. Maked when this is a second or later measure inside a reharsal group after one ore more new lines in the fumen code
-        this.new_line = false; // THis is used in renderer
         this.align = "expand"; // expand, left, right
 
         this.renderprop = {}; // Rendering information storage

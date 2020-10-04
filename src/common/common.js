@@ -302,6 +302,41 @@ export class Measure extends Element{
         });
         return code;
     }
+
+    remove(){
+        // Combine elements considering the boundaries.
+
+        let prevMeas = this.previousSiblingNode;
+        let nextMeas = this.nextSiblingNode;
+        let firstMeasInACodeRow = this.raw_new_line || (!prevMeas);
+        let lastMeasInACodeRow  = (!nextMeas) || (nextMeas.raw_new_line);
+        if(firstMeasInACodeRow && lastMeasInACodeRow){
+            // The last measure in a block
+            super.remove();
+        }else if(firstMeasInACodeRow){
+            super.remove();
+            nextMeas.raw_new_line = this.raw_new_line;
+        }else if(lastMeasInACodeRow){
+            super.remove();
+            prevMeas.findLastOf(e=>e instanceof MeasureBoundary).exportTarget = true;
+        }else{
+            super.remove();
+            
+            let prevEndB = prevMeas.findLastOf(e=>e instanceof MeasureBoundary);
+            let nextBeginB = nextMeas.findFirstOf(e=> e instanceof MeasureBoundary);
+
+            let newB_p = MeasureBoundary.combine(prevEndB, nextBeginB);
+            let newB_n = MeasureBoundary.combine(prevEndB, nextBeginB);
+            
+            newB_p.exportTarget = false;
+            prevMeas.insertBefore(prevEndB, newB_p);
+            prevEndB.remove();
+
+            newB_n.exportTarget = true;
+            prevMeas.insertBefore(nextBeginB, newB_n);
+            nextBeginB.remove();
+        }
+    }
 }
 
 export class Rest extends Element{
@@ -1050,12 +1085,40 @@ export class MeasureBoundary extends Element {
         super();
         this.exportTarget = exportTarget;
     }
+    // Factory function to make a new boundary from 2 boundaries
+    static combine(b0, b1){
+        let combineRule = {
+            ss: ()=>new MeasureBoundaryMark(1),
+            sd: ()=>new MeasureBoundaryMark(2),
+            sb: ()=>new LoopBeginMark(),
+            sn: ()=>new MeasureBoundaryMark(1),
+            ds: ()=>new MeasureBoundaryMark(2),
+            dd: ()=>new MeasureBoundaryMark(2),
+            db: ()=>new LoopBeginMark(),
+            dn: ()=>new MeasureBoundaryMark(2),
+            es: ()=>new LoopEndMark({ntimes:b0.ntimes, times:b0.times}),
+            ed: ()=>new LoopEndMark({ntimes:b0.ntimes, times:b0.times}),
+            ee: ()=>new LoopEndMark({ntimes:b0.ntimes, times:b0.times}), // Normally this should not happen
+            eb: ()=>new LoopBothMark({ntimes:b0.ntimes, times:b0.times}),
+            en: ()=>new LoopEndMark({ntimes:b0.ntimes, times:b0.times}),
+            bb: ()=>new LoopBeginMark(), // Normally this hould not happen
+            BB: ()=>new LoopBothMark({ntimes:b0.ntimes, times:b0.times}), // Normally this hould not happen
+            fn: ()=>new MeasureBoundaryFinMark(),
+            rr: ()=>new MeasureBoundaryDblSimile(),
+            ns: ()=>new MeasureBoundaryMark(1),
+            nd: ()=>new MeasureBoundaryMark(2),
+            nb: ()=>new LoopBeginMark(),
+        };
+        let newB = combineRule[b0.typestr+b1.typestr]();
+        return newB;
+    }
 }
 
 export class MeasureBoundaryMark extends MeasureBoundary {
     constructor(nline, exportTarget) {
 		super(exportTarget);
         this.nline = nline;
+        this.typestr = this.nline==1 ? "s":"d";
     }
     exportCode() {
         return this.exportTarget ? "|".repeat(this.nline) : "";
@@ -1063,9 +1126,15 @@ export class MeasureBoundaryMark extends MeasureBoundary {
 }
 
 export class LoopBeginMark  extends MeasureBoundary {
-    constructor(exportTarget = true) { super(exportTarget); }
+    constructor(exportTarget = true) {
+        super(exportTarget);
+        this.typestr = "b";
+    }
     exportCode() {
         return this.exportTarget ?  "||:" : "";
+    }
+    typestr(){
+        return this.nline==1 ? "s":"d";
     }
 }
 
@@ -1074,6 +1143,7 @@ export class LoopEndMark  extends MeasureBoundary {
         super(exportTarget);
         this.times = param.times;
         this.ntimes = param.ntimes;
+        this.typestr = "e";
     }
     exportCode() {
         let ts = this.ntimes?"xX":`x${this.times}`;
@@ -1086,6 +1156,7 @@ export class LoopBothMark  extends MeasureBoundary {
 		super(exportTarget);
         this.times = param.times;
         this.ntimes = param.ntimes;
+        this.typestr = "B";
     }
     exportCode() {
         let ts = this.ntimes?"xX":`x${this.times}`;
@@ -1094,14 +1165,20 @@ export class LoopBothMark  extends MeasureBoundary {
 }
 
 export class MeasureBoundaryFinMark  extends MeasureBoundary {
-    constructor(exportTarget = true) { super(exportTarget); }
+    constructor(exportTarget = true) {
+        super(exportTarget);
+        this.typestr = "f";
+    }
     exportCode() {
         return this.exportTarget ? "||." : "";
     }
 }
 
 export class MeasureBoundaryDblSimile  extends MeasureBoundary {
-    constructor(exportTarget = true) { super(exportTarget); }
+    constructor(exportTarget = true) {
+        super(exportTarget);
+        this.typestr = "r";
+    }
     exportCode() {
         return this.exportTarget ? "./|/." : "";
     }

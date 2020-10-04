@@ -13477,7 +13477,7 @@ var DaCapo = /*#__PURE__*/function (_Element13) {
     key: "toString",
     value: function toString() {
       var dss = "D.C.";
-      var als = this.al === null ? "" : " al " + this.al.toString();
+      var als = this.al ? " al " + this.al.toString() : "";
       return dss + als;
     }
   }, {
@@ -13515,8 +13515,8 @@ var DalSegno = /*#__PURE__*/function (_Element14) {
   }, {
     key: "toString",
     value: function toString() {
-      var dss = "D.S." + (this.number === null ? "" : this.number);
-      var als = this.al === null ? "" : " al " + this.al.toString();
+      var dss = "D.S." + (this.number || "");
+      var als = this.al ? " al " + this.al.toString() : "";
       return dss + als;
     }
   }, {
@@ -13572,7 +13572,7 @@ var Coda = /*#__PURE__*/function (_Element16) {
   _createClass(Coda, [{
     key: "toString",
     value: function toString() {
-      return "Coda" + (this.number === null ? "" : this.number);
+      return "Coda" + (this.number || "");
     }
   }, {
     key: "exportCode",

@@ -1109,7 +1109,7 @@ export class DaCapo extends Element {
 
     toString() {
         var dss = "D.C.";
-        var als = this.al === null ? "" : " al " + this.al.toString();
+        var als = this.al ? (" al " + this.al.toString()) : "";
         return dss + als;
     }
     exportCode(){ return "<"+this.toString()+">"; }
@@ -1128,8 +1128,8 @@ export class DalSegno extends Element {
     }
 
     toString() {
-        var dss = "D.S." + (this.number === null ? "" : this.number);
-        var als = this.al === null ? "" : " al " + this.al.toString();
+        var dss = "D.S." + (this.number || "");
+        var als = this.al ? (" al " + this.al.toString()) : "";
         return dss + als;
     }
     exportCode(){ return "<"+this.toString()+">"; }
@@ -1155,7 +1155,7 @@ export class Coda extends Element {
     }
 
     toString() {
-        return "Coda" + (this.number === null ? "" : this.number);
+        return "Coda" + (this.number || "");
     }
     exportCode(){ return "<"+this.toString()+">"; }
 }

@@ -333,7 +333,7 @@ export class Measure extends Element{
             prevEndB.remove();
 
             newB_n.exportTarget = true;
-            prevMeas.insertBefore(nextBeginB, newB_n);
+            nextMeas.insertBefore(nextBeginB, newB_n);
             nextBeginB.remove();
         }
     }

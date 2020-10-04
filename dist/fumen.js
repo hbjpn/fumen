@@ -16476,7 +16476,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
                 _row_elements_list3 = yse[_pei].cont;
                 ylimit = this.canvas_provider != null ? score_height - yse[_pei].param.y_offset_bottom - (show_footer ? yse[_pei].param.y_footer_offset : 0) : null;
-                r = this.render_measure_row_simplified(track, x_offset, canvas, _row_elements_list3, yse[_pei].pm, yse[_pei].nm, y_base, yse[_pei].param, true, yse[_pei].cont[0].getVariable("REHARSAL_MARK_POSITION") == "Inner", ylimit, music_context);
+                r = this.render_measure_row_simplified(track, x_offset, canvas, _row_elements_list3, yse[_pei].pm, yse[_pei].nm, y_base, yse[_pei].param, yse[_pei].cont[0].getVariable("REHARSAL_MARK_POSITION") == "Inner", ylimit, music_context);
 
                 if (r) {
                   _context.next = 82;
@@ -17188,7 +17188,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
     }
   }, {
     key: "render_measure_row_simplified",
-    value: function render_measure_row_simplified(track, x, paper, row_elements_list, prev_measure, next_measure, y_base, param, draw, inner_reharsal_mark, ylimit, music_context) {
+    value: function render_measure_row_simplified(track, x, paper, row_elements_list, prev_measure, next_measure, y_base, param, inner_reharsal_mark, ylimit, music_context) {
       var _this7 = this;
 
       var x_global_scale = track.getVariable("X_GLOBAL_SCALE");
@@ -17238,7 +17238,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         if (m.renderprop && m.renderprop.rg_from_here && m.renderprop.rg_from_here.name != "") {
           var reharsal_group = m.renderprop.rg_from_here;
           var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasTextWithBox"](paper, meas_base_x, inner_reharsal_mark ? yprof.mu.y : yprof.rm.y, reharsal_group.name, param.reharsal_mark_font_size, 2, _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](param.reharsal_mark_font_size, null, paper.ratio, paper.zoom).height);
-          if (draw) _this7.hitManager.add(paper, r.bb, reharsal_group);
+
+          _this7.hitManager.add(paper, r.bb, reharsal_group);
+
           if (inner_reharsal_mark) mh_offset += r.bb.width() + 2;
         }
 
@@ -17267,10 +17269,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
               _this7.hitManager.add(paper, _r7.bb, e);
             }
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Lyric"]) {
-            if (draw) {
-              // If this comment is associated with a chord with exceptional comment, not rendered here.
-              if (!e.chorddep) {// Currently lyrics are only rendered for chord dependency case
-              }
+            // If this comment is associated with a chord with exceptional comment, not rendered here.
+            if (!e.chorddep) {// Currently lyrics are only rendered for chord dependency case
             }
           }
         } // Header loop
@@ -17384,7 +17384,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
               font: param.repeat_mark_font
             });
 
-            if (draw) _this7.hitManager.add(paper, _r14.bb, _e3);
+            _this7.hitManager.add(paper, _r14.bb, _e3);
           } else if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["LongRest"]) {
             var height = yprof.rs.detected ? param.rs_area_height : param.row_height;
 
@@ -17403,30 +17403,27 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             var lrmargin = Math.max(min_lrmargin, Math.min(max_lrmargin, (_sx + _fx) * r_lrmargin));
             lx = _sx + lrmargin;
             rx = _fx - lrmargin;
+            var bb = new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"]();
 
-            if (draw) {
-              var bb = new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"]();
+            var _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, lx, y_body_or_rs_base + height / 2 + yshift, rx, y_body_or_rs_base + height / 2 + yshift, {
+              width: height / 5
+            });
 
-              var _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, lx, y_body_or_rs_base + height / 2 + yshift, rx, y_body_or_rs_base + height / 2 + yshift, {
-                width: height / 5
-              });
+            bb.add_BB(_r15.bb);
+            _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, lx, y_body_or_rs_base + rh * vlmargin + yshift, lx, y_body_or_rs_base + rh - rh * vlmargin + yshift, {
+              width: "1"
+            });
+            bb.add_BB(_r15.bb);
+            _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, rx, y_body_or_rs_base + rh * vlmargin + yshift, rx, y_body_or_rs_base + rh - rh * vlmargin + yshift, {
+              width: "1"
+            });
+            bb.add_BB(_r15.bb);
+            _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, (_sx + _fx) / 2, y_body_or_rs_base, _e3.longrestlen, param.base_font_size / 2, "ct", undefined, false, {
+              font: param.repeat_mark_font
+            });
+            bb.add_BB(_r15.bb);
 
-              bb.add_BB(_r15.bb);
-              _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, lx, y_body_or_rs_base + rh * vlmargin + yshift, lx, y_body_or_rs_base + rh - rh * vlmargin + yshift, {
-                width: "1"
-              });
-              bb.add_BB(_r15.bb);
-              _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, rx, y_body_or_rs_base + rh * vlmargin + yshift, rx, y_body_or_rs_base + rh - rh * vlmargin + yshift, {
-                width: "1"
-              });
-              bb.add_BB(_r15.bb);
-              _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, (_sx + _fx) / 2, y_body_or_rs_base, _e3.longrestlen, param.base_font_size / 2, "ct", undefined, !draw, {
-                font: param.repeat_mark_font
-              });
-              bb.add_BB(_r15.bb);
-
-              _this7.hitManager.add(paper, bb, _e3);
-            } //rest_or_long_rests_detected |= true;
+            _this7.hitManager.add(paper, bb, _e3); //rest_or_long_rests_detected |= true;
 
           } else if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Simile"]) {
             // Simile mark in measure wide element if there is no other body elements in this measure
@@ -17435,9 +17432,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
             var _fx2 = meas_end_x - footer_width;
 
-            var _r16 = _this7.render_simile_mark_plain(draw, paper, (_sx2 + _fx2) / 2, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, _e3.numslash, false, "c");
+            var _r16 = _this7.render_simile_mark_plain(true, paper, (_sx2 + _fx2) / 2, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, _e3.numslash, false, "c");
 
-            if (draw) _this7.hitManager.add(paper, _r16.bb, _e3);
+            _this7.hitManager.add(paper, _r16.bb, _e3);
           } else {
             throw "Unkown measure wide instance detected";
           }
@@ -17445,6 +17442,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
         m.renderprop.meas_end_x = meas_end_x;
         m.renderprop.meas_start_x = meas_start_x;
+
+        _this7.hitManager.add(paper, new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"](meas_start_x, y_base, meas_end_x - meas_start_x, yprof.end.y - y_base), m);
       };
 
       for (var ml = 0; ml < row_elements_list.length; ++ml) {
@@ -17474,7 +17473,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       // 0. Draw 5 lines
 
 
-      if (draw && yprof.rs.detected) {
+      if (yprof.rs.detected) {
         var start_x = row_elements_list[0].renderprop.meas_start_x;
         var end_x = row_elements_list[row_elements_list.length - 1].renderprop.meas_end_x - 1; // -1 as meas_end_x point to the next point of end of boundary(= Normally total_width - x_margin)
 

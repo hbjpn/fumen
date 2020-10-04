@@ -1199,7 +1199,6 @@ export class DefaultRenderer extends Renderer {
                     yse[pei].nm,
                     y_base,
                     yse[pei].param,
-                    true,
                     yse[pei].cont[0].getVariable("REHARSAL_MARK_POSITION")=="Inner",
                     ylimit,
                     music_context
@@ -1934,7 +1933,6 @@ export class DefaultRenderer extends Renderer {
         next_measure,
         y_base,
         param,
-        draw,
         inner_reharsal_mark,
         ylimit,
         music_context
@@ -2006,7 +2004,8 @@ export class DefaultRenderer extends Renderer {
                     2, 
                     graphic.GetCharProfile(param.reharsal_mark_font_size, null, paper.ratio, paper.zoom).height
                 );
-                if(draw) this.hitManager.add(paper, r.bb, reharsal_group);
+                
+                this.hitManager.add(paper, r.bb, reharsal_group);
 
                 if(inner_reharsal_mark) mh_offset += (r.bb.width()+2);
             }
@@ -2049,11 +2048,9 @@ export class DefaultRenderer extends Renderer {
                         this.hitManager.add(paper, r.bb, e);
                     }
                 } else if (e instanceof common.Lyric) {
-                    if (draw) {
-                        // If this comment is associated with a chord with exceptional comment, not rendered here.
-                        if (!e.chorddep) {
-                            // Currently lyrics are only rendered for chord dependency case
-                        }
+                    // If this comment is associated with a chord with exceptional comment, not rendered here.
+                    if (!e.chorddep) {
+                        // Currently lyrics are only rendered for chord dependency case
                     }
                 }
             } // Header loop
@@ -2245,7 +2242,7 @@ export class DefaultRenderer extends Renderer {
                         param.base_font_size / 3,
                         "lm", null, null, {font:param.repeat_mark_font}
                     );
-                    if(draw) this.hitManager.add(paper, r.bb, e);
+                    this.hitManager.add(paper, r.bb, e);
                 } else if (e instanceof common.LongRest) {
                     let height = yprof.rs.detected ? param.rs_area_height : param.row_height;
                     let sx =
@@ -2267,50 +2264,49 @@ export class DefaultRenderer extends Renderer {
                     var lx = sx + lrmargin;
                     var rx = fx - lrmargin;
 
-                    if (draw){
-                        let bb = new graphic.BoundingBox();
-                        let r = graphic.CanvasLine(
-                            paper,
-                            lx,
-                            y_body_or_rs_base + height / 2 + yshift,
-                            rx,
-                            y_body_or_rs_base + height / 2 + yshift,
-                            { width: height/5 }
-                        );
-                        bb.add_BB(r.bb);
-                        r = graphic.CanvasLine(
-                            paper,
-                            lx,
-                            y_body_or_rs_base + rh * vlmargin + yshift,
-                            lx,
-                            y_body_or_rs_base + rh - rh * vlmargin + yshift,
-                            { width: "1" }
-                        );
-                        bb.add_BB(r.bb);
-                        r = graphic.CanvasLine(
-                            paper,
-                            rx,
-                            y_body_or_rs_base + rh * vlmargin + yshift,
-                            rx,
-                            y_body_or_rs_base + rh - rh * vlmargin + yshift,
-                            { width: "1" }
-                        );
-                        bb.add_BB(r.bb);
-                        r = graphic.CanvasText(
-                            paper,
-                            (sx + fx) / 2,
-                            y_body_or_rs_base,
-                            e.longrestlen,
-                            param.base_font_size / 2,
-                            "ct",
-                            undefined,
-                            !draw,
-                            {font:param.repeat_mark_font}
-                        );
-                        bb.add_BB(r.bb);
 
-                        this.hitManager.add(paper, bb, e);
-                    }
+                    let bb = new graphic.BoundingBox();
+                    let r = graphic.CanvasLine(
+                        paper,
+                        lx,
+                        y_body_or_rs_base + height / 2 + yshift,
+                        rx,
+                        y_body_or_rs_base + height / 2 + yshift,
+                        { width: height/5 }
+                    );
+                    bb.add_BB(r.bb);
+                    r = graphic.CanvasLine(
+                        paper,
+                        lx,
+                        y_body_or_rs_base + rh * vlmargin + yshift,
+                        lx,
+                        y_body_or_rs_base + rh - rh * vlmargin + yshift,
+                        { width: "1" }
+                    );
+                    bb.add_BB(r.bb);
+                    r = graphic.CanvasLine(
+                        paper,
+                        rx,
+                        y_body_or_rs_base + rh * vlmargin + yshift,
+                        rx,
+                        y_body_or_rs_base + rh - rh * vlmargin + yshift,
+                        { width: "1" }
+                    );
+                    bb.add_BB(r.bb);
+                    r = graphic.CanvasText(
+                        paper,
+                        (sx + fx) / 2,
+                        y_body_or_rs_base,
+                        e.longrestlen,
+                        param.base_font_size / 2,
+                        "ct",
+                        undefined,
+                        false,
+                        {font:param.repeat_mark_font}
+                    );
+                    bb.add_BB(r.bb);
+
+                    this.hitManager.add(paper, bb, e);
 
                     //rest_or_long_rests_detected |= true;
                 } else if (e instanceof common.Simile) {
@@ -2320,7 +2316,7 @@ export class DefaultRenderer extends Renderer {
                         header_width; // header_width does not include header_body_margin
                     let fx = meas_end_x - footer_width;
                     let r = this.render_simile_mark_plain(
-                        draw,
+                        true,
                         paper,
                         (sx + fx) / 2,
                         y_body_or_rs_base,
@@ -2330,7 +2326,7 @@ export class DefaultRenderer extends Renderer {
                         false,
                         "c"
                     );
-                    if(draw) this.hitManager.add(paper, r.bb, e);
+                    this.hitManager.add(paper, r.bb, e);
                 } else {
                     throw "Unkown measure wide instance detected";
                 }
@@ -2338,10 +2334,16 @@ export class DefaultRenderer extends Renderer {
 
             m.renderprop.meas_end_x = meas_end_x;
             m.renderprop.meas_start_x = meas_start_x;
+
+            this.hitManager.add(
+                paper, 
+                new graphic.BoundingBox(meas_start_x, y_base,meas_end_x - meas_start_x, yprof.end.y - y_base),
+                m);
+
         } // measure loop
 
         // 0. Draw 5 lines
-        if(draw && yprof.rs.detected){
+        if(yprof.rs.detected){
             let start_x   = row_elements_list[0].renderprop.meas_start_x;
             let end_x = row_elements_list[row_elements_list.length-1].renderprop.meas_end_x - 1; // -1 as meas_end_x point to the next point of end of boundary(= Normally total_width - x_margin)
             for (let i = 0; i < 5; ++i) {

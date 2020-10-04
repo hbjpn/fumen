@@ -1151,7 +1151,7 @@ export class LoopEndMark  extends MeasureBoundary {
         this.typestr = "e";
     }
     exportCode() {
-        let ts = this.ntimes?"xX":(this.times?"":`x${this.times}`);
+        let ts = this.ntimes?"xX":(this.times?`x${this.times}`:"");
         return this.exportTarget ? ":||"+(ts=="x2"?"":ts) : "";// x2 is not explicity stated : TODO : align with what wrote in the code.
     }
 }
@@ -1164,7 +1164,7 @@ export class LoopBothMark  extends MeasureBoundary {
         this.typestr = "B";
     }
     exportCode() {
-        let ts = this.ntimes?"xX":(this.times?"":`x${this.times}`);
+        let ts = this.ntimes?"xX":(this.times?`x${this.times}`:"");
         return this.exportTarget ? ":||:"+(ts=="x2"?"":ts) : ""; // x2 is not explicity stated : TODO : align with what wrote in the code.
     }
 }

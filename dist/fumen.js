@@ -13515,7 +13515,7 @@ var LoopEndMark = /*#__PURE__*/function (_MeasureBoundary3) {
   _createClass(LoopEndMark, [{
     key: "exportCode",
     value: function exportCode() {
-      var ts = this.ntimes ? "xX" : this.times ? "" : "x".concat(this.times);
+      var ts = this.ntimes ? "xX" : this.times ? "x".concat(this.times) : "";
       return this.exportTarget ? ":||" + (ts == "x2" ? "" : ts) : ""; // x2 is not explicity stated : TODO : align with what wrote in the code.
     }
   }]);
@@ -13544,7 +13544,7 @@ var LoopBothMark = /*#__PURE__*/function (_MeasureBoundary4) {
   _createClass(LoopBothMark, [{
     key: "exportCode",
     value: function exportCode() {
-      var ts = this.ntimes ? "xX" : this.times ? "" : "x".concat(this.times);
+      var ts = this.ntimes ? "xX" : this.times ? "x".concat(this.times) : "";
       return this.exportTarget ? ":||:" + (ts == "x2" ? "" : ts) : ""; // x2 is not explicity stated : TODO : align with what wrote in the code.
     }
   }]);

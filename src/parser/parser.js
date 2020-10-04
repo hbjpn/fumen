@@ -459,10 +459,10 @@ export class Parser {
                 let elem = elem_list[ei];
                 if(elem instanceof common.Chord) break;
                 else if(elem instanceof common.Comment){
-                    elem.setCodeDependency(true);
+                    elem.setCodeDependency(chord);
                     chord.setException(elem);
                 }else if(elem instanceof common.Lyric){
-                    elem.setCodeDependency(true);
+                    elem.setCodeDependency(chord);
                     chord.setLyric(elem);                               
                 }
             }

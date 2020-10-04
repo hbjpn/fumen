@@ -11928,8 +11928,11 @@ var Node = /*#__PURE__*/function () {
   }, {
     key: "remove",
     value: function remove() {
-      var i = this.parentNode.childNodes.indexOf(this);
-      this.parentNode.childNodes.splice(i, 1);
+      if (this.parentNode) {
+        var i = this.parentNode.childNodes.indexOf(this);
+        this.parentNode.childNodes.splice(i, 1);
+      }
+
       if (this.previousSiblingNode) this.previousSiblingNode.nextSiblingNode = this.nextSiblingNode;
       if (this.nextSiblingNode) this.nextSiblingNode.previousSiblingNode = this.previousSiblingNode;
     }
@@ -13637,7 +13640,7 @@ var Comment = /*#__PURE__*/function (_Element19) {
   function Comment(comment) {
     var _this21;
 
-    var chorddep = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+    var chorddep = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
     _classCallCheck(this, Comment);
 
@@ -13659,6 +13662,16 @@ var Comment = /*#__PURE__*/function (_Element19) {
       return "'" + this.comment + "'";
     } // TODO : quote considrtaion
 
+  }, {
+    key: "remove",
+    value: function remove() {
+      if (this.chorddep) {
+        this.chorddep.exceptinal_comment = null;
+        this.chorddep = null;
+      }
+
+      _get(_getPrototypeOf(Comment.prototype), "remove", this).call(this);
+    }
   }]);
 
   return Comment;
@@ -13671,7 +13684,7 @@ var Lyric = /*#__PURE__*/function (_Element20) {
   function Lyric(lyric) {
     var _this22;
 
-    var chorddep = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+    var chorddep = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
     _classCallCheck(this, Lyric);
 
@@ -13693,6 +13706,16 @@ var Lyric = /*#__PURE__*/function (_Element20) {
       return "`" + this.lyric + "`";
     } // TODO : quote considrtaion
 
+  }, {
+    key: "remove",
+    value: function remove() {
+      if (this.chorddep) {
+        this.chorddep.lyric = null;
+        this.chorddep = null;
+      }
+
+      _get(_getPrototypeOf(Lyric.prototype), "remove", this).call(this);
+    }
   }]);
 
   return Lyric;
@@ -14613,10 +14636,10 @@ var Parser = /*#__PURE__*/function () {
         for (var ei = elem_list.length - 1; ei >= 0; --ei) {
           var elem = elem_list[ei];
           if (elem instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Chord"]) break;else if (elem instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Comment"]) {
-            elem.setCodeDependency(true);
+            elem.setCodeDependency(chord);
             chord.setException(elem);
           } else if (elem instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Lyric"]) {
-            elem.setCodeDependency(true);
+            elem.setCodeDependency(chord);
             chord.setLyric(elem);
           }
         }

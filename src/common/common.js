@@ -118,8 +118,10 @@ export class Node {
     }
 
     remove(){
-        let i = this.parentNode.childNodes.indexOf(this);
-        this.parentNode.childNodes.splice(i, 1);
+        if(this.parentNode){
+            let i = this.parentNode.childNodes.indexOf(this);
+            this.parentNode.childNodes.splice(i, 1);
+        }
         if(this.previousSiblingNode) this.previousSiblingNode.nextSiblingNode = this.nextSiblingNode;
         if(this.nextSiblingNode) this.nextSiblingNode.previousSiblingNode = this.previousSiblingNode;
     }
@@ -1178,23 +1180,37 @@ export class Fine extends Element {
 }
 
 export class Comment extends Element {
-    constructor(comment, chorddep=false) {
+    constructor(comment, chorddep=null) {
         super();
         this.comment = comment;
         this.chorddep = chorddep; // Dependency for particular chord : true/false
     }
     setCodeDependency(v){ this.chorddep = v; }
     exportCode(){ return "'"+this.comment+"'"; } // TODO : quote considrtaion
+    remove(){
+        if(this.chorddep){
+            this.chorddep.exceptinal_comment = null;
+            this.chorddep = null;
+        }
+        super.remove();
+    }
 }
 
 export class Lyric extends Element {
-    constructor(lyric, chorddep=false) {
+    constructor(lyric, chorddep=null) {
         super();
         this.lyric = lyric;
         this.chorddep = chorddep; // Dependency for particular chord : true/false
     }
     setCodeDependency(v){ this.chorddep = v; }
     exportCode(){ return "`"+this.lyric+"`"; } // TODO : quote considrtaion
+    remove(){
+        if(this.chorddep){
+            this.chorddep.lyric = null;
+            this.chorddep = null;
+        }
+        super.remove();
+    }
 }
 
 // Pure {} object

@@ -470,7 +470,6 @@ export class Parser {
 
         while (loop_flg) {
             var r = this.nextToken(s);
-            if(r.sss.length > 0) measure.appendChild(new common.RawSpaces(r.sss));
 
             var m = null;
             switch (r.type) {
@@ -491,13 +490,35 @@ export class Parser {
                     break;
                 case TOKEN_STRING_SQ:
                     var comment = new common.Comment(r.token);
-                    measure.appendChild(comment);
+                    //measure.appendChild(comment);
+
+                    // Check if atmark specified
                     s = r.s;
+
+                    r = this.nextToken(s);
+                    if(r.type == TOKEN_ATMARK){
+                        // At mark is now an independent element which associate previous elements to the next elements of atmark.
+                        s = r.s;
+                        atmark_associated_elements.push(comment);
+                    }else{
+                        measure.appendChild(comment);
+                    }
+
                     break;
                 case TOKEN_STRING_GRAVE_ACCENT:
                     var lyric = new common.Lyric(r.token);
-                    measure.appendChild(lyric);
+                    //measure.appendChild(lyric);
                     s = r.s;
+
+                    r = this.nextToken(s);
+                    if(r.type == TOKEN_ATMARK){
+                        // At mark is now an independent element which associate previous elements to the next elements of atmark.
+                        s = r.s;
+                        atmark_associated_elements.push(lyric);
+                    }else{
+                        measure.appendChild(lyric); 
+                    }
+
                     break;
                 case TOKEN_STRING_HYPHEN:
                     m = r.token.match("^[0-9]+$");
@@ -508,13 +529,14 @@ export class Parser {
                     s = r.s;
                     break;
                 case TOKEN_ATMARK:
-                    // At mark is now an independent element which associate previous elements to the next elements of atmark.
-                    //atmark_detected = true;
+                    throw "Invalid context : atmark detected";
+                    /*
                     atmark_associated_elements.push(measure.childElements[measure.childElements.length-1]); // Remember the previous element
                     s = r.s;
                     // This is not registered explicitly as muscal symbol but as non-musical symbol
                     measure.appendChild(new common.RawSpaces(r.token));
                     break;
+                    */
                 case TOKEN_WORD:
                     // Analyze Rest symbol firstly, if not it is chord.
                     var rr = this.parseRest(r.token, r.type, r.s);
@@ -725,7 +747,6 @@ export class Parser {
             // eslint-disable-next-line no-constant-condition
             while (true) {
                 r = this.nextToken(s);
-                if(r.sss.length > 0) block.appendChild(new common.RawSpaces(r.sss));
                 if (r.type == TOKEN_END){
                     s = r.s; // explicitly consume the last spaces if any.
                     end_of_rg = true;
@@ -734,12 +755,10 @@ export class Parser {
                     this.context.line += 1;
                     this.context.contiguous_line_break += 1;
                     current_align = "expand"; // default is expand
-                    block.appendChild(new common.RawSpaces(r.token)); 
                     //if(this.context.contiguous_line_break >= 2) break; Do not break here. If the first non NL element is found, then break.
                 } else if(r.type == TOKEN_BACK_SLASH){
                     if(this.context.contiguous_line_break >= 2) break;
                     // Expect TOKEN_NL 
-                    block.appendChild(new common.RawSpaces(r.token)); 
                     r = this.nextToken(r.s);
                     if(r.type != TOKEN_NL) this.onParseError("INVALID CODE DETECTED AFTER BACK SLASH");
                     this.context.line += 1;
@@ -750,12 +769,12 @@ export class Parser {
                     if(this.context.contiguous_line_break >= 2) break;
                     // Right aligh indicoator > which is outside measure
                     current_align = "right";
-                    block.appendChild(new common.RawSpaces(r.token)); 
+                    //block.appendChild(new common.RawSpaces(r.token)); 
                 }else if(r.type == TOKEN_BRACKET_LA){
                     if(this.context.contiguous_line_break >= 2) break;
                     // Right aligh indicoator > which is outside measure
                     current_align = "left";
-                    block.appendChild(new common.RawSpaces(r.token)); 
+                    //block.appendChild(new common.RawSpaces(r.token)); 
                 } else if (r.type == TOKEN_BRACKET_LS) {
                     // Next reharsal mark detected.
                     // Do not consume.
@@ -878,13 +897,11 @@ export class Parser {
             // eslint-disable-next-line no-constant-condition
             while (true) {
                 r = this.nextToken(code);
-                if(r.sss.length > 0) track.appendChild(new common.RawSpaces(r.sss));
                 if (r.type == TOKEN_END){
                     break;
                 }else if (r.type == TOKEN_NL) {
                     this.context.line += 1;
                     this.context.contiguous_line_break += 1;
-                    track.appendChild(new common.RawSpaces(r.token)); 
                 } else if(r.type == TOKEN_BACK_SLASH){
                     // Expect TOKEN_NL 
                     track.appendChild(new common.RawSpaces(r.token)); 

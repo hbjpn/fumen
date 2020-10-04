@@ -1317,12 +1317,18 @@ export class DefaultRenderer extends Renderer {
                         (e.times != null && (e.ntimes || e.times != 2));
                 } else if (e instanceof common.Chord) {
                     yprof.rs.detected |= e.note_group_list !== null;
+                    if(e.lyric){
+                        yprof.ml.detected = true;
+                        lyric_rows = Math.max(
+                            e.lyric.lyric.split("/").length,
+                            lyric_rows
+                        );
+                    }
+                    if(e.exceptinal_comment){
+                        yprof.mu.detected = true;
+                    }
                 } else if (e instanceof common.Lyric) {
-                    yprof.ml.detected = true;
-                    lyric_rows = Math.max(
-                        e.lyric.split("/").length,
-                        lyric_rows
-                    );
+                    throw "Illegal parsing";
                 }
             }
         }

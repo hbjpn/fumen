@@ -17,5 +17,4 @@ export {
     MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile,
     LoopIndicator,
     Time, Coda, Segno, ToCoda, DalSegno, DaCapo, Fine, Simile, Variable,
-    RawSpaces, TemplateString,
     GenericRow } from "./common/common";

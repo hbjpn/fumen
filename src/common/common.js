@@ -71,8 +71,8 @@ export class Node {
 
     exportCode(){
         let code = "";
-        this.childNodes.forEach(rg=>{
-            code += rg.exportCode();
+        this.childNodes.forEach(e=>{
+            code += e.exportCode();
         });
         return code;
     }
@@ -205,7 +205,9 @@ export class ReharsalGroup extends Element{
         this.inline = inline;
     }
     exportCode(){
-        let code = "["+this.name+"]\n";
+        let code = "\n";
+        if(!this.inline) code += "\n";
+        code += "["+this.name+"]\n";
         code += super.exportCode();
         return code;
     }
@@ -243,6 +245,20 @@ export class Measure extends Element{
         this.align = "expand"; // expand, left, right
 
         this.renderprop = {}; // Rendering information storage
+    }
+
+    exportCode(){
+        let code = "";
+        if(this.raw_new_line) code += "\n";
+        if(this.align == "left") code += "<";
+        else if(this.align == "right") code += ">";
+        this.childNodes.forEach(e=>{
+            if(e instanceof MeasureBoundary){
+                if(!e.exportTarget) return "";
+            }
+            code += (e.exportCode() + " ");
+        });
+        return code;
     }
 }
 
@@ -1196,39 +1212,8 @@ export class Variable extends Node {
         }else{
             throw "Error on export code for Variable";
         }
+        code += "\n";
         return code;
-    }
-}
-
-/**
- * Reperesetnts skipped contiguous spaces/tabs during parsing.
- * Used for serialization.
- */
-export class RawSpaces extends Node
-{
-    constructor(sss){
-        super();
-        this.sss = sss;
-    }
-    exportCode(){
-        return this.sss;
-    }
-}
-
-export class TemplateString extends Node
-{
-    // dict is hold as reference. Any change in the dict is propagated to exported code
-    constructor(tmpl, dict){
-        super();
-        this.tmpl = tmpl;
-        this.dict = dict;
-    }
-    exportCode(){
-        let tpl = deepcopy(this.tmpl);
-        Object.keys(this.dict).forEach((k) => {
-            tpl = tpl.replace(new RegExp("\\${" + k + "}","g"), this.dict[k]);
-        });
-        return tpl;
     }
 }
 

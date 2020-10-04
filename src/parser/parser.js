@@ -490,8 +490,6 @@ export class Parser {
                     break;
                 case TOKEN_STRING_SQ:
                     var comment = new common.Comment(r.token);
-                    //measure.appendChild(comment);
-
                     // Check if atmark specified
                     s = r.s;
 
@@ -507,7 +505,6 @@ export class Parser {
                     break;
                 case TOKEN_STRING_GRAVE_ACCENT:
                     var lyric = new common.Lyric(r.token);
-                    //measure.appendChild(lyric);
                     s = r.s;
 
                     r = this.nextToken(s);
@@ -530,13 +527,6 @@ export class Parser {
                     break;
                 case TOKEN_ATMARK:
                     throw "Invalid context : atmark detected";
-                    /*
-                    atmark_associated_elements.push(measure.childElements[measure.childElements.length-1]); // Remember the previous element
-                    s = r.s;
-                    // This is not registered explicitly as muscal symbol but as non-musical symbol
-                    measure.appendChild(new common.RawSpaces(r.token));
-                    break;
-                    */
                 case TOKEN_WORD:
                     // Analyze Rest symbol firstly, if not it is chord.
                     var rr = this.parseRest(r.token, r.type, r.s);
@@ -762,19 +752,17 @@ export class Parser {
                     r = this.nextToken(r.s);
                     if(r.type != TOKEN_NL) this.onParseError("INVALID CODE DETECTED AFTER BACK SLASH");
                     this.context.line += 1;
-                    block.appendChild(new common.RawSpaces(r.sss));
-                    block.appendChild(new common.RawSpaces(r.token)); 
+                    //block.appendChild(new common.RawSpaces(r.sss));
+                    //block.appendChild(new common.RawSpaces(r.token)); 
                     // Does not count as line break
                 }else if(r.type == TOKEN_BRACKET_RA){
                     if(this.context.contiguous_line_break >= 2) break;
                     // Right aligh indicoator > which is outside measure
                     current_align = "right";
-                    //block.appendChild(new common.RawSpaces(r.token)); 
                 }else if(r.type == TOKEN_BRACKET_LA){
                     if(this.context.contiguous_line_break >= 2) break;
                     // Right aligh indicoator > which is outside measure
                     current_align = "left";
-                    //block.appendChild(new common.RawSpaces(r.token)); 
                 } else if (r.type == TOKEN_BRACKET_LS) {
                     // Next reharsal mark detected.
                     // Do not consume.
@@ -852,9 +840,6 @@ export class Parser {
             let rg = new common.ReharsalGroup(
                 rgName, rgtype=="inline");
             
-            //if(rgtype != "anonymous")
-            //    rg.appendChild(new common.TemplateString("[${name}]", rg));
-            
             this.context.contiguous_line_break = 0;
 
             let loop_cnt = 0;
@@ -904,12 +889,12 @@ export class Parser {
                     this.context.contiguous_line_break += 1;
                 } else if(r.type == TOKEN_BACK_SLASH){
                     // Expect TOKEN_NL 
-                    track.appendChild(new common.RawSpaces(r.token)); 
+                    //track.appendChild(new common.RawSpaces(r.token)); 
                     r = this.nextToken(r.s);
                     if(r.type != TOKEN_NL) this.onParseError("INVALID CODE DETECTED AFTER BACK SLASH");
                     this.context.line += 1;
-                    track.appendChild(new common.RawSpaces(r.sss));
-                    track.appendChild(new common.RawSpaces(r.token)); 
+                    //track.appendChild(new common.RawSpaces(r.sss));
+                    //track.appendChild(new common.RawSpaces(r.token)); 
                     // Does not count as line break
                 } else if (r.type == TOKEN_BRACKET_LS) {
                     let rgs = track.childElements.filter(e => e instanceof common.ReharsalGroup);

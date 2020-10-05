@@ -154,6 +154,14 @@ export class Node {
         }
         return null;
     }
+    indexOf(cond){
+        for(let i = 0; i < this.childNodes.length; ++i){
+            if(cond(this.childNodes[i])) return i;
+        }
+        return -1;
+    }
+
+    clone(){ throw "Shall be overrided"; }
 }
 
 export class Element extends Node {
@@ -190,6 +198,8 @@ export class Element extends Node {
         super.remove();
         this._reconstruct();
     }
+
+    clone(){ throw "Shall be overrided"; }
 }
 
 export class Track extends Element {
@@ -229,6 +239,12 @@ export class Track extends Element {
         });
         return code;
     }
+
+    clone(){
+        let n = new Track();
+        this.childNodes.map(c=>{ n.appendChild(c.clone()); });
+        return n;
+    }
 }
 
 export class ReharsalGroup extends Element{
@@ -253,6 +269,12 @@ export class ReharsalGroup extends Element{
         });
         return code;
     }
+
+    clone(){
+        let n = new ReharsalGroup(this.name, this.inline);
+        this.childNodes.map(c=>{ n.appendChild(c.clone()); });
+        return n;
+    }
 }
 
 export class Block extends Element{
@@ -266,6 +288,12 @@ export class Block extends Element{
         for(let i = 0; i < newmeasures.length; ++i)
             this.appendChild(newmeasures[i]);
     }
+
+    clone(){
+        let n = new Block();
+        this.childNodes.map(c=>{ n.appendChild(c.clone()); });
+        return n;
+    }
 }
 
 export class Measure extends Element{
@@ -276,6 +304,14 @@ export class Measure extends Element{
         this.align = "expand"; // expand, left, right
 
         this.renderprop = {}; // Rendering information storage
+    }
+
+    clone(){
+        let n = new Measure();
+        n.raw_new_line = this.raw_new_line;
+        n.align = this.align;
+        this.childNodes.map(c=>{ n.appendChild(c.clone()); });
+        return n;
     }
 
     exportCode(){
@@ -343,6 +379,8 @@ export class Rest extends Element{
     exportCode(){
         return `r:${this.length_s}`;
     }
+
+    clone(){ return new Rest(this.length_s); }
 }
 
 export class Simile extends Element{
@@ -356,6 +394,7 @@ export class Simile extends Element{
     exportCode(){
         return "."+("/".repeat(this.numslash))+".";
     }
+    clone(){ return new Simile(this.numslash); }
 }
 
 export class Chord extends Element {
@@ -363,7 +402,18 @@ export class Chord extends Element {
         super();
         this.init(chord_str);
     }
-
+    clone(){
+        let n = new Chord(this.chord_str);
+        if(this.exceptinal_comment){
+            n.exceptinal_comment = this.exceptinal_comment.clone();
+            n.exceptinal_comment.setCodeDependency(n);
+        }
+        if(this.lyric){
+            n.lyric = this.lyric.clone();
+            n.lyric.setCodeDependency(n);
+        }
+        return n;
+    }
     init(chord_str){
         this.chord_str = chord_str;
 
@@ -1037,6 +1087,7 @@ export class LoopIndicator extends Element {
         }
     }
     exportCode(){ return `[${this.indstr}]`; }
+    clone(){ return new LoopIndicator(this.indstr); }
 }
 
 export class Space extends Element{
@@ -1046,6 +1097,7 @@ export class Space extends Element{
         this.renderprop = {};
     }
     exportCode(){ return ",".repeat(this.length); }
+    clone(){ return new Space(this.length); }
 }
 
 export class LongRest extends Element {
@@ -1056,6 +1108,7 @@ export class LongRest extends Element {
     exportCode() {
         return `-${this.longrestlen}-`;
     }
+    clone(){ return new LongRest(this.longrestlen); }
 }
 
 export class Time extends Element {
@@ -1067,6 +1120,7 @@ export class Time extends Element {
     exportCode() {
         return `(${this.numer}/${this.denom})`;
     }
+    clone(){ return new Time(this.numer, this.denom); }
 }
 
 export class MeasureBoundary extends Element {
@@ -1117,6 +1171,7 @@ export class MeasureBoundaryMark extends MeasureBoundary {
     exportCode() {
         return this.exportTarget ? "|".repeat(this.nline) : "";
     }
+    clone(){ return new MeasureBoundaryMark(this.nline, this.exportTarget); }
 }
 
 export class LoopBeginMark  extends MeasureBoundary {
@@ -1127,9 +1182,7 @@ export class LoopBeginMark  extends MeasureBoundary {
     exportCode() {
         return this.exportTarget ?  "||:" : "";
     }
-    typestr(){
-        return this.nline==1 ? "s":"d";
-    }
+    clone(){ return new LoopBeginMark(this.exportTarget); }
 }
 
 export class LoopEndMark  extends MeasureBoundary {
@@ -1143,6 +1196,7 @@ export class LoopEndMark  extends MeasureBoundary {
         let ts = this.ntimes?"xX":(this.times?`x${this.times}`:"");
         return this.exportTarget ? ":||"+(ts=="x2"?"":ts) : "";// x2 is not explicity stated : TODO : align with what wrote in the code.
     }
+    clone(){ return new LoopEndMark({times:this.times, ntimes:this.ntimes}, this.exportTarget); }
 }
 
 export class LoopBothMark  extends MeasureBoundary {
@@ -1156,6 +1210,7 @@ export class LoopBothMark  extends MeasureBoundary {
         let ts = this.ntimes?"xX":(this.times?`x${this.times}`:"");
         return this.exportTarget ? ":||:"+(ts=="x2"?"":ts) : ""; // x2 is not explicity stated : TODO : align with what wrote in the code.
     }
+    clone(){ return new LoopBothMark({times:this.times, ntimes:this.ntimes}, this.exportTarget); }
 }
 
 export class MeasureBoundaryFinMark  extends MeasureBoundary {
@@ -1166,6 +1221,7 @@ export class MeasureBoundaryFinMark  extends MeasureBoundary {
     exportCode() {
         return this.exportTarget ? "||." : "";
     }
+    clone(){ return new MeasureBoundaryFinMark(this.exportTarget); }
 }
 
 export class MeasureBoundaryDblSimile  extends MeasureBoundary {
@@ -1176,6 +1232,7 @@ export class MeasureBoundaryDblSimile  extends MeasureBoundary {
     exportCode() {
         return this.exportTarget ? "./|/." : "";
     }
+    clone(){ return new MeasureBoundaryDblSimile(this.exportTarget); }
 }
 
 // Signs
@@ -1196,7 +1253,7 @@ export class DaCapo extends Element {
         return dss + als;
     }
     exportCode(){ return "<"+this.toString()+">"; }
-
+    clone(){ return new DaCapo(this.al ? this.al.clone() : null); }
 }
 
 export class DalSegno extends Element {
@@ -1216,7 +1273,7 @@ export class DalSegno extends Element {
         return dss + als;
     }
     exportCode(){ return "<"+this.toString()+">"; }
-
+    clone(){ return new DalSegno(this.number, this.al ? this.al.clone() : null); }
 }
 
 export class Segno extends Element{
@@ -1229,6 +1286,7 @@ export class Segno extends Element{
         let opts = this.opt ? ` ${this.opt}` : "";
         return `<S${this.number||""}${opts}>`;
     }
+    clone(){  return new Segno(this.number, this.opt); }
 }
 
 export class Coda extends Element {
@@ -1241,6 +1299,7 @@ export class Coda extends Element {
         return "Coda" + (this.number || "");
     }
     exportCode(){ return "<"+this.toString()+">"; }
+    clone(){ return new Coda(this.number); }
 }
 
 export class ToCoda extends Element {
@@ -1249,6 +1308,7 @@ export class ToCoda extends Element {
         this.number = number;
     }
     exportCode(){ return `<to Coda${this.number||""}>`; }
+    clone(){ return new ToCoda(this.number); }
 }
 
 export class Fine extends Element {
@@ -1260,6 +1320,7 @@ export class Fine extends Element {
         return "Fine";
     }
     exportCode(){ return "<"+this.toString()+">"; }
+    clone(){ return new Fine(); }
 }
 
 export class Comment extends Element {
@@ -1277,6 +1338,7 @@ export class Comment extends Element {
         }
         super.remove();
     }
+    clone(){ return new Comment(this.comment); } // NOTE : codedep is reset
 }
 
 export class Lyric extends Element {
@@ -1294,6 +1356,7 @@ export class Lyric extends Element {
         }
         super.remove();
     }
+    clone(){ return new Lyric(this.lyric); } // NOTE : codedep is reset
 }
 
 // Pure {} object

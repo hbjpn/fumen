@@ -11978,6 +11978,20 @@ var Node = /*#__PURE__*/function () {
 
       return null;
     }
+  }, {
+    key: "indexOf",
+    value: function indexOf(cond) {
+      for (var i = 0; i < this.childNodes.length; ++i) {
+        if (cond(this.childNodes[i])) return i;
+      }
+
+      return -1;
+    }
+  }, {
+    key: "clone",
+    value: function clone() {
+      throw "Shall be overrided";
+    }
   }]);
 
   return Node;
@@ -12038,6 +12052,11 @@ var Element = /*#__PURE__*/function (_Node) {
       _get(_getPrototypeOf(Element.prototype), "remove", this).call(this);
 
       this._reconstruct();
+    }
+  }, {
+    key: "clone",
+    value: function clone() {
+      throw "Shall be overrided";
     }
   }]);
 
@@ -12101,6 +12120,15 @@ var Track = /*#__PURE__*/function (_Element) {
       });
       return code;
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      var n = new Track();
+      this.childNodes.map(function (c) {
+        n.appendChild(c.clone());
+      });
+      return n;
+    }
   }]);
 
   return Track;
@@ -12141,6 +12169,15 @@ var ReharsalGroup = /*#__PURE__*/function (_Element2) {
       });
       return code;
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      var n = new ReharsalGroup(this.name, this.inline);
+      this.childNodes.map(function (c) {
+        n.appendChild(c.clone());
+      });
+      return n;
+    }
   }]);
 
   return ReharsalGroup;
@@ -12165,6 +12202,15 @@ var Block = /*#__PURE__*/function (_Element3) {
         this.appendChild(newmeasures[i]);
       }
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      var n = new Block();
+      this.childNodes.map(function (c) {
+        n.appendChild(c.clone());
+      });
+      return n;
+    }
   }]);
 
   return Block;
@@ -12180,18 +12226,7 @@ var Measure = /*#__PURE__*/function (_Element4) {
     _classCallCheck(this, Measure);
 
     _this4 = _super5.call(this);
-    _this4.boundary_info = ["n", "n"]; // "n" : normal boundary
-    // "b" : loop Begin boundary
-    // "e" : loop End boundary
-    // "d" : Double line boundary
-
-    _this4.header_width = 0;
-    _this4.body_width = 0;
-    _this4.footer_width = 0;
-    _this4.body_scaling = 1.0;
     _this4.raw_new_line = false; // Raw "new line" mark. Maked when this is a second or later measure inside a reharsal group after one ore more new lines in the fumen code
-
-    _this4.new_line = false; // THis is used in renderer
 
     _this4.align = "expand"; // expand, left, right
 
@@ -12201,6 +12236,17 @@ var Measure = /*#__PURE__*/function (_Element4) {
   }
 
   _createClass(Measure, [{
+    key: "clone",
+    value: function clone() {
+      var n = new Measure();
+      n.raw_new_line = this.raw_new_line;
+      n.align = this.align;
+      this.childNodes.map(function (c) {
+        n.appendChild(c.clone());
+      });
+      return n;
+    }
+  }, {
     key: "exportCode",
     value: function exportCode() {
       var code = "";
@@ -12292,6 +12338,11 @@ var Rest = /*#__PURE__*/function (_Element5) {
     value: function exportCode() {
       return "r:".concat(this.length_s);
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new Rest(this.length_s);
+    }
   }]);
 
   return Rest;
@@ -12319,6 +12370,11 @@ var Simile = /*#__PURE__*/function (_Element6) {
     value: function exportCode() {
       return "." + "/".repeat(this.numslash) + ".";
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new Simile(this.numslash);
+    }
   }]);
 
   return Simile;
@@ -12341,6 +12397,23 @@ var Chord = /*#__PURE__*/function (_Element7) {
   }
 
   _createClass(Chord, [{
+    key: "clone",
+    value: function clone() {
+      var n = new Chord(this.chord_str);
+
+      if (this.exceptinal_comment) {
+        n.exceptinal_comment = this.exceptinal_comment.clone();
+        n.exceptinal_comment.setCodeDependency(n);
+      }
+
+      if (this.lyric) {
+        n.lyric = this.lyric.clone();
+        n.lyric.setCodeDependency(n);
+      }
+
+      return n;
+    }
+  }, {
     key: "init",
     value: function init(chord_str) {
       this.chord_str = chord_str;
@@ -13264,6 +13337,11 @@ var LoopIndicator = /*#__PURE__*/function (_Element8) {
     value: function exportCode() {
       return "[".concat(this.indstr, "]");
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new LoopIndicator(this.indstr);
+    }
   }]);
 
   return LoopIndicator;
@@ -13291,6 +13369,11 @@ var Space = /*#__PURE__*/function (_Element9) {
     value: function exportCode() {
       return ",".repeat(this.length);
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new Space(this.length);
+    }
   }]);
 
   return Space;
@@ -13314,6 +13397,11 @@ var LongRest = /*#__PURE__*/function (_Element10) {
     key: "exportCode",
     value: function exportCode() {
       return "-".concat(this.longrestlen, "-");
+    }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new LongRest(this.longrestlen);
     }
   }]);
 
@@ -13339,6 +13427,11 @@ var Time = /*#__PURE__*/function (_Element11) {
     key: "exportCode",
     value: function exportCode() {
       return "(".concat(this.numer, "/").concat(this.denom, ")");
+    }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new Time(this.numer, this.denom);
     }
   }]);
 
@@ -13458,6 +13551,11 @@ var MeasureBoundaryMark = /*#__PURE__*/function (_MeasureBoundary) {
     value: function exportCode() {
       return this.exportTarget ? "|".repeat(this.nline) : "";
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new MeasureBoundaryMark(this.nline, this.exportTarget);
+    }
   }]);
 
   return MeasureBoundaryMark;
@@ -13485,9 +13583,9 @@ var LoopBeginMark = /*#__PURE__*/function (_MeasureBoundary2) {
       return this.exportTarget ? "||:" : "";
     }
   }, {
-    key: "typestr",
-    value: function typestr() {
-      return this.nline == 1 ? "s" : "d";
+    key: "clone",
+    value: function clone() {
+      return new LoopBeginMark(this.exportTarget);
     }
   }]);
 
@@ -13518,6 +13616,14 @@ var LoopEndMark = /*#__PURE__*/function (_MeasureBoundary3) {
       var ts = this.ntimes ? "xX" : this.times ? "x".concat(this.times) : "";
       return this.exportTarget ? ":||" + (ts == "x2" ? "" : ts) : ""; // x2 is not explicity stated : TODO : align with what wrote in the code.
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new LoopEndMark({
+        times: this.times,
+        ntimes: this.ntimes
+      }, this.exportTarget);
+    }
   }]);
 
   return LoopEndMark;
@@ -13547,6 +13653,14 @@ var LoopBothMark = /*#__PURE__*/function (_MeasureBoundary4) {
       var ts = this.ntimes ? "xX" : this.times ? "x".concat(this.times) : "";
       return this.exportTarget ? ":||:" + (ts == "x2" ? "" : ts) : ""; // x2 is not explicity stated : TODO : align with what wrote in the code.
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new LoopBothMark({
+        times: this.times,
+        ntimes: this.ntimes
+      }, this.exportTarget);
+    }
   }]);
 
   return LoopBothMark;
@@ -13573,6 +13687,11 @@ var MeasureBoundaryFinMark = /*#__PURE__*/function (_MeasureBoundary5) {
     value: function exportCode() {
       return this.exportTarget ? "||." : "";
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new MeasureBoundaryFinMark(this.exportTarget);
+    }
   }]);
 
   return MeasureBoundaryFinMark;
@@ -13598,6 +13717,11 @@ var MeasureBoundaryDblSimile = /*#__PURE__*/function (_MeasureBoundary6) {
     key: "exportCode",
     value: function exportCode() {
       return this.exportTarget ? "./|/." : "";
+    }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new MeasureBoundaryDblSimile(this.exportTarget);
     }
   }]);
 
@@ -13638,6 +13762,11 @@ var DaCapo = /*#__PURE__*/function (_Element13) {
     value: function exportCode() {
       return "<" + this.toString() + ">";
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new DaCapo(this.al ? this.al.clone() : null);
+    }
   }]);
 
   return DaCapo;
@@ -13677,6 +13806,11 @@ var DalSegno = /*#__PURE__*/function (_Element14) {
     value: function exportCode() {
       return "<" + this.toString() + ">";
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new DalSegno(this.number, this.al ? this.al.clone() : null);
+    }
   }]);
 
   return DalSegno;
@@ -13702,6 +13836,11 @@ var Segno = /*#__PURE__*/function (_Element15) {
     value: function exportCode() {
       var opts = this.opt ? " ".concat(this.opt) : "";
       return "<S".concat(this.number || "").concat(opts, ">");
+    }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new Segno(this.number, this.opt);
     }
   }]);
 
@@ -13732,6 +13871,11 @@ var Coda = /*#__PURE__*/function (_Element16) {
     value: function exportCode() {
       return "<" + this.toString() + ">";
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new Coda(this.number);
+    }
   }]);
 
   return Coda;
@@ -13755,6 +13899,11 @@ var ToCoda = /*#__PURE__*/function (_Element17) {
     key: "exportCode",
     value: function exportCode() {
       return "<to Coda".concat(this.number || "", ">");
+    }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new ToCoda(this.number);
     }
   }]);
 
@@ -13780,6 +13929,11 @@ var Fine = /*#__PURE__*/function (_Element18) {
     key: "exportCode",
     value: function exportCode() {
       return "<" + this.toString() + ">";
+    }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new Fine();
     }
   }]);
 
@@ -13825,6 +13979,12 @@ var Comment = /*#__PURE__*/function (_Element19) {
 
       _get(_getPrototypeOf(Comment.prototype), "remove", this).call(this);
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new Comment(this.comment);
+    } // NOTE : codedep is reset
+
   }]);
 
   return Comment;
@@ -13869,6 +14029,12 @@ var Lyric = /*#__PURE__*/function (_Element20) {
 
       _get(_getPrototypeOf(Lyric.prototype), "remove", this).call(this);
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new Lyric(this.lyric);
+    } // NOTE : codedep is reset
+
   }]);
 
   return Lyric;

@@ -12264,26 +12264,22 @@ var Measure = /*#__PURE__*/function (_Element4) {
   }, {
     key: "remove",
     value: function remove() {
-      // Combine elements considering the boundaries.
+      // Combine elements considering the boundaries. 
       var prevMeas = this.previousSiblingNode;
       var nextMeas = this.nextSiblingNode;
       var firstMeasInACodeRow = this.raw_new_line || !prevMeas;
       var lastMeasInACodeRow = !nextMeas || nextMeas.raw_new_line;
 
-      if (firstMeasInACodeRow && lastMeasInACodeRow) {
-        // The last measure in a block
-        _get(_getPrototypeOf(Measure.prototype), "remove", this).call(this);
-      } else if (firstMeasInACodeRow) {
+      if (firstMeasInACodeRow || lastMeasInACodeRow) {
+        // Edge measure of code row
         _get(_getPrototypeOf(Measure.prototype), "remove", this).call(this);
 
-        nextMeas.raw_new_line = this.raw_new_line;
-      } else if (lastMeasInACodeRow) {
-        _get(_getPrototypeOf(Measure.prototype), "remove", this).call(this);
-
-        prevMeas.findLastOf(function (e) {
+        if (prevMeas && lastMeasInACodeRow) prevMeas.findLastOf(function (e) {
           return e instanceof MeasureBoundary;
         }).exportTarget = true;
+        if (nextMeas) nextMeas.raw_new_line = this.raw_new_line; // Inherit the raw_new_line of this measure.
       } else {
+        // Intermediate measure inside a single row.
         _get(_getPrototypeOf(Measure.prototype), "remove", this).call(this);
 
         var prevEndB = prevMeas.findLastOf(function (e) {

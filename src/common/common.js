@@ -329,22 +329,19 @@ export class Measure extends Element{
     }
 
     remove(){
-        // Combine elements considering the boundaries.
+        // Combine elements considering the boundaries. 
 
         let prevMeas = this.previousSiblingNode;
         let nextMeas = this.nextSiblingNode;
         let firstMeasInACodeRow = this.raw_new_line || (!prevMeas);
         let lastMeasInACodeRow  = (!nextMeas) || (nextMeas.raw_new_line);
-        if(firstMeasInACodeRow && lastMeasInACodeRow){
-            // The last measure in a block
+        if(firstMeasInACodeRow || lastMeasInACodeRow){
+            // Edge measure of code row
             super.remove();
-        }else if(firstMeasInACodeRow){
-            super.remove();
-            nextMeas.raw_new_line = this.raw_new_line;
-        }else if(lastMeasInACodeRow){
-            super.remove();
-            prevMeas.findLastOf(e=>e instanceof MeasureBoundary).exportTarget = true;
+            if(prevMeas && lastMeasInACodeRow) prevMeas.findLastOf(e=>e instanceof MeasureBoundary).exportTarget = true;
+            if(nextMeas) nextMeas.raw_new_line = this.raw_new_line; // Inherit the raw_new_line of this measure.
         }else{
+            // Intermediate measure inside a single row.
             super.remove();
             
             let prevEndB = prevMeas.findLastOf(e=>e instanceof MeasureBoundary);

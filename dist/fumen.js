@@ -15385,8 +15385,9 @@ var Parser = /*#__PURE__*/function () {
         var MAX_LOOP = 1000; // eslint-disable-next-line no-constant-condition
 
         while (true) {
+          // If more 2 or more NL is placed, empty block can be generated, in that case ignore it.
           r = this.parseBlock(s, rg, latest_variables);
-          rg.appendChild(r.block);
+          if (r.block.childNodes.length > 0) rg.appendChild(r.block);
           s = r.s;
           ++loop_cnt;
           if (loop_cnt >= MAX_LOOP) throw "Too much elements or infnite loop detected with unkown reason";

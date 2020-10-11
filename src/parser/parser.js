@@ -654,7 +654,7 @@ export class Parser {
                             loop_flg = false;
                             // Register the last boundary to the serialize object of last measure as it is not regisereted.
                             var lastm = measures[measures.length-1];
-                            let lastb = lastm.childElements[lastm.childElements.length-1];
+                            let lastb = lastm.childNodes[lastm.childNodes.length-1];
                             if(! (lastb instanceof common.MeasureBoundary)){
                                 throw "Invalid state";
                             }
@@ -894,11 +894,11 @@ export class Parser {
                     //track.appendChild(new common.RawSpaces(r.token)); 
                     // Does not count as line break
                 } else if (r.type == TOKEN_BRACKET_LS) {
-                    let rgs = track.childElements.filter(e => e instanceof common.ReharsalGroup);
+                    let rgs = track.childNodes.filter(e => e instanceof common.ReharsalGroup);
                     let inline = 
                         this.context.contiguous_line_break<=1 &&
                         rgs.length > 0 && // 1st RG is always non-inline
-                        rgs[rgs.length - 1].childElements.filter(e=>e instanceof common.Block).length > 0; // previous reharsal group has at least one block(measure)
+                        rgs[rgs.length - 1].childNodes.filter(e=>e instanceof common.Block).length > 0; // previous reharsal group has at least one block(measure)
                 
                     r = this.parseReharsalGroup(r.s, inline?"inline":"normal");
                     track.appendChild(r.rg);

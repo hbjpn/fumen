@@ -104,7 +104,7 @@ export class Renderer {
         var simile_measure_wide_idx = new Array();
         var simile_objs = new Array();
 
-        let musical_elements = m.childElements;
+        let musical_elements = m.childNodes;
 
         for (var ei = 0; ei < musical_elements.length; ++ei) {
             var e = musical_elements[ei];

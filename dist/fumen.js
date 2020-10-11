@@ -12003,57 +12003,12 @@ var Element = /*#__PURE__*/function (_Node) {
 
   // Musical
   function Element() {
-    var _this;
-
     _classCallCheck(this, Element);
 
-    _this = _super.call(this);
-    _this.childElements = [];
-    return _this;
+    return _super.call(this);
   }
 
   _createClass(Element, [{
-    key: "_reconstruct",
-    value: function _reconstruct() {
-      this.childElements = this.childNodes.filter(function (e) {
-        return e instanceof Element;
-      });
-
-      for (var i = 0; i < this.childElements; ++i) {
-        this.childElements[i].nextSiblingNode = i + 1 < this.childElements.length ? this.childElements[i + 1] : null;
-        this.childElements[i].previousSiblingNode = i > 0 ? this.childElements[i - 1] : null;
-      }
-    }
-  }, {
-    key: "appendChild",
-    value: function appendChild(node) {
-      _get(_getPrototypeOf(Element.prototype), "appendChild", this).call(this, node);
-
-      if (node instanceof Element) {
-        this.childElements.push(node);
-
-        if (this.childElements.length >= 2) {
-          this.childElements[this.childElements.length - 2].nextSiblingElement = node;
-          node.previousSiblingElement = this.childElements[this.childElements.length - 2];
-        }
-      }
-    }
-  }, {
-    key: "insertBefore",
-    value: function insertBefore(node, newNode) {
-      _get(_getPrototypeOf(Element.prototype), "insertBefore", this).call(this, node, newNode); // Re-construct all : TODO: improve time
-
-
-      this._reconstruct();
-    }
-  }, {
-    key: "remove",
-    value: function remove() {
-      _get(_getPrototypeOf(Element.prototype), "remove", this).call(this);
-
-      this._reconstruct();
-    }
-  }, {
     key: "clone",
     value: function clone() {
       throw "Shall be overrided";
@@ -12068,18 +12023,18 @@ var Track = /*#__PURE__*/function (_Element) {
   var _super2 = _createSuper(Track);
 
   function Track() {
-    var _this2;
+    var _this;
 
     _classCallCheck(this, Track);
 
-    _this2 = _super2.call(this);
+    _this = _super2.call(this);
 
     for (var key in VARIABLE_DEFAULT) {
-      _this2.setVariable(key, VARIABLE_DEFAULT[key]);
+      _this.setVariable(key, VARIABLE_DEFAULT[key]);
     }
 
-    _this2.pre_render_info = {};
-    return _this2;
+    _this.pre_render_info = {};
+    return _this;
   } // Utility functions open for external
 
 
@@ -12139,16 +12094,16 @@ var ReharsalGroup = /*#__PURE__*/function (_Element2) {
   var _super3 = _createSuper(ReharsalGroup);
 
   function ReharsalGroup(name) {
-    var _this3;
+    var _this2;
 
     var inline = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
     _classCallCheck(this, ReharsalGroup);
 
-    _this3 = _super3.call(this);
-    _this3.name = name;
-    _this3.inline = inline;
-    return _this3;
+    _this2 = _super3.call(this);
+    _this2.name = name;
+    _this2.inline = inline;
+    return _this2;
   }
 
   _createClass(ReharsalGroup, [{
@@ -12221,18 +12176,18 @@ var Measure = /*#__PURE__*/function (_Element4) {
   var _super5 = _createSuper(Measure);
 
   function Measure() {
-    var _this4;
+    var _this3;
 
     _classCallCheck(this, Measure);
 
-    _this4 = _super5.call(this);
-    _this4.raw_new_line = false; // Raw "new line" mark. Maked when this is a second or later measure inside a reharsal group after one ore more new lines in the fumen code
+    _this3 = _super5.call(this);
+    _this3.raw_new_line = false; // Raw "new line" mark. Maked when this is a second or later measure inside a reharsal group after one ore more new lines in the fumen code
 
-    _this4.align = "expand"; // expand, left, right
+    _this3.align = "expand"; // expand, left, right
 
-    _this4.renderprop = {}; // Rendering information storage
+    _this3.renderprop = {}; // Rendering information storage
 
-    return _this4;
+    return _this3;
   }
 
   _createClass(Measure, [{
@@ -12308,15 +12263,15 @@ var Rest = /*#__PURE__*/function (_Element5) {
   var _super6 = _createSuper(Rest);
 
   function Rest(length_s) {
-    var _this5;
+    var _this4;
 
     _classCallCheck(this, Rest);
 
-    _this5 = _super6.call(this);
+    _this4 = _super6.call(this);
 
-    _this5.init(length_s);
+    _this4.init(length_s);
 
-    return _this5;
+    return _this4;
   }
 
   _createClass(Rest, [{
@@ -12349,16 +12304,16 @@ var Simile = /*#__PURE__*/function (_Element6) {
   var _super7 = _createSuper(Simile);
 
   function Simile(numslash) {
-    var _this6;
+    var _this5;
 
     _classCallCheck(this, Simile);
 
-    _this6 = _super7.call(this); // NOTE : Double simile on measure boundary is not treated in this class, it is treated as a one of boundary type
+    _this5 = _super7.call(this); // NOTE : Double simile on measure boundary is not treated in this class, it is treated as a one of boundary type
 
-    _this6.numslash = numslash;
-    _this6.renderprop = {};
-    _this6.note_group_list = null;
-    return _this6;
+    _this5.numslash = numslash;
+    _this5.renderprop = {};
+    _this5.note_group_list = null;
+    return _this5;
   }
 
   _createClass(Simile, [{
@@ -12381,15 +12336,15 @@ var Chord = /*#__PURE__*/function (_Element7) {
   var _super8 = _createSuper(Chord);
 
   function Chord(chord_str) {
-    var _this7;
+    var _this6;
 
     _classCallCheck(this, Chord);
 
-    _this7 = _super8.call(this);
+    _this6 = _super8.call(this);
 
-    _this7.init(chord_str);
+    _this6.init(chord_str);
 
-    return _this7;
+    return _this6;
   }
 
   _createClass(Chord, [{
@@ -13299,15 +13254,15 @@ var LoopIndicator = /*#__PURE__*/function (_Element8) {
   var _super9 = _createSuper(LoopIndicator);
 
   function LoopIndicator(loopIndStr) {
-    var _this8;
+    var _this7;
 
     _classCallCheck(this, LoopIndicator);
 
-    _this8 = _super9.call(this);
+    _this7 = _super9.call(this);
 
-    _this8.init(loopIndStr);
+    _this7.init(loopIndStr);
 
-    return _this8;
+    return _this7;
   }
 
   _createClass(LoopIndicator, [{
@@ -13348,16 +13303,16 @@ var Space = /*#__PURE__*/function (_Element9) {
   var _super10 = _createSuper(Space);
 
   function Space() {
-    var _this9;
+    var _this8;
 
     var length = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
 
     _classCallCheck(this, Space);
 
-    _this9 = _super10.call(this);
-    _this9.length = length;
-    _this9.renderprop = {};
-    return _this9;
+    _this8 = _super10.call(this);
+    _this8.length = length;
+    _this8.renderprop = {};
+    return _this8;
   }
 
   _createClass(Space, [{
@@ -13380,13 +13335,13 @@ var LongRest = /*#__PURE__*/function (_Element10) {
   var _super11 = _createSuper(LongRest);
 
   function LongRest(longrestlen) {
-    var _this10;
+    var _this9;
 
     _classCallCheck(this, LongRest);
 
-    _this10 = _super11.call(this);
-    _this10.longrestlen = longrestlen;
-    return _this10;
+    _this9 = _super11.call(this);
+    _this9.longrestlen = longrestlen;
+    return _this9;
   }
 
   _createClass(LongRest, [{
@@ -13409,14 +13364,14 @@ var Time = /*#__PURE__*/function (_Element11) {
   var _super12 = _createSuper(Time);
 
   function Time(numer, denom) {
-    var _this11;
+    var _this10;
 
     _classCallCheck(this, Time);
 
-    _this11 = _super12.call(this);
-    _this11.numer = numer;
-    _this11.denom = denom;
-    return _this11;
+    _this10 = _super12.call(this);
+    _this10.numer = numer;
+    _this10.denom = denom;
+    return _this10;
   }
 
   _createClass(Time, [{
@@ -13439,15 +13394,15 @@ var MeasureBoundary = /*#__PURE__*/function (_Element12) {
   var _super13 = _createSuper(MeasureBoundary);
 
   function MeasureBoundary() {
-    var _this12;
+    var _this11;
 
     var exportTarget = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
 
     _classCallCheck(this, MeasureBoundary);
 
-    _this12 = _super13.call(this);
-    _this12.exportTarget = exportTarget;
-    return _this12;
+    _this11 = _super13.call(this);
+    _this11.exportTarget = exportTarget;
+    return _this11;
   } // Factory function to make a new boundary from 2 boundaries
 
 
@@ -13532,14 +13487,14 @@ var MeasureBoundaryMark = /*#__PURE__*/function (_MeasureBoundary) {
   var _super14 = _createSuper(MeasureBoundaryMark);
 
   function MeasureBoundaryMark(nline, exportTarget) {
-    var _this13;
+    var _this12;
 
     _classCallCheck(this, MeasureBoundaryMark);
 
-    _this13 = _super14.call(this, exportTarget);
-    _this13.nline = nline;
-    _this13.typestr = _this13.nline == 1 ? "s" : "d";
-    return _this13;
+    _this12 = _super14.call(this, exportTarget);
+    _this12.nline = nline;
+    _this12.typestr = _this12.nline == 1 ? "s" : "d";
+    return _this12;
   }
 
   _createClass(MeasureBoundaryMark, [{
@@ -13562,15 +13517,15 @@ var LoopBeginMark = /*#__PURE__*/function (_MeasureBoundary2) {
   var _super15 = _createSuper(LoopBeginMark);
 
   function LoopBeginMark() {
-    var _this14;
+    var _this13;
 
     var exportTarget = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
 
     _classCallCheck(this, LoopBeginMark);
 
-    _this14 = _super15.call(this, exportTarget);
-    _this14.typestr = "b";
-    return _this14;
+    _this13 = _super15.call(this, exportTarget);
+    _this13.typestr = "b";
+    return _this13;
   }
 
   _createClass(LoopBeginMark, [{
@@ -13593,17 +13548,17 @@ var LoopEndMark = /*#__PURE__*/function (_MeasureBoundary3) {
   var _super16 = _createSuper(LoopEndMark);
 
   function LoopEndMark(param) {
-    var _this15;
+    var _this14;
 
     var exportTarget = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
 
     _classCallCheck(this, LoopEndMark);
 
-    _this15 = _super16.call(this, exportTarget);
-    _this15.times = param.times;
-    _this15.ntimes = param.ntimes;
-    _this15.typestr = "e";
-    return _this15;
+    _this14 = _super16.call(this, exportTarget);
+    _this14.times = param.times;
+    _this14.ntimes = param.ntimes;
+    _this14.typestr = "e";
+    return _this14;
   }
 
   _createClass(LoopEndMark, [{
@@ -13630,17 +13585,17 @@ var LoopBothMark = /*#__PURE__*/function (_MeasureBoundary4) {
   var _super17 = _createSuper(LoopBothMark);
 
   function LoopBothMark(param) {
-    var _this16;
+    var _this15;
 
     var exportTarget = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
 
     _classCallCheck(this, LoopBothMark);
 
-    _this16 = _super17.call(this, exportTarget);
-    _this16.times = param.times;
-    _this16.ntimes = param.ntimes;
-    _this16.typestr = "B";
-    return _this16;
+    _this15 = _super17.call(this, exportTarget);
+    _this15.times = param.times;
+    _this15.ntimes = param.ntimes;
+    _this15.typestr = "B";
+    return _this15;
   }
 
   _createClass(LoopBothMark, [{
@@ -13667,15 +13622,15 @@ var MeasureBoundaryFinMark = /*#__PURE__*/function (_MeasureBoundary5) {
   var _super18 = _createSuper(MeasureBoundaryFinMark);
 
   function MeasureBoundaryFinMark() {
-    var _this17;
+    var _this16;
 
     var exportTarget = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
 
     _classCallCheck(this, MeasureBoundaryFinMark);
 
-    _this17 = _super18.call(this, exportTarget);
-    _this17.typestr = "f";
-    return _this17;
+    _this16 = _super18.call(this, exportTarget);
+    _this16.typestr = "f";
+    return _this16;
   }
 
   _createClass(MeasureBoundaryFinMark, [{
@@ -13698,15 +13653,15 @@ var MeasureBoundaryDblSimile = /*#__PURE__*/function (_MeasureBoundary6) {
   var _super19 = _createSuper(MeasureBoundaryDblSimile);
 
   function MeasureBoundaryDblSimile() {
-    var _this18;
+    var _this17;
 
     var exportTarget = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
 
     _classCallCheck(this, MeasureBoundaryDblSimile);
 
-    _this18 = _super19.call(this, exportTarget);
-    _this18.typestr = "r";
-    return _this18;
+    _this17 = _super19.call(this, exportTarget);
+    _this17.typestr = "r";
+    return _this17;
   }
 
   _createClass(MeasureBoundaryDblSimile, [{
@@ -13730,15 +13685,15 @@ var DaCapo = /*#__PURE__*/function (_Element13) {
   var _super20 = _createSuper(DaCapo);
 
   function DaCapo(al) {
-    var _this19;
+    var _this18;
 
     _classCallCheck(this, DaCapo);
 
-    _this19 = _super20.call(this);
+    _this18 = _super20.call(this);
 
-    _this19.init(al);
+    _this18.init(al);
 
-    return _this19;
+    return _this18;
   }
 
   _createClass(DaCapo, [{
@@ -13773,15 +13728,15 @@ var DalSegno = /*#__PURE__*/function (_Element14) {
   var _super21 = _createSuper(DalSegno);
 
   function DalSegno(number, al) {
-    var _this20;
+    var _this19;
 
     _classCallCheck(this, DalSegno);
 
-    _this20 = _super21.call(this);
+    _this19 = _super21.call(this);
 
-    _this20.init(number, al);
+    _this19.init(number, al);
 
-    return _this20;
+    return _this19;
   }
 
   _createClass(DalSegno, [{
@@ -13817,14 +13772,14 @@ var Segno = /*#__PURE__*/function (_Element15) {
   var _super22 = _createSuper(Segno);
 
   function Segno(number, opt) {
-    var _this21;
+    var _this20;
 
     _classCallCheck(this, Segno);
 
-    _this21 = _super22.call(this);
-    _this21.number = number;
-    _this21.opt = opt;
-    return _this21;
+    _this20 = _super22.call(this);
+    _this20.number = number;
+    _this20.opt = opt;
+    return _this20;
   }
 
   _createClass(Segno, [{
@@ -13848,13 +13803,13 @@ var Coda = /*#__PURE__*/function (_Element16) {
   var _super23 = _createSuper(Coda);
 
   function Coda(number) {
-    var _this22;
+    var _this21;
 
     _classCallCheck(this, Coda);
 
-    _this22 = _super23.call(this);
-    _this22.number = number;
-    return _this22;
+    _this21 = _super23.call(this);
+    _this21.number = number;
+    return _this21;
   }
 
   _createClass(Coda, [{
@@ -13882,13 +13837,13 @@ var ToCoda = /*#__PURE__*/function (_Element17) {
   var _super24 = _createSuper(ToCoda);
 
   function ToCoda(number) {
-    var _this23;
+    var _this22;
 
     _classCallCheck(this, ToCoda);
 
-    _this23 = _super24.call(this);
-    _this23.number = number;
-    return _this23;
+    _this22 = _super24.call(this);
+    _this22.number = number;
+    return _this22;
   }
 
   _createClass(ToCoda, [{
@@ -13941,17 +13896,17 @@ var Comment = /*#__PURE__*/function (_Element19) {
   var _super26 = _createSuper(Comment);
 
   function Comment(comment) {
-    var _this24;
+    var _this23;
 
     var chorddep = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
     _classCallCheck(this, Comment);
 
-    _this24 = _super26.call(this);
-    _this24.comment = comment;
-    _this24.chorddep = chorddep; // Dependency for particular chord : true/false
+    _this23 = _super26.call(this);
+    _this23.comment = comment;
+    _this23.chorddep = chorddep; // Dependency for particular chord : true/false
 
-    return _this24;
+    return _this23;
   }
 
   _createClass(Comment, [{
@@ -13991,17 +13946,17 @@ var Lyric = /*#__PURE__*/function (_Element20) {
   var _super27 = _createSuper(Lyric);
 
   function Lyric(lyric) {
-    var _this25;
+    var _this24;
 
     var chorddep = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
     _classCallCheck(this, Lyric);
 
-    _this25 = _super27.call(this);
-    _this25.lyric = lyric;
-    _this25.chorddep = chorddep; // Dependency for particular chord : true/false
+    _this24 = _super27.call(this);
+    _this24.lyric = lyric;
+    _this24.chorddep = chorddep; // Dependency for particular chord : true/false
 
-    return _this25;
+    return _this24;
   }
 
   _createClass(Lyric, [{
@@ -14051,13 +14006,13 @@ var Title = /*#__PURE__*/function (_Element21) {
   var _super28 = _createSuper(Title);
 
   function Title(variable) {
-    var _this26;
+    var _this25;
 
     _classCallCheck(this, Title);
 
-    _this26 = _super28.call(this);
-    _this26.variable = variable;
-    return _this26;
+    _this25 = _super28.call(this);
+    _this25.variable = variable;
+    return _this25;
   }
 
   return Title;
@@ -14068,13 +14023,13 @@ var SubTitle = /*#__PURE__*/function (_Element22) {
   var _super29 = _createSuper(SubTitle);
 
   function SubTitle(variable) {
-    var _this27;
+    var _this26;
 
     _classCallCheck(this, SubTitle);
 
-    _this27 = _super29.call(this);
-    _this27.variable = variable;
-    return _this27;
+    _this26 = _super29.call(this);
+    _this26.variable = variable;
+    return _this26;
   }
 
   return SubTitle;
@@ -14085,13 +14040,13 @@ var Artist = /*#__PURE__*/function (_Element23) {
   var _super30 = _createSuper(Artist);
 
   function Artist(variable) {
-    var _this28;
+    var _this27;
 
     _classCallCheck(this, Artist);
 
-    _this28 = _super30.call(this);
-    _this28.variable = variable;
-    return _this28;
+    _this27 = _super30.call(this);
+    _this27.variable = variable;
+    return _this27;
   }
 
   return Artist;
@@ -14103,14 +14058,14 @@ var Variable = /*#__PURE__*/function (_Node2) {
   var _super31 = _createSuper(Variable);
 
   function Variable(name, value) {
-    var _this29;
+    var _this28;
 
     _classCallCheck(this, Variable);
 
-    _this29 = _super31.call(this);
-    _this29.name = name;
-    _this29.value = deepcopy(value);
-    return _this29;
+    _this28 = _super31.call(this);
+    _this28.name = name;
+    _this28.value = deepcopy(value);
+    return _this28;
   }
 
   _createClass(Variable, [{
@@ -14150,15 +14105,15 @@ var GenericRow = /*#__PURE__*/function (_VirtualElement) {
   var _super32 = _createSuper(GenericRow);
 
   function GenericRow(type, param) {
-    var _this30;
+    var _this29;
 
     _classCallCheck(this, GenericRow);
 
-    _this30 = _super32.call(this);
-    _this30.type = type;
-    _this30.param = param; // Any element can be associated.
+    _this29 = _super32.call(this);
+    _this29.type = type;
+    _this29.param = param; // Any element can be associated.
 
-    return _this30;
+    return _this29;
   }
 
   return GenericRow;
@@ -14184,10 +14139,10 @@ var HitManager = /*#__PURE__*/function () {
   }, {
     key: "_drawBBs",
     value: function _drawBBs() {
-      var _this31 = this;
+      var _this30 = this;
 
       var _loop = function _loop(paper_id) {
-        var p = _this31.papers[paper_id];
+        var p = _this30.papers[paper_id];
         var ctx = p.paper.getContext("2d");
         p.objs.forEach(function (entry) {
           ctx.fillStyle = "rgb(0, 0, 255, 0.5)";
@@ -14292,25 +14247,25 @@ var HitManager = /*#__PURE__*/function () {
   }, {
     key: "get",
     value: function get(paper, coord) {
-      var _this32 = this;
+      var _this31 = this;
 
       if (!(paper.fumen_canvas_id in this.papers)) return;
       var p = this.papers[paper.fumen_canvas_id];
       var len = p.objs.length;
       var lx_end = p.left_x_sorted.findIndex(function (n) {
-        return p.objs[n].bb.x[0] > coord.x / _this32.global_scale.x;
+        return p.objs[n].bb.x[0] > coord.x / _this31.global_scale.x;
       });
       if (lx_end == 0) return [];else if (lx_end == -1) lx_end = len - 1;else lx_end -= 1;
       var rx_start = p.right_x_sorted.findIndex(function (n) {
-        return p.objs[n].bb.x[1] >= coord.x / _this32.global_scale.x;
+        return p.objs[n].bb.x[1] >= coord.x / _this31.global_scale.x;
       });
       if (rx_start == -1) return [];
       var ty_end = p.top_y_sorted.findIndex(function (n) {
-        return p.objs[n].bb.y[0] > coord.y / _this32.global_scale.y;
+        return p.objs[n].bb.y[0] > coord.y / _this31.global_scale.y;
       });
       if (ty_end == 0) return [];else if (ty_end == -1) ty_end = len - 1;else ty_end -= 1;
       var by_start = p.bottom_y_sorted.findIndex(function (n) {
-        return p.objs[n].bb.y[1] >= coord.y / _this32.global_scale.y;
+        return p.objs[n].bb.y[1] >= coord.y / _this31.global_scale.y;
       });
       if (by_start == -1) return [];
       var lxc = p.left_x_sorted.slice(0, lx_end + 1);
@@ -14326,7 +14281,7 @@ var HitManager = /*#__PURE__*/function () {
       }).map(function (val) {
         return {
           element: p.objs[val].element,
-          bb: p.objs[val].bb.clone().scale(_this32.global_scale.x, _this32.global_scale.y)
+          bb: p.objs[val].bb.clone().scale(_this31.global_scale.x, _this31.global_scale.y)
         };
       });
       return hit_objs;
@@ -15177,7 +15132,7 @@ var Parser = /*#__PURE__*/function () {
                   loop_flg = false; // Register the last boundary to the serialize object of last measure as it is not regisereted.
 
                   var lastm = measures[measures.length - 1];
-                  var lastb = lastm.childElements[lastm.childElements.length - 1];
+                  var lastb = lastm.childNodes[lastm.childNodes.length - 1];
 
                   if (!(lastb instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundary"])) {
                     throw "Invalid state";
@@ -15434,11 +15389,11 @@ var Parser = /*#__PURE__*/function () {
             //track.appendChild(new common.RawSpaces(r.token)); 
             // Does not count as line break
           } else if (r.type == TOKEN_BRACKET_LS) {
-            var rgs = track.childElements.filter(function (e) {
+            var rgs = track.childNodes.filter(function (e) {
               return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["ReharsalGroup"];
             });
             var inline = this.context.contiguous_line_break <= 1 && rgs.length > 0 && // 1st RG is always non-inline
-            rgs[rgs.length - 1].childElements.filter(function (e) {
+            rgs[rgs.length - 1].childNodes.filter(function (e) {
               return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Block"];
             }).length > 0; // previous reharsal group has at least one block(measure)
 
@@ -16469,19 +16424,19 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 meas_row = [];
                 meas_row_rg_ids = [];
                 meas_row_block_ids = [];
-                reharsal_groups = track.childElements.filter(function (e) {
+                reharsal_groups = track.childNodes.filter(function (e) {
                   return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["ReharsalGroup"];
                 });
 
                 if (this.param.row_gen_mode == "default") {
                   for (i = 0; i < reharsal_groups.length; ++i) {
                     rg = reharsal_groups[i];
-                    blocks = rg.childElements.filter(function (e) {
+                    blocks = rg.childNodes.filter(function (e) {
                       return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Block"];
                     });
 
                     for (bi = 0; bi < blocks.length; ++bi) {
-                      block_measures = blocks[bi].childElements.filter(function (e) {
+                      block_measures = blocks[bi].childNodes.filter(function (e) {
                         return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Measure"];
                       });
 
@@ -16553,12 +16508,12 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 } else if (this.param.row_gen_mode == "constant_n_meas") {
                   for (_i3 = 0; _i3 < reharsal_groups.length; ++_i3) {
                     _rg = reharsal_groups[_i3];
-                    _blocks = _rg.childElements.filter(function (e) {
+                    _blocks = _rg.childNodes.filter(function (e) {
                       return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Block"];
                     });
 
                     for (_bi = 0; _bi < _blocks.length; ++_bi) {
-                      _block_measures = _blocks[_bi].childElements.filter(function (e) {
+                      _block_measures = _blocks[_bi].childNodes.filter(function (e) {
                         return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Measure"];
                       });
 
@@ -16930,8 +16885,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         if (m.renderprop && m.renderprop.rg_from_here && m.renderprop.rg_from_here.name != "") // Anonymous reharsal group is not rendered
           rg_mark_detected = true;
 
-        for (var ei = 0; ei < m.childElements.length; ++ei) {
-          var e = m.childElements[ei];
+        for (var ei = 0; ei < m.childNodes.length; ++ei) {
+          var e = m.childNodes[ei];
 
           if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Coda"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Segno"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Comment"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["LoopIndicator"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["ToCoda"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DalSegno"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DaCapo"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Fine"]) {
             yprof.mu.detected = true;
@@ -17016,7 +16971,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         elements.header.forEach(function (e) {
           if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["MeasureBoundary"]) {
             var pm = ml == 0 ? prev_measure : row_elements_list[ml - 1];
-            var ne = pm ? pm.childElements[pm.childElements.length - 1] : null;
+            var ne = pm ? pm.childNodes[pm.childNodes.length - 1] : null;
 
             var r = _this5.draw_boundary_simplified("begin", ne, e, ml == 0, //m.raw_new_line,
             paper, x, 0, dammy_rs_area_height, // any value is OK
@@ -17062,7 +17017,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         elements.footer.forEach(function (e) {
           if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["MeasureBoundary"]) {
             var nm = ml == row_elements_list.length - 1 ? next_measure : row_elements_list[ml + 1];
-            var ne = nm ? nm.childElements[0] : null;
+            var ne = nm ? nm.childNodes[0] : null;
 
             var r = _this5.draw_boundary_simplified("end", e, ne, ml == row_elements_list.length - 1, //nm ? nm.raw_new_line : false,
             paper, x, 0, dammy_rs_area_height, dammy_rs_area_height, param, false);
@@ -17598,7 +17553,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         elements.header.forEach(function (e) {
           if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["MeasureBoundary"]) {
             var pm = ml == 0 ? prev_measure : row_elements_list[ml - 1];
-            var ne = pm ? pm.childElements[pm.childElements.length - 1] : null;
+            var ne = pm ? pm.childNodes[pm.childNodes.length - 1] : null;
 
             var _r8 = _this7.draw_boundary_simplified("begin", ne, e, ml == 0, //m.raw_new_line,
             paper, x, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, param, true);
@@ -17640,7 +17595,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
           if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["MeasureBoundary"]) {
             nm = ml == row_elements_list.length - 1 ? next_measure : row_elements_list[ml + 1];
-            ne = nm ? nm.childElements[0] : null;
+            ne = nm ? nm.childNodes[0] : null;
 
             var _r9 = _this7.draw_boundary_simplified("end", _e2, ne, ml == row_elements_list.length - 1, //nm ? nm.raw_new_line : false,
             paper, x, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, param, true);
@@ -19907,7 +19862,7 @@ var Renderer = /*#__PURE__*/function () {
       var simile_body_idx = new Array();
       var simile_measure_wide_idx = new Array();
       var simile_objs = new Array();
-      var musical_elements = m.childElements;
+      var musical_elements = m.childNodes;
 
       for (var ei = 0; ei < musical_elements.length; ++ei) {
         var e = musical_elements[ei];

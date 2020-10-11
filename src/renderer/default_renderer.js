@@ -898,14 +898,14 @@ export class DefaultRenderer extends Renderer {
         let meas_row_rg_ids = [];
         let meas_row_block_ids = [];
 
-        let reharsal_groups = track.childElements.filter(e=>e instanceof common.ReharsalGroup);
+        let reharsal_groups = track.childNodes.filter(e=>e instanceof common.ReharsalGroup);
 
         if(this.param.row_gen_mode == "default"){
             for (let i = 0; i < reharsal_groups.length; ++i) {
                 let rg = reharsal_groups[i];
-                let blocks = rg.childElements.filter(e=>e instanceof common.Block);
+                let blocks = rg.childNodes.filter(e=>e instanceof common.Block);
                 for (var bi = 0; bi < blocks.length; ++bi) {
-                    var block_measures = blocks[bi].childElements.filter(e=>e instanceof common.Measure);
+                    var block_measures = blocks[bi].childNodes.filter(e=>e instanceof common.Measure);
                     for (var ml = 0; ml < block_measures.length; ++ml) {
                         var m = block_measures[ml];
                         if(m.raw_new_line){
@@ -958,9 +958,9 @@ export class DefaultRenderer extends Renderer {
         }else if(this.param.row_gen_mode == "constant_n_meas"){
             for (let i = 0; i < reharsal_groups.length; ++i) {
                 let rg = reharsal_groups[i];
-                let blocks = rg.childElements.filter(e=>e instanceof common.Block);
+                let blocks = rg.childNodes.filter(e=>e instanceof common.Block);
                 for (let bi = 0; bi < blocks.length; ++bi) {
-                    let block_measures = blocks[bi].childElements.filter(e=>e instanceof common.Measure);
+                    let block_measures = blocks[bi].childNodes.filter(e=>e instanceof common.Measure);
                     for (let ml = 0; ml < block_measures.length; ++ml) {
                         let m = block_measures[ml];
                         meas_row.push(m);
@@ -1297,8 +1297,8 @@ export class DefaultRenderer extends Renderer {
                m.renderprop.rg_from_here.name != "") // Anonymous reharsal group is not rendered
                rg_mark_detected = true;
 
-            for (let ei = 0; ei < m.childElements.length; ++ei) {
-                var e = m.childElements[ei];
+            for (let ei = 0; ei < m.childNodes.length; ++ei) {
+                var e = m.childNodes[ei];
                 if (
                     e instanceof common.Coda ||
                     e instanceof common.Segno ||
@@ -1405,7 +1405,7 @@ export class DefaultRenderer extends Renderer {
             elements.header.forEach(e => {
                 if (e instanceof common.MeasureBoundary) {
                     var pm = ml == 0 ? prev_measure : row_elements_list[ml - 1];
-                    var ne = pm ? pm.childElements[pm.childElements.length - 1] : null;
+                    var ne = pm ? pm.childNodes[pm.childNodes.length - 1] : null;
                     let r = this.draw_boundary_simplified(
                         "begin",
                         ne,
@@ -1461,7 +1461,7 @@ export class DefaultRenderer extends Renderer {
                         ml == row_elements_list.length - 1
                             ? next_measure
                             : row_elements_list[ml + 1];
-                    var ne = nm ? nm.childElements[0] : null;
+                    var ne = nm ? nm.childNodes[0] : null;
                     let r = this.draw_boundary_simplified(
                         "end",
                         e,
@@ -2063,7 +2063,7 @@ export class DefaultRenderer extends Renderer {
             elements.header.forEach(e => {
                 if (e instanceof common.MeasureBoundary) {
                     var pm = ml == 0 ? prev_measure : row_elements_list[ml - 1];
-                    var ne = pm ? pm.childElements[pm.childElements.length - 1] : null;
+                    var ne = pm ? pm.childNodes[pm.childNodes.length - 1] : null;
                     let r = this.draw_boundary_simplified(
                         "begin",
                         ne,
@@ -2147,7 +2147,7 @@ export class DefaultRenderer extends Renderer {
                         ml == row_elements_list.length - 1
                             ? next_measure
                             : row_elements_list[ml + 1];
-                    var ne = nm ? nm.childElements[0] : null;
+                    var ne = nm ? nm.childNodes[0] : null;
                     let r = this.draw_boundary_simplified(
                         "end",
                         e,

@@ -168,35 +168,6 @@ export class Element extends Node {
     // Musical
     constructor(){
         super();
-        this.childElements = [];
-    }
-    _reconstruct(){
-        this.childElements = this.childNodes.filter(e=>e instanceof Element);
-        for(let i = 0; i < this.childElements; ++i){
-            this.childElements[i].nextSiblingNode = i+1<this.childElements.length ? this.childElements[i+1]: null;
-            this.childElements[i].previousSiblingNode = i>0 ? this.childElements[i-1] : null;
-            
-        }
-    }
-    appendChild(node){
-        super.appendChild(node);
-        if(node instanceof Element){
-            this.childElements.push(node);
-            if(this.childElements.length >= 2){
-                this.childElements[this.childElements.length-2].nextSiblingElement = node;
-                node.previousSiblingElement = this.childElements[this.childElements.length-2];
-            }
-        }
-    }
-    insertBefore(node, newNode){
-        super.insertBefore(node, newNode);
-        // Re-construct all : TODO: improve time
-        this._reconstruct();
-    }
-
-    remove(){
-        super.remove();
-        this._reconstruct();
     }
 
     clone(){ throw "Shall be overrided"; }

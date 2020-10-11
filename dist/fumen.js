@@ -15312,7 +15312,7 @@ var Parser = /*#__PURE__*/function () {
             // Do not consume.
             end_of_rg = true;
             break;
-          } else if ([TOKEN_MB, TOKEN_MB_DBL, TOKEN_MB_LOOP_BEGIN, TOKEN_MB_LOOP_BOTH, TOKEN_MB_FIN, TOKEN_MB_DBL_SIMILE].indexOf(r.type) >= 0) {
+          } else if ([TOKEN_MB, TOKEN_MB_DBL, TOKEN_MB_LOOP_BEGIN, TOKEN_MB_LOOP_END, TOKEN_MB_LOOP_BOTH, TOKEN_MB_FIN, TOKEN_MB_DBL_SIMILE].indexOf(r.type) >= 0) {
             if (this.context.contiguous_line_break >= 2) break;
             var is_new_line_middle_of_block = num_meas_row > 0 && this.context.contiguous_line_break == 1;
             this.context.contiguous_line_break = 0;
@@ -15450,7 +15450,7 @@ var Parser = /*#__PURE__*/function () {
 
             r = this.parseReharsalGroup(r.s, inline ? "inline" : "normal");
             track.appendChild(r.rg); //this.context.contiguous_line_break = 0;
-          } else if ([TOKEN_MB, TOKEN_MB_DBL, TOKEN_MB_LOOP_BEGIN, TOKEN_MB_LOOP_BOTH, TOKEN_MB_FIN, TOKEN_MB_DBL_SIMILE, TOKEN_BRACKET_RA, TOKEN_BRACKET_LA].indexOf(r.type) >= 0) {
+          } else if ([TOKEN_MB, TOKEN_MB_DBL, TOKEN_MB_LOOP_BEGIN, TOKEN_MB_LOOP_END, TOKEN_MB_LOOP_BOTH, TOKEN_MB_FIN, TOKEN_MB_DBL_SIMILE, TOKEN_BRACKET_RA, TOKEN_BRACKET_LA].indexOf(r.type) >= 0) {
             // Measure appears directly withou reharsal group mark.
             // If not reharsal mark is defined and the measure is directly specified, 
             // then default anonymous reharsal mark is generated.

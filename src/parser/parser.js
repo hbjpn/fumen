@@ -773,6 +773,7 @@ export class Parser {
                         TOKEN_MB,
                         TOKEN_MB_DBL,
                         TOKEN_MB_LOOP_BEGIN,
+                        TOKEN_MB_LOOP_END,
                         TOKEN_MB_LOOP_BOTH,
                         TOKEN_MB_FIN,
                         TOKEN_MB_DBL_SIMILE
@@ -909,6 +910,7 @@ export class Parser {
                         TOKEN_MB,
                         TOKEN_MB_DBL,
                         TOKEN_MB_LOOP_BEGIN,
+                        TOKEN_MB_LOOP_END,
                         TOKEN_MB_LOOP_BOTH,
                         TOKEN_MB_FIN,
                         TOKEN_MB_DBL_SIMILE,

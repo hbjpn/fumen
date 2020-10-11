@@ -212,9 +212,11 @@ export class Track extends Element {
                 }
                 code += e.exportCode();
                 ++rgcnt;
-            }else{
+            }else if(e instanceof Variable){
                 // could be Variable
-                code += e.exportCode();
+                code += e.exportCode() + "\n";
+            }else{
+                throw "Invali element detected";
             }
         });
         return code;
@@ -243,8 +245,7 @@ export class ReharsalGroup extends Element{
                 code += e.exportCode();
                 ++blockcnt;
             }else{
-                // could be Variable
-                code += e.exportCode();
+                throw "Invalid element detected";
             }
         });
         return code;
@@ -274,6 +275,25 @@ export class Block extends Element{
         this.childNodes.map(c=>{ n.appendChild(c.clone()); });
         return n;
     }
+    exportCode(){
+        let code = "";
+        let measure_appears = false;
+        this.childNodes.forEach((e,i)=>{
+            if(e instanceof Measure){
+                measure_appears = true;
+                if(e.raw_new_line) code += "\n"; // This case should not be a first measure in this block
+                code += e.exportCode();
+            }else if(e instanceof Variable){
+                // could be Variable
+                if(measure_appears){
+                    code += ("\n" + e.exportCode()); // last NL will be added by next measure or next turn of this code.
+                }else{
+                    code += (e.exportCode() + "\n"); // Next mreasure
+                }
+            }
+        });
+        return code;
+    }
 }
 
 export class Measure extends Element{
@@ -296,7 +316,7 @@ export class Measure extends Element{
 
     exportCode(){
         let code = "";
-        if(this.raw_new_line) code += "\n";
+        //if(this.raw_new_line) code += "\n"; // added at block export
         if(this.align == "left") code += "<";
         else if(this.align == "right") code += ">";
         this.childNodes.forEach(e=>{
@@ -312,7 +332,11 @@ export class Measure extends Element{
         // Combine elements considering the boundaries. 
 
         let prevMeas = this.previousSiblingNode;
+        while( prevMeas && !(prevMeas instanceof Measure) ) prevMeas = prevMeas.previousSiblingNode; // Find closest Measure
+
         let nextMeas = this.nextSiblingNode;
+        while( nextMeas && !(nextMeas instanceof Measure) ) nextMeas = nextMeas.nextSiblingNode; // Find closest Measure
+        
         let firstMeasInACodeRow = this.raw_new_line || (!prevMeas);
         let lastMeasInACodeRow  = (!nextMeas) || (nextMeas.raw_new_line);
         if(firstMeasInACodeRow || lastMeasInACodeRow){
@@ -1385,7 +1409,7 @@ export class Variable extends Node {
         }else{
             throw "Error on export code for Variable";
         }
-        code += "\n";
+        //code += "\n";
         return code;
     }
 }

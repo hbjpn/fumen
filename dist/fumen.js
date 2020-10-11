@@ -12078,9 +12078,11 @@ var Track = /*#__PURE__*/function (_Element) {
 
           code += e.exportCode();
           ++rgcnt;
-        } else {
+        } else if (e instanceof Variable) {
           // could be Variable
-          code += e.exportCode();
+          code += e.exportCode() + "\n";
+        } else {
+          throw "Invali element detected";
         }
       });
       return code;
@@ -12128,8 +12130,7 @@ var ReharsalGroup = /*#__PURE__*/function (_Element2) {
           code += e.exportCode();
           ++blockcnt;
         } else {
-          // could be Variable
-          code += e.exportCode();
+          throw "Invalid element detected";
         }
       });
       return code;
@@ -12176,6 +12177,28 @@ var Block = /*#__PURE__*/function (_Element3) {
       });
       return n;
     }
+  }, {
+    key: "exportCode",
+    value: function exportCode() {
+      var code = "";
+      var measure_appears = false;
+      this.childNodes.forEach(function (e, i) {
+        if (e instanceof Measure) {
+          measure_appears = true;
+          if (e.raw_new_line) code += "\n"; // This case should not be a first measure in this block
+
+          code += e.exportCode();
+        } else if (e instanceof Variable) {
+          // could be Variable
+          if (measure_appears) {
+            code += "\n" + e.exportCode(); // last NL will be added by next measure or next turn of this code.
+          } else {
+            code += e.exportCode() + "\n"; // Next mreasure
+          }
+        }
+      });
+      return code;
+    }
   }]);
 
   return Block;
@@ -12214,8 +12237,8 @@ var Measure = /*#__PURE__*/function (_Element4) {
   }, {
     key: "exportCode",
     value: function exportCode() {
-      var code = "";
-      if (this.raw_new_line) code += "\n";
+      var code = ""; //if(this.raw_new_line) code += "\n"; // added at block export
+
       if (this.align == "left") code += "<";else if (this.align == "right") code += ">";
       this.childNodes.forEach(function (e) {
         if (e instanceof MeasureBoundary) {
@@ -12231,7 +12254,19 @@ var Measure = /*#__PURE__*/function (_Element4) {
     value: function remove() {
       // Combine elements considering the boundaries. 
       var prevMeas = this.previousSiblingNode;
+
+      while (prevMeas && !(prevMeas instanceof Measure)) {
+        prevMeas = prevMeas.previousSiblingNode;
+      } // Find closest Measure
+
+
       var nextMeas = this.nextSiblingNode;
+
+      while (nextMeas && !(nextMeas instanceof Measure)) {
+        nextMeas = nextMeas.nextSiblingNode;
+      } // Find closest Measure
+
+
       var firstMeasInACodeRow = this.raw_new_line || !prevMeas;
       var lastMeasInACodeRow = !nextMeas || nextMeas.raw_new_line;
 
@@ -14088,8 +14123,8 @@ var Variable = /*#__PURE__*/function (_Node2) {
         code += JSON.stringify(this.value);
       } else {
         throw "Error on export code for Variable";
-      }
-      code += "\n";
+      } //code += "\n";
+
       return code;
     }
   }]);

@@ -826,40 +826,36 @@ export class Parser {
         // - "[" (consumed) (for normal or inline)
         // - boundaries (not consumed) (for anonymous)
         // - "<" or ">" (not consumed) (for anonymous)
-
-        try{
-            var r = null;
-            var latest_variables = {}; // Do not inherit from previous reharsal group
-        
-            let rgName = "";
-            if(rgtype != "anonymous"){
-                r = this.parseReharsalMark(null, s); // "[" shall be already consumed.
-                rgName = r.reharsalMarkName;
-                s = r.s;
-            }
-            let rg = new common.ReharsalGroup(
-                rgName, rgtype=="inline");
-            
-            this.context.contiguous_line_break = 0;
-
-            let loop_cnt = 0;
-            let MAX_LOOP = 1000;
-
-            // eslint-disable-next-line no-constant-condition
-            while(true){
-                // If more 2 or more NL is placed, empty block can be generated, in that case ignore it.
-                r = this.parseBlock(s, rg, latest_variables);
-                if(r.block.childNodes.length > 0) rg.appendChild(r.block);
-                s = r.s;
-                ++loop_cnt;
-                if (loop_cnt >= MAX_LOOP) throw "Too much elements or infnite loop detected with unkown reason";
-                if(r.end_of_rg) break;
-            }
-            return {rg:rg,s:s};
-        }catch(e){
-            console.error(e);
-            return null;
+        var r = null;
+        var latest_variables = {}; // Do not inherit from previous reharsal group
+    
+        let rgName = "";
+        if(rgtype != "anonymous"){
+            r = this.parseReharsalMark(null, s); // "[" shall be already consumed.
+            rgName = r.reharsalMarkName;
+            s = r.s;
         }
+        let rg = new common.ReharsalGroup(
+            rgName, rgtype=="inline");
+        
+        this.context.contiguous_line_break = 0;
+
+        let loop_cnt = 0;
+        let MAX_LOOP = 1000;
+
+        // eslint-disable-next-line no-constant-condition
+        while(true){
+            // If more 2 or more NL is placed, empty block can be generated, in that case ignore it.
+            r = this.parseBlock(s, rg, latest_variables);
+            if(r.block.childNodes.length > 0) rg.appendChild(r.block);
+            s = r.s;
+            ++loop_cnt;
+            if (loop_cnt >= MAX_LOOP) throw "Too much elements or infnite loop detected with unkown reason";
+            if(r.end_of_rg) break;
+        }
+        // Empty reharsal group is not permitted as of now.
+        if(rg.find((e=>e instanceof common.Measure), true).length==0) throw "Empty reharsal group is not allowed";
+        return {rg:rg,s:s};
     }
 
     /**

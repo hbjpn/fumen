@@ -796,13 +796,14 @@ export class Parser {
                     ++num_meas_row;
 
                 } else if (r.type == TOKEN_PERCENT) {
+                    if(this.context.contiguous_line_break >= 2) break;
                     // Expression
-                    r = this.parseVariable(r.s);
+                    r = this.parseVariable(r.s); // last NL would not be consumed
                     let variable = new common.Variable(r.key, r.value);
                     //block.setVariable(r.key, r.value); Do not do this as with this, only the last variable will be valid.
                     latest_variables[r.key] = variable;
                     block.appendChild(variable);
-                    this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this variable
+                    this.context.contiguous_line_break = 0; // -= 1; // Does not reset to 0, but cancell the new line in the same row as this variable
                 } else {
                     console.log(r.token);
                     this.onParseError("ERROR_WHILE_PARSE_MOST_OUTSIDER");

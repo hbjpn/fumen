@@ -775,10 +775,10 @@ export class DefaultRenderer extends Renderer {
                     if(max_widened > min_narrowed){
                         // Cannot not meet requirement for all elements, end up with alpha = 0.0 : Do nothing
                         alpha = 0.0;
-                        console.log("Inner vertical alignment : not all meets requirement : alpha = " + alpha.toFixed(2));
+                        //console.log("Inner vertical alignment : not all meets requirement : alpha = " + alpha.toFixed(2));
                     }else{
                         alpha = Math.max(0, Math.min(min_narrowed, 1));
-                        console.log("Inner vertical alignment : all meets requirement : alpha = " + alpha.toFixed(2));
+                        //console.log("Inner vertical alignment : all meets requirement : alpha = " + alpha.toFixed(2));
                     }
 
                     for(let l = 0; l < L; ++l){

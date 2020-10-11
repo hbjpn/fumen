@@ -12277,7 +12277,7 @@ var Measure = /*#__PURE__*/function (_Element4) {
         if (prevMeas && lastMeasInACodeRow) prevMeas.findLastOf(function (e) {
           return e instanceof MeasureBoundary;
         }).exportTarget = true;
-        if (nextMeas) nextMeas.raw_new_line = this.raw_new_line; // Inherit the raw_new_line of this measure.
+        if (nextMeas && !lastMeasInACodeRow) nextMeas.raw_new_line = this.raw_new_line; // Inherit the raw_new_line of this measure.
       } else {
         // Intermediate measure inside a single row.
         _get(_getPrototypeOf(Measure.prototype), "remove", this).call(this);

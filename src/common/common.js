@@ -343,7 +343,7 @@ export class Measure extends Element{
             // Edge measure of code row
             super.remove();
             if(prevMeas && lastMeasInACodeRow) prevMeas.findLastOf(e=>e instanceof MeasureBoundary).exportTarget = true;
-            if(nextMeas) nextMeas.raw_new_line = this.raw_new_line; // Inherit the raw_new_line of this measure.
+            if(nextMeas && (!lastMeasInACodeRow)) nextMeas.raw_new_line = this.raw_new_line; // Inherit the raw_new_line of this measure.
         }else{
             // Intermediate measure inside a single row.
             super.remove();

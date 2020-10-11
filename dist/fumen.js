@@ -15420,11 +15420,12 @@ var Parser = /*#__PURE__*/function () {
             track.appendChild(r.rg);
           } else if (r.type == TOKEN_PERCENT) {
             // Expression
-            r = this.parseVariable(r.s);
+            r = this.parseVariable(r.s); // last NL will not be consumed.
+
             var variable = track.setVariable(r.key, r.value); // Auto generate object
 
             track.appendChild(variable);
-            this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this variable
+            this.context.contiguous_line_break = 0; // Does not reset to 0, but cancell the new line in the same row as this variable
           } else {
             console.log(r.token);
             this.onParseError("ERROR_WHILE_PARSE_MOST_OUTSIDER");

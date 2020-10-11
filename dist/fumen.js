@@ -12278,6 +12278,10 @@ var Measure = /*#__PURE__*/function (_Element4) {
           return e instanceof MeasureBoundary;
         }).exportTarget = true;
         if (nextMeas && !lastMeasInACodeRow) nextMeas.raw_new_line = this.raw_new_line; // Inherit the raw_new_line of this measure.
+
+        if (nextMeas && nextMeas.parentNode.findFirstOf(function (e) {
+          return e instanceof Measure;
+        }) == nextMeas) nextMeas.raw_new_line = false; // If next meas becomes the top meas, make it false.
       } else {
         // Intermediate measure inside a single row.
         _get(_getPrototypeOf(Measure.prototype), "remove", this).call(this);

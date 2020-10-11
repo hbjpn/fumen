@@ -344,6 +344,7 @@ export class Measure extends Element{
             super.remove();
             if(prevMeas && lastMeasInACodeRow) prevMeas.findLastOf(e=>e instanceof MeasureBoundary).exportTarget = true;
             if(nextMeas && (!lastMeasInACodeRow)) nextMeas.raw_new_line = this.raw_new_line; // Inherit the raw_new_line of this measure.
+            if(nextMeas && nextMeas.parentNode.findFirstOf(e=>e instanceof Measure) == nextMeas) nextMeas.raw_new_line = false; // If next meas becomes the top meas, make it false.
         }else{
             // Intermediate measure inside a single row.
             super.remove();

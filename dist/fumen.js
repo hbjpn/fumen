@@ -19820,20 +19820,8 @@ var Renderer = /*#__PURE__*/function () {
   }, {
     key: "get_boundary_sign",
     value: function get_boundary_sign(e) {
-      if (e === null) return "n";else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundaryMark"]) {
-        if (e.nline == 1) return "s";else if (e.nline == 2) return "d";
-      } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopBeginMark"]) {
-        return "b";
-      } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopEndMark"]) {
-        return "e";
-      } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopBothMark"]) {
-        return "B";
-      } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundaryFinMark"]) {
-        return "f";
-      } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundaryDblSimile"]) {
-        return "r";
-      }
-      throw "Invalid boundary object";
+      if (e === null) return "n";
+      return e.typestr;
     }
   }, {
     key: "boundary_type_without_line_break",

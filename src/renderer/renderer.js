@@ -15,21 +15,7 @@ export class Renderer {
 
 	get_boundary_sign(e) {
         if (e === null) return "n";
-        else if (e instanceof common.MeasureBoundaryMark) {
-            if (e.nline == 1) return "s";
-            else if (e.nline == 2) return "d";
-        } else if (e instanceof common.LoopBeginMark) {
-            return "b";
-        } else if (e instanceof common.LoopEndMark) {
-            return "e";
-        } else if (e instanceof common.LoopBothMark) {
-            return "B";
-        } else if (e instanceof common.MeasureBoundaryFinMark) {
-            return "f";
-        } else if (e instanceof common.MeasureBoundaryDblSimile) {
-            return "r";
-        }
-        throw "Invalid boundary object";
+        return e.typestr;
     }
 
     boundary_type_without_line_break(b0, b1) {

@@ -162,6 +162,15 @@ export class Node {
     }
 
     clone(){ throw "Shall be overrided"; }
+
+    dump(depth){
+        depth = depth||0;
+        let s = "   ".repeat(depth) + this.constructor.name + "\n";
+        this.childNodes.forEach(c=>{
+            s += c.dump(depth+1);
+        });
+        return s;
+    }
 }
 
 export class Element extends Node {

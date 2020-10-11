@@ -11992,6 +11992,16 @@ var Node = /*#__PURE__*/function () {
     value: function clone() {
       throw "Shall be overrided";
     }
+  }, {
+    key: "dump",
+    value: function dump(depth) {
+      depth = depth || 0;
+      var s = "   ".repeat(depth) + this.constructor.name + "\n";
+      this.childNodes.forEach(function (c) {
+        s += c.dump(depth + 1);
+      });
+      return s;
+    }
   }]);
 
   return Node;
@@ -16312,11 +16322,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
             if (max_widened > min_narrowed) {
               // Cannot not meet requirement for all elements, end up with alpha = 0.0 : Do nothing
-              alpha = 0.0;
-              console.log("Inner vertical alignment : not all meets requirement : alpha = " + alpha.toFixed(2));
+              alpha = 0.0; //console.log("Inner vertical alignment : not all meets requirement : alpha = " + alpha.toFixed(2));
             } else {
-              alpha = Math.max(0, Math.min(min_narrowed, 1));
-              console.log("Inner vertical alignment : all meets requirement : alpha = " + alpha.toFixed(2));
+              alpha = Math.max(0, Math.min(min_narrowed, 1)); //console.log("Inner vertical alignment : all meets requirement : alpha = " + alpha.toFixed(2));
             }
 
             for (var _l2 = 0; _l2 < L; ++_l2) {

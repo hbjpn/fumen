@@ -1844,6 +1844,9 @@ export class DefaultRenderer extends Renderer {
                             scale(e.renderprop.w, m.renderprop.room_per_elem[this_group_start_index+ei]);
                         
                         if(draw){
+                            this.hitManager.add(paper, 
+                                new graphic.BoundingBox(x, yprof.body.y, e.renderprop.w, param.row_height),
+                                e);
                             x += elem_width;
                             unscale(draw_scale);
                         }else{

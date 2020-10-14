@@ -14346,7 +14346,7 @@ var HitManager = /*#__PURE__*/function () {
 /*!**********************!*\
   !*** ./src/index.js ***!
   \**********************/
-/*! exports provided: Parser, DefaultRenderer, SetupHiDPICanvas, GetCharProfile, CanvasTextWithBox, CanvasText, getFontSizeFromHeight, ReharsalGroup, Block, Measure, Chord, Rest, LongRest, Comment, Lyric, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, LoopIndicator, Time, Coda, Segno, ToCoda, DalSegno, DaCapo, Fine, Simile, Variable, GenericRow */
+/*! exports provided: Parser, DefaultRenderer, SetupHiDPICanvas, GetCharProfile, CanvasTextWithBox, CanvasText, getFontSizeFromHeight, ReharsalGroup, Block, Measure, Chord, Rest, LongRest, Comment, Lyric, Space, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, LoopIndicator, Time, Coda, Segno, ToCoda, DalSegno, DaCapo, Fine, Simile, Variable, GenericRow */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -14386,6 +14386,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Comment", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Comment"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Lyric", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Lyric"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Space", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Space"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MeasureBoundary", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["MeasureBoundary"]; });
 
@@ -17423,6 +17425,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
               }
 
               if (draw) {
+                _this6.hitManager.add(paper, new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"](x, yprof.body.y, e.renderprop.w, param.row_height), e);
+
                 x += _elem_width4;
                 unscale(_draw_scale5);
               } else {
@@ -20353,7 +20357,7 @@ var Renderer = /*#__PURE__*/function () {
         }
       } else if (balken_element.type == "space") {
         // Do not use expand here in case only one space is grouped in balken group
-        bounding_box.add(x, rs_y_base, 0.5 * param.base_font_size, 0);
+        bounding_box.add(x, rs_y_base, 0.5 * param.base_font_size, row_height);
       } else if (balken_element.type == "simile") {
         alert("Impleetaion not ready for siile in RS area");
       } // Apply minimum room for RS area elements

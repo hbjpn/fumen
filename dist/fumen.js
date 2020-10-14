@@ -16440,7 +16440,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       var _render_impl = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(track) {
         var _this4 = this;
 
-        var show_footer, origin, x_offset, width, music_context, meas_row_list, accum_block_id, meas_row, meas_row_rg_ids, meas_row_block_ids, reharsal_groups, i, rg, blocks, bi, block_measures, ml, m, meas_row_list_inv, _loop4, _i2, _i3, _rg, _blocks, _bi, _block_measures, _ml, _m, y_stacks, next_reharsal_group_index, yse, y_base_screening, headerHeight, dammy_music_context, current_accum_block_id, reharsal_x_width_info, pei, x, row_elements_list, _ml2, _m2, elements, geret, yprof, x_width_info, canvas, score_height, y_base, max_header_height, canvaslist, _pei, _row_elements_list3, ylimit, r, rb, songname, title, artist;
+        var show_footer, origin, x_offset, width, music_context, meas_row_list, accum_block_id, meas_row, meas_row_rg_ids, meas_row_block_ids, reharsal_groups, i, rg, blocks, bi, block_measures, ml, m, meas_row_list_inv, _loop4, _i2, _i3, _rg, _blocks, _bi, _block_measures, _ml, _m, y_stacks, next_reharsal_group_index, yse, y_base_screening, headerHeight, dammy_music_context, current_accum_block_id, reharsal_x_width_info, pei, x, row_elements_list, _ml2, _m2, elements, geret, yprof, x_width_info, canvas, score_height, y_base, max_header_height, headerH, canvaslist, _pei, _row_elements_list3, ylimit, r, rb, songname, title, artist;
 
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
@@ -16773,26 +16773,28 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                   y_base += this.param.y_offset_top;
                 }
 
+                headerH = y_base - origin.y;
+                this.hitManager.add(canvas, new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"](0, origin.y - Math.max(0, 2 - headerH), this.param.paper_width / this.param.text_size, Math.max(2, headerH)), new _common_common__WEBPACK_IMPORTED_MODULE_2__["GenericRow"]("HEADER", null));
                 canvaslist = [canvas];
                 _pei = 0;
 
-              case 58:
+              case 60:
                 if (!(_pei < yse.length)) {
-                  _context.next = 88;
+                  _context.next = 90;
                   break;
                 }
 
                 if (!(yse[_pei].type == "titles")) {
-                  _context.next = 62;
+                  _context.next = 64;
                   break;
                 }
 
-                _context.next = 85;
+                _context.next = 87;
                 break;
 
-              case 62:
+              case 64:
                 if (!(yse[_pei].type == "meas")) {
-                  _context.next = 85;
+                  _context.next = 87;
                   break;
                 }
 
@@ -16801,36 +16803,36 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 r = this.render_measure_row_simplified(track, x_offset, canvas, _row_elements_list3, yse[_pei].pm, yse[_pei].nm, y_base, yse[_pei].param, yse[_pei].cont[0].getVariable("REHARSAL_MARK_POSITION") == "Inner", ylimit, music_context);
 
                 if (r) {
-                  _context.next = 82;
+                  _context.next = 84;
                   break;
                 }
 
                 if (!(y_base == origin.y + yse[_pei].param.y_offset_top)) {
-                  _context.next = 71;
+                  _context.next = 73;
                   break;
                 }
 
                 throw "Paper height is too short to fit in single row";
 
-              case 71:
+              case 73:
                 y_base = origin.y + yse[_pei].param.y_offset_top;
 
-              case 72:
+              case 74:
                 this.hitManager.commit(canvas);
-                _context.next = 75;
+                _context.next = 77;
                 return this.canvas_provider();
 
-              case 75:
+              case 77:
                 canvas = _context.sent;
                 canvaslist.push(canvas);
                 _graphic__WEBPACK_IMPORTED_MODULE_3__["SetupHiDPICanvas"](canvas, yse[_pei].param.paper_width / this.param.text_size, yse[_pei].param.paper_height / this.param.text_size, this.param.pixel_ratio, this.param.text_size);
                 if (this.param.background_color) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasRect"](canvas, 0, 0, this.param.paper_width / this.param.text_size, this.param.paper_height / this.param.text_size, this.param.background_color); // try again next page
 
                 _pei = _pei - 1;
-                _context.next = 85;
+                _context.next = 87;
                 break;
 
-              case 82:
+              case 84:
                 if (r.rm_detected) {
                   rb = [_row_elements_list3[0], _row_elements_list3[_row_elements_list3.length - 1]];
                   if (_row_elements_list3[0].renderprop.rg_from_here) rb[0] = _row_elements_list3[0].renderprop.rg_from_here;
@@ -16840,12 +16842,12 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 this.hitManager.add(canvas, new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"](0, r.mu_y, this.param.paper_width / this.param.text_size, r.y_base - r.mu_y), new _common_common__WEBPACK_IMPORTED_MODULE_2__["GenericRow"]("BODY", [_row_elements_list3[0], _row_elements_list3[_row_elements_list3.length - 1]]));
                 y_base = r.y_base;
 
-              case 85:
+              case 87:
                 ++_pei;
-                _context.next = 58;
+                _context.next = 60;
                 break;
 
-              case 88:
+              case 90:
                 if (show_footer) {
                   songname = null;
                   title = track.getVariable("TITLE");
@@ -16865,7 +16867,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                   height: score_height
                 });
 
-              case 91:
+              case 93:
               case "end":
                 return _context.stop();
             }

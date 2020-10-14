@@ -1176,6 +1176,11 @@ export class DefaultRenderer extends Renderer {
             y_base += this.param.y_offset_top;
         }
 
+        let headerH = y_base - origin.y;
+        this.hitManager.add(canvas, 
+            new graphic.BoundingBox(0, origin.y - Math.max(0, 2-headerH), this.param.paper_width / this.param.text_size, Math.max(2, headerH)),
+            new common.GenericRow("HEADER", null));
+
         let canvaslist = [canvas];
 
         for (let pei = 0; pei < yse.length; ++pei) {

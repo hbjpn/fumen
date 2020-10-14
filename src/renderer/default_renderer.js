@@ -2230,12 +2230,15 @@ export class DefaultRenderer extends Renderer {
             for (let ei = 0; ei < elements.measure_wide.length; ++ei) {
                 let e = elements.measure_wide[ei];
                 if (e instanceof common.LoopIndicator) {
+                    let bb = new graphic.BoundingBox();
                     var oy = 12;
                     var ly = yprof.body.y - 2 - oy;
                     var sx = meas_start_x_actual_boundary;
                     var fx = meas_start_x + (meas_end_x - meas_start_x) * 0.7;
                     graphic.CanvasLine(paper, sx, ly, sx, ly + oy);
                     graphic.CanvasLine(paper, sx, ly, fx, ly);
+                    bb.add(sx, ly+oy);
+                    bb.add(fx, ly);
                     var s = e.indstr;
                     let r = graphic.CanvasText(
                         paper,
@@ -2245,7 +2248,7 @@ export class DefaultRenderer extends Renderer {
                         param.base_font_size / 3,
                         "lm", null, null, {font:param.repeat_mark_font}
                     );
-                    this.hitManager.add(paper, r.bb, e);
+                    this.hitManager.add(paper, bb.add_BB(r.bb), e);
                 } else if (e instanceof common.LongRest) {
                     let height = yprof.rs.detected ? param.rs_area_height : param.row_height;
                     let sx =

@@ -17696,19 +17696,22 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           var _e3 = elements.measure_wide[_ei2];
 
           if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["LoopIndicator"]) {
+            var bb = new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"]();
             oy = 12;
             ly = yprof.body.y - 2 - oy;
             sx = meas_start_x_actual_boundary;
             fx = meas_start_x + (meas_end_x - meas_start_x) * 0.7;
             _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, sx, ly, sx, ly + oy);
             _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, sx, ly, fx, ly);
+            bb.add(sx, ly + oy);
+            bb.add(fx, ly);
             s = _e3.indstr;
 
             var _r14 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, sx + 2, ly + oy / 2, s, param.base_font_size / 3, "lm", null, null, {
               font: param.repeat_mark_font
             });
 
-            _this7.hitManager.add(paper, _r14.bb, _e3);
+            _this7.hitManager.add(paper, bb.add_BB(_r14.bb), _e3);
           } else if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["LongRest"]) {
             var height = yprof.rs.detected ? param.rs_area_height : param.row_height;
 
@@ -17727,27 +17730,34 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             var lrmargin = Math.max(min_lrmargin, Math.min(max_lrmargin, (_sx + _fx) * r_lrmargin));
             lx = _sx + lrmargin;
             rx = _fx - lrmargin;
-            var bb = new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"]();
+
+            var _bb = new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"]();
 
             var _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, lx, y_body_or_rs_base + height / 2 + yshift, rx, y_body_or_rs_base + height / 2 + yshift, {
               width: height / 5
             });
 
-            bb.add_BB(_r15.bb);
+            _bb.add_BB(_r15.bb);
+
             _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, lx, y_body_or_rs_base + rh * vlmargin + yshift, lx, y_body_or_rs_base + rh - rh * vlmargin + yshift, {
               width: "1"
             });
-            bb.add_BB(_r15.bb);
+
+            _bb.add_BB(_r15.bb);
+
             _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, rx, y_body_or_rs_base + rh * vlmargin + yshift, rx, y_body_or_rs_base + rh - rh * vlmargin + yshift, {
               width: "1"
             });
-            bb.add_BB(_r15.bb);
+
+            _bb.add_BB(_r15.bb);
+
             _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, (_sx + _fx) / 2, y_body_or_rs_base, _e3.longrestlen, param.base_font_size / 2, "ct", undefined, false, {
               font: param.repeat_mark_font
             });
-            bb.add_BB(_r15.bb);
 
-            _this7.hitManager.add(paper, bb, _e3); //rest_or_long_rests_detected |= true;
+            _bb.add_BB(_r15.bb);
+
+            _this7.hitManager.add(paper, _bb, _e3); //rest_or_long_rests_detected |= true;
 
           } else if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Simile"]) {
             // Simile mark in measure wide element if there is no other body elements in this measure

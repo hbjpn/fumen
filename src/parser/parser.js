@@ -787,7 +787,12 @@ export class Parser {
                     
                     r = this.parseMeasures(r, r.s); // the last NL has not been consumed.
                     // Apply the variables valid at this point for each measures
-                    r.measures.forEach(m=>{ m.variables = common.shallowcopy(latest_variables);});
+                    //r.measures.forEach(m=>{ m.variables = common.shallowcopy(latest_variables);});
+                    r.measures.forEach(m=>{
+                        for(let key in latest_variables){
+                            m.setVariable(latest_variables[key]);
+                        }
+                    });
 
                     // For the first measure, set align and new line mark.
                     r.measures[0].align = current_align;
@@ -929,8 +934,9 @@ export class Parser {
                 } else if (r.type == TOKEN_PERCENT) {
                     // Expression
                     r = this.parseVariable(r.s); // last NL will not be consumed.
-                    let variable = track.setVariable(r.key, r.value); // Auto generate object
+                    let variable = new common.Variable(r.key, r.value);
                     track.appendChild(variable);
+                    track.setVariable(variable);
                     this.context.contiguous_line_break = 0; // Does not reset to 0, but cancell the new line in the same row as this variable
                 } else {
                     console.log(r.token);

@@ -11880,23 +11880,34 @@ var Node = /*#__PURE__*/function () {
     }
   }, {
     key: "getVariable",
-    value: function getVariable(key) {
-      var variable = this.getVariableObject(key);
+    value: function getVariable(name) {
+      var variable = this.getVariableObject(name);
       if (variable) return variable.value;
       return null;
     }
   }, {
     key: "getVariableObject",
-    value: function getVariableObject(key) {
-      if (key in this.variables) return this.variables[key];
-      if (this.parentNode) return this.parentNode.getVariableObject(key);
+    value: function getVariableObject(name) {
+      if (name in this.variables) return this.variables[name];
+      if (this.parentNode) return this.parentNode.getVariableObject(name);
       return null;
     }
   }, {
     key: "setVariable",
-    value: function setVariable(key, value) {
-      if (key in this.variables) this.variables[key].value = deepcopy(value);else this.variables[key] = new Variable(key, value);
-      return this.variables[key];
+    value: function setVariable() {
+      if (arguments.length == 1) {
+        var variable = arguments.length <= 0 ? undefined : arguments[0]; // Variable object
+
+        if (!(variable instanceof Variable)) throw "Invalid object passed";
+        this.variables[variable.name] = variable; // reference
+
+        return variable; // same object
+      } else {
+        var name = arguments.length <= 0 ? undefined : arguments[0];
+        var value = arguments.length <= 1 ? undefined : arguments[1];
+        if (name in this.variables) this.variables[name].value = deepcopy(value);else this.variables[name] = new Variable(name, value);
+        return this.variables[name];
+      }
     }
   }, {
     key: "insertBefore",
@@ -15320,9 +15331,12 @@ var Parser = /*#__PURE__*/function () {
             this.context.contiguous_line_break = 0;
             r = this.parseMeasures(r, r.s); // the last NL has not been consumed.
             // Apply the variables valid at this point for each measures
+            //r.measures.forEach(m=>{ m.variables = common.shallowcopy(latest_variables);});
 
             r.measures.forEach(function (m) {
-              m.variables = _common_common__WEBPACK_IMPORTED_MODULE_1__["shallowcopy"](latest_variables);
+              for (var key in latest_variables) {
+                m.setVariable(latest_variables[key]);
+              }
             }); // For the first measure, set align and new line mark.
 
             r.measures[0].align = current_align;
@@ -15463,9 +15477,9 @@ var Parser = /*#__PURE__*/function () {
             // Expression
             r = this.parseVariable(r.s); // last NL will not be consumed.
 
-            var variable = track.setVariable(r.key, r.value); // Auto generate object
-
+            var variable = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Variable"](r.key, r.value);
             track.appendChild(variable);
+            track.setVariable(variable);
             this.context.contiguous_line_break = 0; // Does not reset to 0, but cancell the new line in the same row as this variable
           } else {
             console.log(r.token);

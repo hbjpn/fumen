@@ -77,23 +77,32 @@ export class Node {
         return code;
     }
 
-    getVariable(key){
-        let variable = this.getVariableObject(key);
+    getVariable(name){
+        let variable = this.getVariableObject(name);
         if(variable) return variable.value;
         return null;
     }
 
-    getVariableObject(key){
-        if(key in this.variables) return this.variables[key];
-        if(this.parentNode) return this.parentNode.getVariableObject(key);
+    getVariableObject(name){
+        if(name in this.variables) return this.variables[name];
+        if(this.parentNode) return this.parentNode.getVariableObject(name);
         return null;
     }
 
-    setVariable(key, value){
-        if(key in this.variables) this.variables[key].value = deepcopy(value);
-        else this.variables[key] = new Variable(key, value);
+    setVariable(...args){
+        if(args.length == 1){
+            let variable = args[0]; // Variable object
+            if(! (variable instanceof Variable) ) throw "Invalid object passed";
+            this.variables[variable.name] = variable; // reference
+            return variable; // same object
+        }else{
+            let name = args[0];
+            let value = args[1];
+            if(name in this.variables) this.variables[name].value = deepcopy(value);
+            else this.variables[name] = new Variable(name, value);
 
-        return this.variables[key];
+            return this.variables[name];
+        }
     }
 
     insertBefore(node, newNode){

@@ -1,3 +1,7 @@
+/**
+ * @module Fumen
+ */
+
 import "@babel/polyfill";
 
 // Default values for variables
@@ -54,6 +58,9 @@ export function charStartsWithAmong(s, strlist) {
 
 export var WHOLE_NOTE_LENGTH = 2 * 3 * 5 * 7 * 9 * 11 * 13 * 64;
 
+/**
+ * Abstract base class represetns the fumen code tree
+ */
 export class Node {
     constructor(){
         this.childNodes = [];
@@ -182,6 +189,10 @@ export class Node {
     }
 }
 
+/**
+ * Abstract class represents musical elements 
+ * @extends Node
+ */
 export class Element extends Node {
     // Musical
     constructor(){
@@ -191,6 +202,10 @@ export class Element extends Node {
     clone(){ throw "Shall be overrided"; }
 }
 
+/**
+ * A class represents a track
+ * @extends Element
+ */
 export class Track extends Element {
     constructor() {
         super();
@@ -238,6 +253,10 @@ export class Track extends Element {
     }
 }
 
+/**
+ * A class represents a reharsal group
+ * @extends Element
+ */
 export class ReharsalGroup extends Element{
     constructor(name, inline=false) {
         super();
@@ -267,6 +286,10 @@ export class ReharsalGroup extends Element{
     }
 }
 
+/**
+ * A class represents a block
+ * @extends Element
+ */
 export class Block extends Element{
     constructor(){
         super();
@@ -305,6 +328,10 @@ export class Block extends Element{
     }
 }
 
+/**
+ * A class represents a measure
+ * @extends Element
+ */
 export class Measure extends Element{
     constructor() {
         super();
@@ -375,6 +402,10 @@ export class Measure extends Element{
     }
 }
 
+/**
+ * A class represents a rest
+ * @extends Element
+ */
 export class Rest extends Element{
     constructor(length_s) {
         super();
@@ -394,6 +425,10 @@ export class Rest extends Element{
     clone(){ return new Rest(this.length_s); }
 }
 
+/**
+ * A class represents a simile mark
+ * @extends Element
+ */
 export class Simile extends Element{
     constructor(numslash) {
         super();
@@ -408,6 +443,10 @@ export class Simile extends Element{
     clone(){ return new Simile(this.numslash); }
 }
 
+/**
+ * A class represents a chord
+ * @extends Element
+ */
 export class Chord extends Element {
     constructor(chord_str) {
         super();
@@ -1077,6 +1116,10 @@ export class Chord extends Element {
     }
 }
 
+/**
+ * A class represents a loop indicator
+ * @extends Element
+ */
 export class LoopIndicator extends Element {
     constructor(loopIndStr) {
         super();
@@ -1101,6 +1144,10 @@ export class LoopIndicator extends Element {
     clone(){ return new LoopIndicator(this.indstr); }
 }
 
+/**
+ * A class represents a space
+ * @extends Element
+ */
 export class Space extends Element{
     constructor(length=1){
         super();
@@ -1111,6 +1158,10 @@ export class Space extends Element{
     clone(){ return new Space(this.length); }
 }
 
+/**
+ * A class represents a long rest
+ * @extends Element
+ */
 export class LongRest extends Element {
     constructor(longrestlen) {
         super();
@@ -1122,6 +1173,10 @@ export class LongRest extends Element {
     clone(){ return new LongRest(this.longrestlen); }
 }
 
+/**
+ * A class represents a time signature
+ * @extends Element
+ */
 export class Time extends Element {
     constructor(numer, denom) {
         super();
@@ -1134,6 +1189,10 @@ export class Time extends Element {
     clone(){ return new Time(this.numer, this.denom); }
 }
 
+/**
+ * Abstract class represents a measure boundary
+ * @extends Element
+ */
 export class MeasureBoundary extends Element {
     constructor(exportTarget = true) {
         super();
@@ -1173,6 +1232,10 @@ export class MeasureBoundary extends Element {
     }
 }
 
+/**
+ * Class represents a measure boundary with signle or double line
+ * @extends MeasureBoundary
+ */
 export class MeasureBoundaryMark extends MeasureBoundary {
     constructor(nline, exportTarget) {
 		super(exportTarget);
@@ -1185,6 +1248,10 @@ export class MeasureBoundaryMark extends MeasureBoundary {
     clone(){ return new MeasureBoundaryMark(this.nline, this.exportTarget); }
 }
 
+/**
+ * Class represents a measure boundary at the beginning of loop
+ * @extends MeasureBoundary
+ */
 export class LoopBeginMark  extends MeasureBoundary {
     constructor(exportTarget = true) {
         super(exportTarget);
@@ -1196,6 +1263,10 @@ export class LoopBeginMark  extends MeasureBoundary {
     clone(){ return new LoopBeginMark(this.exportTarget); }
 }
 
+/**
+ * Class represents a measure boundary at the end of loop
+ * @extends MeasureBoundary
+ */
 export class LoopEndMark  extends MeasureBoundary {
     constructor(param, exportTarget=true) {
         super(exportTarget);
@@ -1210,6 +1281,10 @@ export class LoopEndMark  extends MeasureBoundary {
     clone(){ return new LoopEndMark({times:this.times, ntimes:this.ntimes}, this.exportTarget); }
 }
 
+/**
+ * Class represents a measure boundary at the end and beginning of loop
+ * @extends MeasureBoundary
+ */
 export class LoopBothMark  extends MeasureBoundary {
     constructor(param, exportTarget = true) {
 		super(exportTarget);
@@ -1224,6 +1299,10 @@ export class LoopBothMark  extends MeasureBoundary {
     clone(){ return new LoopBothMark({times:this.times, ntimes:this.ntimes}, this.exportTarget); }
 }
 
+/**
+ * Class represents a measure boundary at the end of a piece
+ * @extends MeasureBoundary
+ */
 export class MeasureBoundaryFinMark  extends MeasureBoundary {
     constructor(exportTarget = true) {
         super(exportTarget);
@@ -1235,6 +1314,10 @@ export class MeasureBoundaryFinMark  extends MeasureBoundary {
     clone(){ return new MeasureBoundaryFinMark(this.exportTarget); }
 }
 
+/**
+ * Class represents a measure boundary with double simile mark over it
+ * @extends MeasureBoundary
+ */
 export class MeasureBoundaryDblSimile  extends MeasureBoundary {
     constructor(exportTarget = true) {
         super(exportTarget);
@@ -1247,7 +1330,10 @@ export class MeasureBoundaryDblSimile  extends MeasureBoundary {
 }
 
 // Signs
-
+/**
+ * Class represents a DaCapo mark
+ * @extends Element
+ */
 export class DaCapo extends Element {
     constructor(al) {
         super();
@@ -1267,6 +1353,10 @@ export class DaCapo extends Element {
     clone(){ return new DaCapo(this.al ? this.al.clone() : null); }
 }
 
+/**
+ * Class represents a DalSegno mark
+ * @extends Element
+ */
 export class DalSegno extends Element {
     constructor(number, al) {
         super();
@@ -1287,6 +1377,10 @@ export class DalSegno extends Element {
     clone(){ return new DalSegno(this.number, this.al ? this.al.clone() : null); }
 }
 
+/**
+ * Class represents a Segno mark
+ * @extends Element
+ */
 export class Segno extends Element{
     constructor(number, opt) {
         super();
@@ -1300,6 +1394,10 @@ export class Segno extends Element{
     clone(){  return new Segno(this.number, this.opt); }
 }
 
+/**
+ * Class represents a Coda mark
+ * @extends Element
+ */
 export class Coda extends Element {
     constructor(number) {
         super();
@@ -1313,6 +1411,10 @@ export class Coda extends Element {
     clone(){ return new Coda(this.number); }
 }
 
+/**
+ * Class represents a To Coda mark
+ * @extends Element
+ */
 export class ToCoda extends Element {
     constructor(number) {
         super();
@@ -1322,6 +1424,10 @@ export class ToCoda extends Element {
     clone(){ return new ToCoda(this.number); }
 }
 
+/**
+ * Class represents a Fine mark
+ * @extends Element
+ */
 export class Fine extends Element {
     constructor() {
         super();
@@ -1334,6 +1440,10 @@ export class Fine extends Element {
     clone(){ return new Fine(); }
 }
 
+/**
+ * Class represents a Comment
+ * @extends Element
+ */
 export class Comment extends Element {
     constructor(comment, chorddep=null) {
         super();
@@ -1352,6 +1462,10 @@ export class Comment extends Element {
     clone(){ return new Comment(this.comment); } // NOTE : codedep is reset
 }
 
+/**
+ * Class represents a lyric
+ * @extends Element
+ */
 export class Lyric extends Element {
     constructor(lyric, chorddep=null) {
         super();
@@ -1400,7 +1514,10 @@ export class Artist extends Element {
     }
 }
 
-// Variables that is used internally. Not explicty shown in the drawing.
+/**
+ * Class represents a Variable. Not always shown in the rendered image (up to renderer implementation)
+ * @extends Node
+ */
 export class Variable extends Node {
     constructor(name, value){
         super();
@@ -1433,8 +1550,8 @@ export class VirtualElement
 }
 
 /**
- * Represents the concept of row in the renderer
- * How to use this is up to renderer
+ * Class represents the concept of row in the renderer. How to use this is up to renderer.
+ * @extends VirtualElement
  */
 export class GenericRow extends VirtualElement
 {

@@ -11793,6 +11793,9 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
+/**
+ * @module Fumen
+ */
  // Default values for variables
 
 var VARIABLE_DEFAULT = {
@@ -11849,6 +11852,10 @@ function charStartsWithAmong(s, strlist) {
 //
 
 var WHOLE_NOTE_LENGTH = 2 * 3 * 5 * 7 * 9 * 11 * 13 * 64;
+/**
+ * Abstract base class represetns the fumen code tree
+ */
+
 var Node = /*#__PURE__*/function () {
   function Node() {
     _classCallCheck(this, Node);
@@ -12017,6 +12024,11 @@ var Node = /*#__PURE__*/function () {
 
   return Node;
 }();
+/**
+ * Abstract class represents musical elements 
+ * @extends Node
+ */
+
 var Element = /*#__PURE__*/function (_Node) {
   _inherits(Element, _Node);
 
@@ -12038,6 +12050,11 @@ var Element = /*#__PURE__*/function (_Node) {
 
   return Element;
 }(Node);
+/**
+ * A class represents a track
+ * @extends Element
+ */
+
 var Track = /*#__PURE__*/function (_Element) {
   _inherits(Track, _Element);
 
@@ -12111,6 +12128,11 @@ var Track = /*#__PURE__*/function (_Element) {
 
   return Track;
 }(Element);
+/**
+ * A class represents a reharsal group
+ * @extends Element
+ */
+
 var ReharsalGroup = /*#__PURE__*/function (_Element2) {
   _inherits(ReharsalGroup, _Element2);
 
@@ -12159,6 +12181,11 @@ var ReharsalGroup = /*#__PURE__*/function (_Element2) {
 
   return ReharsalGroup;
 }(Element);
+/**
+ * A class represents a block
+ * @extends Element
+ */
+
 var Block = /*#__PURE__*/function (_Element3) {
   _inherits(Block, _Element3);
 
@@ -12214,6 +12241,11 @@ var Block = /*#__PURE__*/function (_Element3) {
 
   return Block;
 }(Element);
+/**
+ * A class represents a measure
+ * @extends Element
+ */
+
 var Measure = /*#__PURE__*/function (_Element4) {
   _inherits(Measure, _Element4);
 
@@ -12317,6 +12349,11 @@ var Measure = /*#__PURE__*/function (_Element4) {
 
   return Measure;
 }(Element);
+/**
+ * A class represents a rest
+ * @extends Element
+ */
+
 var Rest = /*#__PURE__*/function (_Element5) {
   _inherits(Rest, _Element5);
 
@@ -12358,6 +12395,11 @@ var Rest = /*#__PURE__*/function (_Element5) {
 
   return Rest;
 }(Element);
+/**
+ * A class represents a simile mark
+ * @extends Element
+ */
+
 var Simile = /*#__PURE__*/function (_Element6) {
   _inherits(Simile, _Element6);
 
@@ -12390,6 +12432,11 @@ var Simile = /*#__PURE__*/function (_Element6) {
 
   return Simile;
 }(Element);
+/**
+ * A class represents a chord
+ * @extends Element
+ */
+
 var Chord = /*#__PURE__*/function (_Element7) {
   _inherits(Chord, _Element7);
 
@@ -13308,6 +13355,11 @@ var Chord = /*#__PURE__*/function (_Element7) {
 
   return Chord;
 }(Element);
+/**
+ * A class represents a loop indicator
+ * @extends Element
+ */
+
 var LoopIndicator = /*#__PURE__*/function (_Element8) {
   _inherits(LoopIndicator, _Element8);
 
@@ -13357,6 +13409,11 @@ var LoopIndicator = /*#__PURE__*/function (_Element8) {
 
   return LoopIndicator;
 }(Element);
+/**
+ * A class represents a space
+ * @extends Element
+ */
+
 var Space = /*#__PURE__*/function (_Element9) {
   _inherits(Space, _Element9);
 
@@ -13389,6 +13446,11 @@ var Space = /*#__PURE__*/function (_Element9) {
 
   return Space;
 }(Element);
+/**
+ * A class represents a long rest
+ * @extends Element
+ */
+
 var LongRest = /*#__PURE__*/function (_Element10) {
   _inherits(LongRest, _Element10);
 
@@ -13418,6 +13480,11 @@ var LongRest = /*#__PURE__*/function (_Element10) {
 
   return LongRest;
 }(Element);
+/**
+ * A class represents a time signature
+ * @extends Element
+ */
+
 var Time = /*#__PURE__*/function (_Element11) {
   _inherits(Time, _Element11);
 
@@ -13448,6 +13515,11 @@ var Time = /*#__PURE__*/function (_Element11) {
 
   return Time;
 }(Element);
+/**
+ * Abstract class represents a measure boundary
+ * @extends Element
+ */
+
 var MeasureBoundary = /*#__PURE__*/function (_Element12) {
   _inherits(MeasureBoundary, _Element12);
 
@@ -13541,6 +13613,11 @@ var MeasureBoundary = /*#__PURE__*/function (_Element12) {
 
   return MeasureBoundary;
 }(Element);
+/**
+ * Class represents a measure boundary with signle or double line
+ * @extends MeasureBoundary
+ */
+
 var MeasureBoundaryMark = /*#__PURE__*/function (_MeasureBoundary) {
   _inherits(MeasureBoundaryMark, _MeasureBoundary);
 
@@ -13571,6 +13648,11 @@ var MeasureBoundaryMark = /*#__PURE__*/function (_MeasureBoundary) {
 
   return MeasureBoundaryMark;
 }(MeasureBoundary);
+/**
+ * Class represents a measure boundary at the beginning of loop
+ * @extends MeasureBoundary
+ */
+
 var LoopBeginMark = /*#__PURE__*/function (_MeasureBoundary2) {
   _inherits(LoopBeginMark, _MeasureBoundary2);
 
@@ -13602,6 +13684,11 @@ var LoopBeginMark = /*#__PURE__*/function (_MeasureBoundary2) {
 
   return LoopBeginMark;
 }(MeasureBoundary);
+/**
+ * Class represents a measure boundary at the end of loop
+ * @extends MeasureBoundary
+ */
+
 var LoopEndMark = /*#__PURE__*/function (_MeasureBoundary3) {
   _inherits(LoopEndMark, _MeasureBoundary3);
 
@@ -13639,6 +13726,11 @@ var LoopEndMark = /*#__PURE__*/function (_MeasureBoundary3) {
 
   return LoopEndMark;
 }(MeasureBoundary);
+/**
+ * Class represents a measure boundary at the end and beginning of loop
+ * @extends MeasureBoundary
+ */
+
 var LoopBothMark = /*#__PURE__*/function (_MeasureBoundary4) {
   _inherits(LoopBothMark, _MeasureBoundary4);
 
@@ -13676,6 +13768,11 @@ var LoopBothMark = /*#__PURE__*/function (_MeasureBoundary4) {
 
   return LoopBothMark;
 }(MeasureBoundary);
+/**
+ * Class represents a measure boundary at the end of a piece
+ * @extends MeasureBoundary
+ */
+
 var MeasureBoundaryFinMark = /*#__PURE__*/function (_MeasureBoundary5) {
   _inherits(MeasureBoundaryFinMark, _MeasureBoundary5);
 
@@ -13707,6 +13804,11 @@ var MeasureBoundaryFinMark = /*#__PURE__*/function (_MeasureBoundary5) {
 
   return MeasureBoundaryFinMark;
 }(MeasureBoundary);
+/**
+ * Class represents a measure boundary with double simile mark over it
+ * @extends MeasureBoundary
+ */
+
 var MeasureBoundaryDblSimile = /*#__PURE__*/function (_MeasureBoundary6) {
   _inherits(MeasureBoundaryDblSimile, _MeasureBoundary6);
 
@@ -13738,6 +13840,11 @@ var MeasureBoundaryDblSimile = /*#__PURE__*/function (_MeasureBoundary6) {
 
   return MeasureBoundaryDblSimile;
 }(MeasureBoundary); // Signs
+
+/**
+ * Class represents a DaCapo mark
+ * @extends Element
+ */
 
 var DaCapo = /*#__PURE__*/function (_Element13) {
   _inherits(DaCapo, _Element13);
@@ -13782,6 +13889,11 @@ var DaCapo = /*#__PURE__*/function (_Element13) {
 
   return DaCapo;
 }(Element);
+/**
+ * Class represents a DalSegno mark
+ * @extends Element
+ */
+
 var DalSegno = /*#__PURE__*/function (_Element14) {
   _inherits(DalSegno, _Element14);
 
@@ -13826,6 +13938,11 @@ var DalSegno = /*#__PURE__*/function (_Element14) {
 
   return DalSegno;
 }(Element);
+/**
+ * Class represents a Segno mark
+ * @extends Element
+ */
+
 var Segno = /*#__PURE__*/function (_Element15) {
   _inherits(Segno, _Element15);
 
@@ -13857,6 +13974,11 @@ var Segno = /*#__PURE__*/function (_Element15) {
 
   return Segno;
 }(Element);
+/**
+ * Class represents a Coda mark
+ * @extends Element
+ */
+
 var Coda = /*#__PURE__*/function (_Element16) {
   _inherits(Coda, _Element16);
 
@@ -13891,6 +14013,11 @@ var Coda = /*#__PURE__*/function (_Element16) {
 
   return Coda;
 }(Element);
+/**
+ * Class represents a To Coda mark
+ * @extends Element
+ */
+
 var ToCoda = /*#__PURE__*/function (_Element17) {
   _inherits(ToCoda, _Element17);
 
@@ -13920,6 +14047,11 @@ var ToCoda = /*#__PURE__*/function (_Element17) {
 
   return ToCoda;
 }(Element);
+/**
+ * Class represents a Fine mark
+ * @extends Element
+ */
+
 var Fine = /*#__PURE__*/function (_Element18) {
   _inherits(Fine, _Element18);
 
@@ -13950,6 +14082,11 @@ var Fine = /*#__PURE__*/function (_Element18) {
 
   return Fine;
 }(Element);
+/**
+ * Class represents a Comment
+ * @extends Element
+ */
+
 var Comment = /*#__PURE__*/function (_Element19) {
   _inherits(Comment, _Element19);
 
@@ -14000,6 +14137,11 @@ var Comment = /*#__PURE__*/function (_Element19) {
 
   return Comment;
 }(Element);
+/**
+ * Class represents a lyric
+ * @extends Element
+ */
+
 var Lyric = /*#__PURE__*/function (_Element20) {
   _inherits(Lyric, _Element20);
 
@@ -14110,7 +14252,11 @@ var Artist = /*#__PURE__*/function (_Element23) {
   }
 
   return Artist;
-}(Element); // Variables that is used internally. Not explicty shown in the drawing.
+}(Element);
+/**
+ * Class represents a Variable. Not always shown in the rendered image (up to renderer implementation)
+ * @extends Node
+ */
 
 var Variable = /*#__PURE__*/function (_Node2) {
   _inherits(Variable, _Node2);
@@ -14155,8 +14301,8 @@ var VirtualElement = function VirtualElement() {
   _classCallCheck(this, VirtualElement);
 };
 /**
- * Represents the concept of row in the renderer
- * How to use this is up to renderer
+ * Class represents the concept of row in the renderer. How to use this is up to renderer.
+ * @extends VirtualElement
  */
 
 var GenericRow = /*#__PURE__*/function (_VirtualElement) {

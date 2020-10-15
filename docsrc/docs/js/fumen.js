@@ -11707,7 +11707,7 @@ module.exports = function (module) {
 /*!******************************!*\
   !*** ./src/common/common.js ***!
   \******************************/
-/*! exports provided: shallowcopy, deepcopy, myLog2, charIsIn, charStartsWithAmong, WHOLE_NOTE_LENGTH, Node, Element, Track, ReharsalGroup, Block, Measure, Rest, Simile, Chord, LoopIndicator, Space, LongRest, Time, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, DaCapo, DalSegno, Segno, Coda, ToCoda, Fine, Comment, Lyric, Title, SubTitle, Artist, Variable, RawSpaces, TemplateString, HitManager */
+/*! exports provided: shallowcopy, deepcopy, myLog2, charIsIn, charStartsWithAmong, WHOLE_NOTE_LENGTH, Node, Element, Track, ReharsalGroup, Block, Measure, Rest, Simile, Chord, LoopIndicator, Space, LongRest, Time, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, DaCapo, DalSegno, Segno, Coda, ToCoda, Fine, Comment, Lyric, Title, SubTitle, Artist, Variable, VirtualElement, GenericRow, HitManager */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11750,8 +11750,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SubTitle", function() { return SubTitle; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Artist", function() { return Artist; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Variable", function() { return Variable; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RawSpaces", function() { return RawSpaces; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TemplateString", function() { return TemplateString; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "VirtualElement", function() { return VirtualElement; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GenericRow", function() { return GenericRow; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HitManager", function() { return HitManager; });
 /* harmony import */ var _babel_polyfill__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/polyfill */ "./node_modules/@babel/polyfill/lib/index.js");
 /* harmony import */ var _babel_polyfill__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_polyfill__WEBPACK_IMPORTED_MODULE_0__);
@@ -11793,6 +11793,9 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
+/**
+ * @module Fumen
+ */
  // Default values for variables
 
 var VARIABLE_DEFAULT = {
@@ -11849,6 +11852,10 @@ function charStartsWithAmong(s, strlist) {
 //
 
 var WHOLE_NOTE_LENGTH = 2 * 3 * 5 * 7 * 9 * 11 * 13 * 64;
+/**
+ * Abstract base class represetns the fumen code tree
+ */
+
 var Node = /*#__PURE__*/function () {
   function Node() {
     _classCallCheck(this, Node);
@@ -11873,30 +11880,41 @@ var Node = /*#__PURE__*/function () {
     key: "exportCode",
     value: function exportCode() {
       var code = "";
-      this.childNodes.forEach(function (rg) {
-        code += rg.exportCode();
+      this.childNodes.forEach(function (e) {
+        code += e.exportCode();
       });
       return code;
     }
   }, {
     key: "getVariable",
-    value: function getVariable(key) {
-      var variable = this.getVariableObject(key);
+    value: function getVariable(name) {
+      var variable = this.getVariableObject(name);
       if (variable) return variable.value;
       return null;
     }
   }, {
     key: "getVariableObject",
-    value: function getVariableObject(key) {
-      if (key in this.variables) return this.variables[key];
-      if (this.parentNode) return this.parentNode.getVariableObject(key);
+    value: function getVariableObject(name) {
+      if (name in this.variables) return this.variables[name];
+      if (this.parentNode) return this.parentNode.getVariableObject(name);
       return null;
     }
   }, {
     key: "setVariable",
-    value: function setVariable(key, value) {
-      if (key in this.variables) this.variables[key].value = deepcopy(value);else this.variables[key] = new Variable(key, value);
-      return this.variables[key];
+    value: function setVariable() {
+      if (arguments.length == 1) {
+        var variable = arguments.length <= 0 ? undefined : arguments[0]; // Variable object
+
+        if (!(variable instanceof Variable)) throw "Invalid object passed";
+        this.variables[variable.name] = variable; // reference
+
+        return variable; // same object
+      } else {
+        var name = arguments.length <= 0 ? undefined : arguments[0];
+        var value = arguments.length <= 1 ? undefined : arguments[1];
+        if (name in this.variables) this.variables[name].value = deepcopy(value);else this.variables[name] = new Variable(name, value);
+        return this.variables[name];
+      }
     }
   }, {
     key: "insertBefore",
@@ -11928,15 +11946,89 @@ var Node = /*#__PURE__*/function () {
   }, {
     key: "remove",
     value: function remove() {
-      var i = this.parentNode.childNodes.indexOf(this);
-      this.parentNode.childNodes.splice(i, 1);
+      if (this.parentNode) {
+        var i = this.parentNode.childNodes.indexOf(this);
+        this.parentNode.childNodes.splice(i, 1);
+      }
+
       if (this.previousSiblingNode) this.previousSiblingNode.nextSiblingNode = this.nextSiblingNode;
       if (this.nextSiblingNode) this.nextSiblingNode.previousSiblingNode = this.previousSiblingNode;
+    }
+  }, {
+    key: "forEach",
+    value: function forEach(cb) {
+      // removal tolerable for each
+      var cs = [];
+      this.childNodes.forEach(function (n) {
+        return cs.push(n);
+      });
+      cs.forEach(cb);
+    }
+  }, {
+    key: "find",
+    value: function find(cond) {
+      var recurse = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+      var ret = this.childNodes.filter(cond);
+
+      if (recurse) {
+        this.childNodes.forEach(function (c) {
+          ret = ret.concat(c.find(cond, recurse));
+        });
+      }
+
+      return ret;
+    }
+  }, {
+    key: "findFirstOf",
+    value: function findFirstOf(cond) {
+      for (var i = 0; i < this.childNodes.length; ++i) {
+        if (cond(this.childNodes[i])) return this.childNodes[i];
+      }
+
+      return null;
+    }
+  }, {
+    key: "findLastOf",
+    value: function findLastOf(cond) {
+      for (var i = this.childNodes.length - 1; i >= 0; --i) {
+        if (cond(this.childNodes[i])) return this.childNodes[i];
+      }
+
+      return null;
+    }
+  }, {
+    key: "indexOf",
+    value: function indexOf(cond) {
+      for (var i = 0; i < this.childNodes.length; ++i) {
+        if (cond(this.childNodes[i])) return i;
+      }
+
+      return -1;
+    }
+  }, {
+    key: "clone",
+    value: function clone() {
+      throw "Shall be overrided";
+    }
+  }, {
+    key: "dump",
+    value: function dump(depth) {
+      depth = depth || 0;
+      var s = "   ".repeat(depth) + this.constructor.name + "\n";
+      this.childNodes.forEach(function (c) {
+        s += c.dump(depth + 1);
+      });
+      return s;
     }
   }]);
 
   return Node;
 }();
+/**
+ * Abstract class represents musical elements 
+ * @extends Node
+ */
+
 var Element = /*#__PURE__*/function (_Node) {
   _inherits(Element, _Node);
 
@@ -11944,78 +12036,43 @@ var Element = /*#__PURE__*/function (_Node) {
 
   // Musical
   function Element() {
-    var _this;
-
     _classCallCheck(this, Element);
 
-    _this = _super.call(this);
-    _this.childElements = [];
-    return _this;
+    return _super.call(this);
   }
 
   _createClass(Element, [{
-    key: "_reconstruct",
-    value: function _reconstruct() {
-      this.childElements = this.childNodes.filter(function (e) {
-        return e instanceof Element;
-      });
-
-      for (var i = 0; i < this.childElements; ++i) {
-        this.childElements[i].nextSiblingNode = i + 1 < this.childElements.length ? this.childElements[i + 1] : null;
-        this.childElements[i].previousSiblingNode = i > 0 ? this.childElements[i - 1] : null;
-      }
-    }
-  }, {
-    key: "appendChild",
-    value: function appendChild(node) {
-      _get(_getPrototypeOf(Element.prototype), "appendChild", this).call(this, node);
-
-      if (node instanceof Element) {
-        this.childElements.push(node);
-
-        if (this.childElements.length >= 2) {
-          this.childElements[this.childElements.length - 2].nextSiblingElement = node;
-          node.previousSiblingElement = this.childElements[this.childElements.length - 2];
-        }
-      }
-    }
-  }, {
-    key: "insertBefore",
-    value: function insertBefore(node, newNode) {
-      _get(_getPrototypeOf(Element.prototype), "insertBefore", this).call(this, node, newNode); // Re-construct all : TODO: improve time
-
-
-      this._reconstruct();
-    }
-  }, {
-    key: "remove",
-    value: function remove() {
-      _get(_getPrototypeOf(Element.prototype), "remove", this).call(this);
-
-      this._reconstruct();
+    key: "clone",
+    value: function clone() {
+      throw "Shall be overrided";
     }
   }]);
 
   return Element;
 }(Node);
+/**
+ * A class represents a track
+ * @extends Element
+ */
+
 var Track = /*#__PURE__*/function (_Element) {
   _inherits(Track, _Element);
 
   var _super2 = _createSuper(Track);
 
   function Track() {
-    var _this2;
+    var _this;
 
     _classCallCheck(this, Track);
 
-    _this2 = _super2.call(this);
+    _this = _super2.call(this);
 
     for (var key in VARIABLE_DEFAULT) {
-      _this2.setVariable(key, VARIABLE_DEFAULT[key]);
+      _this.setVariable(key, VARIABLE_DEFAULT[key]);
     }
 
-    _this2.pre_render_info = {};
-    return _this2;
+    _this.pre_render_info = {};
+    return _this;
   } // Utility functions open for external
 
 
@@ -12035,30 +12092,100 @@ var Track = /*#__PURE__*/function (_Element) {
         };
       }
     }
+  }, {
+    key: "exportCode",
+    value: function exportCode() {
+      var rgcnt = 0;
+      var code = "";
+      this.childNodes.forEach(function (e) {
+        if (e instanceof ReharsalGroup) {
+          if (rgcnt > 0) {
+            code += "\n";
+            if (!e.inline) code += "\n";
+          }
+
+          code += e.exportCode();
+          ++rgcnt;
+        } else if (e instanceof Variable) {
+          // could be Variable
+          code += e.exportCode() + "\n";
+        } else {
+          throw "Invali element detected";
+        }
+      });
+      return code;
+    }
+  }, {
+    key: "clone",
+    value: function clone() {
+      var n = new Track();
+      this.childNodes.map(function (c) {
+        n.appendChild(c.clone());
+      });
+      return n;
+    }
   }]);
 
   return Track;
 }(Element);
+/**
+ * A class represents a reharsal group
+ * @extends Element
+ */
+
 var ReharsalGroup = /*#__PURE__*/function (_Element2) {
   _inherits(ReharsalGroup, _Element2);
 
   var _super3 = _createSuper(ReharsalGroup);
 
   function ReharsalGroup(name) {
-    var _this3;
+    var _this2;
 
     var inline = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
     _classCallCheck(this, ReharsalGroup);
 
-    _this3 = _super3.call(this);
-    _this3.name = name;
-    _this3.inline = inline;
-    return _this3;
+    _this2 = _super3.call(this);
+    _this2.name = name;
+    _this2.inline = inline;
+    return _this2;
   }
+
+  _createClass(ReharsalGroup, [{
+    key: "exportCode",
+    value: function exportCode() {
+      var code = "";
+      var blockcnt = 0;
+      code += "[" + this.name + "]\n";
+      this.childNodes.forEach(function (e) {
+        if (e instanceof Block) {
+          if (blockcnt > 0) code += "\n\n";
+          code += e.exportCode();
+          ++blockcnt;
+        } else {
+          throw "Invalid element detected";
+        }
+      });
+      return code;
+    }
+  }, {
+    key: "clone",
+    value: function clone() {
+      var n = new ReharsalGroup(this.name, this.inline);
+      this.childNodes.map(function (c) {
+        n.appendChild(c.clone());
+      });
+      return n;
+    }
+  }]);
 
   return ReharsalGroup;
 }(Element);
+/**
+ * A class represents a block
+ * @extends Element
+ */
+
 var Block = /*#__PURE__*/function (_Element3) {
   _inherits(Block, _Element3);
 
@@ -12079,58 +12206,169 @@ var Block = /*#__PURE__*/function (_Element3) {
         this.appendChild(newmeasures[i]);
       }
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      var n = new Block();
+      this.childNodes.map(function (c) {
+        n.appendChild(c.clone());
+      });
+      return n;
+    }
+  }, {
+    key: "exportCode",
+    value: function exportCode() {
+      var code = "";
+      var measure_appears = false;
+      this.childNodes.forEach(function (e, i) {
+        if (e instanceof Measure) {
+          measure_appears = true;
+          if (e.raw_new_line) code += "\n"; // This case should not be a first measure in this block
+
+          code += e.exportCode();
+        } else if (e instanceof Variable) {
+          // could be Variable
+          if (measure_appears) {
+            code += "\n" + e.exportCode(); // last NL will be added by next measure or next turn of this code.
+          } else {
+            code += e.exportCode() + "\n"; // Next mreasure
+          }
+        }
+      });
+      return code;
+    }
   }]);
 
   return Block;
 }(Element);
+/**
+ * A class represents a measure
+ * @extends Element
+ */
+
 var Measure = /*#__PURE__*/function (_Element4) {
   _inherits(Measure, _Element4);
 
   var _super5 = _createSuper(Measure);
 
   function Measure() {
-    var _this4;
+    var _this3;
 
     _classCallCheck(this, Measure);
 
-    _this4 = _super5.call(this);
-    _this4.boundary_info = ["n", "n"]; // "n" : normal boundary
-    // "b" : loop Begin boundary
-    // "e" : loop End boundary
-    // "d" : Double line boundary
+    _this3 = _super5.call(this);
+    _this3.raw_new_line = false; // Raw "new line" mark. Maked when this is a second or later measure inside a reharsal group after one ore more new lines in the fumen code
 
-    _this4.header_width = 0;
-    _this4.body_width = 0;
-    _this4.footer_width = 0;
-    _this4.body_scaling = 1.0;
-    _this4.raw_new_line = false; // Raw "new line" mark. Maked when this is a second or later measure inside a reharsal group after one ore more new lines in the fumen code
+    _this3.align = "expand"; // expand, left, right
 
-    _this4.new_line = false; // THis is used in renderer
+    _this3.renderprop = {}; // Rendering information storage
 
-    _this4.align = "expand"; // expand, left, right
-
-    _this4.renderprop = {}; // Rendering information storage
-
-    return _this4;
+    return _this3;
   }
+
+  _createClass(Measure, [{
+    key: "clone",
+    value: function clone() {
+      var n = new Measure();
+      n.raw_new_line = this.raw_new_line;
+      n.align = this.align;
+      this.childNodes.map(function (c) {
+        n.appendChild(c.clone());
+      });
+      return n;
+    }
+  }, {
+    key: "exportCode",
+    value: function exportCode() {
+      var code = ""; //if(this.raw_new_line) code += "\n"; // added at block export
+
+      if (this.align == "left") code += "<";else if (this.align == "right") code += ">";
+      this.childNodes.forEach(function (e) {
+        if (e instanceof MeasureBoundary) {
+          if (!e.exportTarget) return "";
+        }
+
+        code += e.exportCode() + " ";
+      });
+      return code;
+    }
+  }, {
+    key: "remove",
+    value: function remove() {
+      // Combine elements considering the boundaries. 
+      var prevMeas = this.previousSiblingNode;
+
+      while (prevMeas && !(prevMeas instanceof Measure)) {
+        prevMeas = prevMeas.previousSiblingNode;
+      } // Find closest Measure
+
+
+      var nextMeas = this.nextSiblingNode;
+
+      while (nextMeas && !(nextMeas instanceof Measure)) {
+        nextMeas = nextMeas.nextSiblingNode;
+      } // Find closest Measure
+
+
+      var firstMeasInACodeRow = this.raw_new_line || !prevMeas;
+      var lastMeasInACodeRow = !nextMeas || nextMeas.raw_new_line;
+
+      if (firstMeasInACodeRow || lastMeasInACodeRow) {
+        // Edge measure of code row
+        _get(_getPrototypeOf(Measure.prototype), "remove", this).call(this);
+
+        if (prevMeas && lastMeasInACodeRow) prevMeas.findLastOf(function (e) {
+          return e instanceof MeasureBoundary;
+        }).exportTarget = true;
+        if (nextMeas && !lastMeasInACodeRow) nextMeas.raw_new_line = this.raw_new_line; // Inherit the raw_new_line of this measure.
+
+        if (nextMeas && nextMeas.parentNode.findFirstOf(function (e) {
+          return e instanceof Measure;
+        }) == nextMeas) nextMeas.raw_new_line = false; // If next meas becomes the top meas, make it false.
+      } else {
+        // Intermediate measure inside a single row.
+        _get(_getPrototypeOf(Measure.prototype), "remove", this).call(this);
+
+        var prevEndB = prevMeas.findLastOf(function (e) {
+          return e instanceof MeasureBoundary;
+        });
+        var nextBeginB = nextMeas.findFirstOf(function (e) {
+          return e instanceof MeasureBoundary;
+        });
+        var newB_p = MeasureBoundary.combine(prevEndB, nextBeginB);
+        var newB_n = MeasureBoundary.combine(prevEndB, nextBeginB);
+        newB_p.exportTarget = false;
+        prevMeas.insertBefore(prevEndB, newB_p);
+        prevEndB.remove();
+        newB_n.exportTarget = true;
+        nextMeas.insertBefore(nextBeginB, newB_n);
+        nextBeginB.remove();
+      }
+    }
+  }]);
 
   return Measure;
 }(Element);
+/**
+ * A class represents a rest
+ * @extends Element
+ */
+
 var Rest = /*#__PURE__*/function (_Element5) {
   _inherits(Rest, _Element5);
 
   var _super6 = _createSuper(Rest);
 
   function Rest(length_s) {
-    var _this5;
+    var _this4;
 
     _classCallCheck(this, Rest);
 
-    _this5 = _super6.call(this);
+    _this4 = _super6.call(this);
 
-    _this5.init(length_s);
+    _this4.init(length_s);
 
-    return _this5;
+    return _this4;
   }
 
   _createClass(Rest, [{
@@ -12148,26 +12386,36 @@ var Rest = /*#__PURE__*/function (_Element5) {
     value: function exportCode() {
       return "r:".concat(this.length_s);
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new Rest(this.length_s);
+    }
   }]);
 
   return Rest;
 }(Element);
+/**
+ * A class represents a simile mark
+ * @extends Element
+ */
+
 var Simile = /*#__PURE__*/function (_Element6) {
   _inherits(Simile, _Element6);
 
   var _super7 = _createSuper(Simile);
 
   function Simile(numslash) {
-    var _this6;
+    var _this5;
 
     _classCallCheck(this, Simile);
 
-    _this6 = _super7.call(this); // NOTE : Double simile on measure boundary is not treated in this class, it is treated as a one of boundary type
+    _this5 = _super7.call(this); // NOTE : Double simile on measure boundary is not treated in this class, it is treated as a one of boundary type
 
-    _this6.numslash = numslash;
-    _this6.renderprop = {};
-    _this6.note_group_list = null;
-    return _this6;
+    _this5.numslash = numslash;
+    _this5.renderprop = {};
+    _this5.note_group_list = null;
+    return _this5;
   }
 
   _createClass(Simile, [{
@@ -12175,28 +12423,55 @@ var Simile = /*#__PURE__*/function (_Element6) {
     value: function exportCode() {
       return "." + "/".repeat(this.numslash) + ".";
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new Simile(this.numslash);
+    }
   }]);
 
   return Simile;
 }(Element);
+/**
+ * A class represents a chord
+ * @extends Element
+ */
+
 var Chord = /*#__PURE__*/function (_Element7) {
   _inherits(Chord, _Element7);
 
   var _super8 = _createSuper(Chord);
 
   function Chord(chord_str) {
-    var _this7;
+    var _this6;
 
     _classCallCheck(this, Chord);
 
-    _this7 = _super8.call(this);
+    _this6 = _super8.call(this);
 
-    _this7.init(chord_str);
+    _this6.init(chord_str);
 
-    return _this7;
+    return _this6;
   }
 
   _createClass(Chord, [{
+    key: "clone",
+    value: function clone() {
+      var n = new Chord(this.chord_str);
+
+      if (this.exceptinal_comment) {
+        n.exceptinal_comment = this.exceptinal_comment.clone();
+        n.exceptinal_comment.setCodeDependency(n);
+      }
+
+      if (this.lyric) {
+        n.lyric = this.lyric.clone();
+        n.lyric.setCodeDependency(n);
+      }
+
+      return n;
+    }
+  }, {
     key: "init",
     value: function init(chord_str) {
       this.chord_str = chord_str;
@@ -12294,10 +12569,19 @@ var Chord = /*#__PURE__*/function (_Element7) {
   }, {
     key: "exportCode",
     value: function exportCode() {
+      var code = "";
+
+      if (this.exceptinal_comment) {
+        code += this.exceptinal_comment.exportCode() + "@ ";
+      }
+
+      if (this.lyric) {
+        code += this.lyric.exportCode() + "@ ";
+      }
+
       if (this.is_valid_chord) {
         // construct from the raw data.
         // Keep the original strign as much as possible.
-        var code = "";
         if (this.note_base) code += this.note_base;
         if (this.sharp_flat) code += this.sharp_flat;
         if (this.mid_elems) code += Chord.chordMidSerialize(this.mid_elems)[1];
@@ -12336,7 +12620,7 @@ var Chord = /*#__PURE__*/function (_Element7) {
 
         return code; //return this.chord_str;
       } else {
-        return "\"".concat(this.chord_str, "\"");
+        return code + "\"".concat(this.chord_str, "\"");
       }
     } // More sophiscated method based on BNF based parsing
 
@@ -13071,21 +13355,26 @@ var Chord = /*#__PURE__*/function (_Element7) {
 
   return Chord;
 }(Element);
+/**
+ * A class represents a loop indicator
+ * @extends Element
+ */
+
 var LoopIndicator = /*#__PURE__*/function (_Element8) {
   _inherits(LoopIndicator, _Element8);
 
   var _super9 = _createSuper(LoopIndicator);
 
   function LoopIndicator(loopIndStr) {
-    var _this8;
+    var _this7;
 
     _classCallCheck(this, LoopIndicator);
 
-    _this8 = _super9.call(this);
+    _this7 = _super9.call(this);
 
-    _this8.init(loopIndStr);
+    _this7.init(loopIndStr);
 
-    return _this8;
+    return _this7;
   }
 
   _createClass(LoopIndicator, [{
@@ -13111,26 +13400,36 @@ var LoopIndicator = /*#__PURE__*/function (_Element8) {
     value: function exportCode() {
       return "[".concat(this.indstr, "]");
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new LoopIndicator(this.indstr);
+    }
   }]);
 
   return LoopIndicator;
 }(Element);
+/**
+ * A class represents a space
+ * @extends Element
+ */
+
 var Space = /*#__PURE__*/function (_Element9) {
   _inherits(Space, _Element9);
 
   var _super10 = _createSuper(Space);
 
   function Space() {
-    var _this9;
+    var _this8;
 
     var length = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
 
     _classCallCheck(this, Space);
 
-    _this9 = _super10.call(this);
-    _this9.length = length;
-    _this9.renderprop = {};
-    return _this9;
+    _this8 = _super10.call(this);
+    _this8.length = length;
+    _this8.renderprop = {};
+    return _this8;
   }
 
   _createClass(Space, [{
@@ -13138,23 +13437,33 @@ var Space = /*#__PURE__*/function (_Element9) {
     value: function exportCode() {
       return ",".repeat(this.length);
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new Space(this.length);
+    }
   }]);
 
   return Space;
 }(Element);
+/**
+ * A class represents a long rest
+ * @extends Element
+ */
+
 var LongRest = /*#__PURE__*/function (_Element10) {
   _inherits(LongRest, _Element10);
 
   var _super11 = _createSuper(LongRest);
 
   function LongRest(longrestlen) {
-    var _this10;
+    var _this9;
 
     _classCallCheck(this, LongRest);
 
-    _this10 = _super11.call(this);
-    _this10.longrestlen = longrestlen;
-    return _this10;
+    _this9 = _super11.call(this);
+    _this9.longrestlen = longrestlen;
+    return _this9;
   }
 
   _createClass(LongRest, [{
@@ -13162,24 +13471,34 @@ var LongRest = /*#__PURE__*/function (_Element10) {
     value: function exportCode() {
       return "-".concat(this.longrestlen, "-");
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new LongRest(this.longrestlen);
+    }
   }]);
 
   return LongRest;
 }(Element);
+/**
+ * A class represents a time signature
+ * @extends Element
+ */
+
 var Time = /*#__PURE__*/function (_Element11) {
   _inherits(Time, _Element11);
 
   var _super12 = _createSuper(Time);
 
   function Time(numer, denom) {
-    var _this11;
+    var _this10;
 
     _classCallCheck(this, Time);
 
-    _this11 = _super12.call(this);
-    _this11.numer = numer;
-    _this11.denom = denom;
-    return _this11;
+    _this10 = _super12.call(this);
+    _this10.numer = numer;
+    _this10.denom = denom;
+    return _this10;
   }
 
   _createClass(Time, [{
@@ -13187,42 +13506,132 @@ var Time = /*#__PURE__*/function (_Element11) {
     value: function exportCode() {
       return "(".concat(this.numer, "/").concat(this.denom, ")");
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new Time(this.numer, this.denom);
+    }
   }]);
 
   return Time;
 }(Element);
+/**
+ * Abstract class represents a measure boundary
+ * @extends Element
+ */
+
 var MeasureBoundary = /*#__PURE__*/function (_Element12) {
   _inherits(MeasureBoundary, _Element12);
 
   var _super13 = _createSuper(MeasureBoundary);
 
   function MeasureBoundary() {
-    var _this12;
+    var _this11;
 
     var exportTarget = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
 
     _classCallCheck(this, MeasureBoundary);
 
-    _this12 = _super13.call(this);
-    _this12.exportTarget = exportTarget;
-    return _this12;
-  }
+    _this11 = _super13.call(this);
+    _this11.exportTarget = exportTarget;
+    return _this11;
+  } // Factory function to make a new boundary from 2 boundaries
+
+
+  _createClass(MeasureBoundary, null, [{
+    key: "combine",
+    value: function combine(b0, b1) {
+      // s,d,b,e,B,f,r,n
+      // 8C2 = 56
+      // define priority order, then define some exceptions
+      var priority = {
+        n: 0,
+        s: 1,
+        d: 2,
+        f: 3,
+        r: 4,
+        b: 5,
+        e: 6,
+        B: 7
+      };
+      var combineRule = {
+        eb: function eb() {
+          return new LoopBothMark({
+            ntimes: b0.ntimes,
+            times: b0.times
+          });
+        }
+      };
+      var factory = {
+        s: function s() {
+          return new MeasureBoundaryMark(1);
+        },
+        d: function d() {
+          return new MeasureBoundaryMark(2);
+        },
+        b: function b() {
+          return new LoopBeginMark();
+        },
+        e: function e() {
+          return new LoopEndMark({
+            ntimes: b0.ntimes,
+            times: b0.times
+          });
+        },
+        B: function B() {
+          return new LoopBothMark({
+            ntimes: b0.ntimes,
+            times: b0.times
+          });
+        },
+        f: function f() {
+          return new MeasureBoundaryFinMark();
+        },
+        r: function r() {
+          return new MeasureBoundaryDblSimile();
+        },
+        n: function n() {
+          return null;
+        }
+      };
+      var key = b0.typestr + b1.typestr;
+      var newB = null;
+
+      if (key in combineRule) {
+        newB = combineRule[key]();
+      } else {
+        if (priority[b0.typestr] < priority[b1.typestr]) {
+          newB = factory[b1.typestr]();
+        } else {
+          newB = factory[b0.typestr]();
+        }
+      }
+
+      return newB;
+    }
+  }]);
 
   return MeasureBoundary;
 }(Element);
+/**
+ * Class represents a measure boundary with signle or double line
+ * @extends MeasureBoundary
+ */
+
 var MeasureBoundaryMark = /*#__PURE__*/function (_MeasureBoundary) {
   _inherits(MeasureBoundaryMark, _MeasureBoundary);
 
   var _super14 = _createSuper(MeasureBoundaryMark);
 
   function MeasureBoundaryMark(nline, exportTarget) {
-    var _this13;
+    var _this12;
 
     _classCallCheck(this, MeasureBoundaryMark);
 
-    _this13 = _super14.call(this, exportTarget);
-    _this13.nline = nline;
-    return _this13;
+    _this12 = _super14.call(this, exportTarget);
+    _this12.nline = nline;
+    _this12.typestr = _this12.nline == 1 ? "s" : "d";
+    return _this12;
   }
 
   _createClass(MeasureBoundaryMark, [{
@@ -13230,21 +13639,35 @@ var MeasureBoundaryMark = /*#__PURE__*/function (_MeasureBoundary) {
     value: function exportCode() {
       return this.exportTarget ? "|".repeat(this.nline) : "";
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new MeasureBoundaryMark(this.nline, this.exportTarget);
+    }
   }]);
 
   return MeasureBoundaryMark;
 }(MeasureBoundary);
+/**
+ * Class represents a measure boundary at the beginning of loop
+ * @extends MeasureBoundary
+ */
+
 var LoopBeginMark = /*#__PURE__*/function (_MeasureBoundary2) {
   _inherits(LoopBeginMark, _MeasureBoundary2);
 
   var _super15 = _createSuper(LoopBeginMark);
 
   function LoopBeginMark() {
+    var _this13;
+
     var exportTarget = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
 
     _classCallCheck(this, LoopBeginMark);
 
-    return _super15.call(this, exportTarget);
+    _this13 = _super15.call(this, exportTarget);
+    _this13.typestr = "b";
+    return _this13;
   }
 
   _createClass(LoopBeginMark, [{
@@ -13252,10 +13675,20 @@ var LoopBeginMark = /*#__PURE__*/function (_MeasureBoundary2) {
     value: function exportCode() {
       return this.exportTarget ? "||:" : "";
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new LoopBeginMark(this.exportTarget);
+    }
   }]);
 
   return LoopBeginMark;
 }(MeasureBoundary);
+/**
+ * Class represents a measure boundary at the end of loop
+ * @extends MeasureBoundary
+ */
+
 var LoopEndMark = /*#__PURE__*/function (_MeasureBoundary3) {
   _inherits(LoopEndMark, _MeasureBoundary3);
 
@@ -13271,19 +13704,33 @@ var LoopEndMark = /*#__PURE__*/function (_MeasureBoundary3) {
     _this14 = _super16.call(this, exportTarget);
     _this14.times = param.times;
     _this14.ntimes = param.ntimes;
+    _this14.typestr = "e";
     return _this14;
   }
 
   _createClass(LoopEndMark, [{
     key: "exportCode",
     value: function exportCode() {
-      var ts = this.ntimes ? "xX" : "x".concat(this.times);
+      var ts = this.ntimes ? "xX" : this.times ? "x".concat(this.times) : "";
       return this.exportTarget ? ":||" + (ts == "x2" ? "" : ts) : ""; // x2 is not explicity stated : TODO : align with what wrote in the code.
+    }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new LoopEndMark({
+        times: this.times,
+        ntimes: this.ntimes
+      }, this.exportTarget);
     }
   }]);
 
   return LoopEndMark;
 }(MeasureBoundary);
+/**
+ * Class represents a measure boundary at the end and beginning of loop
+ * @extends MeasureBoundary
+ */
+
 var LoopBothMark = /*#__PURE__*/function (_MeasureBoundary4) {
   _inherits(LoopBothMark, _MeasureBoundary4);
 
@@ -13299,30 +13746,48 @@ var LoopBothMark = /*#__PURE__*/function (_MeasureBoundary4) {
     _this15 = _super17.call(this, exportTarget);
     _this15.times = param.times;
     _this15.ntimes = param.ntimes;
+    _this15.typestr = "B";
     return _this15;
   }
 
   _createClass(LoopBothMark, [{
     key: "exportCode",
     value: function exportCode() {
-      var ts = this.ntimes ? "xX" : "x".concat(this.times);
+      var ts = this.ntimes ? "xX" : this.times ? "x".concat(this.times) : "";
       return this.exportTarget ? ":||:" + (ts == "x2" ? "" : ts) : ""; // x2 is not explicity stated : TODO : align with what wrote in the code.
+    }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new LoopBothMark({
+        times: this.times,
+        ntimes: this.ntimes
+      }, this.exportTarget);
     }
   }]);
 
   return LoopBothMark;
 }(MeasureBoundary);
+/**
+ * Class represents a measure boundary at the end of a piece
+ * @extends MeasureBoundary
+ */
+
 var MeasureBoundaryFinMark = /*#__PURE__*/function (_MeasureBoundary5) {
   _inherits(MeasureBoundaryFinMark, _MeasureBoundary5);
 
   var _super18 = _createSuper(MeasureBoundaryFinMark);
 
   function MeasureBoundaryFinMark() {
+    var _this16;
+
     var exportTarget = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
 
     _classCallCheck(this, MeasureBoundaryFinMark);
 
-    return _super18.call(this, exportTarget);
+    _this16 = _super18.call(this, exportTarget);
+    _this16.typestr = "f";
+    return _this16;
   }
 
   _createClass(MeasureBoundaryFinMark, [{
@@ -13330,21 +13795,35 @@ var MeasureBoundaryFinMark = /*#__PURE__*/function (_MeasureBoundary5) {
     value: function exportCode() {
       return this.exportTarget ? "||." : "";
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new MeasureBoundaryFinMark(this.exportTarget);
+    }
   }]);
 
   return MeasureBoundaryFinMark;
 }(MeasureBoundary);
+/**
+ * Class represents a measure boundary with double simile mark over it
+ * @extends MeasureBoundary
+ */
+
 var MeasureBoundaryDblSimile = /*#__PURE__*/function (_MeasureBoundary6) {
   _inherits(MeasureBoundaryDblSimile, _MeasureBoundary6);
 
   var _super19 = _createSuper(MeasureBoundaryDblSimile);
 
   function MeasureBoundaryDblSimile() {
+    var _this17;
+
     var exportTarget = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
 
     _classCallCheck(this, MeasureBoundaryDblSimile);
 
-    return _super19.call(this, exportTarget);
+    _this17 = _super19.call(this, exportTarget);
+    _this17.typestr = "r";
+    return _this17;
   }
 
   _createClass(MeasureBoundaryDblSimile, [{
@@ -13352,10 +13831,20 @@ var MeasureBoundaryDblSimile = /*#__PURE__*/function (_MeasureBoundary6) {
     value: function exportCode() {
       return this.exportTarget ? "./|/." : "";
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new MeasureBoundaryDblSimile(this.exportTarget);
+    }
   }]);
 
   return MeasureBoundaryDblSimile;
 }(MeasureBoundary); // Signs
+
+/**
+ * Class represents a DaCapo mark
+ * @extends Element
+ */
 
 var DaCapo = /*#__PURE__*/function (_Element13) {
   _inherits(DaCapo, _Element13);
@@ -13363,15 +13852,15 @@ var DaCapo = /*#__PURE__*/function (_Element13) {
   var _super20 = _createSuper(DaCapo);
 
   function DaCapo(al) {
-    var _this16;
+    var _this18;
 
     _classCallCheck(this, DaCapo);
 
-    _this16 = _super20.call(this);
+    _this18 = _super20.call(this);
 
-    _this16.init(al);
+    _this18.init(al);
 
-    return _this16;
+    return _this18;
   }
 
   _createClass(DaCapo, [{
@@ -13383,7 +13872,7 @@ var DaCapo = /*#__PURE__*/function (_Element13) {
     key: "toString",
     value: function toString() {
       var dss = "D.C.";
-      var als = this.al === null ? "" : " al " + this.al.toString();
+      var als = this.al ? " al " + this.al.toString() : "";
       return dss + als;
     }
   }, {
@@ -13391,25 +13880,35 @@ var DaCapo = /*#__PURE__*/function (_Element13) {
     value: function exportCode() {
       return "<" + this.toString() + ">";
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new DaCapo(this.al ? this.al.clone() : null);
+    }
   }]);
 
   return DaCapo;
 }(Element);
+/**
+ * Class represents a DalSegno mark
+ * @extends Element
+ */
+
 var DalSegno = /*#__PURE__*/function (_Element14) {
   _inherits(DalSegno, _Element14);
 
   var _super21 = _createSuper(DalSegno);
 
   function DalSegno(number, al) {
-    var _this17;
+    var _this19;
 
     _classCallCheck(this, DalSegno);
 
-    _this17 = _super21.call(this);
+    _this19 = _super21.call(this);
 
-    _this17.init(number, al);
+    _this19.init(number, al);
 
-    return _this17;
+    return _this19;
   }
 
   _createClass(DalSegno, [{
@@ -13421,8 +13920,8 @@ var DalSegno = /*#__PURE__*/function (_Element14) {
   }, {
     key: "toString",
     value: function toString() {
-      var dss = "D.S." + (this.number === null ? "" : this.number);
-      var als = this.al === null ? "" : " al " + this.al.toString();
+      var dss = "D.S." + (this.number || "");
+      var als = this.al ? " al " + this.al.toString() : "";
       return dss + als;
     }
   }, {
@@ -13430,24 +13929,34 @@ var DalSegno = /*#__PURE__*/function (_Element14) {
     value: function exportCode() {
       return "<" + this.toString() + ">";
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new DalSegno(this.number, this.al ? this.al.clone() : null);
+    }
   }]);
 
   return DalSegno;
 }(Element);
+/**
+ * Class represents a Segno mark
+ * @extends Element
+ */
+
 var Segno = /*#__PURE__*/function (_Element15) {
   _inherits(Segno, _Element15);
 
   var _super22 = _createSuper(Segno);
 
   function Segno(number, opt) {
-    var _this18;
+    var _this20;
 
     _classCallCheck(this, Segno);
 
-    _this18 = _super22.call(this);
-    _this18.number = number;
-    _this18.opt = opt;
-    return _this18;
+    _this20 = _super22.call(this);
+    _this20.number = number;
+    _this20.opt = opt;
+    return _this20;
   }
 
   _createClass(Segno, [{
@@ -13456,52 +13965,72 @@ var Segno = /*#__PURE__*/function (_Element15) {
       var opts = this.opt ? " ".concat(this.opt) : "";
       return "<S".concat(this.number || "").concat(opts, ">");
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new Segno(this.number, this.opt);
+    }
   }]);
 
   return Segno;
 }(Element);
+/**
+ * Class represents a Coda mark
+ * @extends Element
+ */
+
 var Coda = /*#__PURE__*/function (_Element16) {
   _inherits(Coda, _Element16);
 
   var _super23 = _createSuper(Coda);
 
   function Coda(number) {
-    var _this19;
+    var _this21;
 
     _classCallCheck(this, Coda);
 
-    _this19 = _super23.call(this);
-    _this19.number = number;
-    return _this19;
+    _this21 = _super23.call(this);
+    _this21.number = number;
+    return _this21;
   }
 
   _createClass(Coda, [{
     key: "toString",
     value: function toString() {
-      return "Coda" + (this.number === null ? "" : this.number);
+      return "Coda" + (this.number || "");
     }
   }, {
     key: "exportCode",
     value: function exportCode() {
       return "<" + this.toString() + ">";
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new Coda(this.number);
+    }
   }]);
 
   return Coda;
 }(Element);
+/**
+ * Class represents a To Coda mark
+ * @extends Element
+ */
+
 var ToCoda = /*#__PURE__*/function (_Element17) {
   _inherits(ToCoda, _Element17);
 
   var _super24 = _createSuper(ToCoda);
 
   function ToCoda(number) {
-    var _this20;
+    var _this22;
 
     _classCallCheck(this, ToCoda);
 
-    _this20 = _super24.call(this);
-    _this20.number = number;
-    return _this20;
+    _this22 = _super24.call(this);
+    _this22.number = number;
+    return _this22;
   }
 
   _createClass(ToCoda, [{
@@ -13509,10 +14038,20 @@ var ToCoda = /*#__PURE__*/function (_Element17) {
     value: function exportCode() {
       return "<to Coda".concat(this.number || "", ">");
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new ToCoda(this.number);
+    }
   }]);
 
   return ToCoda;
 }(Element);
+/**
+ * Class represents a Fine mark
+ * @extends Element
+ */
+
 var Fine = /*#__PURE__*/function (_Element18) {
   _inherits(Fine, _Element18);
 
@@ -13534,27 +14073,37 @@ var Fine = /*#__PURE__*/function (_Element18) {
     value: function exportCode() {
       return "<" + this.toString() + ">";
     }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new Fine();
+    }
   }]);
 
   return Fine;
 }(Element);
+/**
+ * Class represents a Comment
+ * @extends Element
+ */
+
 var Comment = /*#__PURE__*/function (_Element19) {
   _inherits(Comment, _Element19);
 
   var _super26 = _createSuper(Comment);
 
   function Comment(comment) {
-    var _this21;
+    var _this23;
 
-    var chorddep = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+    var chorddep = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
     _classCallCheck(this, Comment);
 
-    _this21 = _super26.call(this);
-    _this21.comment = comment;
-    _this21.chorddep = chorddep; // Dependency for particular chord : true/false
+    _this23 = _super26.call(this);
+    _this23.comment = comment;
+    _this23.chorddep = chorddep; // Dependency for particular chord : true/false
 
-    return _this21;
+    return _this23;
   }
 
   _createClass(Comment, [{
@@ -13568,27 +14117,48 @@ var Comment = /*#__PURE__*/function (_Element19) {
       return "'" + this.comment + "'";
     } // TODO : quote considrtaion
 
+  }, {
+    key: "remove",
+    value: function remove() {
+      if (this.chorddep) {
+        this.chorddep.exceptinal_comment = null;
+        this.chorddep = null;
+      }
+
+      _get(_getPrototypeOf(Comment.prototype), "remove", this).call(this);
+    }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new Comment(this.comment);
+    } // NOTE : codedep is reset
+
   }]);
 
   return Comment;
 }(Element);
+/**
+ * Class represents a lyric
+ * @extends Element
+ */
+
 var Lyric = /*#__PURE__*/function (_Element20) {
   _inherits(Lyric, _Element20);
 
   var _super27 = _createSuper(Lyric);
 
   function Lyric(lyric) {
-    var _this22;
+    var _this24;
 
-    var chorddep = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+    var chorddep = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
     _classCallCheck(this, Lyric);
 
-    _this22 = _super27.call(this);
-    _this22.lyric = lyric;
-    _this22.chorddep = chorddep; // Dependency for particular chord : true/false
+    _this24 = _super27.call(this);
+    _this24.lyric = lyric;
+    _this24.chorddep = chorddep; // Dependency for particular chord : true/false
 
-    return _this22;
+    return _this24;
   }
 
   _createClass(Lyric, [{
@@ -13601,6 +14171,22 @@ var Lyric = /*#__PURE__*/function (_Element20) {
     value: function exportCode() {
       return "`" + this.lyric + "`";
     } // TODO : quote considrtaion
+
+  }, {
+    key: "remove",
+    value: function remove() {
+      if (this.chorddep) {
+        this.chorddep.lyric = null;
+        this.chorddep = null;
+      }
+
+      _get(_getPrototypeOf(Lyric.prototype), "remove", this).call(this);
+    }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new Lyric(this.lyric);
+    } // NOTE : codedep is reset
 
   }]);
 
@@ -13622,13 +14208,13 @@ var Title = /*#__PURE__*/function (_Element21) {
   var _super28 = _createSuper(Title);
 
   function Title(variable) {
-    var _this23;
+    var _this25;
 
     _classCallCheck(this, Title);
 
-    _this23 = _super28.call(this);
-    _this23.variable = variable;
-    return _this23;
+    _this25 = _super28.call(this);
+    _this25.variable = variable;
+    return _this25;
   }
 
   return Title;
@@ -13639,13 +14225,13 @@ var SubTitle = /*#__PURE__*/function (_Element22) {
   var _super29 = _createSuper(SubTitle);
 
   function SubTitle(variable) {
-    var _this24;
+    var _this26;
 
     _classCallCheck(this, SubTitle);
 
-    _this24 = _super29.call(this);
-    _this24.variable = variable;
-    return _this24;
+    _this26 = _super29.call(this);
+    _this26.variable = variable;
+    return _this26;
   }
 
   return SubTitle;
@@ -13656,17 +14242,21 @@ var Artist = /*#__PURE__*/function (_Element23) {
   var _super30 = _createSuper(Artist);
 
   function Artist(variable) {
-    var _this25;
+    var _this27;
 
     _classCallCheck(this, Artist);
 
-    _this25 = _super30.call(this);
-    _this25.variable = variable;
-    return _this25;
+    _this27 = _super30.call(this);
+    _this27.variable = variable;
+    return _this27;
   }
 
   return Artist;
-}(Element); // Variables that is used internally. Not explicty shown in the drawing.
+}(Element);
+/**
+ * Class represents a Variable. Not always shown in the rendered image (up to renderer implementation)
+ * @extends Node
+ */
 
 var Variable = /*#__PURE__*/function (_Node2) {
   _inherits(Variable, _Node2);
@@ -13674,14 +14264,14 @@ var Variable = /*#__PURE__*/function (_Node2) {
   var _super31 = _createSuper(Variable);
 
   function Variable(name, value) {
-    var _this26;
+    var _this28;
 
     _classCallCheck(this, Variable);
 
-    _this26 = _super31.call(this);
-    _this26.name = name;
-    _this26.value = deepcopy(value);
-    return _this26;
+    _this28 = _super31.call(this);
+    _this28.name = name;
+    _this28.value = deepcopy(value);
+    return _this28;
   }
 
   _createClass(Variable, [{
@@ -13694,7 +14284,8 @@ var Variable = /*#__PURE__*/function (_Node2) {
         code += JSON.stringify(this.value);
       } else {
         throw "Error on export code for Variable";
-      }
+      } //code += "\n";
+
       return code;
     }
   }]);
@@ -13702,66 +14293,37 @@ var Variable = /*#__PURE__*/function (_Node2) {
   return Variable;
 }(Node);
 /**
- * Reperesetnts skipped contiguous spaces/tabs during parsing.
- * Used for serialization.
+ * Virtual/Abstract element used for GUI based editting. Not appears explicitly in the original code nor in rendered image.
+ * Only used in HitManager
  */
 
-var RawSpaces = /*#__PURE__*/function (_Node3) {
-  _inherits(RawSpaces, _Node3);
+var VirtualElement = function VirtualElement() {
+  _classCallCheck(this, VirtualElement);
+};
+/**
+ * Class represents the concept of row in the renderer. How to use this is up to renderer.
+ * @extends VirtualElement
+ */
 
-  var _super32 = _createSuper(RawSpaces);
+var GenericRow = /*#__PURE__*/function (_VirtualElement) {
+  _inherits(GenericRow, _VirtualElement);
 
-  function RawSpaces(sss) {
-    var _this27;
+  var _super32 = _createSuper(GenericRow);
 
-    _classCallCheck(this, RawSpaces);
+  function GenericRow(type, param) {
+    var _this29;
 
-    _this27 = _super32.call(this);
-    _this27.sss = sss;
-    return _this27;
+    _classCallCheck(this, GenericRow);
+
+    _this29 = _super32.call(this);
+    _this29.type = type;
+    _this29.param = param; // Any element can be associated.
+
+    return _this29;
   }
 
-  _createClass(RawSpaces, [{
-    key: "exportCode",
-    value: function exportCode() {
-      return this.sss;
-    }
-  }]);
-
-  return RawSpaces;
-}(Node);
-var TemplateString = /*#__PURE__*/function (_Node4) {
-  _inherits(TemplateString, _Node4);
-
-  var _super33 = _createSuper(TemplateString);
-
-  // dict is hold as reference. Any change in the dict is propagated to exported code
-  function TemplateString(tmpl, dict) {
-    var _this28;
-
-    _classCallCheck(this, TemplateString);
-
-    _this28 = _super33.call(this);
-    _this28.tmpl = tmpl;
-    _this28.dict = dict;
-    return _this28;
-  }
-
-  _createClass(TemplateString, [{
-    key: "exportCode",
-    value: function exportCode() {
-      var _this29 = this;
-
-      var tpl = deepcopy(this.tmpl);
-      Object.keys(this.dict).forEach(function (k) {
-        tpl = tpl.replace(new RegExp("\\${" + k + "}", "g"), _this29.dict[k]);
-      });
-      return tpl;
-    }
-  }]);
-
-  return TemplateString;
-}(Node);
+  return GenericRow;
+}(VirtualElement);
 var HitManager = /*#__PURE__*/function () {
   function HitManager() {
     _classCallCheck(this, HitManager);
@@ -13941,7 +14503,7 @@ var HitManager = /*#__PURE__*/function () {
 /*!**********************!*\
   !*** ./src/index.js ***!
   \**********************/
-/*! exports provided: Parser, DefaultRenderer, SetupHiDPICanvas, GetCharProfile, CanvasTextWithBox, CanvasText, getFontSizeFromHeight, ReharsalGroup, Block, Chord, Rest, LongRest, Comment, Lyric, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, LoopIndicator, Time, Coda, Segno, ToCoda, DalSegno, DaCapo, Fine, Simile, Variable, RawSpaces, TemplateString */
+/*! exports provided: Parser, DefaultRenderer, SetupHiDPICanvas, GetCharProfile, CanvasTextWithBox, CanvasText, getFontSizeFromHeight, ReharsalGroup, Block, Measure, Chord, Rest, LongRest, Comment, Lyric, Space, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, LoopIndicator, Time, Coda, Segno, ToCoda, DalSegno, DaCapo, Fine, Simile, Variable, GenericRow */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -13970,6 +14532,8 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Block", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Block"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Measure", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Measure"]; });
+
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Chord", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Chord"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Rest", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Rest"]; });
@@ -13979,6 +14543,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Comment", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Comment"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Lyric", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Lyric"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Space", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Space"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MeasureBoundary", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["MeasureBoundary"]; });
 
@@ -14014,9 +14580,7 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Variable", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Variable"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "RawSpaces", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["RawSpaces"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TemplateString", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["TemplateString"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GenericRow", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["GenericRow"]; });
 
 
  //export * from './renderer/default_renderer';
@@ -14550,10 +15114,10 @@ var Parser = /*#__PURE__*/function () {
         for (var ei = elem_list.length - 1; ei >= 0; --ei) {
           var elem = elem_list[ei];
           if (elem instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Chord"]) break;else if (elem instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Comment"]) {
-            elem.setCodeDependency(true);
+            elem.setCodeDependency(chord);
             chord.setException(elem);
           } else if (elem instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Lyric"]) {
-            elem.setCodeDependency(true);
+            elem.setCodeDependency(chord);
             chord.setLyric(elem);
           }
         }
@@ -14561,7 +15125,6 @@ var Parser = /*#__PURE__*/function () {
 
       while (loop_flg) {
         var r = this.nextToken(s);
-        if (r.sss.length > 0) measure.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.sss));
         var m = null;
 
         switch (r.type) {
@@ -14583,15 +15146,34 @@ var Parser = /*#__PURE__*/function () {
             break;
 
           case TOKEN_STRING_SQ:
-            var comment = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Comment"](r.token);
-            measure.appendChild(comment);
+            var comment = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Comment"](r.token); // Check if atmark specified
+
             s = r.s;
+            r = this.nextToken(s);
+
+            if (r.type == TOKEN_ATMARK) {
+              // At mark is now an independent element which associate previous elements to the next elements of atmark.
+              s = r.s;
+              atmark_associated_elements.push(comment);
+            } else {
+              measure.appendChild(comment);
+            }
+
             break;
 
           case TOKEN_STRING_GRAVE_ACCENT:
             var lyric = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Lyric"](r.token);
-            measure.appendChild(lyric);
             s = r.s;
+            r = this.nextToken(s);
+
+            if (r.type == TOKEN_ATMARK) {
+              // At mark is now an independent element which associate previous elements to the next elements of atmark.
+              s = r.s;
+              atmark_associated_elements.push(lyric);
+            } else {
+              measure.appendChild(lyric);
+            }
+
             break;
 
           case TOKEN_STRING_HYPHEN:
@@ -14606,14 +15188,7 @@ var Parser = /*#__PURE__*/function () {
             break;
 
           case TOKEN_ATMARK:
-            // At mark is now an independent element which associate previous elements to the next elements of atmark.
-            //atmark_detected = true;
-            atmark_associated_elements.push(measure.childElements[measure.childElements.length - 1]); // Remember the previous element
-
-            s = r.s; // This is not registered explicitly as muscal symbol but as non-musical symbol
-
-            measure.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
-            break;
+            throw "Invalid context : atmark detected";
 
           case TOKEN_WORD:
             // Analyze Rest symbol firstly, if not it is chord.
@@ -14765,7 +15340,7 @@ var Parser = /*#__PURE__*/function () {
                   loop_flg = false; // Register the last boundary to the serialize object of last measure as it is not regisereted.
 
                   var lastm = measures[measures.length - 1];
-                  var lastb = lastm.childElements[lastm.childElements.length - 1];
+                  var lastb = lastm.childNodes[lastm.childNodes.length - 1];
 
                   if (!(lastb instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundary"])) {
                     throw "Invalid state";
@@ -14864,7 +15439,6 @@ var Parser = /*#__PURE__*/function () {
 
         while (true) {
           r = this.nextToken(s);
-          if (r.sss.length > 0) block.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.sss));
 
           if (r.type == TOKEN_END) {
             s = r.s; // explicitly consume the last spaces if any.
@@ -14875,41 +15449,40 @@ var Parser = /*#__PURE__*/function () {
             this.context.line += 1;
             this.context.contiguous_line_break += 1;
             current_align = "expand"; // default is expand
-
-            block.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token)); //if(this.context.contiguous_line_break >= 2) break; Do not break here. If the first non NL element is found, then break.
+            //if(this.context.contiguous_line_break >= 2) break; Do not break here. If the first non NL element is found, then break.
           } else if (r.type == TOKEN_BACK_SLASH) {
             if (this.context.contiguous_line_break >= 2) break; // Expect TOKEN_NL 
 
-            block.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
             r = this.nextToken(r.s);
             if (r.type != TOKEN_NL) this.onParseError("INVALID CODE DETECTED AFTER BACK SLASH");
-            this.context.line += 1;
-            block.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.sss));
-            block.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token)); // Does not count as line break
+            this.context.line += 1; //block.appendChild(new common.RawSpaces(r.sss));
+            //block.appendChild(new common.RawSpaces(r.token)); 
+            // Does not count as line break
           } else if (r.type == TOKEN_BRACKET_RA) {
             if (this.context.contiguous_line_break >= 2) break; // Right aligh indicoator > which is outside measure
 
             current_align = "right";
-            block.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
           } else if (r.type == TOKEN_BRACKET_LA) {
             if (this.context.contiguous_line_break >= 2) break; // Right aligh indicoator > which is outside measure
 
             current_align = "left";
-            block.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
           } else if (r.type == TOKEN_BRACKET_LS) {
             // Next reharsal mark detected.
             // Do not consume.
             end_of_rg = true;
             break;
-          } else if ([TOKEN_MB, TOKEN_MB_DBL, TOKEN_MB_LOOP_BEGIN, TOKEN_MB_LOOP_BOTH, TOKEN_MB_FIN, TOKEN_MB_DBL_SIMILE].indexOf(r.type) >= 0) {
+          } else if ([TOKEN_MB, TOKEN_MB_DBL, TOKEN_MB_LOOP_BEGIN, TOKEN_MB_LOOP_END, TOKEN_MB_LOOP_BOTH, TOKEN_MB_FIN, TOKEN_MB_DBL_SIMILE].indexOf(r.type) >= 0) {
             if (this.context.contiguous_line_break >= 2) break;
             var is_new_line_middle_of_block = num_meas_row > 0 && this.context.contiguous_line_break == 1;
             this.context.contiguous_line_break = 0;
             r = this.parseMeasures(r, r.s); // the last NL has not been consumed.
             // Apply the variables valid at this point for each measures
+            //r.measures.forEach(m=>{ m.variables = common.shallowcopy(latest_variables);});
 
             r.measures.forEach(function (m) {
-              m.variables = _common_common__WEBPACK_IMPORTED_MODULE_1__["shallowcopy"](latest_variables);
+              for (var key in latest_variables) {
+                m.setVariable(latest_variables[key]);
+              }
             }); // For the first measure, set align and new line mark.
 
             r.measures[0].align = current_align;
@@ -14918,13 +15491,15 @@ var Parser = /*#__PURE__*/function () {
             block.concat(r.measures);
             ++num_meas_row;
           } else if (r.type == TOKEN_PERCENT) {
-            // Expression
-            r = this.parseVariable(r.s);
+            if (this.context.contiguous_line_break >= 2) break; // Expression
+
+            r = this.parseVariable(r.s); // last NL would not be consumed
+
             var variable = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Variable"](r.key, r.value); //block.setVariable(r.key, r.value); Do not do this as with this, only the last variable will be valid.
 
             latest_variables[r.key] = variable;
             block.appendChild(variable);
-            this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this variable
+            this.context.contiguous_line_break = 0; // -= 1; // Does not reset to 0, but cancell the new line in the same row as this variable
           } else {
             console.log(r.token);
             this.onParseError("ERROR_WHILE_PARSE_MOST_OUTSIDER");
@@ -14955,42 +15530,41 @@ var Parser = /*#__PURE__*/function () {
       // - "[" (consumed) (for normal or inline)
       // - boundaries (not consumed) (for anonymous)
       // - "<" or ">" (not consumed) (for anonymous)
-      try {
-        var r = null;
-        var latest_variables = {}; // Do not inherit from previous reharsal group
+      var r = null;
+      var latest_variables = {}; // Do not inherit from previous reharsal group
 
-        var rgName = "";
+      var rgName = "";
 
-        if (rgtype != "anonymous") {
-          r = this.parseReharsalMark(null, s); // "[" shall be already consumed.
+      if (rgtype != "anonymous") {
+        r = this.parseReharsalMark(null, s); // "[" shall be already consumed.
 
-          rgName = r.reharsalMarkName;
-          s = r.s;
-        }
-
-        var rg = new _common_common__WEBPACK_IMPORTED_MODULE_1__["ReharsalGroup"](rgName, rgtype == "inline");
-        if (rgtype != "anonymous") rg.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["TemplateString"]("[${name}]", rg));
-        this.context.contiguous_line_break = 0;
-        var loop_cnt = 0;
-        var MAX_LOOP = 1000; // eslint-disable-next-line no-constant-condition
-
-        while (true) {
-          r = this.parseBlock(s, rg, latest_variables);
-          rg.appendChild(r.block);
-          s = r.s;
-          ++loop_cnt;
-          if (loop_cnt >= MAX_LOOP) throw "Too much elements or infnite loop detected with unkown reason";
-          if (r.end_of_rg) break;
-        }
-
-        return {
-          rg: rg,
-          s: s
-        };
-      } catch (e) {
-        console.error(e);
-        return null;
+        rgName = r.reharsalMarkName;
+        s = r.s;
       }
+
+      var rg = new _common_common__WEBPACK_IMPORTED_MODULE_1__["ReharsalGroup"](rgName, rgtype == "inline");
+      this.context.contiguous_line_break = 0;
+      var loop_cnt = 0;
+      var MAX_LOOP = 1000; // eslint-disable-next-line no-constant-condition
+
+      while (true) {
+        // If more 2 or more NL is placed, empty block can be generated, in that case ignore it.
+        r = this.parseBlock(s, rg, latest_variables);
+        if (r.block.childNodes.length > 0) rg.appendChild(r.block);
+        s = r.s;
+        ++loop_cnt;
+        if (loop_cnt >= MAX_LOOP) throw "Too much elements or infnite loop detected with unkown reason";
+        if (r.end_of_rg) break;
+      } // Empty reharsal group is not permitted as of now.
+
+
+      if (rg.find(function (e) {
+        return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Measure"];
+      }, true).length == 0) throw "Empty reharsal group is not allowed";
+      return {
+        rg: rg,
+        s: s
+      };
     }
     /**
      * Parse the fumen markdown code
@@ -15013,34 +15587,32 @@ var Parser = /*#__PURE__*/function () {
 
         while (true) {
           r = this.nextToken(code);
-          if (r.sss.length > 0) track.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.sss));
 
           if (r.type == TOKEN_END) {
             break;
           } else if (r.type == TOKEN_NL) {
             this.context.line += 1;
             this.context.contiguous_line_break += 1;
-            track.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
           } else if (r.type == TOKEN_BACK_SLASH) {
             // Expect TOKEN_NL 
-            track.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token));
+            //track.appendChild(new common.RawSpaces(r.token)); 
             r = this.nextToken(r.s);
             if (r.type != TOKEN_NL) this.onParseError("INVALID CODE DETECTED AFTER BACK SLASH");
-            this.context.line += 1;
-            track.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.sss));
-            track.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__["RawSpaces"](r.token)); // Does not count as line break
+            this.context.line += 1; //track.appendChild(new common.RawSpaces(r.sss));
+            //track.appendChild(new common.RawSpaces(r.token)); 
+            // Does not count as line break
           } else if (r.type == TOKEN_BRACKET_LS) {
-            var rgs = track.childElements.filter(function (e) {
+            var rgs = track.childNodes.filter(function (e) {
               return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["ReharsalGroup"];
             });
             var inline = this.context.contiguous_line_break <= 1 && rgs.length > 0 && // 1st RG is always non-inline
-            rgs[rgs.length - 1].childElements.filter(function (e) {
+            rgs[rgs.length - 1].childNodes.filter(function (e) {
               return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Block"];
             }).length > 0; // previous reharsal group has at least one block(measure)
 
             r = this.parseReharsalGroup(r.s, inline ? "inline" : "normal");
             track.appendChild(r.rg); //this.context.contiguous_line_break = 0;
-          } else if ([TOKEN_MB, TOKEN_MB_DBL, TOKEN_MB_LOOP_BEGIN, TOKEN_MB_LOOP_BOTH, TOKEN_MB_FIN, TOKEN_MB_DBL_SIMILE, TOKEN_BRACKET_RA, TOKEN_BRACKET_LA].indexOf(r.type) >= 0) {
+          } else if ([TOKEN_MB, TOKEN_MB_DBL, TOKEN_MB_LOOP_BEGIN, TOKEN_MB_LOOP_END, TOKEN_MB_LOOP_BOTH, TOKEN_MB_FIN, TOKEN_MB_DBL_SIMILE, TOKEN_BRACKET_RA, TOKEN_BRACKET_LA].indexOf(r.type) >= 0) {
             // Measure appears directly withou reharsal group mark.
             // If not reharsal mark is defined and the measure is directly specified, 
             // then default anonymous reharsal mark is generated.
@@ -15049,11 +15621,12 @@ var Parser = /*#__PURE__*/function () {
             track.appendChild(r.rg);
           } else if (r.type == TOKEN_PERCENT) {
             // Expression
-            r = this.parseVariable(r.s);
-            var variable = track.setVariable(r.key, r.value); // Auto generate object
+            r = this.parseVariable(r.s); // last NL will not be consumed.
 
+            var variable = new _common_common__WEBPACK_IMPORTED_MODULE_1__["Variable"](r.key, r.value);
             track.appendChild(variable);
-            this.context.contiguous_line_break -= 1; // Does not reset to 0, but cancell the new line in the same row as this variable
+            track.setVariable(variable);
+            this.context.contiguous_line_break = 0; // Does not reset to 0, but cancell the new line in the same row as this variable
           } else {
             console.log(r.token);
             this.onParseError("ERROR_WHILE_PARSE_MOST_OUTSIDER");
@@ -15953,11 +16526,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
             if (max_widened > min_narrowed) {
               // Cannot not meet requirement for all elements, end up with alpha = 0.0 : Do nothing
-              alpha = 0.0;
-              console.log("Inner vertical alignment : not all meets requirement : alpha = " + alpha.toFixed(2));
+              alpha = 0.0; //console.log("Inner vertical alignment : not all meets requirement : alpha = " + alpha.toFixed(2));
             } else {
-              alpha = Math.max(0, Math.min(min_narrowed, 1));
-              console.log("Inner vertical alignment : all meets requirement : alpha = " + alpha.toFixed(2));
+              alpha = Math.max(0, Math.min(min_narrowed, 1)); //console.log("Inner vertical alignment : all meets requirement : alpha = " + alpha.toFixed(2));
             }
 
             for (var _l2 = 0; _l2 < L; ++_l2) {
@@ -16029,7 +16600,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       var _render_impl = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(track) {
         var _this4 = this;
 
-        var show_footer, origin, x_offset, width, music_context, meas_row_list, accum_block_id, meas_row, meas_row_rg_ids, meas_row_block_ids, reharsal_groups, i, rg, blocks, bi, block_measures, ml, m, meas_row_list_inv, _loop4, _i2, _i3, _rg, _blocks, _bi, _block_measures, _ml, _m, y_stacks, next_reharsal_group_index, yse, y_base_screening, headerHeight, dammy_music_context, current_accum_block_id, reharsal_x_width_info, pei, x, row_elements_list, _ml2, _m2, elements, geret, yprof, x_width_info, canvas, score_height, y_base, max_header_height, canvaslist, _pei, _row_elements_list3, ylimit, r, songname, title, artist;
+        var show_footer, origin, x_offset, width, music_context, meas_row_list, accum_block_id, meas_row, meas_row_rg_ids, meas_row_block_ids, reharsal_groups, i, rg, blocks, bi, block_measures, ml, m, meas_row_list_inv, _loop4, _i2, _i3, _rg, _blocks, _bi, _block_measures, _ml, _m, y_stacks, next_reharsal_group_index, yse, y_base_screening, headerHeight, dammy_music_context, current_accum_block_id, reharsal_x_width_info, pei, x, row_elements_list, _ml2, _m2, elements, geret, yprof, x_width_info, canvas, score_height, y_base, max_header_height, headerH, canvaslist, _pei, _row_elements_list3, ylimit, r, rb, songname, title, artist;
 
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
@@ -16065,19 +16636,19 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 meas_row = [];
                 meas_row_rg_ids = [];
                 meas_row_block_ids = [];
-                reharsal_groups = track.childElements.filter(function (e) {
+                reharsal_groups = track.childNodes.filter(function (e) {
                   return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["ReharsalGroup"];
                 });
 
                 if (this.param.row_gen_mode == "default") {
                   for (i = 0; i < reharsal_groups.length; ++i) {
                     rg = reharsal_groups[i];
-                    blocks = rg.childElements.filter(function (e) {
+                    blocks = rg.childNodes.filter(function (e) {
                       return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Block"];
                     });
 
                     for (bi = 0; bi < blocks.length; ++bi) {
-                      block_measures = blocks[bi].childElements.filter(function (e) {
+                      block_measures = blocks[bi].childNodes.filter(function (e) {
                         return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Measure"];
                       });
 
@@ -16149,12 +16720,12 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 } else if (this.param.row_gen_mode == "constant_n_meas") {
                   for (_i3 = 0; _i3 < reharsal_groups.length; ++_i3) {
                     _rg = reharsal_groups[_i3];
-                    _blocks = _rg.childElements.filter(function (e) {
+                    _blocks = _rg.childNodes.filter(function (e) {
                       return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Block"];
                     });
 
                     for (_bi = 0; _bi < _blocks.length; ++_bi) {
-                      _block_measures = _blocks[_bi].childElements.filter(function (e) {
+                      _block_measures = _blocks[_bi].childNodes.filter(function (e) {
                         return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Measure"];
                       });
 
@@ -16362,72 +16933,81 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                   y_base += this.param.y_offset_top;
                 }
 
+                headerH = y_base - origin.y;
+                this.hitManager.add(canvas, new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"](0, origin.y - Math.max(0, 2 - headerH), this.param.paper_width / this.param.text_size, Math.max(2, headerH)), new _common_common__WEBPACK_IMPORTED_MODULE_2__["GenericRow"]("HEADER", null));
                 canvaslist = [canvas];
                 _pei = 0;
 
-              case 58:
+              case 60:
                 if (!(_pei < yse.length)) {
-                  _context.next = 86;
+                  _context.next = 90;
                   break;
                 }
 
                 if (!(yse[_pei].type == "titles")) {
-                  _context.next = 62;
+                  _context.next = 64;
                   break;
                 }
 
-                _context.next = 83;
+                _context.next = 87;
                 break;
 
-              case 62:
+              case 64:
                 if (!(yse[_pei].type == "meas")) {
-                  _context.next = 83;
+                  _context.next = 87;
                   break;
                 }
 
                 _row_elements_list3 = yse[_pei].cont;
                 ylimit = this.canvas_provider != null ? score_height - yse[_pei].param.y_offset_bottom - (show_footer ? yse[_pei].param.y_footer_offset : 0) : null;
-                r = this.render_measure_row_simplified(track, x_offset, canvas, _row_elements_list3, yse[_pei].pm, yse[_pei].nm, y_base, yse[_pei].param, true, yse[_pei].cont[0].getVariable("REHARSAL_MARK_POSITION") == "Inner", ylimit, music_context);
+                r = this.render_measure_row_simplified(track, x_offset, canvas, _row_elements_list3, yse[_pei].pm, yse[_pei].nm, y_base, yse[_pei].param, yse[_pei].cont[0].getVariable("REHARSAL_MARK_POSITION") == "Inner", ylimit, music_context);
 
                 if (r) {
-                  _context.next = 82;
+                  _context.next = 84;
                   break;
                 }
 
                 if (!(y_base == origin.y + yse[_pei].param.y_offset_top)) {
-                  _context.next = 71;
+                  _context.next = 73;
                   break;
                 }
 
                 throw "Paper height is too short to fit in single row";
 
-              case 71:
+              case 73:
                 y_base = origin.y + yse[_pei].param.y_offset_top;
 
-              case 72:
+              case 74:
                 this.hitManager.commit(canvas);
-                _context.next = 75;
+                _context.next = 77;
                 return this.canvas_provider();
 
-              case 75:
+              case 77:
                 canvas = _context.sent;
                 canvaslist.push(canvas);
                 _graphic__WEBPACK_IMPORTED_MODULE_3__["SetupHiDPICanvas"](canvas, yse[_pei].param.paper_width / this.param.text_size, yse[_pei].param.paper_height / this.param.text_size, this.param.pixel_ratio, this.param.text_size);
                 if (this.param.background_color) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasRect"](canvas, 0, 0, this.param.paper_width / this.param.text_size, this.param.paper_height / this.param.text_size, this.param.background_color); // try again next page
 
                 _pei = _pei - 1;
-                _context.next = 83;
+                _context.next = 87;
                 break;
 
-              case 82:
+              case 84:
+                if (r.rm_detected) {
+                  rb = [_row_elements_list3[0], _row_elements_list3[_row_elements_list3.length - 1]];
+                  if (_row_elements_list3[0].renderprop.rg_from_here) rb[0] = _row_elements_list3[0].renderprop.rg_from_here;
+                  this.hitManager.add(canvas, new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"](0, y_base, this.param.paper_width / this.param.text_size, r.mu_y - y_base), new _common_common__WEBPACK_IMPORTED_MODULE_2__["GenericRow"]("RM", rb));
+                }
+
+                this.hitManager.add(canvas, new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"](0, r.mu_y, this.param.paper_width / this.param.text_size, r.y_base - r.mu_y), new _common_common__WEBPACK_IMPORTED_MODULE_2__["GenericRow"]("BODY", [_row_elements_list3[0], _row_elements_list3[_row_elements_list3.length - 1]]));
                 y_base = r.y_base;
 
-              case 83:
+              case 87:
                 ++_pei;
-                _context.next = 58;
+                _context.next = 60;
                 break;
 
-              case 86:
+              case 90:
                 if (show_footer) {
                   songname = null;
                   title = track.getVariable("TITLE");
@@ -16447,7 +17027,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                   height: score_height
                 });
 
-              case 89:
+              case 93:
               case "end":
                 return _context.stop();
             }
@@ -16519,8 +17099,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         if (m.renderprop && m.renderprop.rg_from_here && m.renderprop.rg_from_here.name != "") // Anonymous reharsal group is not rendered
           rg_mark_detected = true;
 
-        for (var ei = 0; ei < m.childElements.length; ++ei) {
-          var e = m.childElements[ei];
+        for (var ei = 0; ei < m.childNodes.length; ++ei) {
+          var e = m.childNodes[ei];
 
           if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Coda"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Segno"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Comment"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["LoopIndicator"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["ToCoda"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DalSegno"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DaCapo"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Fine"]) {
             yprof.mu.detected = true;
@@ -16528,9 +17108,17 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             yprof.ml.detected = yprof.ml.detected || e.times != null && (e.ntimes || e.times != 2);
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Chord"]) {
             yprof.rs.detected |= e.note_group_list !== null;
+
+            if (e.lyric) {
+              yprof.ml.detected = true;
+              lyric_rows = Math.max(e.lyric.lyric.split("/").length, lyric_rows);
+            }
+
+            if (e.exceptinal_comment) {
+              yprof.mu.detected = true;
+            }
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Lyric"]) {
-            yprof.ml.detected = true;
-            lyric_rows = Math.max(e.lyric.split("/").length, lyric_rows);
+            throw "Illegal parsing";
           }
         }
       }
@@ -16597,7 +17185,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         elements.header.forEach(function (e) {
           if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["MeasureBoundary"]) {
             var pm = ml == 0 ? prev_measure : row_elements_list[ml - 1];
-            var ne = pm ? pm.childElements[pm.childElements.length - 1] : null;
+            var ne = pm ? pm.childNodes[pm.childNodes.length - 1] : null;
 
             var r = _this5.draw_boundary_simplified("begin", ne, e, ml == 0, //m.raw_new_line,
             paper, x, 0, dammy_rs_area_height, // any value is OK
@@ -16643,7 +17231,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         elements.footer.forEach(function (e) {
           if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["MeasureBoundary"]) {
             var nm = ml == row_elements_list.length - 1 ? next_measure : row_elements_list[ml + 1];
-            var ne = nm ? nm.childElements[0] : null;
+            var ne = nm ? nm.childNodes[0] : null;
 
             var r = _this5.draw_boundary_simplified("end", e, ne, ml == row_elements_list.length - 1, //nm ? nm.raw_new_line : false,
             paper, x, 0, dammy_rs_area_height, dammy_rs_area_height, param, false);
@@ -16999,6 +17587,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
               }
 
               if (draw) {
+                _this6.hitManager.add(paper, new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"](x, yprof.body.y, e.renderprop.w, param.row_height), e);
+
                 x += _elem_width4;
                 unscale(_draw_scale5);
               } else {
@@ -17084,7 +17674,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
     }
   }, {
     key: "render_measure_row_simplified",
-    value: function render_measure_row_simplified(track, x, paper, row_elements_list, prev_measure, next_measure, y_base, param, draw, inner_reharsal_mark, ylimit, music_context) {
+    value: function render_measure_row_simplified(track, x, paper, row_elements_list, prev_measure, next_measure, y_base, param, inner_reharsal_mark, ylimit, music_context) {
       var _this7 = this;
 
       var x_global_scale = track.getVariable("X_GLOBAL_SCALE");
@@ -17099,11 +17689,10 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       var _5lines_intv = param.rs_area_height / (5 - 1);
 
       var yprof = this.screening_y_areas(row_elements_list, y_base, param, show_staff, inner_reharsal_mark);
-      var y_next_base = yprof.end.y;
       var y_body_or_rs_base = yprof.rs.detected ? yprof.rs.y : yprof.body.y;
       var repeat_mark_y_base = yprof.rs.detected ? yprof.rs.y - param.repeat_mark_y_margin : yprof.mu.y + yprof.mu.height; // if ylimit is specified, and drawing region surpass that limit, do not render
 
-      if (ylimit !== null && y_next_base > ylimit) {
+      if (ylimit !== null && yprof.end.y > ylimit) {
         return null;
       }
 
@@ -17135,7 +17724,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         if (m.renderprop && m.renderprop.rg_from_here && m.renderprop.rg_from_here.name != "") {
           var reharsal_group = m.renderprop.rg_from_here;
           var r = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasTextWithBox"](paper, meas_base_x, inner_reharsal_mark ? yprof.mu.y : yprof.rm.y, reharsal_group.name, param.reharsal_mark_font_size, 2, _graphic__WEBPACK_IMPORTED_MODULE_3__["GetCharProfile"](param.reharsal_mark_font_size, null, paper.ratio, paper.zoom).height);
-          if (draw) _this7.hitManager.add(paper, r.bb, reharsal_group);
+
+          _this7.hitManager.add(paper, r.bb, reharsal_group);
+
           if (inner_reharsal_mark) mh_offset += r.bb.width() + 2;
         }
 
@@ -17164,10 +17755,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
               _this7.hitManager.add(paper, _r7.bb, e);
             }
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Lyric"]) {
-            if (draw) {
-              // If this comment is associated with a chord with exceptional comment, not rendered here.
-              if (!e.chorddep) {// Currently lyrics are only rendered for chord dependency case
-              }
+            // If this comment is associated with a chord with exceptional comment, not rendered here.
+            if (!e.chorddep) {// Currently lyrics are only rendered for chord dependency case
             }
           }
         } // Header loop
@@ -17180,7 +17769,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         elements.header.forEach(function (e) {
           if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["MeasureBoundary"]) {
             var pm = ml == 0 ? prev_measure : row_elements_list[ml - 1];
-            var ne = pm ? pm.childElements[pm.childElements.length - 1] : null;
+            var ne = pm ? pm.childNodes[pm.childNodes.length - 1] : null;
 
             var _r8 = _this7.draw_boundary_simplified("begin", ne, e, ml == 0, //m.raw_new_line,
             paper, x, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, param, true);
@@ -17222,7 +17811,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
           if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["MeasureBoundary"]) {
             nm = ml == row_elements_list.length - 1 ? next_measure : row_elements_list[ml + 1];
-            ne = nm ? nm.childElements[0] : null;
+            ne = nm ? nm.childNodes[0] : null;
 
             var _r9 = _this7.draw_boundary_simplified("end", _e2, ne, ml == row_elements_list.length - 1, //nm ? nm.raw_new_line : false,
             paper, x, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, param, true);
@@ -17269,19 +17858,22 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           var _e3 = elements.measure_wide[_ei2];
 
           if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["LoopIndicator"]) {
+            var bb = new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"]();
             oy = 12;
             ly = yprof.body.y - 2 - oy;
             sx = meas_start_x_actual_boundary;
             fx = meas_start_x + (meas_end_x - meas_start_x) * 0.7;
             _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, sx, ly, sx, ly + oy);
             _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, sx, ly, fx, ly);
+            bb.add(sx, ly + oy);
+            bb.add(fx, ly);
             s = _e3.indstr;
 
             var _r14 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, sx + 2, ly + oy / 2, s, param.base_font_size / 3, "lm", null, null, {
               font: param.repeat_mark_font
             });
 
-            if (draw) _this7.hitManager.add(paper, _r14.bb, _e3);
+            _this7.hitManager.add(paper, bb.add_BB(_r14.bb), _e3);
           } else if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["LongRest"]) {
             var height = yprof.rs.detected ? param.rs_area_height : param.row_height;
 
@@ -17301,29 +17893,33 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             lx = _sx + lrmargin;
             rx = _fx - lrmargin;
 
-            if (draw) {
-              var bb = new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"]();
+            var _bb = new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"]();
 
-              var _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, lx, y_body_or_rs_base + height / 2 + yshift, rx, y_body_or_rs_base + height / 2 + yshift, {
-                width: height / 5
-              });
+            var _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, lx, y_body_or_rs_base + height / 2 + yshift, rx, y_body_or_rs_base + height / 2 + yshift, {
+              width: height / 5
+            });
 
-              bb.add_BB(_r15.bb);
-              _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, lx, y_body_or_rs_base + rh * vlmargin + yshift, lx, y_body_or_rs_base + rh - rh * vlmargin + yshift, {
-                width: "1"
-              });
-              bb.add_BB(_r15.bb);
-              _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, rx, y_body_or_rs_base + rh * vlmargin + yshift, rx, y_body_or_rs_base + rh - rh * vlmargin + yshift, {
-                width: "1"
-              });
-              bb.add_BB(_r15.bb);
-              _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, (_sx + _fx) / 2, y_body_or_rs_base, _e3.longrestlen, param.base_font_size / 2, "ct", undefined, !draw, {
-                font: param.repeat_mark_font
-              });
-              bb.add_BB(_r15.bb);
+            _bb.add_BB(_r15.bb);
 
-              _this7.hitManager.add(paper, bb, _e3);
-            } //rest_or_long_rests_detected |= true;
+            _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, lx, y_body_or_rs_base + rh * vlmargin + yshift, lx, y_body_or_rs_base + rh - rh * vlmargin + yshift, {
+              width: "1"
+            });
+
+            _bb.add_BB(_r15.bb);
+
+            _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasLine"](paper, rx, y_body_or_rs_base + rh * vlmargin + yshift, rx, y_body_or_rs_base + rh - rh * vlmargin + yshift, {
+              width: "1"
+            });
+
+            _bb.add_BB(_r15.bb);
+
+            _r15 = _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](paper, (_sx + _fx) / 2, y_body_or_rs_base, _e3.longrestlen, param.base_font_size / 2, "ct", undefined, false, {
+              font: param.repeat_mark_font
+            });
+
+            _bb.add_BB(_r15.bb);
+
+            _this7.hitManager.add(paper, _bb, _e3); //rest_or_long_rests_detected |= true;
 
           } else if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Simile"]) {
             // Simile mark in measure wide element if there is no other body elements in this measure
@@ -17332,9 +17928,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
             var _fx2 = meas_end_x - footer_width;
 
-            var _r16 = _this7.render_simile_mark_plain(draw, paper, (_sx2 + _fx2) / 2, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, _e3.numslash, false, "c");
+            var _r16 = _this7.render_simile_mark_plain(true, paper, (_sx2 + _fx2) / 2, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, _e3.numslash, false, "c");
 
-            if (draw) _this7.hitManager.add(paper, _r16.bb, _e3);
+            _this7.hitManager.add(paper, _r16.bb, _e3);
           } else {
             throw "Unkown measure wide instance detected";
           }
@@ -17342,6 +17938,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
         m.renderprop.meas_end_x = meas_end_x;
         m.renderprop.meas_start_x = meas_start_x;
+
+        _this7.hitManager.add(paper, new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"](meas_start_x, y_base, meas_end_x - meas_start_x, yprof.end.y - y_base), m);
       };
 
       for (var ml = 0; ml < row_elements_list.length; ++ml) {
@@ -17371,7 +17969,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       // 0. Draw 5 lines
 
 
-      if (draw && yprof.rs.detected) {
+      if (yprof.rs.detected) {
         var start_x = row_elements_list[0].renderprop.meas_start_x;
         var end_x = row_elements_list[row_elements_list.length - 1].renderprop.meas_end_x - 1; // -1 as meas_end_x point to the next point of end of boundary(= Normally total_width - x_margin)
 
@@ -17386,7 +17984,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
 
       return {
-        y_base: y_next_base
+        rm_detected: yprof.rm.detected,
+        mu_y: yprof.mu.y,
+        y_base: yprof.end.y
       };
     }
   }, {
@@ -19396,20 +19996,8 @@ var Renderer = /*#__PURE__*/function () {
   }, {
     key: "get_boundary_sign",
     value: function get_boundary_sign(e) {
-      if (e === null) return "n";else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundaryMark"]) {
-        if (e.nline == 1) return "s";else if (e.nline == 2) return "d";
-      } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopBeginMark"]) {
-        return "b";
-      } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopEndMark"]) {
-        return "e";
-      } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["LoopBothMark"]) {
-        return "B";
-      } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundaryFinMark"]) {
-        return "f";
-      } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["MeasureBoundaryDblSimile"]) {
-        return "r";
-      }
-      throw "Invalid boundary object";
+      if (e === null) return "n";
+      return e.typestr;
     }
   }, {
     key: "boundary_type_without_line_break",
@@ -19488,7 +20076,7 @@ var Renderer = /*#__PURE__*/function () {
       var simile_body_idx = new Array();
       var simile_measure_wide_idx = new Array();
       var simile_objs = new Array();
-      var musical_elements = m.childElements;
+      var musical_elements = m.childNodes;
 
       for (var ei = 0; ei < musical_elements.length; ++ei) {
         var e = musical_elements[ei];
@@ -19941,7 +20529,7 @@ var Renderer = /*#__PURE__*/function () {
         }
       } else if (balken_element.type == "space") {
         // Do not use expand here in case only one space is grouped in balken group
-        bounding_box.add(x, rs_y_base, 0.5 * param.base_font_size, 0);
+        bounding_box.add(x, rs_y_base, 0.5 * param.base_font_size, row_height);
       } else if (balken_element.type == "simile") {
         alert("Impleetaion not ready for siile in RS area");
       } // Apply minimum room for RS area elements

@@ -3,6 +3,38 @@
 ## Fumen
 
 * [Fumen](#module_Fumen)
+    * [.Node](#module_Fumen.Node)
+    * [.Element](#module_Fumen.Element) ⇐ <code>Node</code>
+    * [.Track](#module_Fumen.Track) ⇐ <code>Element</code>
+    * [.ReharsalGroup](#module_Fumen.ReharsalGroup) ⇐ <code>Element</code>
+    * [.Block](#module_Fumen.Block) ⇐ <code>Element</code>
+    * [.Measure](#module_Fumen.Measure) ⇐ <code>Element</code>
+    * [.Rest](#module_Fumen.Rest) ⇐ <code>Element</code>
+    * [.Simile](#module_Fumen.Simile) ⇐ <code>Element</code>
+    * [.Chord](#module_Fumen.Chord) ⇐ <code>Element</code>
+        * [.chordMidSerialize(p, callback)](#module_Fumen.Chord.chordMidSerialize)
+    * [.LoopIndicator](#module_Fumen.LoopIndicator) ⇐ <code>Element</code>
+    * [.Space](#module_Fumen.Space) ⇐ <code>Element</code>
+    * [.LongRest](#module_Fumen.LongRest) ⇐ <code>Element</code>
+    * [.Time](#module_Fumen.Time) ⇐ <code>Element</code>
+    * [.MeasureBoundary](#module_Fumen.MeasureBoundary) ⇐ <code>Element</code>
+    * [.MeasureBoundaryMark](#module_Fumen.MeasureBoundaryMark) ⇐ <code>MeasureBoundary</code>
+    * [.LoopBeginMark](#module_Fumen.LoopBeginMark) ⇐ <code>MeasureBoundary</code>
+    * [.LoopEndMark](#module_Fumen.LoopEndMark) ⇐ <code>MeasureBoundary</code>
+    * [.LoopBothMark](#module_Fumen.LoopBothMark) ⇐ <code>MeasureBoundary</code>
+    * [.MeasureBoundaryFinMark](#module_Fumen.MeasureBoundaryFinMark) ⇐ <code>MeasureBoundary</code>
+    * [.MeasureBoundaryDblSimile](#module_Fumen.MeasureBoundaryDblSimile) ⇐ <code>MeasureBoundary</code>
+    * [.DaCapo](#module_Fumen.DaCapo) ⇐ <code>Element</code>
+    * [.DalSegno](#module_Fumen.DalSegno) ⇐ <code>Element</code>
+    * [.Segno](#module_Fumen.Segno) ⇐ <code>Element</code>
+    * [.Coda](#module_Fumen.Coda) ⇐ <code>Element</code>
+    * [.ToCoda](#module_Fumen.ToCoda) ⇐ <code>Element</code>
+    * [.Fine](#module_Fumen.Fine) ⇐ <code>Element</code>
+    * [.Comment](#module_Fumen.Comment) ⇐ <code>Element</code>
+    * [.Lyric](#module_Fumen.Lyric) ⇐ <code>Element</code>
+    * [.Variable](#module_Fumen.Variable) ⇐ <code>Node</code>
+    * [.VirtualElement](#module_Fumen.VirtualElement)
+    * [.GenericRow](#module_Fumen.GenericRow) ⇐ <code>VirtualElement</code>
     * [.Parser](#module_Fumen.Parser)
         * [new Parser()](#new_module_Fumen.Parser_new)
         * [.parse(code)](#module_Fumen.Parser+parse)
@@ -10,6 +42,234 @@
         * [new DefaultRenderer(canvas, param)](#new_module_Fumen.DefaultRenderer_new)
         * [.render(track)](#module_Fumen.DefaultRenderer+render)
 
+<a name="module_Fumen.Node"></a>
+
+### Fumen.Node
+Abstract base class represetns the fumen code tree
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+<a name="module_Fumen.Element"></a>
+
+### Fumen.Element ⇐ <code>Node</code>
+Abstract class represents musical elements
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>Node</code>  
+<a name="module_Fumen.Track"></a>
+
+### Fumen.Track ⇐ <code>Element</code>
+A class represents a track
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>Element</code>  
+<a name="module_Fumen.ReharsalGroup"></a>
+
+### Fumen.ReharsalGroup ⇐ <code>Element</code>
+A class represents a reharsal group
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>Element</code>  
+<a name="module_Fumen.Block"></a>
+
+### Fumen.Block ⇐ <code>Element</code>
+A class represents a block
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>Element</code>  
+<a name="module_Fumen.Measure"></a>
+
+### Fumen.Measure ⇐ <code>Element</code>
+A class represents a measure
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>Element</code>  
+<a name="module_Fumen.Rest"></a>
+
+### Fumen.Rest ⇐ <code>Element</code>
+A class represents a rest
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>Element</code>  
+<a name="module_Fumen.Simile"></a>
+
+### Fumen.Simile ⇐ <code>Element</code>
+A class represents a simile mark
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>Element</code>  
+<a name="module_Fumen.Chord"></a>
+
+### Fumen.Chord ⇐ <code>Element</code>
+A class represents a chord
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>Element</code>  
+<a name="module_Fumen.Chord.chordMidSerialize"></a>
+
+#### Chord.chordMidSerialize(p, callback)
+Convert the data structure (chord mids) to flat list and code string.
+
+**Kind**: static method of [<code>Chord</code>](#module_Fumen.Chord)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| p | <code>\*</code> | Data structure of chord mids. |
+| callback | <code>\*</code> | callback called for each leaf element. (Called synchrnously) |
+
+<a name="module_Fumen.LoopIndicator"></a>
+
+### Fumen.LoopIndicator ⇐ <code>Element</code>
+A class represents a loop indicator
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>Element</code>  
+<a name="module_Fumen.Space"></a>
+
+### Fumen.Space ⇐ <code>Element</code>
+A class represents a space
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>Element</code>  
+<a name="module_Fumen.LongRest"></a>
+
+### Fumen.LongRest ⇐ <code>Element</code>
+A class represents a long rest
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>Element</code>  
+<a name="module_Fumen.Time"></a>
+
+### Fumen.Time ⇐ <code>Element</code>
+A class represents a time signature
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>Element</code>  
+<a name="module_Fumen.MeasureBoundary"></a>
+
+### Fumen.MeasureBoundary ⇐ <code>Element</code>
+Abstract class represents a measure boundary
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>Element</code>  
+<a name="module_Fumen.MeasureBoundaryMark"></a>
+
+### Fumen.MeasureBoundaryMark ⇐ <code>MeasureBoundary</code>
+Class represents a measure boundary with signle or double line
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>MeasureBoundary</code>  
+<a name="module_Fumen.LoopBeginMark"></a>
+
+### Fumen.LoopBeginMark ⇐ <code>MeasureBoundary</code>
+Class represents a measure boundary at the beginning of loop
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>MeasureBoundary</code>  
+<a name="module_Fumen.LoopEndMark"></a>
+
+### Fumen.LoopEndMark ⇐ <code>MeasureBoundary</code>
+Class represents a measure boundary at the end of loop
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>MeasureBoundary</code>  
+<a name="module_Fumen.LoopBothMark"></a>
+
+### Fumen.LoopBothMark ⇐ <code>MeasureBoundary</code>
+Class represents a measure boundary at the end and beginning of loop
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>MeasureBoundary</code>  
+<a name="module_Fumen.MeasureBoundaryFinMark"></a>
+
+### Fumen.MeasureBoundaryFinMark ⇐ <code>MeasureBoundary</code>
+Class represents a measure boundary at the end of a piece
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>MeasureBoundary</code>  
+<a name="module_Fumen.MeasureBoundaryDblSimile"></a>
+
+### Fumen.MeasureBoundaryDblSimile ⇐ <code>MeasureBoundary</code>
+Class represents a measure boundary with double simile mark over it
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>MeasureBoundary</code>  
+<a name="module_Fumen.DaCapo"></a>
+
+### Fumen.DaCapo ⇐ <code>Element</code>
+Class represents a DaCapo mark
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>Element</code>  
+<a name="module_Fumen.DalSegno"></a>
+
+### Fumen.DalSegno ⇐ <code>Element</code>
+Class represents a DalSegno mark
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>Element</code>  
+<a name="module_Fumen.Segno"></a>
+
+### Fumen.Segno ⇐ <code>Element</code>
+Class represents a Segno mark
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>Element</code>  
+<a name="module_Fumen.Coda"></a>
+
+### Fumen.Coda ⇐ <code>Element</code>
+Class represents a Coda mark
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>Element</code>  
+<a name="module_Fumen.ToCoda"></a>
+
+### Fumen.ToCoda ⇐ <code>Element</code>
+Class represents a To Coda mark
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>Element</code>  
+<a name="module_Fumen.Fine"></a>
+
+### Fumen.Fine ⇐ <code>Element</code>
+Class represents a Fine mark
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>Element</code>  
+<a name="module_Fumen.Comment"></a>
+
+### Fumen.Comment ⇐ <code>Element</code>
+Class represents a Comment
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>Element</code>  
+<a name="module_Fumen.Lyric"></a>
+
+### Fumen.Lyric ⇐ <code>Element</code>
+Class represents a lyric
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>Element</code>  
+<a name="module_Fumen.Variable"></a>
+
+### Fumen.Variable ⇐ <code>Node</code>
+Class represents a Variable. Not always shown in the rendered image (up to renderer implementation)
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>Node</code>  
+<a name="module_Fumen.VirtualElement"></a>
+
+### Fumen.VirtualElement
+Virtual/Abstract element used for GUI based editting. Not appears explicitly in the original code nor in rendered image.
+Only used in HitManager
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+<a name="module_Fumen.GenericRow"></a>
+
+### Fumen.GenericRow ⇐ <code>VirtualElement</code>
+Class represents the concept of row in the renderer. How to use this is up to renderer.
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>VirtualElement</code>  
 <a name="module_Fumen.Parser"></a>
 
 ### Fumen.Parser

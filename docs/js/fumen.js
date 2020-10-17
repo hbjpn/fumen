@@ -11707,7 +11707,7 @@ module.exports = function (module) {
 /*!******************************!*\
   !*** ./src/common/common.js ***!
   \******************************/
-/*! exports provided: shallowcopy, deepcopy, myLog2, charIsIn, charStartsWithAmong, WHOLE_NOTE_LENGTH, Node, Element, Track, ReharsalGroup, Block, Measure, Rest, Simile, Chord, LoopIndicator, Space, LongRest, Time, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, DaCapo, DalSegno, Segno, Coda, ToCoda, Fine, Comment, Lyric, Title, SubTitle, Artist, Variable, VirtualElement, GenericRow, HitManager */
+/*! exports provided: shallowcopy, deepcopy, myLog2, charIsIn, charStartsWithAmong, findLastIndex, WHOLE_NOTE_LENGTH, Node, Element, Track, ReharsalGroup, Block, Measure, Rest, Simile, Chord, LoopIndicator, Space, LongRest, Time, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, DaCapo, DalSegno, Segno, Coda, ToCoda, Fine, Comment, Lyric, Title, SubTitle, Artist, Variable, VirtualElement, GenericRow, HitManager */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11717,6 +11717,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "myLog2", function() { return myLog2; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "charIsIn", function() { return charIsIn; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "charStartsWithAmong", function() { return charStartsWithAmong; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "findLastIndex", function() { return findLastIndex; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WHOLE_NOTE_LENGTH", function() { return WHOLE_NOTE_LENGTH; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Node", function() { return Node; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Element", function() { return Element; });
@@ -11807,7 +11808,8 @@ var VARIABLE_DEFAULT = {
   "TRANSPOSE": 0,
   "KEY": "C",
   "KEY_TYPE": "AUTO"
-};
+}; // Utilities
+
 function shallowcopy(obj) {
   return Object.assign({}, obj);
 }
@@ -11847,6 +11849,15 @@ function charStartsWithAmong(s, strlist) {
   }
 
   return null;
+}
+function findLastIndex(array, predicate) {
+  var l = array.length;
+
+  while (l--) {
+    if (predicate(array[l], l, array)) return l;
+  }
+
+  return -1;
 } //
 // Parser
 //
@@ -20631,7 +20642,7 @@ var Renderer = /*#__PURE__*/function () {
 
             cnt_y += 1;
           }
-        } else {// Does not affecct flag direction
+        } else {// Does not affecct flag direction  
         }
       }
 
@@ -20771,17 +20782,25 @@ var Renderer = /*#__PURE__*/function () {
         return {
           x: x
         };
-      }
+      } // Slope and intercepts are calucated for the first and last Chord element. Space is skipped.
 
+
+      var first_chord_idx = balken.groups.findIndex(function (g) {
+        return g.e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Chord"];
+      });
+      var last_chord_idx = _common_common__WEBPACK_IMPORTED_MODULE_1__["findLastIndex"](balken.groups, function (g) {
+        return g.e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Chord"];
+      });
+      var bridge_balken = first_chord_idx >= 0 && first_chord_idx != last_chord_idx;
       var x_at_min_y = balken.groups[gbi_at_min_y].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
       var x_at_max_y = balken.groups[gbi_at_max_y].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
-      var ps_y = balken.groups[0].balken_element.notes_coord.y;
-      var ps_bar_x = balken.groups[0].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
-      var pe_y = balken.groups[balken.groups.length - 1].balken_element.notes_coord.y;
-      var pe_bar_x = balken.groups[balken.groups.length - 1].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
       var slope = 0;
 
-      if (balken.groups.length >= 2) {
+      if (bridge_balken) {
+        var ps_y = balken.groups[first_chord_idx].balken_element.notes_coord.y;
+        var ps_bar_x = balken.groups[first_chord_idx].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
+        var pe_y = balken.groups[last_chord_idx].balken_element.notes_coord.y;
+        var pe_bar_x = balken.groups[last_chord_idx].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
         var delta_y = upper_flag ? Math.min.apply(null, pe_y) - Math.min.apply(null, ps_y) : Math.max.apply(null, pe_y) - Math.max.apply(null, ps_y);
         slope = delta_y / (pe_bar_x - ps_bar_x);
       } else {
@@ -20821,11 +20840,11 @@ var Renderer = /*#__PURE__*/function () {
       // 5. Draw balkens
 
 
-      if (balken.groups.length >= 2) {
+      if (bridge_balken) {
         // Inter-element balkens, no scaling apply (even for single balken)
         // Draw flag for balken
         // Common balken
-        if (balken.groups[0].balken_element.note_value >= 8) {
+        if (balken.groups[first_chord_idx].balken_element.note_value >= 8) {
           _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasLine"](paper, ps_bar_x, slope * ps_bar_x + intercept, pe_bar_x, slope * pe_bar_x + intercept, {
             width: param.balken_width
           });
@@ -20884,7 +20903,7 @@ var Renderer = /*#__PURE__*/function () {
             }
           }
         }
-      } else if (balken.groups.length == 1 && (balken.groups[0].balken_element.type == "slash" || balken.groups[0].balken_element.type == "notes")) {
+      } else if (balken.groups[0].balken_element.type == "slash" || balken.groups[0].balken_element.type == "notes") {
         // This is sigle flag/balken, then scaling apply. This is the only case we apply the scaling
         var this_elem_draw_scale = balken.groups[0].org_draw_scale; // Normal drawing of flags
 
@@ -20910,6 +20929,7 @@ var Renderer = /*#__PURE__*/function () {
           null, "l" + (upper_flag ? "t" : "b"));
           paper.getContext("2d").scale(1.0 / this_elem_draw_scale, 1.0);
         }
+      } else {// Space come in here
       }
 
       return {

@@ -239,7 +239,7 @@ export class Track extends Element {
         let rgcnt = 0;
         let code = "";
         this.childNodes.forEach(e=>{
-            if(e instanceof ReharsalGroup){
+            if(e instanceof RehearsalGroup){
                 if(rgcnt > 0){
                     code += "\n";
                     if(!e.inline) code += "\n";
@@ -264,10 +264,10 @@ export class Track extends Element {
 }
 
 /**
- * A class represents a reharsal group
+ * A class represents a rehearsal group
  * @extends Element
  */
-export class ReharsalGroup extends Element{
+export class RehearsalGroup extends Element{
     constructor(name, inline=false) {
         super();
         this.name = name;
@@ -290,7 +290,7 @@ export class ReharsalGroup extends Element{
     }
 
     clone(){
-        let n = new ReharsalGroup(this.name, this.inline);
+        let n = new RehearsalGroup(this.name, this.inline);
         this.childNodes.map(c=>{ n.appendChild(c.clone()); });
         return n;
     }
@@ -346,7 +346,7 @@ export class Measure extends Element{
     constructor() {
         super();
 
-        this.raw_new_line = false; // Raw "new line" mark. Maked when this is a second or later measure inside a reharsal group after one ore more new lines in the fumen code
+        this.raw_new_line = false; // Raw "new line" mark. Maked when this is a second or later measure inside a rehearsal group after one ore more new lines in the fumen code
         this.align = "expand"; // expand, left, right
 
         this.renderprop = {}; // Rendering information storage

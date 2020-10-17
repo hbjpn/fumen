@@ -239,7 +239,7 @@ export class Parser {
         return { tokens: tokens, s: s };
     }
 
-    parseReharsalMark(trig_token, s) {
+    parseRehearsalMark(trig_token, s) {
         // prerequisite
         //   trig_token_type = TOKEN_BRACKET_LS, consumed
         // Expects "Word characters"
@@ -252,7 +252,7 @@ export class Parser {
             if (r.type == TOKEN_BRACKET_RS)
                 return { reharsalMarkName: reharsalMarkName, s: r.s };
         }
-        this.onParseError("Invalid reharsal mark");
+        this.onParseError("Invalid rehearsal mark");
     }
 
     parseLoopIndicator(trig_token_type, s) {
@@ -716,7 +716,7 @@ export class Parser {
 
     // This function can be called with screening purpose then 
     // do not change the status unless really the string is consumed.
-    parseBlock(s, currentReharsalGroup, latest_variables){
+    parseBlock(s, currentRehearsalGroup, latest_variables){
         // parase until block boundary is found
         // block boundary = "[" or 2 successive NL or NOL
         try{
@@ -764,7 +764,7 @@ export class Parser {
                     // Right aligh indicoator > which is outside measure
                     current_align = "left";
                 } else if (r.type == TOKEN_BRACKET_LS) {
-                    // Next reharsal mark detected.
+                    // Next rehearsal mark detected.
                     // Do not consume.
                     end_of_rg = true;
                     break;
@@ -827,22 +827,22 @@ export class Parser {
         }
     }
     
-    parseReharsalGroup(s, rgtype)
+    parseRehearsalGroup(s, rgtype)
     {
         // pre-requisite:  
         // - "[" (consumed) (for normal or inline)
         // - boundaries (not consumed) (for anonymous)
         // - "<" or ">" (not consumed) (for anonymous)
         var r = null;
-        var latest_variables = {}; // Do not inherit from previous reharsal group
+        var latest_variables = {}; // Do not inherit from previous rehearsal group
     
         let rgName = "";
         if(rgtype != "anonymous"){
-            r = this.parseReharsalMark(null, s); // "[" shall be already consumed.
+            r = this.parseRehearsalMark(null, s); // "[" shall be already consumed.
             rgName = r.reharsalMarkName;
             s = r.s;
         }
-        let rg = new common.ReharsalGroup(
+        let rg = new common.RehearsalGroup(
             rgName, rgtype=="inline");
         
         this.context.contiguous_line_break = 0;
@@ -860,8 +860,8 @@ export class Parser {
             if (loop_cnt >= MAX_LOOP) throw "Too much elements or infnite loop detected with unkown reason";
             if(r.end_of_rg) break;
         }
-        // Empty reharsal group is not permitted as of now.
-        if(rg.find((e=>e instanceof common.Measure), true).length==0) throw "Empty reharsal group is not allowed";
+        // Empty rehearsal group is not permitted as of now.
+        if(rg.find((e=>e instanceof common.Measure), true).length==0) throw "Empty rehearsal group is not allowed";
         return {rg:rg,s:s};
     }
 
@@ -901,13 +901,13 @@ export class Parser {
                     //track.appendChild(new common.RawSpaces(r.token)); 
                     // Does not count as line break
                 } else if (r.type == TOKEN_BRACKET_LS) {
-                    let rgs = track.childNodes.filter(e => e instanceof common.ReharsalGroup);
+                    let rgs = track.childNodes.filter(e => e instanceof common.RehearsalGroup);
                     let inline = 
                         this.context.contiguous_line_break<=1 &&
                         rgs.length > 0 && // 1st RG is always non-inline
-                        rgs[rgs.length - 1].childNodes.filter(e=>e instanceof common.Block).length > 0; // previous reharsal group has at least one block(measure)
+                        rgs[rgs.length - 1].childNodes.filter(e=>e instanceof common.Block).length > 0; // previous rehearsal group has at least one block(measure)
                 
-                    r = this.parseReharsalGroup(r.s, inline?"inline":"normal");
+                    r = this.parseRehearsalGroup(r.s, inline?"inline":"normal");
                     track.appendChild(r.rg);
                     //this.context.contiguous_line_break = 0;
                 } else if (
@@ -923,11 +923,11 @@ export class Parser {
                         TOKEN_BRACKET_LA
                     ].indexOf(r.type) >= 0
                 ) {
-                    // Measure appears directly withou reharsal group mark.
-                    // If not reharsal mark is defined and the measure is directly specified, 
-                    // then default anonymous reharsal mark is generated.
+                    // Measure appears directly withou rehearsal group mark.
+                    // If not rehearsal mark is defined and the measure is directly specified, 
+                    // then default anonymous rehearsal mark is generated.
                     // For all the variables specified before these symbols are treated as a global variable.
-                    r = this.parseReharsalGroup(code.substr(r.sss.length), "anonymous");
+                    r = this.parseRehearsalGroup(code.substr(r.sss.length), "anonymous");
                     track.appendChild(r.rg);
                     
 

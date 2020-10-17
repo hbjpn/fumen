@@ -11707,7 +11707,7 @@ module.exports = function (module) {
 /*!******************************!*\
   !*** ./src/common/common.js ***!
   \******************************/
-/*! exports provided: shallowcopy, deepcopy, myLog2, charIsIn, charStartsWithAmong, findLastIndex, WHOLE_NOTE_LENGTH, Node, Element, Track, ReharsalGroup, Block, Measure, Rest, Simile, Chord, LoopIndicator, Space, LongRest, Time, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, DaCapo, DalSegno, Segno, Coda, ToCoda, Fine, Comment, Lyric, Title, SubTitle, Artist, Variable, VirtualElement, GenericRow, HitManager */
+/*! exports provided: shallowcopy, deepcopy, myLog2, charIsIn, charStartsWithAmong, findLastIndex, WHOLE_NOTE_LENGTH, Node, Element, Track, RehearsalGroup, Block, Measure, Rest, Simile, Chord, LoopIndicator, Space, LongRest, Time, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, DaCapo, DalSegno, Segno, Coda, ToCoda, Fine, Comment, Lyric, Title, SubTitle, Artist, Variable, VirtualElement, GenericRow, HitManager */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11722,7 +11722,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Node", function() { return Node; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Element", function() { return Element; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Track", function() { return Track; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ReharsalGroup", function() { return ReharsalGroup; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RehearsalGroup", function() { return RehearsalGroup; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Block", function() { return Block; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Measure", function() { return Measure; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Rest", function() { return Rest; });
@@ -12109,7 +12109,7 @@ var Track = /*#__PURE__*/function (_Element) {
       var rgcnt = 0;
       var code = "";
       this.childNodes.forEach(function (e) {
-        if (e instanceof ReharsalGroup) {
+        if (e instanceof RehearsalGroup) {
           if (rgcnt > 0) {
             code += "\n";
             if (!e.inline) code += "\n";
@@ -12140,21 +12140,21 @@ var Track = /*#__PURE__*/function (_Element) {
   return Track;
 }(Element);
 /**
- * A class represents a reharsal group
+ * A class represents a rehearsal group
  * @extends Element
  */
 
-var ReharsalGroup = /*#__PURE__*/function (_Element2) {
-  _inherits(ReharsalGroup, _Element2);
+var RehearsalGroup = /*#__PURE__*/function (_Element2) {
+  _inherits(RehearsalGroup, _Element2);
 
-  var _super3 = _createSuper(ReharsalGroup);
+  var _super3 = _createSuper(RehearsalGroup);
 
-  function ReharsalGroup(name) {
+  function RehearsalGroup(name) {
     var _this2;
 
     var inline = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
-    _classCallCheck(this, ReharsalGroup);
+    _classCallCheck(this, RehearsalGroup);
 
     _this2 = _super3.call(this);
     _this2.name = name;
@@ -12162,7 +12162,7 @@ var ReharsalGroup = /*#__PURE__*/function (_Element2) {
     return _this2;
   }
 
-  _createClass(ReharsalGroup, [{
+  _createClass(RehearsalGroup, [{
     key: "exportCode",
     value: function exportCode() {
       var code = "";
@@ -12182,7 +12182,7 @@ var ReharsalGroup = /*#__PURE__*/function (_Element2) {
   }, {
     key: "clone",
     value: function clone() {
-      var n = new ReharsalGroup(this.name, this.inline);
+      var n = new RehearsalGroup(this.name, this.inline);
       this.childNodes.map(function (c) {
         n.appendChild(c.clone());
       });
@@ -12190,7 +12190,7 @@ var ReharsalGroup = /*#__PURE__*/function (_Element2) {
     }
   }]);
 
-  return ReharsalGroup;
+  return RehearsalGroup;
 }(Element);
 /**
  * A class represents a block
@@ -12268,7 +12268,7 @@ var Measure = /*#__PURE__*/function (_Element4) {
     _classCallCheck(this, Measure);
 
     _this3 = _super5.call(this);
-    _this3.raw_new_line = false; // Raw "new line" mark. Maked when this is a second or later measure inside a reharsal group after one ore more new lines in the fumen code
+    _this3.raw_new_line = false; // Raw "new line" mark. Maked when this is a second or later measure inside a rehearsal group after one ore more new lines in the fumen code
 
     _this3.align = "expand"; // expand, left, right
 
@@ -14514,7 +14514,7 @@ var HitManager = /*#__PURE__*/function () {
 /*!**********************!*\
   !*** ./src/index.js ***!
   \**********************/
-/*! exports provided: Parser, DefaultRenderer, SetupHiDPICanvas, GetCharProfile, CanvasTextWithBox, CanvasText, getFontSizeFromHeight, ReharsalGroup, Block, Measure, Chord, Rest, LongRest, Comment, Lyric, Space, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, LoopIndicator, Time, Coda, Segno, ToCoda, DalSegno, DaCapo, Fine, Simile, Variable, GenericRow */
+/*! exports provided: Parser, DefaultRenderer, SetupHiDPICanvas, GetCharProfile, CanvasTextWithBox, CanvasText, getFontSizeFromHeight, RehearsalGroup, Block, Measure, Chord, Rest, LongRest, Comment, Lyric, Space, MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile, LoopIndicator, Time, Coda, Segno, ToCoda, DalSegno, DaCapo, Fine, Simile, Variable, GenericRow */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -14539,7 +14539,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "getFontSizeFromHeight", function() { return _renderer_graphic__WEBPACK_IMPORTED_MODULE_3__["getFontSizeFromHeight"]; });
 
 /* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./common/common */ "./src/common/common.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ReharsalGroup", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["ReharsalGroup"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "RehearsalGroup", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["RehearsalGroup"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Block", function() { return _common_common__WEBPACK_IMPORTED_MODULE_4__["Block"]; });
 
@@ -14902,8 +14902,8 @@ var Parser = /*#__PURE__*/function () {
       };
     }
   }, {
-    key: "parseReharsalMark",
-    value: function parseReharsalMark(trig_token, s) {
+    key: "parseRehearsalMark",
+    value: function parseRehearsalMark(trig_token, s) {
       // prerequisite
       //   trig_token_type = TOKEN_BRACKET_LS, consumed
       // Expects "Word characters"
@@ -14920,7 +14920,7 @@ var Parser = /*#__PURE__*/function () {
         };
       }
 
-      this.onParseError("Invalid reharsal mark");
+      this.onParseError("Invalid rehearsal mark");
     }
   }, {
     key: "parseLoopIndicator",
@@ -15434,7 +15434,7 @@ var Parser = /*#__PURE__*/function () {
 
   }, {
     key: "parseBlock",
-    value: function parseBlock(s, currentReharsalGroup, latest_variables) {
+    value: function parseBlock(s, currentRehearsalGroup, latest_variables) {
       // parase until block boundary is found
       // block boundary = "[" or 2 successive NL or NOL
       try {
@@ -15478,7 +15478,7 @@ var Parser = /*#__PURE__*/function () {
 
             current_align = "left";
           } else if (r.type == TOKEN_BRACKET_LS) {
-            // Next reharsal mark detected.
+            // Next rehearsal mark detected.
             // Do not consume.
             end_of_rg = true;
             break;
@@ -15535,25 +15535,25 @@ var Parser = /*#__PURE__*/function () {
       }
     }
   }, {
-    key: "parseReharsalGroup",
-    value: function parseReharsalGroup(s, rgtype) {
+    key: "parseRehearsalGroup",
+    value: function parseRehearsalGroup(s, rgtype) {
       // pre-requisite:  
       // - "[" (consumed) (for normal or inline)
       // - boundaries (not consumed) (for anonymous)
       // - "<" or ">" (not consumed) (for anonymous)
       var r = null;
-      var latest_variables = {}; // Do not inherit from previous reharsal group
+      var latest_variables = {}; // Do not inherit from previous rehearsal group
 
       var rgName = "";
 
       if (rgtype != "anonymous") {
-        r = this.parseReharsalMark(null, s); // "[" shall be already consumed.
+        r = this.parseRehearsalMark(null, s); // "[" shall be already consumed.
 
         rgName = r.reharsalMarkName;
         s = r.s;
       }
 
-      var rg = new _common_common__WEBPACK_IMPORTED_MODULE_1__["ReharsalGroup"](rgName, rgtype == "inline");
+      var rg = new _common_common__WEBPACK_IMPORTED_MODULE_1__["RehearsalGroup"](rgName, rgtype == "inline");
       this.context.contiguous_line_break = 0;
       var loop_cnt = 0;
       var MAX_LOOP = 1000; // eslint-disable-next-line no-constant-condition
@@ -15566,12 +15566,12 @@ var Parser = /*#__PURE__*/function () {
         ++loop_cnt;
         if (loop_cnt >= MAX_LOOP) throw "Too much elements or infnite loop detected with unkown reason";
         if (r.end_of_rg) break;
-      } // Empty reharsal group is not permitted as of now.
+      } // Empty rehearsal group is not permitted as of now.
 
 
       if (rg.find(function (e) {
         return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Measure"];
-      }, true).length == 0) throw "Empty reharsal group is not allowed";
+      }, true).length == 0) throw "Empty rehearsal group is not allowed";
       return {
         rg: rg,
         s: s
@@ -15614,21 +15614,21 @@ var Parser = /*#__PURE__*/function () {
             // Does not count as line break
           } else if (r.type == TOKEN_BRACKET_LS) {
             var rgs = track.childNodes.filter(function (e) {
-              return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["ReharsalGroup"];
+              return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["RehearsalGroup"];
             });
             var inline = this.context.contiguous_line_break <= 1 && rgs.length > 0 && // 1st RG is always non-inline
             rgs[rgs.length - 1].childNodes.filter(function (e) {
               return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Block"];
-            }).length > 0; // previous reharsal group has at least one block(measure)
+            }).length > 0; // previous rehearsal group has at least one block(measure)
 
-            r = this.parseReharsalGroup(r.s, inline ? "inline" : "normal");
+            r = this.parseRehearsalGroup(r.s, inline ? "inline" : "normal");
             track.appendChild(r.rg); //this.context.contiguous_line_break = 0;
           } else if ([TOKEN_MB, TOKEN_MB_DBL, TOKEN_MB_LOOP_BEGIN, TOKEN_MB_LOOP_END, TOKEN_MB_LOOP_BOTH, TOKEN_MB_FIN, TOKEN_MB_DBL_SIMILE, TOKEN_BRACKET_RA, TOKEN_BRACKET_LA].indexOf(r.type) >= 0) {
-            // Measure appears directly withou reharsal group mark.
-            // If not reharsal mark is defined and the measure is directly specified, 
-            // then default anonymous reharsal mark is generated.
+            // Measure appears directly withou rehearsal group mark.
+            // If not rehearsal mark is defined and the measure is directly specified, 
+            // then default anonymous rehearsal mark is generated.
             // For all the variables specified before these symbols are treated as a global variable.
-            r = this.parseReharsalGroup(code.substr(r.sss.length), "anonymous");
+            r = this.parseRehearsalGroup(code.substr(r.sss.length), "anonymous");
             track.appendChild(r.rg);
           } else if (r.type == TOKEN_PERCENT) {
             // Expression
@@ -16648,7 +16648,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 meas_row_rg_ids = [];
                 meas_row_block_ids = [];
                 reharsal_groups = track.childNodes.filter(function (e) {
-                  return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["ReharsalGroup"];
+                  return e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["RehearsalGroup"];
                 });
 
                 if (this.param.row_gen_mode == "default") {

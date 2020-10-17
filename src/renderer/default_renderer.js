@@ -898,7 +898,7 @@ export class DefaultRenderer extends Renderer {
         let meas_row_rg_ids = [];
         let meas_row_block_ids = [];
 
-        let reharsal_groups = track.childNodes.filter(e=>e instanceof common.ReharsalGroup);
+        let reharsal_groups = track.childNodes.filter(e=>e instanceof common.RehearsalGroup);
 
         if(this.param.row_gen_mode == "default"){
             for (let i = 0; i < reharsal_groups.length; ++i) {

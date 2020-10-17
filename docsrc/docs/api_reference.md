@@ -6,7 +6,7 @@
     * [.Node](#module_Fumen.Node)
     * [.Element](#module_Fumen.Element) ⇐ <code>Node</code>
     * [.Track](#module_Fumen.Track) ⇐ <code>Element</code>
-    * [.ReharsalGroup](#module_Fumen.ReharsalGroup) ⇐ <code>Element</code>
+    * [.RehearsalGroup](#module_Fumen.RehearsalGroup) ⇐ <code>Element</code>
     * [.Block](#module_Fumen.Block) ⇐ <code>Element</code>
     * [.Measure](#module_Fumen.Measure) ⇐ <code>Element</code>
     * [.Rest](#module_Fumen.Rest) ⇐ <code>Element</code>
@@ -62,10 +62,10 @@ A class represents a track
 
 **Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
 **Extends**: <code>Element</code>  
-<a name="module_Fumen.ReharsalGroup"></a>
+<a name="module_Fumen.RehearsalGroup"></a>
 
-### Fumen.ReharsalGroup ⇐ <code>Element</code>
-A class represents a reharsal group
+### Fumen.RehearsalGroup ⇐ <code>Element</code>
+A class represents a rehearsal group
 
 **Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
 **Extends**: <code>Element</code>  

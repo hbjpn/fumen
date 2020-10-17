@@ -17,6 +17,7 @@ let VARIABLE_DEFAULT = {
     "KEY_TYPE" : "AUTO",
 };
 
+// Utilities
 export function shallowcopy(obj) {
     return Object.assign({}, obj);
 }
@@ -50,6 +51,15 @@ export function charStartsWithAmong(s, strlist) {
     for (var i = 0; i < strlist.length; ++i)
         if (s.indexOf(strlist[i]) == 0) return { index: i, s: strlist[i] };
     return null;
+}
+
+export function findLastIndex(array, predicate) {
+    let l = array.length;
+    while (l--) {
+        if (predicate(array[l], l, array))
+            return l;
+    }
+    return -1;
 }
 
 //

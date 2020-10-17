@@ -734,7 +734,7 @@ export class Renderer {
                     cnt_y += 1;
                 }
             }else{
-                // Does not affecct flag direction
+                // Does not affecct flag direction  
             }
         }
         center_y = Math.floor(center_y / cnt_y);
@@ -912,16 +912,23 @@ export class Renderer {
             return {x:x};
         } 
 
+        // Slope and intercepts are calucated for the first and last Chord element. Space is skipped.
+        let first_chord_idx = balken.groups.findIndex(g=>g.e instanceof common.Chord);
+        let last_chord_idx  = common.findLastIndex(balken.groups, g=>g.e instanceof common.Chord);
+        let bridge_balken = first_chord_idx >= 0 && (first_chord_idx != last_chord_idx);
+
         var x_at_min_y = balken.groups[gbi_at_min_y].balken_element.notes_coord.x[0][upper_flag?2:1];
         var x_at_max_y = balken.groups[gbi_at_max_y].balken_element.notes_coord.x[0][upper_flag?2:1];
-        var ps_y = balken.groups[0].balken_element.notes_coord.y;
-        var ps_bar_x = balken.groups[0].balken_element.notes_coord.x[0][upper_flag?2:1];
-        var pe_y = balken.groups[balken.groups.length - 1].balken_element.notes_coord.y;
-        var pe_bar_x =
-            balken.groups[balken.groups.length - 1].balken_element.notes_coord.x[0][upper_flag?2:1];
 
         let slope = 0;
-        if (balken.groups.length >= 2) {
+        if (bridge_balken) {
+            var ps_y = balken.groups[first_chord_idx].balken_element.notes_coord.y;
+            var ps_bar_x = balken.groups[first_chord_idx].balken_element.notes_coord.x[0][upper_flag?2:1];
+            
+            var pe_y = balken.groups[last_chord_idx].balken_element.notes_coord.y;
+            var pe_bar_x =
+                balken.groups[last_chord_idx].balken_element.notes_coord.x[0][upper_flag?2:1];
+            
             var delta_y = upper_flag
                 ? Math.min.apply(null, pe_y) - Math.min.apply(null, ps_y)
                 : Math.max.apply(null, pe_y) - Math.max.apply(null, ps_y);
@@ -980,14 +987,12 @@ export class Renderer {
 
         // 5. Draw balkens
 
-        if (balken.groups.length >= 2) {
+        if (bridge_balken) {
             // Inter-element balkens, no scaling apply (even for single balken)
 
             // Draw flag for balken
             // Common balken
-            if (balken.groups[0].balken_element.note_value >= 8) {
-
-
+            if (balken.groups[first_chord_idx].balken_element.note_value >= 8) {
                 graphic.CanvasLine(paper,
                     ps_bar_x,
                     slope * ps_bar_x + intercept,
@@ -1121,7 +1126,6 @@ export class Renderer {
                 }
             }
         } else if (
-            balken.groups.length == 1 &&
             ( balken.groups[0].balken_element.type == "slash" || balken.groups[0].balken_element.type == "notes")
         ) {
             // This is sigle flag/balken, then scaling apply. This is the only case we apply the scaling
@@ -1151,6 +1155,8 @@ export class Renderer {
                 paper.getContext("2d").scale(1.0/this_elem_draw_scale, 1.0);
 
             }
+        }else{
+            // Space come in here
         }
 
         return { x: x };

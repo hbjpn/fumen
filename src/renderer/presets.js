@@ -18,7 +18,7 @@ export var A4 = {
     artist_font_size        : 20,
     reharsal_mark_font_size : 18,
 
-    rm_area_height      : 24, // Reharsal Mark Area
+    rm_area_height      : 24, // Rehearsal Mark Area
     
 };
 

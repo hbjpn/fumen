@@ -78,7 +78,7 @@ var SR_RENDER_PARAM = {
     base_body_height    : 28, // Height in body area (not applicable for RS area) used for simile and rest rendering. Recommended to keep this value irrespective of row_height.
     row_margin          : 4, // Margin between next y_base and lower edge of Measure Lower Area
     rs_area_height      : 24, // Rhythm Slashes Area // 
-    rm_area_height      : 15, // Reharsal Mark Area
+    rm_area_height      : 15, // Rehearsal Mark Area
     mu_area_height      : 15, // Measure Upper Area ( Repeat signs area )
     ml_row_height       : 10, // Measure Lower Area ( Lyrics etc.. )
 
@@ -936,8 +936,8 @@ export class DefaultRenderer extends Renderer {
                     
                 }
             }
-            // If there is inline reharsal group, then combine the last row of the 
-            // last reharsal group  and first row of the reharsal group
+            // If there is inline rehearsal group, then combine the last row of the 
+            // last rehearsal group  and first row of the rehearsal group
             // tmp variable : shallow copy of meas_row_list
             let meas_row_list_inv = meas_row_list.slice().reverse();
             for (let i = 0; i < reharsal_groups.length; ++i) {
@@ -991,7 +991,7 @@ export class DefaultRenderer extends Renderer {
             }
         }
 
-        // Make y-strack elements, and mark the reharsal mark position
+        // Make y-strack elements, and mark the rehearsal mark position
         var y_stacks = [];
 
         let next_reharsal_group_index = 0;
@@ -1299,7 +1299,7 @@ export class DefaultRenderer extends Renderer {
             var m = row_elements_list[ml];
             if(m.renderprop && 
                m.renderprop.rg_from_here &&
-               m.renderprop.rg_from_here.name != "") // Anonymous reharsal group is not rendered
+               m.renderprop.rg_from_here.name != "") // Anonymous rehearsal group is not rendered
                rg_mark_detected = true;
 
             for (let ei = 0; ei < m.childNodes.length; ++ei) {
@@ -1998,7 +1998,7 @@ export class DefaultRenderer extends Renderer {
                 groups: []
             };
 
-            // Reharsal group mark, only rendred when it has name
+            // Rehearsal group mark, only rendred when it has name
             if(m.renderprop && m.renderprop.rg_from_here && m.renderprop.rg_from_here.name != ""){
 
                 let reharsal_group = m.renderprop.rg_from_here;

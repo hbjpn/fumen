@@ -15812,7 +15812,7 @@ var SR_RENDER_PARAM = {
   rs_area_height: 24,
   // Rhythm Slashes Area // 
   rm_area_height: 15,
-  // Reharsal Mark Area
+  // Rehearsal Mark Area
   mu_area_height: 15,
   // Measure Upper Area ( Repeat signs area )
   ml_row_height: 10,
@@ -16695,8 +16695,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
                       accum_block_id++;
                     }
-                  } // If there is inline reharsal group, then combine the last row of the 
-                  // last reharsal group  and first row of the reharsal group
+                  } // If there is inline rehearsal group, then combine the last row of the 
+                  // last rehearsal group  and first row of the rehearsal group
                   // tmp variable : shallow copy of meas_row_list
 
 
@@ -16770,7 +16770,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                     meas_row_rg_ids = [];
                     meas_row_block_ids = [];
                   }
-                } // Make y-strack elements, and mark the reharsal mark position
+                } // Make y-strack elements, and mark the rehearsal mark position
 
 
                 y_stacks = [];
@@ -17107,7 +17107,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
       for (var ml = 0; ml < row_elements_list.length; ++ml) {
         var m = row_elements_list[ml];
-        if (m.renderprop && m.renderprop.rg_from_here && m.renderprop.rg_from_here.name != "") // Anonymous reharsal group is not rendered
+        if (m.renderprop && m.renderprop.rg_from_here && m.renderprop.rg_from_here.name != "") // Anonymous rehearsal group is not rendered
           rg_mark_detected = true;
 
         for (var ei = 0; ei < m.childNodes.length; ++ei) {
@@ -17730,7 +17730,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
         var balken = {
           groups: []
-        }; // Reharsal group mark, only rendred when it has name
+        }; // Rehearsal group mark, only rendred when it has name
 
         if (m.renderprop && m.renderprop.rg_from_here && m.renderprop.rg_from_here.name != "") {
           var reharsal_group = m.renderprop.rg_from_here;
@@ -19921,7 +19921,7 @@ var A4 = {
   subtitle_font_size: 20,
   artist_font_size: 20,
   reharsal_mark_font_size: 18,
-  rm_area_height: 24 // Reharsal Mark Area
+  rm_area_height: 24 // Rehearsal Mark Area
 
 };
 var Mobile = {

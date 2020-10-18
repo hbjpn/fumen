@@ -16,5 +16,5 @@ Several types of text drawings are defined.
 | A "Text at the smae level of Chords" B |
 | 'Text above the chord area' A | 
 | A 'Text above the paticular chord'@B |
-| `Text`@A `below`@B `the chord`@ C 'Both'@ `Side`@ D| 
+| `Text`@A `below`@B `the chord/2nd line/3rd line`@ C 'Both'@ `Side`@ D| 
 <!-- fumen:end -->

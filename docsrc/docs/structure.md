@@ -4,10 +4,10 @@ Basic fumen mark down source has following components :
 * Header
     * Title 
     * Artist
-* One or more of [Reharsal groups](#reharsal-group) and their contents(measures)
+* One or more of [Rehearsal groups](#rehearsal-group) and their contents(measures)
 * Footer
 
-Following is the example fumen source having title of "Hello" and artist name "World", and 2 reharsal marks of A and B.
+Following is the example fumen source having title of "Hello" and artist name "World", and 2 rehearsal marks of A and B.
 
 <!-- fumen:start -->
 %TITLE="Hello"
@@ -20,16 +20,16 @@ Following is the example fumen source having title of "Hello" and artist name "W
 | E | F | G | A |
 <!-- fumen:end -->
 
-## Reharsal Group
-Strings enclosed with square brackets outside the measures means a reharsal group name. Following the reharsal group mark, one or more of measures are specified as a contents belongs to that reharsal group.
+## Rehearsal Group
+Strings enclosed with square brackets outside the measures means a rehearsal group name. Following the rehearsal group mark, one or more of measures are specified as a contents belongs to that rehearsal group.
 
-The normal reharal group should have at least one empty row between the end of previous measure. If no empty row is inserted, the reharsal group is tagged with in-line reharsal group.
+The normal reharal group should have at least one empty row between the end of previous measure. If no empty row is inserted, the rehearsal group is tagged with in-line rehearsal group.
 
-If no reharsal group mark is specified before the definition of measures, one default reharsal mark with empty name is generated implicitly.
+If no rehearsal group mark is specified before the definition of measures, one default rehearsal mark with empty name is generated implicitly.
 
 In the default renderer :
-- in-line reharsal mark and its first measure row is rendered in the same row of the last row of previous reharsal group.
-- Reharsal group mark with empty name is not rendered.
+- in-line rehearsal mark and its first measure row is rendered in the same row of the last row of previous rehearsal group.
+- Rehearsal group mark with empty name is not rendered.
 
 <!-- fumen:start -->
 %SHOW_FOOTER="NO"
@@ -47,7 +47,7 @@ In the default renderer :
 <!-- fumen:end -->
 
 ## Block
-Set of measures with continuous rows (i.e. seprately by single linebreak) inside a reharsal group are grouped as a "block". Two or more of line breaks between measures means the measure rows above and below line breaks will belong to differnt blocks.
+Set of measures with continuous rows (i.e. seprately by single linebreak) inside a rehearsal group are grouped as a "block". Two or more of line breaks between measures means the measure rows above and below line breaks will belong to differnt blocks.
 
 How to render differnt blocks is up to each renderer implementation. In the default renderer, block is treated as a unit to apply the rendering optimization process. For example, the default renderending try to  vertically align the measure boundaries as much as possible for better readability, but only among the measure rows within a single block. Hence, the measures in differnt blocks may have differnt measure boudnary positions.
 
@@ -105,6 +105,7 @@ Measures are contents of a measur row. It consists of multiple measures bounded 
 | \|\|.   | Double line boundary with thicker 2nd line |
 | \|\|:   | Start of repeat |
 | :\|\|   | End of repeat |
+| :\|\|x3   | End of repeat with repeat number |
 | :\|\|:  | End and start of repeat |
 | ./\|/.  | Boundary with overlapping Simile mark |
 

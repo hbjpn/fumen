@@ -4,11 +4,13 @@ In additionion to the measure boundary mark with repeat sign, following repeat s
 
 | Markdown         | Description  |
 | ------------- | -----|
-| <Coda\>      | Coda sign.  |
-| <to Coda\>   | "To Coda" sign.  |
-| <S\>         | Segno sign. |
-| <D.S.\>      | Dal segno. |
+| <Coda\>      | Coda sign. Integer number can be specified after Coda. |
+| <to Coda\>   | "To Coda" sign.  Integer number can be specified after Coda. |
+| <S\>         | Segno sign. Integer number can be specified after S. |
+| <D.S.\>      | Dal segno. Integer number can be specified after D.S. |
+| <D.S. al Coda\>      | Dal segno al Coda. al Fine can be also specified. |
 | <D.C.\>      | Da Capo. |
+| <D.S. al Coda\>      | Da Capo al Coda. al Fine can be also specified. |
 | <Fine\>      | Fine. |
 | [1.]          | Indicates the measures valid for paticular repeat. Any text can be specified. Normally, used with measure boundary with repeat sign and specifying the repat numbers to apply e.g. "1.", "2-3."  |
 | ./.           | Simile mark(single) |

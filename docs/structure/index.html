@@ -223,8 +223,8 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#reharsal-group" class="md-nav__link">
-    Reharsal Group
+  <a href="#rehearsal-group" class="md-nav__link">
+    Rehearsal Group
   </a>
   
 </li>
@@ -386,6 +386,18 @@
   </li>
 
         
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../cheatsheet/" title="Cheat Sheet" class="md-nav__link">
+      Cheat Sheet
+    </a>
+  </li>
+
+        
       </ul>
     </nav>
   </li>
@@ -477,8 +489,8 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#reharsal-group" class="md-nav__link">
-    Reharsal Group
+  <a href="#rehearsal-group" class="md-nav__link">
+    Rehearsal Group
   </a>
   
 </li>
@@ -565,10 +577,10 @@
 <li>Artist</li>
 </ul>
 </li>
-<li>One or more of <a href="#reharsal-group">Reharsal groups</a> and their contents(measures)</li>
+<li>One or more of <a href="#rehearsal-group">Rehearsal groups</a> and their contents(measures)</li>
 <li>Footer</li>
 </ul>
-<p>Following is the example fumen source having title of "Hello" and artist name "World", and 2 reharsal marks of A and B.</p>
+<p>Following is the example fumen source having title of "Hello" and artist name "World", and 2 rehearsal marks of A and B.</p>
 <p><div class='fumenbox'><textarea class='fumencode'>%TITLE="Hello"
 %ARTIST="World"
 
@@ -577,13 +589,13 @@
 
 [B]
 | E | F | G | A |</textarea><div class='score_area'></div></div></p>
-<h2 id="reharsal-group">Reharsal Group</h2>
-<p>Strings enclosed with square brackets outside the measures means a reharsal group name. Following the reharsal group mark, one or more of measures are specified as a contents belongs to that reharsal group.</p>
-<p>The normal reharal group should have at least one empty row between the end of previous measure. If no empty row is inserted, the reharsal group is tagged with in-line reharsal group.</p>
-<p>If no reharsal group mark is specified before the definition of measures, one default reharsal mark with empty name is generated implicitly.</p>
+<h2 id="rehearsal-group">Rehearsal Group</h2>
+<p>Strings enclosed with square brackets outside the measures means a rehearsal group name. Following the rehearsal group mark, one or more of measures are specified as a contents belongs to that rehearsal group.</p>
+<p>The normal reharal group should have at least one empty row between the end of previous measure. If no empty row is inserted, the rehearsal group is tagged with in-line rehearsal group.</p>
+<p>If no rehearsal group mark is specified before the definition of measures, one default rehearsal mark with empty name is generated implicitly.</p>
 <p>In the default renderer :
-- in-line reharsal mark and its first measure row is rendered in the same row of the last row of previous reharsal group.
-- Reharsal group mark with empty name is not rendered.</p>
+- in-line rehearsal mark and its first measure row is rendered in the same row of the last row of previous rehearsal group.
+- Rehearsal group mark with empty name is not rendered.</p>
 <p><div class='fumenbox'><textarea class='fumencode'>%SHOW_FOOTER="NO"
 
 
@@ -597,7 +609,7 @@
 []
 | A | B | C | D | E |</textarea><div class='score_area'></div></div></p>
 <h2 id="block">Block</h2>
-<p>Set of measures with continuous rows (i.e. seprately by single linebreak) inside a reharsal group are grouped as a "block". Two or more of line breaks between measures means the measure rows above and below line breaks will belong to differnt blocks.</p>
+<p>Set of measures with continuous rows (i.e. seprately by single linebreak) inside a rehearsal group are grouped as a "block". Two or more of line breaks between measures means the measure rows above and below line breaks will belong to differnt blocks.</p>
 <p>How to render differnt blocks is up to each renderer implementation. In the default renderer, block is treated as a unit to apply the rendering optimization process. For example, the default renderending try to  vertically align the measure boundaries as much as possible for better readability, but only among the measure rows within a single block. Hence, the measures in differnt blocks may have differnt measure boudnary positions.</p>
 <p><div class='fumenbox'><textarea class='fumencode'>%SHOW_FOOTER="NO"
 
@@ -674,6 +686,10 @@
 <tr>
 <td>:||</td>
 <td>End of repeat</td>
+</tr>
+<tr>
+<td>:||x3</td>
+<td>End of repeat with repeat number</td>
 </tr>
 <tr>
 <td>:||:</td>

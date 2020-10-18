@@ -11,7 +11,7 @@
         <meta name="description" content="Markup language and rendering engine for music leadsheet creation with simple, easy and intuitive syntax, supporting various types of compoents used in popular music's leadsheet such as chord symbols, rhythm slashes, rest marks, repeat marks, rehearsal marks, comments, lyrics.">
       
       
-        <link rel="canonical" href="https://hbjpn.github.io/fumen/chord/">
+        <link rel="canonical" href="https://hbjpn.github.io/fumen/cheatsheet/">
       
       
       <link rel="shortcut icon" href="../assets/images/favicon.png">
@@ -19,7 +19,7 @@
     
     
       
-        <title>Chords - Fumen</title>
+        <title>Cheat Sheet - Fumen</title>
       
     
     
@@ -59,7 +59,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#chords" class="md-skip">
+        <a href="#cheat-sheet" class="md-skip">
           Skip to content
         </a>
       
@@ -87,7 +87,7 @@
           </span>
           <span class="md-header-nav__topic md-ellipsis">
             
-              Chords
+              Cheat Sheet
             
           </span>
         </div>
@@ -202,20 +202,11 @@
           
           
 
-  
 
-
-  <li class="md-nav__item md-nav__item--active">
-    
-    <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-    
-      
-    
-    
-    <a href="./" title="Chords" class="md-nav__link md-nav__link--active">
+  <li class="md-nav__item">
+    <a href="../chord/" title="Chords" class="md-nav__link">
       Chords
     </a>
-    
   </li>
 
         
@@ -307,11 +298,56 @@
           
           
 
+  
 
-  <li class="md-nav__item">
-    <a href="../cheatsheet/" title="Cheat Sheet" class="md-nav__link">
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        Cheat Sheet
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+    
+    <a href="./" title="Cheat Sheet" class="md-nav__link md-nav__link--active">
       Cheat Sheet
     </a>
+    
+      
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#musical-elements" class="md-nav__link">
+    Musical Elements
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#variables" class="md-nav__link">
+    Variables
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+    
   </li>
 
         
@@ -399,6 +435,28 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#musical-elements" class="md-nav__link">
+    Musical Elements
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#variables" class="md-nav__link">
+    Variables
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -409,7 +467,7 @@
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/hbjpn/fumen/edit/master/docs/chord.md" title="Edit this page" class="md-content__button md-icon">
+                  <a href="https://github.com/hbjpn/fumen/edit/master/docs/cheatsheet.md" title="Edit this page" class="md-content__button md-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
                   </a>
                 
@@ -417,124 +475,198 @@
                   
                 
                 
-                <h1 id="chords">Chords</h1>
-<p>Chord symbol indicates the chord names. Various chord name types as shown in the below table are supported. Root note or bass note comprises of one capital letter of A, B, C, D, E, F or G followed by optionl flat (small 'b') and sharp ('#') letter. </p>
+                <h1 id="cheat-sheet">Cheat Sheet</h1>
+<h2 id="musical-elements">Musical Elements</h2>
 <table>
 <thead>
 <tr>
 <th>Markdown</th>
-<th>note</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>C Cb C#</td>
-<td>Major chord.</td>
-</tr>
-<tr>
-<td>CM</td>
-<td>Major chord with explicit major mark(triangle in the rendered image).</td>
-</tr>
-<tr>
-<td>Cm</td>
-<td>Minor chord.</td>
-</tr>
-<tr>
-<td>CM7 CM9 CM11 CM13</td>
-<td>Major seventh, nineth, eleventh and tirteenth chord.</td>
-</tr>
-<tr>
-<td>Cm6 Cm7 Cm9 Cm11</td>
-<td>Minor sixth, seventh, nineth and eleventh chord.</td>
-</tr>
-<tr>
-<td>CmM7</td>
-<td>Minor major seventh chord</td>
-</tr>
-<tr>
-<td>C7 C9 C11 C13</td>
-<td>Dominant chords ; seventh, nineth, eleventh and thirteenth chord.</td>
-</tr>
-<tr>
-<td>C6 CM6</td>
-<td>Major sixth chord</td>
-</tr>
-<tr>
-<td>C69</td>
-<td>Six nineth chord</td>
-</tr>
-<tr>
-<td>Cadd9 Cadd2</td>
-<td>Add nineth and second chord</td>
-</tr>
-<tr>
-<td>Comit3 Comit5</td>
-<td>Omit chord</td>
-</tr>
-<tr>
-<td>Csus4 Csus2</td>
-<td>Suspended 4th and suspended 2th chord</td>
-</tr>
-<tr>
-<td>C+</td>
-<td>Augmented 5th chord</td>
-</tr>
-<tr>
-<td>C-5</td>
-<td>Dimished 5th chord</td>
-</tr>
-<tr>
-<td>Cdim Cdim7</td>
-<td>Diminish or diminish seventh chord</td>
-</tr>
-<tr>
-<td>Cm7-5</td>
-<td>Combination of m7 and dimished 5th chord menas half dminish chord</td>
-</tr>
-<tr>
-<td>Cb9 C#9 C#11 Cb13 C#13</td>
-<td>Other tensions. Multiple tensions can be specified by just listing them. e.g. C7#9#13</td>
+<td>Cm7-5#11</td>
+<td>Chord. See <a href="../chord/">Chords</a> for detail.</td>
 </tr>
 <tr>
 <td>C/D</td>
-<td>On chord or slash chord. No space shall be put between root part and bass note part.</td>
+<td>Chord on bass</td>
 </tr>
 <tr>
 <td>/D</td>
-<td>No root note part but only bass note part(incl. slash) specifies the context where only bass note is changed while root note is maintained.</td>
+<td>Only on bass</td>
+</tr>
+<tr>
+<td>C:4.</td>
+<td>Chord with duration. Example with dotted quarter. See <a href="../duration-indicator/">Duration Indicator</a> for detail.</td>
+</tr>
+<tr>
+<td>r:4.</td>
+<td>Rest with duration.</td>
+</tr>
+<tr>
+<td>-2-</td>
+<td>Long rest</td>
+</tr>
+<tr>
+<td>|</td>
+<td>Single line boundary</td>
+</tr>
+<tr>
+<td>||</td>
+<td>Double line boundary</td>
+</tr>
+<tr>
+<td>||.</td>
+<td>Double line boundary with thicker 2nd line</td>
+</tr>
+<tr>
+<td>||:</td>
+<td>Start of repeat</td>
+</tr>
+<tr>
+<td>:||</td>
+<td>End of repeat</td>
+</tr>
+<tr>
+<td>:||x3</td>
+<td>End of repeat with repeat numbers</td>
+</tr>
+<tr>
+<td>:||:</td>
+<td>End and start of repeat</td>
+</tr>
+<tr>
+<td>./|/.</td>
+<td>Boundary with overlapping Simile mark</td>
+</tr>
+<tr>
+<td>&gt;</td>
+<td>Right align(speicfy it at the head of row)</td>
+</tr>
+<tr>
+<td>&lt;</td>
+<td>Left align(specify it at the head of row)</td>
+</tr>
+<tr>
+<td>&lt;Coda></td>
+<td>Coda sign. Integer number can be specified after Coda.</td>
+</tr>
+<tr>
+<td>&lt;to Coda></td>
+<td>"To Coda" sign.  Integer number can be specified after Coda.</td>
+</tr>
+<tr>
+<td>&lt;S></td>
+<td>Segno sign. Integer number can be specified after S.</td>
+</tr>
+<tr>
+<td>&lt;D.S.></td>
+<td>Dal segno. Integer number can be specified after D.S.</td>
+</tr>
+<tr>
+<td>&lt;D.S. al Coda></td>
+<td>Dal segno al Coda. al Fine can be also specified.</td>
+</tr>
+<tr>
+<td>&lt;D.C.></td>
+<td>Da Capo.</td>
+</tr>
+<tr>
+<td>&lt;D.S. al Coda></td>
+<td>Da Capo al Coda. al Fine can be also specified.</td>
+</tr>
+<tr>
+<td>&lt;Fine></td>
+<td>Fine.</td>
+</tr>
+<tr>
+<td>[1.]</td>
+<td>Indicates the measures valid for paticular repeat. Any text can be specified. Normally, used with measure boundary with repeat sign and specifying the repat numbers to apply e.g. "1.", "2-3."</td>
+</tr>
+<tr>
+<td>./.</td>
+<td>Simile mark(single)</td>
+</tr>
+<tr>
+<td>.//.</td>
+<td>Simile mark(double)</td>
+</tr>
+<tr>
+<td>"text"</td>
+<td>Strings enclosed with double quotation mark is a text which will be drawn at the same vertical level of chords.</td>
+</tr>
+<tr>
+<td>'text'</td>
+<td>Strings enclosed with single quotation mark is a text which will be drawn above the chords. Texts are left aligned within a width of a masure.</td>
+</tr>
+<tr>
+<td>'text'@ C7</td>
+<td>Strings enclosed with single quation specified before atmark is a text which are drawn above the first chord after the atmark within a measure.</td>
+</tr>
+<tr>
+<td>`text`@ C7</td>
+<td>Strings enclosed with single grave accent specified before atmark is a text which are drawn below the first chord after the atmark within a measure.</td>
+</tr>
+<tr>
+<td>(4/4)</td>
+<td>Time signature. Single integer for denominator and nominator can be specified.</td>
+</tr>
+<tr>
+<td>,</td>
+<td>Space</td>
 </tr>
 </tbody>
 </table>
-<p>Also, chord symbols can be specified followed by duration indicator. Please see the section of <a href="../duration-indicator/">duration indicator</a>.</p>
-<p><div class='fumenbox'><textarea class='fumencode'>%SHOW_FOOTER="NO"
-
-[Basic chords]
-| A | B | C | D | E | F | G |
-| Ab | Bb | Cb | Db | Eb | Fb | Gb |
-| A# | B# | C# | D# | E# | F# | G# |
-
-[Majors]
-| CM7 | CM9 | CM11 | CM13 || C6 | CM6 | C69 |
-
-
-[Minors]
-| Cm | Cm6 | Cm7 | Cm9 | Cm11 | CmM7 |
-
-[Diminish]
-|| Cm7-5 | Cdim | Cdim7 |
-[Dominants]
-| C7 | C9 | C11 | C13 | 
-
-
-[Sus chords]
-| Csus4 | Csus2 | 
-[Add/Omit]
-| Cadd9 | C5 | Comit3 | Comit5 |
-
-[Auguments/Tensions]
-|| C-5 | C+ | C7,b9,#11 |
-[On chords]
-|| C/D | Bb/Ab | /Ab |</textarea><div class='score_area'></div></div></p>
+<h2 id="variables">Variables</h2>
+<p>Variables can be specified with the form of "%VARIABLE_NAME=VALUE". </p>
+<table>
+<thead>
+<tr>
+<th>Variable Name</th>
+<th align="center">Value Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TITLE</td>
+<td align="center">String</td>
+<td>Title of the song.</td>
+</tr>
+<tr>
+<td>ARTIST</td>
+<td align="center">String</td>
+<td>Artist name.</td>
+</tr>
+<tr>
+<td>KEY</td>
+<td align="center">String</td>
+<td>Key of the song. e.g. C, Gm</td>
+</tr>
+<tr>
+<td>TRANSPOSE</td>
+<td align="center">String|Integer</td>
+<td>Transposed key (String) or transpose interval by integer in semitone unit. See <a href="../transpose/">Transose</a> for details.</td>
+</tr>
+<tr>
+<td>KEY_TYPE</td>
+<td align="center">String</td>
+<td>Preffered key type(flat/b or sharp/#) for transposing. See <a href="../transpose/">Transpose</a> for details.</td>
+</tr>
+<tr>
+<td>SHOW_STAFF</td>
+<td align="center">String</td>
+<td>"YES" : Force showing staffs. "NO" : Force not showing staffs. Nothing specified(default) means fumen automatically add staff if needed</td>
+</tr>
+<tr>
+<td>SHOW_FOOTER</td>
+<td align="center">String</td>
+<td>"YES" : Show footer(default), "NO": Not to show footer.</td>
+</tr>
+</tbody>
+</table>
                 
               
               
@@ -553,7 +685,7 @@
     <div class="md-footer-nav">
       <nav class="md-footer-nav__inner md-grid" aria-label="Footer">
         
-          <a href="../structure/" title="Structure" class="md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+          <a href="../transpose/" title="Transpose" class="md-footer-nav__link md-footer-nav__link--prev" rel="prev">
             <div class="md-footer-nav__button md-icon">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
             </div>
@@ -562,19 +694,19 @@
                 <span class="md-footer-nav__direction">
                   Previous
                 </span>
-                Structure
+                Transpose
               </div>
             </div>
           </a>
         
         
-          <a href="../rest/" title="Rests" class="md-footer-nav__link md-footer-nav__link--next" rel="next">
+          <a href="../api_quick_start/" title="Quick Start" class="md-footer-nav__link md-footer-nav__link--next" rel="next">
             <div class="md-footer-nav__title">
               <div class="md-ellipsis">
                 <span class="md-footer-nav__direction">
                   Next
                 </span>
-                Rests
+                Quick Start
               </div>
             </div>
             <div class="md-footer-nav__button md-icon">

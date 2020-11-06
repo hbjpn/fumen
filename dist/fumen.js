@@ -17537,7 +17537,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 _elem_width2 = _scale12[1];
               }
 
-              var _cr2 = _this6.render_rest_plain(e, paper, draw, x / _draw_scale3, y_body_or_rs_base, C7_width, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, param);
+              var _cr2 = _this6.render_rest_plain(e, paper, draw, x / _draw_scale3, y_body_or_rs_base, "l", yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, param);
 
               if (draw) {
                 x += _elem_width2;
@@ -17932,14 +17932,24 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
             _this7.hitManager.add(paper, _bb, _e3); //rest_or_long_rests_detected |= true;
 
-          } else if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Simile"]) {
-            // Simile mark in measure wide element if there is no other body elements in this measure
+          } else if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Rest"]) {
+            // This shall be whole rest
             var _sx2 = meas_start_x + header_width; // header_width does not include header_body_margin
 
 
             var _fx2 = meas_end_x - footer_width;
 
-            var _r16 = _this7.render_simile_mark_plain(true, paper, (_sx2 + _fx2) / 2, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, _e3.numslash, false, "c");
+            var cr = _this7.render_rest_plain(_e3, paper, true, (_sx2 + _fx2) / 2, y_body_or_rs_base, "c", yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, param);
+
+            _this7.hitManager.add(paper, cr.bb, _e3);
+          } else if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Simile"]) {
+            // Simile mark in measure wide element if there is no other body elements in this measure
+            var _sx3 = meas_start_x + header_width; // header_width does not include header_body_margin
+
+
+            var _fx3 = meas_end_x - footer_width;
+
+            var _r16 = _this7.render_simile_mark_plain(true, paper, (_sx3 + _fx3) / 2, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, _e3.numslash, false, "c");
 
             _this7.hitManager.add(paper, _r16.bb, _e3);
           } else {
@@ -18102,7 +18112,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
     }
   }, {
     key: "render_rest_plain",
-    value: function render_rest_plain(e, paper, draw, x, y_body_or_rs_base, C7_width, row_height, base_body_height, param) {
+    value: function render_rest_plain(e, paper, draw, x, y_body_or_rs_base, align, // "l or "c" or "r"
+    row_height, base_body_height, param) {
       var _5i = base_body_height / 4;
 
       var yoffsets = {
@@ -18141,23 +18152,34 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
       if (false) { var i; }
 
-      if (draw) {
-        var namemap = {
-          1: "uniE4F4",
-          2: "uniE4F5",
-          4: "uniE4E5",
-          8: "uniE4E6"
-        };
-        var img = _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"][namemap[rd <= 4 ? rd : 8]];
-        var s = img.height / heights[rd];
+      var namemap = {
+        1: "uniE4F4",
+        2: "uniE4F5",
+        4: "uniE4E5",
+        8: "uniE4E6"
+      };
+      var img = _graphic__WEBPACK_IMPORTED_MODULE_3__["G_imgmap"][namemap[rd <= 4 ? rd : 8]];
+      var s = img.height / heights[rd];
+      var rdx = 2;
+      var rdy = -_5i;
+      var nKasane = _common_common__WEBPACK_IMPORTED_MODULE_2__["myLog2"](rd) - 2; // pre-calculate total width
 
+      var w = 0;
+
+      if (rd <= 4) {
+        w = img.width / s;
+      } else {
+        w = rdx * (nKasane - 1) + img.width / s;
+      } // dots
+
+
+      w = Math.max(w, dot_xoffsets[rd] + (numdot - 1) * 5);
+      if (align == "c") x -= w / 2;else if (align == "r") x -= w;
+
+      if (draw) {
         if (rd <= 4) {
           ctx.drawImage(img, x, y_body_or_rs_base + row_height / 2 + oy, img.width / s, img.height / s);
         } else {
-          var nKasane = _common_common__WEBPACK_IMPORTED_MODULE_2__["myLog2"](rd) - 2;
-          var rdx = 2;
-          var rdy = -_5i;
-
           for (var k = 0; k < nKasane; ++k) {
             ctx.drawImage(img, x + k * rdx, y_body_or_rs_base + row_height / 2 + k * rdy + oy, img.width / s, img.height / s);
           }
@@ -18170,8 +18192,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       }
 
       return {
-        bb: new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"](x, y_body_or_rs_base, 10, row_height)
-      }; // TODO : Impelment correctly
+        bb: new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"](x, y_body_or_rs_base, w, row_height)
+      };
     }
   }, {
     key: "render_simile_mark_plain",
@@ -20138,7 +20160,8 @@ var Renderer = /*#__PURE__*/function () {
             throw "Unkown component found";
           }
         }
-      }
+      } // Special treatment for simile
+
 
       if (body_elements.length > 0 || simile_objs.length >= 2) {
         // simile makrs are all body elements
@@ -20152,6 +20175,14 @@ var Renderer = /*#__PURE__*/function () {
         }
 
         measure_wide_elements.splice(simile_body_idx[0], 0, simile_objs[0]);
+      } // Special treatment for whole rest
+      // Whole rest is a measure rest and not nessesaryly means whole note 
+
+
+      if (body_elements.length == 1 && body_elements[0] instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Rest"] && body_elements[0].note_group_list[0].lengthIndicator.base == 1) {
+        var wr = body_elements[0];
+        body_elements.splice(0, 1);
+        measure_wide_elements.push(wr);
       }
 
       return {
@@ -20526,7 +20557,7 @@ var Renderer = /*#__PURE__*/function () {
           }
         }
       } else if (balken_element.type == "rest") {
-        var _r = this.render_rest_plain(e, paper, draw, x, rs_y_base, 0, row_height, row_height, param);
+        var _r = this.render_rest_plain(e, paper, draw, x, rs_y_base, "l", row_height, row_height, param);
 
         bounding_box.add_BB(_r.bb);
 

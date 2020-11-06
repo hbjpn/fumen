@@ -142,6 +142,7 @@ export class Renderer {
             }
         }
 
+        // Special treatment for simile
         if (body_elements.length > 0 || simile_objs.length >= 2) {
             // simile makrs are all body elements
             for (var i = 0; i < simile_body_idx.length; ++i) {
@@ -154,6 +155,18 @@ export class Renderer {
             }
             measure_wide_elements.splice(simile_body_idx[0], 0, simile_objs[0]);
         }
+
+        // Special treatment for whole rest
+        // Whole rest is a measure rest and not nessesaryly means whole note 
+        if(body_elements.length == 1 && 
+           body_elements[0] instanceof common.Rest &&
+           body_elements[0].note_group_list[0].lengthIndicator.base == 1)
+        {
+            let wr = body_elements[0];
+            body_elements.splice(0, 1);
+            measure_wide_elements.push(wr);
+        }
+
 
         return {
             header: header_elements,
@@ -607,7 +620,7 @@ export class Renderer {
                 draw,
                 x,
                 rs_y_base,
-                0,
+                "l",
                 row_height,
                 row_height,
                 param

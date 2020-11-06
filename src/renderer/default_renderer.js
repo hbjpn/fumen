@@ -1800,7 +1800,7 @@ export class DefaultRenderer extends Renderer {
                             draw,
                             x / draw_scale,
                             y_body_or_rs_base,
-                            C7_width,
+                            "l",
                             yprof.rs.detected ? param.rs_area_height : param.row_height,
                             yprof.rs.detected ? param.rs_area_height : param.base_body_height,
                             param
@@ -2320,6 +2320,24 @@ export class DefaultRenderer extends Renderer {
                     this.hitManager.add(paper, bb, e);
 
                     //rest_or_long_rests_detected |= true;
+                } else if (e instanceof common.Rest){
+                    // This shall be whole rest
+                    let sx =
+                        meas_start_x +
+                        header_width; // header_width does not include header_body_margin
+                    let fx = meas_end_x - footer_width;
+                    let cr = this.render_rest_plain(
+                        e,
+                        paper,
+                        true,
+                        (sx + fx) / 2,
+                        y_body_or_rs_base,
+                        "c",
+                        yprof.rs.detected ? param.rs_area_height : param.row_height,
+                        yprof.rs.detected ? param.rs_area_height : param.base_body_height,
+                        param
+                    );
+                    this.hitManager.add(paper, cr.bb, e);
                 } else if (e instanceof common.Simile) {
                     // Simile mark in measure wide element if there is no other body elements in this measure
                     let sx =
@@ -2505,7 +2523,7 @@ export class DefaultRenderer extends Renderer {
         draw,
         x,
         y_body_or_rs_base,
-        C7_width,
+        align, // "l or "c" or "r"
         row_height,
         base_body_height,
         param
@@ -2556,11 +2574,29 @@ export class DefaultRenderer extends Renderer {
                 );
             }
         }
+        let namemap = {1:"uniE4F4", 2:"uniE4F5", 4:"uniE4E5", 8:"uniE4E6"};
+        let img = graphic.G_imgmap[namemap[(rd <= 4 ? rd : 8)]];
+        let s = img.height / heights[rd];
 
-        if(draw){
-            let namemap = {1:"uniE4F4", 2:"uniE4F5", 4:"uniE4E5", 8:"uniE4E6"};
-            var img = graphic.G_imgmap[namemap[(rd <= 4 ? rd : 8)]];
-            var s = img.height / heights[rd];
+        let rdx = 2;
+        let rdy = -_5i;
+        
+        let nKasane = common.myLog2(rd) - 2;
+
+        // pre-calculate total width
+        let w = 0;
+        if (rd <= 4) {
+            w = img.width / s;
+        } else {
+            w = rdx * (nKasane-1) + img.width / s;
+        }
+        // dots
+        w = Math.max(w, dot_xoffsets[rd] + (numdot-1)*5);
+
+        if(align == "c") x -= w/2;
+        else if(align == "r") x -= w;
+
+        if(draw){            
             if (rd <= 4) {
                 ctx.drawImage(
                     img,
@@ -2570,9 +2606,6 @@ export class DefaultRenderer extends Renderer {
                     img.height / s
                 );
             } else {
-                var nKasane = common.myLog2(rd) - 2;
-                var rdx = 2;
-                var rdy = -_5i;
                 for (var k = 0; k < nKasane; ++k) {
                     ctx.drawImage(
                         img,
@@ -2594,7 +2627,7 @@ export class DefaultRenderer extends Renderer {
             }
         }
 
-        return { bb: new graphic.BoundingBox(x,y_body_or_rs_base, 10, row_height)}; // TODO : Impelment correctly
+        return { bb: new graphic.BoundingBox(x,y_body_or_rs_base, w, row_height)};
     }
 
     render_simile_mark_plain(

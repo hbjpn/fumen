@@ -1684,10 +1684,6 @@ export class DefaultRenderer extends Renderer {
                         yprof.rs.y,
                         yprof.rs.height,
                         meas_start_x, // NOTE : meas_start_x sould be irrespective of draw_scale.
-                        draw,
-                        0,
-                        1.0,
-                        x_global_scale,
                         music_context,
                         m,
                         param,

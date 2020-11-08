@@ -1295,6 +1295,7 @@ export class DefaultRenderer extends Renderer {
 
         // Screening of y-axis areas
         let rg_mark_detected = false;
+        let fixed_mu_elem_detected = false;
         for (let ml = 0; ml < row_elements_list.length; ++ml) {
             var m = row_elements_list[ml];
             if(m.renderprop && 
@@ -1305,16 +1306,21 @@ export class DefaultRenderer extends Renderer {
             for (let ei = 0; ei < m.childNodes.length; ++ei) {
                 var e = m.childNodes[ei];
                 if (
-                    e instanceof common.Coda ||
-                    e instanceof common.Segno ||
-                    e instanceof common.Comment ||
-                    e instanceof common.LoopIndicator ||
                     e instanceof common.ToCoda ||
                     e instanceof common.DalSegno ||
                     e instanceof common.DaCapo ||
                     e instanceof common.Fine
-                ) {
+                ){
+                    // Provisinally, judged as mu element. In case of RS detected, it will goes to body area.
                     yprof.mu.detected = true;
+                } else if(
+                    e instanceof common.Coda ||
+                    e instanceof common.Segno ||
+                    e instanceof common.Comment ||
+                    e instanceof common.LoopIndicator
+                ){
+                    yprof.mu.detected = true;
+                    fixed_mu_elem_detected = true;
                 } else if (e instanceof common.MeasureBoundary) {
                     yprof.ml.detected =
                     yprof.ml.detected ||
@@ -1330,6 +1336,7 @@ export class DefaultRenderer extends Renderer {
                     }
                     if(e.exceptinal_comment){
                         yprof.mu.detected = true;
+                        fixed_mu_elem_detected = true;
                     }
                 } else if (e instanceof common.Lyric) {
                     throw "Illegal parsing";
@@ -1338,6 +1345,13 @@ export class DefaultRenderer extends Renderer {
         }
         if (show_staff == "NO") {
             yprof.rs.detected = false;
+        }
+
+        // Adjust mu area elements in case of RS area detected
+        if(yprof.rs.detected){
+            if(!fixed_mu_elem_detected){
+                yprof.mu.detected = false; // Reset it !
+            }
         }
 
         if(rg_mark_detected){

@@ -17104,6 +17104,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
 
       var rg_mark_detected = false;
+      var fixed_mu_elem_detected = false;
 
       for (var ml = 0; ml < row_elements_list.length; ++ml) {
         var m = row_elements_list[ml];
@@ -17113,8 +17114,12 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         for (var ei = 0; ei < m.childNodes.length; ++ei) {
           var e = m.childNodes[ei];
 
-          if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Coda"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Segno"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Comment"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["LoopIndicator"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["ToCoda"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DalSegno"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DaCapo"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Fine"]) {
+          if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["ToCoda"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DalSegno"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["DaCapo"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Fine"]) {
+            // Provisinally, judged as mu element. In case of RS detected, it will goes to body area.
             yprof.mu.detected = true;
+          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Coda"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Segno"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Comment"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["LoopIndicator"]) {
+            yprof.mu.detected = true;
+            fixed_mu_elem_detected = true;
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["MeasureBoundary"]) {
             yprof.ml.detected = yprof.ml.detected || e.times != null && (e.ntimes || e.times != 2);
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Chord"]) {
@@ -17127,6 +17132,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
             if (e.exceptinal_comment) {
               yprof.mu.detected = true;
+              fixed_mu_elem_detected = true;
             }
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__["Lyric"]) {
             throw "Illegal parsing";
@@ -17136,6 +17142,13 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
       if (show_staff == "NO") {
         yprof.rs.detected = false;
+      } // Adjust mu area elements in case of RS area detected
+
+
+      if (yprof.rs.detected) {
+        if (!fixed_mu_elem_detected) {
+          yprof.mu.detected = false; // Reset it !
+        }
       }
 
       if (rg_mark_detected) {

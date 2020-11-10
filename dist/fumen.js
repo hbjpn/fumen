@@ -13114,11 +13114,25 @@ var Chord = /*#__PURE__*/function (_Element7) {
       var base = parseInt(mm[1]);
       var length = 0;
       var numdot = 0;
+      var renpu = null;
 
       if (mm[3]) {
         // Renpu
-        var renpu = parseInt(mm[4]);
-        length = WHOLE_NOTE_LENGTH / (base / 2) / renpu;
+        renpu = parseInt(mm[4]); //length = WHOLE_NOTE_LENGTH / (base / 2) / renpu;
+
+        var base_length = 0;
+
+        if (renpu == 2) {
+          base_length = WHOLE_NOTE_LENGTH / base / 2 * 3; // shall be integer
+        } else if (renpu == 3) {
+          base_length = WHOLE_NOTE_LENGTH / base * 2; // shall be integer
+        } else if (renpu <= 7) {
+          base_length = WHOLE_NOTE_LENGTH / base * 4; // shall be integer
+        } else if (renpu <= 15) {
+          base_length = WHOLE_NOTE_LENGTH / base * 8; // shall be integer
+        }
+
+        length = base_length / renpu;
       } else {
         length = WHOLE_NOTE_LENGTH / base;
         var tp = length;
@@ -16639,7 +16653,13 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                     rs_prev_tie_paper: null,
                     prev_has_tie: false
                   },
-                  pos_in_a_measure: 0
+                  pos_in_a_measure: 0,
+                  cumal_block_duration: 0,
+                  // Culmative duration of this blaken block.
+                  first_li: null,
+                  // length indicator of the first element amongcurrently stored elements. This shall be non-null other than first state
+                  in_tuplet: false // tuplet mode or not
+
                 };
                 meas_row_list = []; // Firstly, just split with new lines
 
@@ -17195,7 +17215,10 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       var _loop5 = function _loop5(ml) {
         // Reset music context
         music_context.pos_in_a_measure = 0; // reset
-        // TODO : consider key infomration
+
+        music_context.cumal_block_duration = 0;
+        music_context.first_li = null;
+        music_context.in_tuplet = false; // TODO : consider key infomration
         // TODO : consider tie
         // C3 -> 0x3C as 0 C-2 as index 0, G8 as 127(0x7F)
 
@@ -17735,7 +17758,10 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         meas_base_x = x; // Reset music context
 
         music_context.pos_in_a_measure = 0; // reset
-        // TODO : consider key infomration
+
+        music_context.cumal_block_duration = 0;
+        music_context.first_li = null;
+        music_context.in_tuplet = false; // TODO : consider key infomration
         // TODO : consider tie
         // C3 -> 0x3C as 0 C-2 as index 0, G8 as 127(0x7F)
 
@@ -20305,6 +20331,27 @@ var Renderer = /*#__PURE__*/function () {
       };
     }
   }, {
+    key: "getThreshDuration",
+    value: function getThreshDuration(li) {
+      var renpu = li.renpu;
+      var base = li.base;
+      var base_length = 0;
+
+      if (!renpu) {
+        base_length = _common_common__WEBPACK_IMPORTED_MODULE_1__["WHOLE_NOTE_LENGTH"] / 4;
+      } else if (renpu == 2) {
+        base_length = _common_common__WEBPACK_IMPORTED_MODULE_1__["WHOLE_NOTE_LENGTH"] / base / 2 * 3; // shall be integer
+      } else if (renpu == 3) {
+        base_length = _common_common__WEBPACK_IMPORTED_MODULE_1__["WHOLE_NOTE_LENGTH"] / base * 2; // shall be integer
+      } else if (renpu <= 7) {
+        base_length = _common_common__WEBPACK_IMPORTED_MODULE_1__["WHOLE_NOTE_LENGTH"] / base * 4; // shall be integer
+      } else if (renpu <= 15) {
+        base_length = _common_common__WEBPACK_IMPORTED_MODULE_1__["WHOLE_NOTE_LENGTH"] / base * 8; // shall be integer
+      }
+
+      return base_length;
+    }
+  }, {
     key: "render_rs_area",
     value: function render_rs_area(x, // This represents screen position and scaling is not considered
     draw_scale, // scaling applied fro this elements. 
@@ -20319,15 +20366,46 @@ var Renderer = /*#__PURE__*/function () {
         }
 
         var balken_element = e.renderprop.balken_element; // this is corresponds to single flex element
-        // Flush current groups
+        // Rule of balken grouping:
+        // tuplet is prioritized
+        //   : if xplet is detected, the contiguous elements(either slash, note, rest) with the same(or integer multiple) 
+        //     length are grouped until the sum of length reaches the base length( i.e. 4_3 -> 2, 4_5 -> 1)
+        //     note that xplet notation rule is :
+        //       - triplet : base length is 2 times of time value : e.g. 8_3 8_3 8_3 = 4
+        //       - 5, 6, 7 : base length is 4 times of time value : e.g. 4_5,...,4_5 = 1
+        //       - 9 ~ 15  : base length is 8 times of time value : e.g. 8_9,....,8_9 = 1
+        //       - duplet  : base length is 1.5 times of time value : 2_2 2_2 = 2., 8_2 8_2 -> 8.
+        // fallback to the default grouping policy:
+        //   - Rest is singleton
+        //   - If the contiguous notes/slashes 's length becomes larger than 4th note, balken are separated.
+        // Flush current groups if needed
 
-        if ((balken_element.chord_length >= _common_common__WEBPACK_IMPORTED_MODULE_1__["WHOLE_NOTE_LENGTH"] / 4 || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Rest"]) && balken.groups.length > 0) {
-          var dbret = this.draw_rs_area_balkens(true, draw_scale, paper, balken, rs_y_base, row_height, meas_start_x, music_context, meas, param);
-          balken.groups = [];
-          x = dbret.x;
+        if (balken.groups.length > 0) {
+          var _threshDuration = this.getThreshDuration(music_context.first_li);
+
+          var _flushCond = music_context.in_tuplet == false && (balken_element.chord_length >= _common_common__WEBPACK_IMPORTED_MODULE_1__["WHOLE_NOTE_LENGTH"] / 4 || balken_element.lengthIndicator.renpu != null) || music_context.in_tuplet == true && (balken_element.lengthIndicator.renpu == null || music_context.first_li.renpu != balken_element.lengthIndicator.renpu || music_context.cumal_block_duration + balken_element.chord_length > _threshDuration); // Flush current groups
+
+
+          if ( //(balken_element.chord_length >= common.WHOLE_NOTE_LENGTH / 4 
+          //    || e instanceof common.Rest) &&
+          // balken_element.chord_length >= threshDuration &&
+          // balken.groups.length > 0
+          _flushCond) {
+            var dbret = this.draw_rs_area_balkens(true, draw_scale, paper, balken, rs_y_base, row_height, meas_start_x, music_context, meas, param);
+            balken.groups = [];
+            x = dbret.x;
+            music_context.first_li = balken_element.lengthIndicator; // update the head li
+
+            music_context.cumal_block_duration = 0;
+            if (music_context.in_tuplet == false && balken_element.lengthIndicator.renpu != null) music_context.in_tuplet = true;else if (music_context.in_tuplet == true && balken_element.lengthIndicator.renpu == null) music_context.in_tuplet = false;
+          }
+        } else {
+          music_context.first_li = balken_element.lengthIndicator;
+          music_context.in_tuplet = balken_element.lengthIndicator.renpu != null;
         }
 
-        music_context.pos_in_a_measure += balken_element.chord_length; // This needed because we need to draw bars or balken etc... for some group of elements.
+        music_context.pos_in_a_measure += balken_element.chord_length;
+        music_context.cumal_block_duration += balken_element.chord_length; // This needed because we need to draw bars or balken etc... for some group of elements.
         // Such bars or balken are drawn only when required elements are all collected.
 
         balken.groups.push({
@@ -20337,13 +20415,24 @@ var Renderer = /*#__PURE__*/function () {
           org_draw_scale: draw_scale,
           org_room_for_rs_per_element: room_for_rs_per_element
         });
+        var threshDuration = this.getThreshDuration(music_context.first_li);
+        var flushCond = music_context.in_tuplet == false && (music_context.pos_in_a_measure % (_common_common__WEBPACK_IMPORTED_MODULE_1__["WHOLE_NOTE_LENGTH"] / 4) == 0 || balken_element.chord_length >= _common_common__WEBPACK_IMPORTED_MODULE_1__["WHOLE_NOTE_LENGTH"] / 4) || music_context.in_tuplet == true && music_context.cumal_block_duration == threshDuration;
 
-        if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Rest"] || balken_element.chord_length >= _common_common__WEBPACK_IMPORTED_MODULE_1__["WHOLE_NOTE_LENGTH"] / 4 || music_context.pos_in_a_measure % (_common_common__WEBPACK_IMPORTED_MODULE_1__["WHOLE_NOTE_LENGTH"] / 4) == 0 || ei == elems.length - 1 && is_last_body_elem_group_in_a_measure) {
-          var _dbret = this.draw_rs_area_balkens(true, draw_scale, paper, balken, rs_y_base, row_height, meas_start_x, music_context, meas, param);
+        if ( // e instanceof common.Rest ||
+        // balken_element.chord_length >= common.WHOLE_NOTE_LENGTH / 4 ||
+        // music_context.pos_in_a_measure % (common.WHOLE_NOTE_LENGTH / 4) == 0 ||
+        //balken_element.chord_length >= threshDuration ||
+        flushCond || ei == elems.length - 1 && is_last_body_elem_group_in_a_measure // the last element in a measure
+        ) {
+            var _dbret = this.draw_rs_area_balkens(true, draw_scale, paper, balken, rs_y_base, row_height, meas_start_x, music_context, meas, param);
 
-          x = _dbret.x;
-          balken.groups = [];
-        }
+            x = _dbret.x;
+            balken.groups = [];
+            music_context.first_li = null; // update the head li
+
+            music_context.cumal_block_duration = 0;
+            music_context.in_tuplet = false;
+          }
       }
 
       return {
@@ -20666,7 +20755,8 @@ var Renderer = /*#__PURE__*/function () {
       for (var _gbi2 = 0; _gbi2 < balken.groups.length; ++_gbi2) {
         var _e = balken.groups[_gbi2].e;
 
-        if (_e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Chord"] || _e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Rest"]) {
+        if (_e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Chord"]) {
+          //} || e instanceof common.Rest){
           var ys = balken.groups[_gbi2].balken_element.notes_coord.y;
 
           for (var ci = 0; ci < ys.length; ++ci) {
@@ -20963,12 +21053,12 @@ var Renderer = /*#__PURE__*/function () {
             }
           }
         }
-      } else if (balken.groups[0].balken_element.type == "slash" || balken.groups[0].balken_element.type == "notes") {
+      } else if (first_chord_idx >= 0 && (balken.groups[first_chord_idx].balken_element.type == "slash" || balken.groups[first_chord_idx].balken_element.type == "notes")) {
         // This is sigle flag/balken, then scaling apply. This is the only case we apply the scaling
-        var this_elem_draw_scale = balken.groups[0].org_draw_scale; // Normal drawing of flags
+        var this_elem_draw_scale = balken.groups[first_chord_idx].org_draw_scale; // Normal drawing of flags
 
-        var _bar_x2 = balken.groups[0].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
-        var _d = balken.groups[0].balken_element.note_value;
+        var _bar_x2 = balken.groups[first_chord_idx].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
+        var _d = balken.groups[first_chord_idx].balken_element.note_value;
 
         var _numflag = _common_common__WEBPACK_IMPORTED_MODULE_1__["myLog2"](parseInt(_d)) - 2; // 8 and 16 the has same length of vertical bars
         // 32 and uppper will have longer bars of which delta is corresponding to (Num flags - 2)
@@ -20993,7 +21083,7 @@ var Renderer = /*#__PURE__*/function () {
 
           paper.getContext("2d").scale(1.0 / this_elem_draw_scale, 1.0);
         }
-      } else {// Space come in here
+      } else {// Space, Single Rest come in here
       }
 
       return {

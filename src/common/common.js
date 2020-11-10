@@ -897,10 +897,22 @@ export class Chord extends Element {
         var base = parseInt(mm[1]);
         var length = 0;
         var numdot = 0;
+        var renpu = null;
         if (mm[3]) {
             // Renpu
-            var renpu = parseInt(mm[4]);
-            length = WHOLE_NOTE_LENGTH / (base / 2) / renpu;
+            renpu = parseInt(mm[4]);
+            //length = WHOLE_NOTE_LENGTH / (base / 2) / renpu;
+            let base_length = 0;
+            if(renpu == 2){
+                base_length = WHOLE_NOTE_LENGTH/base/2*3; // shall be integer
+            }else if(renpu == 3){
+                base_length = WHOLE_NOTE_LENGTH/base*2; // shall be integer
+            }else if(renpu <= 7){
+                base_length = WHOLE_NOTE_LENGTH/base*4; // shall be integer
+            }else if(renpu <= 15){
+                base_length = WHOLE_NOTE_LENGTH/base*8; // shall be integer
+            }
+            length = base_length / renpu;
         } else {
             length = WHOLE_NOTE_LENGTH / base;
             var tp = length;

@@ -888,7 +888,11 @@ export class DefaultRenderer extends Renderer {
                 rs_prev_tie_paper: null,
                 prev_has_tie: false
             },
-            pos_in_a_measure: 0
+            pos_in_a_measure: 0,
+
+            cumal_block_duration: 0, // Culmative duration of this blaken block.
+            first_li: null, // length indicator of the first element amongcurrently stored elements. This shall be non-null other than first state
+            in_tuplet: false // tuplet mode or not
         };
 
         let meas_row_list = [];
@@ -1410,6 +1414,9 @@ export class DefaultRenderer extends Renderer {
 
             // Reset music context
             music_context.pos_in_a_measure = 0; // reset
+            music_context.cumal_block_duration = 0;
+            music_context.first_li = null;
+            music_context.in_tuplet = false;
             // TODO : consider key infomration
             // TODO : consider tie
             // C3 -> 0x3C as 0 C-2 as index 0, G8 as 127(0x7F)
@@ -1998,6 +2005,9 @@ export class DefaultRenderer extends Renderer {
 
             // Reset music context
             music_context.pos_in_a_measure = 0; // reset
+            music_context.cumal_block_duration = 0; 
+            music_context.first_li = null;
+            music_context.in_tuplet = false;
             // TODO : consider key infomration
             // TODO : consider tie
             // C3 -> 0x3C as 0 C-2 as index 0, G8 as 127(0x7F)

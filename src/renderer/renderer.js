@@ -257,6 +257,24 @@ export class Renderer {
             _halfdim_exists: _minor_exists && _7exists && _minus5exists
 		};
     }
+
+    getThreshDuration(li){
+        let renpu = li.renpu;
+        let base  = li.base;
+        let base_length = 0;
+        if(!renpu){
+            base_length = common.WHOLE_NOTE_LENGTH/4;
+        }else if(renpu == 2){
+            base_length = common.WHOLE_NOTE_LENGTH/base/2*3; // shall be integer
+        }else if(renpu == 3){
+            base_length = common.WHOLE_NOTE_LENGTH/base*2; // shall be integer
+        }else if(renpu <= 7){
+            base_length = common.WHOLE_NOTE_LENGTH/base*4; // shall be integer
+        }else if(renpu <= 15){
+            base_length = common.WHOLE_NOTE_LENGTH/base*8; // shall be integer
+        }
+        return base_length;
+    }
     
     render_rs_area(
         x,          // This represents screen position and scaling is not considered
@@ -283,40 +301,110 @@ export class Renderer {
 
             let balken_element = e.renderprop.balken_element; // this is corresponds to single flex element
 
-            // Flush current groups
-            if (
-                (balken_element.chord_length >= common.WHOLE_NOTE_LENGTH / 4 
-                    || e instanceof common.Rest) &&
-                balken.groups.length > 0
-            ) {
-                var dbret = this.draw_rs_area_balkens(
-                    true, 
-                    draw_scale,
-                    paper,
-                    balken,
-                    rs_y_base,
-                    row_height,
-                    meas_start_x,
-                    music_context,
-                    meas,
-                    param
+            // Rule of balken grouping:
+            // tuplet is prioritized
+            //   : if xplet is detected, the contiguous elements(either slash, note, rest) with the same(or integer multiple) 
+            //     length are grouped until the sum of length reaches the base length( i.e. 4_3 -> 2, 4_5 -> 1)
+            //     note that xplet notation rule is :
+            //       - triplet : base length is 2 times of time value : e.g. 8_3 8_3 8_3 = 4
+            //       - 5, 6, 7 : base length is 4 times of time value : e.g. 4_5,...,4_5 = 1
+            //       - 9 ~ 15  : base length is 8 times of time value : e.g. 8_9,....,8_9 = 1
+            //       - duplet  : base length is 1.5 times of time value : 2_2 2_2 = 2., 8_2 8_2 -> 8.
+            // fallback to the default grouping policy:
+            //   - Rest is singleton
+            //   - If the contiguous notes/slashes 's length becomes larger than 4th note, balken are separated.
+
+            // Flush current groups if needed
+            if(balken.groups.length > 0){
+
+                let threshDuration = this.getThreshDuration(music_context.first_li);
+
+                let flushCond = 
+                (
+                    music_context.in_tuplet == false &&
+                    (
+                        ( balken_element.chord_length >= common.WHOLE_NOTE_LENGTH / 4 ) ||
+                        ( balken_element.lengthIndicator.renpu != null) 
+                    ) 
+                ) ||
+                (
+                    music_context.in_tuplet == true &&
+                    (
+                        ( balken_element.lengthIndicator.renpu == null) ||
+                        ( music_context.first_li.renpu != balken_element.lengthIndicator.renpu) ||
+                        ( music_context.cumal_block_duration + balken_element.chord_length > threshDuration)
+                    )
                 );
-                balken.groups = [];
-                x = dbret.x;
+    
+                // Flush current groups
+                if (
+                    //(balken_element.chord_length >= common.WHOLE_NOTE_LENGTH / 4 
+                    //    || e instanceof common.Rest) &&
+                    // balken_element.chord_length >= threshDuration &&
+                    // balken.groups.length > 0
+                    flushCond
+                ) {
+                    var dbret = this.draw_rs_area_balkens(
+                        true, 
+                        draw_scale,
+                        paper,
+                        balken,
+                        rs_y_base,
+                        row_height,
+                        meas_start_x,
+                        music_context,
+                        meas,
+                        param
+                    );
+                    balken.groups = [];
+                    x = dbret.x;
+
+                    music_context.first_li = balken_element.lengthIndicator; // update the head li
+                    music_context.cumal_block_duration = 0; 
+
+
+                    if(music_context.in_tuplet == false && balken_element.lengthIndicator.renpu != null)
+                        music_context.in_tuplet = true;
+                    else if(music_context.in_tuplet == true && balken_element.lengthIndicator.renpu == null)
+                        music_context.in_tuplet = false;
+                }
+            }else{
+                music_context.first_li = balken_element.lengthIndicator;
+                music_context.in_tuplet = (balken_element.lengthIndicator.renpu != null);
             }
             
             music_context.pos_in_a_measure += balken_element.chord_length;
+            music_context.cumal_block_duration += balken_element.chord_length;
 
             // This needed because we need to draw bars or balken etc... for some group of elements.
             // Such bars or balken are drawn only when required elements are all collected.
             balken.groups.push({balken_element:balken_element,e:e,
                 org_x:x,org_draw_scale:draw_scale,org_room_for_rs_per_element:room_for_rs_per_element});
 
-            if (
-                e instanceof common.Rest ||
-                balken_element.chord_length >= common.WHOLE_NOTE_LENGTH / 4 ||
-                music_context.pos_in_a_measure % (common.WHOLE_NOTE_LENGTH / 4) == 0 ||
-                (ei == elems.length - 1 && is_last_body_elem_group_in_a_measure)
+            let threshDuration = this.getThreshDuration(music_context.first_li);
+
+            let flushCond = 
+            (
+                music_context.in_tuplet == false &&
+                (
+                    ( music_context.pos_in_a_measure % (common.WHOLE_NOTE_LENGTH / 4) == 0 ) ||
+                    ( balken_element.chord_length >= common.WHOLE_NOTE_LENGTH / 4 )
+                ) 
+            ) ||
+            (
+                music_context.in_tuplet == true &&
+                (
+                    ( music_context.cumal_block_duration == threshDuration )
+                )
+            );
+
+            if ( 
+                // e instanceof common.Rest ||
+                // balken_element.chord_length >= common.WHOLE_NOTE_LENGTH / 4 ||
+                // music_context.pos_in_a_measure % (common.WHOLE_NOTE_LENGTH / 4) == 0 ||
+                //balken_element.chord_length >= threshDuration ||
+                flushCond || 
+                (ei == elems.length - 1 && is_last_body_elem_group_in_a_measure) // the last element in a measure
             ) {
                 let dbret = this.draw_rs_area_balkens(
                     true, 
@@ -332,6 +420,9 @@ export class Renderer {
                 );
                 x = dbret.x;
                 balken.groups = [];
+                music_context.first_li = null; // update the head li
+                music_context.cumal_block_duration = 0; 
+                music_context.in_tuplet = false;
             }
         }
 
@@ -710,7 +801,7 @@ export class Renderer {
         for (let gbi = 0; gbi < balken.groups.length; ++gbi) {
             let e = balken.groups[gbi].e;
 
-            if(e instanceof common.Chord || e instanceof common.Rest){
+            if(e instanceof common.Chord){ //} || e instanceof common.Rest){
 
                 let ys = balken.groups[gbi].balken_element.notes_coord.y;
 
@@ -1128,14 +1219,15 @@ export class Renderer {
                 }
             }
         } else if (
-            ( balken.groups[0].balken_element.type == "slash" || balken.groups[0].balken_element.type == "notes")
+            ( first_chord_idx >= 0 ) &&
+            ( balken.groups[first_chord_idx].balken_element.type == "slash" || balken.groups[first_chord_idx].balken_element.type == "notes")
         ) {
             // This is sigle flag/balken, then scaling apply. This is the only case we apply the scaling
-            let this_elem_draw_scale = balken.groups[0].org_draw_scale;
+            let this_elem_draw_scale = balken.groups[first_chord_idx].org_draw_scale;
 
             // Normal drawing of flags
-            let bar_x = balken.groups[0].balken_element.notes_coord.x[0][upper_flag?2:1];
-            let d = balken.groups[0].balken_element.note_value;
+            let bar_x = balken.groups[first_chord_idx].balken_element.notes_coord.x[0][upper_flag?2:1];
+            let d = balken.groups[first_chord_idx].balken_element.note_value;
             let numflag = common.myLog2(parseInt(d)) - 2;
 
             // 8 and 16 the has same length of vertical bars
@@ -1159,7 +1251,7 @@ export class Renderer {
 
             }
         }else{
-            // Space come in here
+            // Space, Single Rest come in here
         }
 
         return { x: x, bb: bounding_box };

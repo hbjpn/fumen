@@ -1364,7 +1364,7 @@ export class Renderer {
                 } else {
                     let r = graphic.CanvasLine(paper,
                         bar_x,
-                        ys[0] + 3,
+                        ys[0] + (upper_flag ? -3 : +3),
                         bar_x,
                         slope * bar_x + intercept,
                         {width:1}, draw);

@@ -20688,19 +20688,101 @@ var Renderer = /*#__PURE__*/function () {
       };
     }
   }, {
+    key: "balkenGrouping",
+    value: function balkenGrouping(balken) {
+      //下記でクラス分けする : balkenGrouping()
+      //休符は独立 a)
+      //4分(連符除く)以上は独立 b)
+      //隣が休符 or 4分である単独の8分およびそれより短いNote c)
+      //8分およびそれより短いNoteは隣り合う同じ音価のNoteをグルーピング→これらは同じ数のバーデ結ばれる d)
+      var balkenGroups = [];
+
+      for (var gbi = 0; gbi < balken.groups.length; ++gbi) {
+        //let ys = balken.groups[gbi].balken_element.notes_coord[1]; // This is relative value to rs_y_base
+        var g = balken.groups[gbi];
+
+        if (g.e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Rest"]) {
+          balkenGroups.push({
+            type: "a",
+            elem: [g]
+          });
+        } else if (g.e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Chord"] && g.balken_element.note_value <= 4) {
+          balkenGroups.push({
+            type: "b",
+            elem: [g]
+          });
+        } else {
+          // 8-th and shorter Chord
+          var tmp = [g];
+          var t_gbi = gbi + 1;
+
+          while (t_gbi < balken.groups.length) {
+            if (balken.groups[t_gbi].e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Chord"] && balken.groups[t_gbi].balken_element.note_value >= 8) {
+              tmp.push(balken.groups[t_gbi]);
+              ++t_gbi;
+            } else {
+              break;
+            }
+          }
+
+          if (tmp.length == 1) {
+            balkenGroups.push({
+              type: "c",
+              elem: tmp
+            });
+          } else {
+            balkenGroups.push({
+              type: "d",
+              elem: tmp
+            });
+          }
+
+          gbi = t_gbi - 1; // as outer for will increment gbi, minus 1 here.
+        }
+      }
+
+      return balkenGroups;
+    }
+  }, {
     key: "draw_rs_area_balkens",
     value: function draw_rs_area_balkens(draw, draw_scale, // This is the draw scale of latest element, coudl be differnt from draw scale of old eleents in registred bolken groups
     paper, balken, rs_y_base, row_height, meas_start_x, music_context, meas, param) {
-      var _this = this;
-
       var bounding_box = new _graphic__WEBPACK_IMPORTED_MODULE_2__["BoundingBox"](); // Evaluate the flag direction(up or down) by the center of the y-axis position of all the notes/slashes
 
-      var _5lines_intv = row_height / 4; // 0. make notes_coord for y axis
+      var _5lines_intv = row_height / 4;
+
+      var x = balken.groups[0].org_x; // on screen position, no scaling applied
+      // Balken Grouping
+
+      var balkenGroups = this.balkenGrouping(balken); // Draw Balken for each group
+
+      for (var i = 0; i < balkenGroups.length; ++i) {
+        var balkenGroup = balkenGroups[i]; // a : sole Rest
+        // b : sole Chord/Note of 4th note and longer
+        // c : sole CHord/Note with shorter than 4th note but is judged as sole note
+        // d : more than 1 contiguous chords with shorter than 4th notes. Balken will be drawn.
+
+        if (balkenGroup.type == "a" || balkenGroup.type == "b" || balkenGroup.type == "c") {
+          x = this.draw_balken_abc(balkenGroup, x, rs_y_base, _5lines_intv, bounding_box, param, paper, draw, row_height, music_context, meas_start_x, meas, draw_scale);
+        } else if (balkenGroup.type == "d") {
+          // This is what we need to call draw balken
+          x = this.draw_balken_d(balkenGroup, x, rs_y_base, _5lines_intv, param, bounding_box, paper, draw, music_context, row_height, meas_start_x, meas, draw_scale);
+        }
+      } // Draw tuplet signs if needed
 
 
-      for (var _gbi = 0; _gbi < balken.groups.length; ++_gbi) {
-        //let ys = balken.groups[gbi].balken_element.notes_coord[1]; // This is relative value to rs_y_base
-        var e = balken.groups[_gbi].e;
+      this.draw_tuplet(balken, balkenGroups, bounding_box, paper, draw, param);
+      return {
+        x: x,
+        bb: bounding_box
+      }; // Draw tuplet marks
+    }
+  }, {
+    key: "setNoteYCoords",
+    value: function setNoteYCoords(balkenGroup, rs_y_base, _5lines_intv) {
+      for (var gbi = 0; gbi < balkenGroup.length; ++gbi) {
+        //let ys = balkenGroup[gbi].balken_element.notes_coord[1]; // This is relative value to rs_y_base
+        var e = balkenGroup[gbi].e;
         var group_y = [];
 
         if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Space"] || e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Simile"]) {
@@ -20741,10 +20823,12 @@ var Renderer = /*#__PURE__*/function () {
           }
         }
 
-        balken.groups[_gbi].balken_element.notes_coord.y = group_y;
-      } // 1. determine the flag direction here
-
-
+        balkenGroup[gbi].balken_element.notes_coord.y = group_y;
+      }
+    }
+  }, {
+    key: "determineFlagDirections",
+    value: function determineFlagDirections(balkenGroup, rs_y_base, _5lines_intv) {
       var center_y = 0.0;
       var min_y = 10000000;
       var max_y = 0;
@@ -20752,24 +20836,24 @@ var Renderer = /*#__PURE__*/function () {
       var gbi_at_max_y = null;
       var cnt_y = 0;
 
-      for (var _gbi2 = 0; _gbi2 < balken.groups.length; ++_gbi2) {
-        var _e = balken.groups[_gbi2].e;
+      for (var gbi = 0; gbi < balkenGroup.length; ++gbi) {
+        var e = balkenGroup[gbi].e;
 
-        if (_e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Chord"]) {
+        if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Chord"]) {
           //} || e instanceof common.Rest){
-          var ys = balken.groups[_gbi2].balken_element.notes_coord.y;
+          var ys = balkenGroup[gbi].balken_element.notes_coord.y;
 
           for (var ci = 0; ci < ys.length; ++ci) {
             center_y += ys[ci];
 
             if (min_y > ys[ci]) {
               min_y = ys[ci];
-              gbi_at_min_y = _gbi2;
+              gbi_at_min_y = gbi;
             }
 
             if (max_y < ys[ci]) {
               max_y = ys[ci];
-              gbi_at_max_y = _gbi2;
+              gbi_at_max_y = gbi;
             }
 
             cnt_y += 1;
@@ -20780,13 +20864,23 @@ var Renderer = /*#__PURE__*/function () {
 
       center_y = Math.floor(center_y / cnt_y);
       var upper_flag = center_y > rs_y_base + _5lines_intv * 2;
-      var x = balken.groups[0].org_x; // on screen position, no scaling applied
-      // 2. Draw notes and slashes without bars, flags and balkens
+      return {
+        upper_flag: upper_flag,
+        gbi_at_min_y: gbi_at_min_y,
+        gbi_at_max_y: gbi_at_max_y,
+        min_y: min_y,
+        max_y: max_y
+      };
+    }
+  }, {
+    key: "draw_without_balkens_wrap",
+    value: function draw_without_balkens_wrap(balkenGroup, paper, draw, param, rs_y_base, row_height, bounding_box, music_context, x, upper_flag, meas_start_x, meas, draw_scale) {
+      var _this = this;
 
-      var _loop = function _loop(_gbi3) {
-        var this_elem_draw_scale = balken.groups[_gbi3].org_draw_scale;
-        var e = balken.groups[_gbi3].e;
-        var balken_element = balken.groups[_gbi3].balken_element;
+      var _loop = function _loop(gbi) {
+        var this_elem_draw_scale = balkenGroup[gbi].org_draw_scale;
+        var e = balkenGroup[gbi].e;
+        var balken_element = balkenGroup[gbi].balken_element;
         var ys = balken_element.notes_coord.y;
         d = balken_element.note_value;
         paper.getContext("2d").scale(this_elem_draw_scale, 1); // Here all the output and set value by following funtion will be that with scaling apply.
@@ -20823,40 +20917,40 @@ var Renderer = /*#__PURE__*/function () {
               throw "INVALID TIE NOTATION";
             }
 
-            var _dy2 = 0;
+            var dy = 0;
             var sdx = 0;
             var edx = 0;
             var round = 0;
 
-            if (balken.groups[_gbi3].balken_element.type == "slash") {
+            if (balkenGroup[gbi].balken_element.type == "slash") {
               // slash only has down flag
-              _dy2 = -3;
+              dy = -3;
               sdx = 3;
               edx = 0;
               round = 6;
             } else {
               // notes
               if (upper_flag) {
-                _dy2 = 3;
+                dy = 3;
                 sdx = 3;
                 edx = -3;
                 round = -6;
               } else {
-                _dy2 = -3;
+                dy = -3;
                 sdx = 3;
                 edx = -3;
                 round = 6;
               }
             }
 
-            for (var _ci = 0; _ci < ys.length; ++_ci) {
-              var y = ys[_ci]; //let prev_draw_scale = music_context.tie_info.rs_prev_draw_scale;
+            for (var ci = 0; ci < ys.length; ++ci) {
+              var y = ys[ci]; //let prev_draw_scale = music_context.tie_info.rs_prev_draw_scale;
 
-              if (y != prev_coord.y[_ci] || music_context.tie_info.rs_prev_tie_paper != paper) {
+              if (y != prev_coord.y[ci] || music_context.tie_info.rs_prev_tie_paper != paper) {
                 // Crossing measure row. Previous RS mark could be on another page.
                 // Make sure to create curve on the paper on which previous RS is drawn.
-                brace_points = [[prev_coord.x[_ci][3] + sdx, prev_coord.y[_ci] + _dy2], [prev_coord.x[_ci][3] + sdx, prev_coord.y[_ci] - round + _dy2], [psm.renderprop.meas_end_x + 20, prev_coord.y[_ci] - round + _dy2], [psm.renderprop.meas_end_x + 20, prev_coord.y[_ci] + _dy2]];
-                var clip_rect = [prev_coord.x[_ci][3] + sdx, prev_coord.y[_ci] - 50, psm.renderprop.meas_end_x - (prev_coord.x[_ci][3] + sdx) + 5, 100]; // eslint-disable-next-line no-constant-condition
+                brace_points = [[prev_coord.x[ci][3] + sdx, prev_coord.y[ci] + dy], [prev_coord.x[ci][3] + sdx, prev_coord.y[ci] - round + dy], [psm.renderprop.meas_end_x + 20, prev_coord.y[ci] - round + dy], [psm.renderprop.meas_end_x + 20, prev_coord.y[ci] + dy]];
+                var clip_rect = [prev_coord.x[ci][3] + sdx, prev_coord.y[ci] - 50, psm.renderprop.meas_end_x - (prev_coord.x[ci][3] + sdx) + 5, 100]; // eslint-disable-next-line no-constant-condition
 
                 if (false) {} // In case the previous paper is in the same paper, "draw_scale" is currently applied,
                 // then temporaryly deactivate scaling.
@@ -20871,21 +20965,21 @@ var Renderer = /*#__PURE__*/function () {
                 _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasbBzierCurve"](music_context.tie_info.rs_prev_tie_paper, brace_points, false, false, {
                   "clip-rect": clip_rect
                 });
-                brace_points = [[meas_start_x - 20, y + _dy2], [meas_start_x - 20, y - round + _dy2], [xs[_ci][0] + edx, y - round + _dy2], [xs[_ci][0] + edx, y + _dy2]];
+                brace_points = [[meas_start_x - 20, y + dy], [meas_start_x - 20, y - round + dy], [xs[ci][0] + edx, y - round + dy], [xs[ci][0] + edx, y + dy]];
                 clip_rect = [meas_start_x - 5, y - 50, x - (meas_start_x - 5), 100]; //paper.getContext("2d").scale(1.0/draw_scale, 1.0);
 
                 _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasbBzierCurve"](paper, brace_points, false, false, {
                   "clip-rect": clip_rect
                 }); //paper.getContext("2d").scale(draw_scale, 1.0);
               } else {
-                var _brace_points = [[prev_coord.x[_ci][3] + sdx, prev_coord.y[_ci] + _dy2], [prev_coord.x[_ci][3] + sdx, prev_coord.y[_ci] - round + _dy2], [xs[_ci][0] + edx, y - round + _dy2], [xs[_ci][0] + edx, y + _dy2]]; //paper.getContext("2d").scale(1.0/draw_scale, 1.0);
+                var _brace_points = [[prev_coord.x[ci][3] + sdx, prev_coord.y[ci] + dy], [prev_coord.x[ci][3] + sdx, prev_coord.y[ci] - round + dy], [xs[ci][0] + edx, y - round + dy], [xs[ci][0] + edx, y + dy]]; //paper.getContext("2d").scale(1.0/draw_scale, 1.0);
 
                 _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasbBzierCurve"](paper, _brace_points, false, false); //paper.getContext("2d").scale(draw_scale, 1.0);
               }
             }
           }
 
-          music_context.tie_info.rs_prev_has_tie = balken.groups[_gbi3].balken_element.has_tie;
+          music_context.tie_info.rs_prev_has_tie = balkenGroup[gbi].balken_element.has_tie;
           music_context.tie_info.rs_prev_tie_paper = paper;
           music_context.tie_info.rs_prev_coord = balken_element.notes_coord;
           music_context.tie_info.rs_prev_draw_scale = draw_scale;
@@ -20896,201 +20990,831 @@ var Renderer = /*#__PURE__*/function () {
         balken_element.renderprop.x = x; // Here is the only update of x
         //   * org_room_for_rs_per_element is with on-screen coordinates. In case scaling apply, this value is already set to 0.
 
-        x += wo_flags.bounding_box.width() + balken.groups[_gbi3].org_room_for_rs_per_element; // TODO : FIXME to cater for actual width of components
+        x += wo_flags.bounding_box.width() + balkenGroup[gbi].org_room_for_rs_per_element; // TODO : FIXME to cater for actual width of components
       };
 
-      for (var _gbi3 = 0; _gbi3 < balken.groups.length; ++_gbi3) {
+      for (var gbi = 0; gbi < balkenGroup.length; ++gbi) {
         var d;
         var prev_coord;
         var psm;
         var brace_points;
 
-        _loop(_gbi3);
-      } // 3. Determine the flag intercept and slope
-      // From here other than slash and notes are not reuiqred.
-
-
-      if (gbi_at_max_y === null && gbi_at_min_y === null) {
-        // In case no chord or rest, no y information defined.
-        return {
-          x: x,
-          bb: bounding_box
-        };
-      } // Slope and intercepts are calucated for the first and last Chord element. Space is skipped.
-
-
-      var first_chord_idx = balken.groups.findIndex(function (g) {
-        return g.e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Chord"];
-      });
-      var last_chord_idx = _common_common__WEBPACK_IMPORTED_MODULE_1__["findLastIndex"](balken.groups, function (g) {
-        return g.e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Chord"];
-      });
-      var bridge_balken = first_chord_idx >= 0 && first_chord_idx != last_chord_idx;
-      var x_at_min_y = balken.groups[gbi_at_min_y].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
-      var x_at_max_y = balken.groups[gbi_at_max_y].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
-      var slope = 0;
-
-      if (bridge_balken) {
-        var ps_y = balken.groups[first_chord_idx].balken_element.notes_coord.y;
-        var ps_bar_x = balken.groups[first_chord_idx].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
-        var pe_y = balken.groups[last_chord_idx].balken_element.notes_coord.y;
-        var pe_bar_x = balken.groups[last_chord_idx].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
-        var delta_y = upper_flag ? Math.min.apply(null, pe_y) - Math.min.apply(null, ps_y) : Math.max.apply(null, pe_y) - Math.max.apply(null, ps_y);
-        slope = delta_y / (pe_bar_x - ps_bar_x);
-      } else {
-        slope = 1.0; // any value is OK
+        _loop(gbi);
       }
 
-      var intercept = (upper_flag ? min_y - param.note_bar_length : max_y + param.note_bar_length) - slope * (upper_flag ? x_at_min_y : x_at_max_y); // 4. Draw vertical bars
+      return x;
+    }
+  }, {
+    key: "draw_tuplet",
+    value: function draw_tuplet(balken, balkenGroups, bounding_box, paper, draw, param) {
+      // Draw tuplet(renpu) marker.
+      // Tuplet marker drawing is possible even if no balken drawn. e.g. 
+      var tuplet = balken.groups[0].balken_element.lengthIndicator.renpu; // TODO : Space should be eliminated
 
-      for (var gbi = 0; gbi < balken.groups.length; ++gbi) {
+      if (!tuplet) return; // No tuplet.
+
+      var pssx = balken.groups[0].balken_element.notes_coord.x[0][1];
+      var psex = balken.groups[balken.groups.length - 1].balken_element.notes_coord.x[0][2];
+      var ro = 10;
+      var center_x = (pssx + psex) / 2.0;
+      var inherit_balken = balkenGroups.length == 1 && balkenGroups[0].type == "d";
+      var slope = 0.0;
+      var intercept = 0.0;
+      var upper_position = true; // By default put it in the upper position.
+
+      if (inherit_balken) {
+        slope = balkenGroups[0].balken_draw_info.slope;
+        intercept = balkenGroups[0].balken_draw_info.intercept;
+        upper_position = balkenGroups[0].balken_draw_info.upper_flag;
+      } else {
+        // Draw tuplet mark irrespective of slope for balken
+        var chords = balkenGroups.filter(function (bg) {
+          return bg.type != "a";
+        });
+        slope = 0.0; // horizontal line for now
+
+        var really_min_y = Math.min.apply(null, chords.map(function (bg) {
+          return bg.balken_draw_info.min_y;
+        }));
+        var really_max_y = Math.max.apply(null, chords.map(function (bg) {
+          return bg.balken_draw_info.max_y;
+        }));
+        var num_upper_flag = chords.filter(function (bg) {
+          return bg.balken_draw_info.upper_flag == true;
+        }).length;
+        upper_position = num_upper_flag > chords.length - num_upper_flag; // Pla
+
+        intercept = upper_position ? really_min_y - param.note_bar_length : really_max_y + param.note_bar_length;
+      }
+
+      var r = _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasText"](paper, center_x, slope * center_x + intercept + (upper_position ? -ro : ro), tuplet + "", 12, "cm", undefined, !draw);
+      bounding_box.add_BB(r.bb); // eslint-disable-next-line no-constant-condition
+
+      if (!inherit_balken) {
+        //same_sds[0].balken_element.note_value < 8) {
+        var rno = 10;
+        var rnh = 4;
+        var points1 = [[pssx, slope * pssx + intercept + (upper_position ? -rnh : rnh)], [pssx, slope * pssx + intercept + (upper_position ? -rno : rno)], [center_x - 7, slope * (center_x - 7) + intercept + (upper_position ? -rno : rno)]];
+        var points2 = [[center_x + 7, slope * (center_x + 7) + intercept + (upper_position ? -rno : rno)], [psex, slope * psex + intercept + (upper_position ? -rno : rno)], [psex, slope * psex + intercept + (upper_position ? -rnh : rnh)]];
+
+        var _r2 = _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasPolygon"](paper, points1, false, false, null, draw);
+
+        bounding_box.add_BB(_r2.bb);
+        _r2 = _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasPolygon"](paper, points2, false, false, null, draw);
+        bounding_box.add_BB(_r2.bb);
+      }
+    }
+  }, {
+    key: "draw_balken_abc",
+    value: function draw_balken_abc(balkenGroup, x, rs_y_base, _5lines_intv, bounding_box, param, paper, draw, row_height, music_context, meas_start_x, meas, draw_scale) {
+      var elements = balkenGroup.elem;
+
+      if (elements.length != 1) {
+        throw "Invalid contenxt";
+      } // 0. make notes_coord for y axis
+
+
+      this.setNoteYCoords(elements, rs_y_base, _5lines_intv); // 1. determine the flag direction here
+
+      var dfret = this.determineFlagDirections(elements, rs_y_base, _5lines_intv);
+      var upper_flag = dfret.upper_flag;
+      balkenGroup.balken_draw_info = Object.assign({}, dfret); //let x = balkenGroup[0].org_x; // on screen position, no scaling applied
+      // 2. Draw notes and slashes without bars, flags and balkens
+
+      x = this.draw_without_balkens_wrap(elements, paper, draw, param, rs_y_base, row_height, bounding_box, music_context, x, upper_flag, meas_start_x, meas, draw_scale);
+
+      if (!(elements[0].e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Chord"])) {
+        return x; //{ x: x, bb: bounding_box };
+      } // 4. Draw vertical bars
+
+
+      for (var gbi = 0; gbi < elements.length; ++gbi) {
         // Currnetly, not apply scaling for vertical line and line width 1 always set to 1
-        var _ys = balken.groups[gbi].balken_element.notes_coord.y;
-        var xs = balken.groups[gbi].balken_element.notes_coord.x;
+        var ys = elements[gbi].balken_element.notes_coord.y;
+        var xs = elements[gbi].balken_element.notes_coord.x;
+        var _d = elements[gbi].balken_element.note_value; //var intercept =
+        //(upper_flag ? min_y - param.note_bar_length : max_y + param.note_bar_length) -
+        //slope * (upper_flag ? x_at_min_y : x_at_max_y);
 
-        if (balken.groups[gbi].balken_element.type == "slash") {
-          var bar_x = upper_flag ? xs[0][2] : xs[0][1]; // eslint-disable-next-line no-empty
+        if (elements[gbi].balken_element.type == "slash") {
+          var _bar_x = upper_flag ? xs[0][2] : xs[0][1]; // eslint-disable-next-line no-empty
 
-          if (d == "0" || d == "1") {} else {
-            var r = _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasLine"](paper, bar_x, _ys[0] + 3, bar_x, slope * bar_x + intercept, {
+
+          if (_d <= 1) {} else {
+            var r = _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasLine"](paper, _bar_x, ys[0] + 3, _bar_x, ys[0] + (upper_flag ? -param.note_bar_length : param.note_bar_length), {
               width: 1
             }, draw);
             bounding_box.add_BB(r.bb);
           } //bar_flag_group.push(o);
 
-        } else if (balken.groups[gbi].balken_element.type == "notes") {
+        } else if (elements[gbi].balken_element.type == "notes") {
           // eslint-disable-next-line no-empty
-          if (d == "0" || d == "1") {} else {
-            var _bar_x = upper_flag ? xs[0][2] : xs[0][1];
+          if (_d <= 1) {} else {
+            var _bar_x2 = upper_flag ? xs[0][2] : xs[0][1];
 
-            var y0 = upper_flag ? Math.max.apply(null, _ys) : Math.min.apply(null, _ys); // Draw the basic vertical line. For the note with standalone flag(s), some additional length will be added when to draw flags.
+            var y0 = upper_flag ? Math.max.apply(null, ys) : Math.min.apply(null, ys);
+            var y1 = upper_flag ? Math.min.apply(null, ys) - param.note_bar_length : Math.max.apply(null, ys) + param.note_bar_length; // Draw the basic vertical line. For the note with standalone flag(s), some additional length will be added when to draw flags.
 
-            var _r2 = _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasLine"](paper, _bar_x, y0, _bar_x, slope * _bar_x + intercept, {
+            var _r3 = _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasLine"](paper, _bar_x2, y0, _bar_x2, y1, {
               width: 1
             }, draw);
 
-            bounding_box.add_BB(_r2.bb);
+            bounding_box.add_BB(_r3.bb);
           } // eslint-disable-next-line no-empty
 
-        } else if (balken.groups[gbi].balken_element.type == "rest") {}
+        } else if (elements[gbi].balken_element.type == "rest") {}
       } //group.push(bar_flag_group);
-      // 5. Draw balkens
+      // 5. Draw flags
+      // This is sigle flag/balken, then scaling apply. This is the only case we apply the scaling
 
 
-      if (bridge_balken) {
-        // Inter-element balkens, no scaling apply (even for single balken)
-        // Draw flag for balken
-        // Common balken
-        if (balken.groups[first_chord_idx].balken_element.note_value >= 8) {
-          var _r3 = _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasLine"](paper, ps_bar_x, slope * ps_bar_x + intercept, pe_bar_x, slope * pe_bar_x + intercept, {
-            width: param.balken_width
-          }, draw);
+      var this_elem_draw_scale = elements[0].org_draw_scale; // Normal drawing of flags
 
-          bounding_box.add_BB(_r3.bb);
-        } // Balken for each note_value level
+      var bar_x = elements[0].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
+      var d = elements[0].balken_element.note_value;
+      var numflag = _common_common__WEBPACK_IMPORTED_MODULE_1__["myLog2"](parseInt(d)) - 2; // 8 and 16 the has same length of vertical bars
+      // 32 and uppper will have longer bars of which delta is corresponding to (Num flags - 2)
 
+      if (numflag >= 1) {
+        var x_adj = -0.5; // subpixel adjustment
 
-        var gg = this.to_same_value_group(balken.groups, function (o) {
-          return o.balken_element.note_value;
-        });
+        var barlen_delta = Math.max(0, (numflag - 2) * 5); // "5" is magic number adjusted for this paticular font
 
-        for (var g = 0; g < gg.length; ++g) {
-          var same_sds = gg[g];
-          var sd = same_sds[0].balken_element.note_value;
-          var numflag = _common_common__WEBPACK_IMPORTED_MODULE_1__["myLog2"](parseInt(sd)) - 2;
+        var flag_w = _5lines_intv * 1.1; // Normalize by width. Unfortunately, it is not easy to normalize with height as the rule is not clear. "1.1" is magic number.
 
-          if (same_sds.length == 1) {
-            var pssx = same_sds[0].balken_element.notes_coord.x[0][upper_flag ? 2 : 1]; // Determine which direction to draw flag. Determined from which neighboring
-            // rhythm is more natural to coupling with.
-            // Currently, simple strategy is adopted for now.
+        var url = "flag_" + (upper_flag ? "f" : "i") + numflag; // for now numflags <= 4
 
-            var dir = 1;
-            if (g == gg.length - 1) dir = -1;
-            var neighbor_x = gg[g + dir][gg[g + dir].length - 1].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
-            var blen = Math.abs(neighbor_x - pssx) * 0.3;
+        var _ys = elements[0].balken_element.notes_coord.y;
+        var _xs = elements[0].balken_element.notes_coord.x;
 
-            for (var fi = 1; fi < numflag; ++fi) {
-              // fi=0 is alread drawn by common balken
-              var _r4 = _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasLine"](paper, pssx, slope * pssx + intercept + (upper_flag ? +1 : -1) * fi * param.note_flag_interval, pssx + dir * blen, slope * (pssx + dir * blen) + intercept + (upper_flag ? +1 : -1) * fi * param.note_flag_interval, {
-                width: param.balken_width
-              }, draw);
+        var _y = upper_flag ? Math.max.apply(null, _ys) : Math.min.apply(null, _ys);
 
-              bounding_box.add_BB(_r4.bb);
-            }
-          } else if (same_sds.length >= 2) {
-            var _pssx = same_sds[0].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
-            var psex = same_sds[same_sds.length - 1].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
+        var _y2 = upper_flag ? Math.min.apply(null, _ys) - param.note_bar_length - barlen_delta : Math.max.apply(null, _ys) + param.note_bar_length + barlen_delta;
 
-            for (var _fi = 1; _fi < numflag; ++_fi // fi=0 is alread drawn by common balken
-            ) {
-              var _r5 = _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasLine"](paper, _pssx, slope * _pssx + intercept + (upper_flag ? +1 : -1) * _fi * param.note_flag_interval, psex, slope * psex + intercept + (upper_flag ? +1 : -1) * _fi * param.note_flag_interval, {
-                width: param.balken_width
-              }, draw);
+        paper.getContext("2d").scale(this_elem_draw_scale, 1.0);
 
-              bounding_box.add_BB(_r5.bb);
-            }
+        var _r4 = _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_2__["G_imgmap"][url], (bar_x + x_adj) / this_elem_draw_scale, _y2, flag_w, // No need to apply "/this_elem_draw_scale" otherwise no compression apply :).
+        null, "l" + (upper_flag ? "t" : "b"), draw);
 
-            if (same_sds[0].balken_element.lengthIndicator.renpu) {
-              var ro = 12;
-              var center_x = (_pssx + psex) / 2.0;
+        bounding_box.add_BB(_r4.bb.scale(this_elem_draw_scale, 1.0)); // add based on on-screen coordinates
 
-              var _r6 = _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasText"](paper, center_x, slope * center_x + intercept + (upper_flag ? -ro : ro), same_sds[0].balken_element.lengthIndicator.renpu + "", 12, "cm", undefined, !draw);
-
-              bounding_box.add_BB(_r6.bb);
-
-              if (same_sds[0].balken_element.note_value < 8) {
-                var rno = 10;
-                var rnh = 4;
-                var points1 = [[_pssx, slope * _pssx + intercept + (upper_flag ? -rnh : rnh)], [_pssx, slope * _pssx + intercept + (upper_flag ? -rno : rno)], [center_x - 7, slope * (center_x - 7) + intercept + (upper_flag ? -rno : rno)]];
-                var points2 = [[center_x + 7, slope * (center_x + 7) + intercept + (upper_flag ? -rno : rno)], [psex, slope * psex + intercept + (upper_flag ? -rno : rno)], [psex, slope * psex + intercept + (upper_flag ? -rnh : rnh)]];
-
-                var _r7 = _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasPolygon"](paper, points1, false, false, null, draw);
-
-                bounding_box.add_BB(_r7.bb);
-                _r7 = _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasPolygon"](paper, points2, false, false, null, draw);
-                bounding_box.add_BB(_r7.bb);
-              }
-            }
-          }
-        }
-      } else if (first_chord_idx >= 0 && (balken.groups[first_chord_idx].balken_element.type == "slash" || balken.groups[first_chord_idx].balken_element.type == "notes")) {
-        // This is sigle flag/balken, then scaling apply. This is the only case we apply the scaling
-        var this_elem_draw_scale = balken.groups[first_chord_idx].org_draw_scale; // Normal drawing of flags
-
-        var _bar_x2 = balken.groups[first_chord_idx].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
-        var _d = balken.groups[first_chord_idx].balken_element.note_value;
-
-        var _numflag = _common_common__WEBPACK_IMPORTED_MODULE_1__["myLog2"](parseInt(_d)) - 2; // 8 and 16 the has same length of vertical bars
-        // 32 and uppper will have longer bars of which delta is corresponding to (Num flags - 2)
-
-
-        if (_numflag >= 1) {
-          var x_adj = -0.5; // subpixel adjustment
-
-          var barlen_delta = Math.max(0, (_numflag - 2) * 5); // "5" is magic number adjusted for this paticular font
-
-          var flag_w = _5lines_intv * 1.1; // Normalize by width. Unfortunately, it is not easy to normalize with height as the rule is not clear. "1.1" is magic number.
-
-          var url = "flag_" + (upper_flag ? "f" : "i") + _numflag; // for now numflags <= 4
-
-          paper.getContext("2d").scale(this_elem_draw_scale, 1.0);
-
-          var _r8 = _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasImage"](paper, _graphic__WEBPACK_IMPORTED_MODULE_2__["G_imgmap"][url], (_bar_x2 + x_adj) / this_elem_draw_scale, slope * _bar_x2 + intercept + (upper_flag ? -barlen_delta : barlen_delta), // y coordinates kep the same, then no need to apply scaling
-          flag_w, // No need to apply "/this_elem_draw_scale" otherwise no compression apply :).
-          null, "l" + (upper_flag ? "t" : "b"), draw);
-
-          bounding_box.add_BB(_r8.bb.scale(this_elem_draw_scale, 1.0)); // add based on on-screen coordinates
-
-          paper.getContext("2d").scale(1.0 / this_elem_draw_scale, 1.0);
-        }
-      } else {// Space, Single Rest come in here
+        paper.getContext("2d").scale(1.0 / this_elem_draw_scale, 1.0);
       }
 
-      return {
-        x: x,
-        bb: bounding_box
-      };
+      return x; //{ x: x, bb: bounding_box };
     }
+  }, {
+    key: "draw_balken_d",
+    value: function draw_balken_d(balkenGroup, x, rs_y_base, _5lines_intv, param, bounding_box, paper, draw, music_context, row_height, meas_start_x, meas, draw_scale) {
+      var elements = balkenGroup.elem;
+
+      if (!elements.every(function (g) {
+        return g.e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__["Chord"];
+      })) {
+        throw "Invalid contenxt";
+      } // 0. make notes_coord for y axis
+
+
+      this.setNoteYCoords(elements, rs_y_base, _5lines_intv); // 1. determine the flag direction here
+
+      var dfret = this.determineFlagDirections(elements, rs_y_base, _5lines_intv);
+      var upper_flag = dfret.upper_flag;
+      var gbi_at_min_y = dfret.gbi_at_min_y;
+      var gbi_at_max_y = dfret.gbi_at_max_y;
+      var min_y = dfret.min_y;
+      var max_y = dfret.max_y;
+      balkenGroup.balken_draw_info = Object.assign({}, dfret); //let x = balkenGroup[0].org_x; // on screen position, no scaling applied
+      // 2. Draw notes and slashes without bars, flags and balkens
+
+      x = this.draw_without_balkens_wrap(elements, paper, draw, param, rs_y_base, row_height, bounding_box, music_context, x, upper_flag, meas_start_x, meas, draw_scale); // 3. Determine the flag intercept and slope
+      // Slope and intercepts are calucated for the first and last Chord element. Space is skipped.
+      //let first_chord_idx = balkenGroup.findIndex(g=>g.e instanceof common.Chord);
+      //let last_chord_idx  = common.findLastIndex(balkenGroup, g=>g.e instanceof common.Chord);
+      //let bridge_balken = first_chord_idx >= 0 && (first_chord_idx != last_chord_idx);
+
+      var first_chord_idx = 0;
+      var last_chord_idx = elements.length - 1;
+      var x_at_min_y = elements[gbi_at_min_y].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
+      var x_at_max_y = elements[gbi_at_max_y].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
+      var slope = 0;
+      var ps_y = elements[first_chord_idx].balken_element.notes_coord.y;
+      var ps_bar_x = elements[first_chord_idx].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
+      var pe_y = elements[last_chord_idx].balken_element.notes_coord.y;
+      var pe_bar_x = elements[last_chord_idx].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
+      var delta_y = upper_flag ? Math.min.apply(null, pe_y) - Math.min.apply(null, ps_y) : Math.max.apply(null, pe_y) - Math.max.apply(null, ps_y);
+      slope = delta_y / (pe_bar_x - ps_bar_x);
+      var intercept = (upper_flag ? min_y - param.note_bar_length : max_y + param.note_bar_length) - slope * (upper_flag ? x_at_min_y : x_at_max_y);
+      balkenGroup.balken_draw_info.slope = slope;
+      balkenGroup.balken_draw_info.intercept = intercept; // 4. Draw vertical bars
+
+      for (var gbi = 0; gbi < elements.length; ++gbi) {
+        // Currnetly, not apply scaling for vertical line and line width 1 always set to 1
+        var ys = elements[gbi].balken_element.notes_coord.y;
+        var xs = elements[gbi].balken_element.notes_coord.x;
+        var d = elements[gbi].balken_element.note_value;
+
+        if (elements[gbi].balken_element.type == "slash") {
+          var bar_x = upper_flag ? xs[0][2] : xs[0][1]; // eslint-disable-next-line no-empty
+
+          if (d <= 1) {} else {
+            var r = _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasLine"](paper, bar_x, ys[0] + (upper_flag ? -3 : +3), bar_x, slope * bar_x + intercept, {
+              width: 1
+            }, draw);
+            bounding_box.add_BB(r.bb);
+          } //bar_flag_group.push(o);
+
+        } else if (elements[gbi].balken_element.type == "notes") {
+          // eslint-disable-next-line no-empty
+          if (d <= 1) {} else {
+            var _bar_x3 = upper_flag ? xs[0][2] : xs[0][1];
+
+            var y0 = upper_flag ? Math.max.apply(null, ys) : Math.min.apply(null, ys); // Draw the basic vertical line. For the note with standalone flag(s), some additional length will be added when to draw flags.
+
+            var _r5 = _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasLine"](paper, _bar_x3, y0, _bar_x3, slope * _bar_x3 + intercept, {
+              width: 1
+            }, draw);
+
+            bounding_box.add_BB(_r5.bb);
+          } // eslint-disable-next-line no-empty
+
+        } else if (elements[gbi].balken_element.type == "rest") {}
+      } //group.push(bar_flag_group);
+      // 5. Draw balkens
+      // Inter-element balkens, no scaling apply (even for single balken)
+      // Draw flag for balken
+      // Common balken
+
+
+      if (elements[first_chord_idx].balken_element.note_value >= 8) {
+        var _r6 = _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasLine"](paper, ps_bar_x, slope * ps_bar_x + intercept, pe_bar_x, slope * pe_bar_x + intercept, {
+          width: param.balken_width
+        }, draw);
+
+        bounding_box.add_BB(_r6.bb);
+      } // Balken for each note_value level
+
+
+      var gg = this.to_same_value_group(elements, function (o) {
+        return o.balken_element.note_value;
+      });
+
+      for (var g = 0; g < gg.length; ++g) {
+        var same_sds = gg[g];
+        var sd = same_sds[0].balken_element.note_value;
+        var numflag = _common_common__WEBPACK_IMPORTED_MODULE_1__["myLog2"](parseInt(sd)) - 2;
+
+        if (same_sds.length == 1) {
+          var pssx = same_sds[0].balken_element.notes_coord.x[0][upper_flag ? 2 : 1]; // Determine which direction to draw flag. Determined from which neighboring
+          // rhythm is more natural to coupling with.
+          // Currently, simple strategy is adopted for now.
+
+          var dir = 1;
+          if (g == gg.length - 1) dir = -1;
+          var neighbor_x = gg[g + dir][gg[g + dir].length - 1].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
+          var blen = Math.abs(neighbor_x - pssx) * 0.3;
+
+          for (var fi = 1; fi < numflag; ++fi) {
+            // fi=0 is alread drawn by common balken
+            var _r7 = _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasLine"](paper, pssx, slope * pssx + intercept + (upper_flag ? +1 : -1) * fi * param.note_flag_interval, pssx + dir * blen, slope * (pssx + dir * blen) + intercept + (upper_flag ? +1 : -1) * fi * param.note_flag_interval, {
+              width: param.balken_width
+            }, draw);
+
+            bounding_box.add_BB(_r7.bb);
+          }
+        } else if (same_sds.length >= 2) {
+          var _pssx = same_sds[0].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
+          var psex = same_sds[same_sds.length - 1].balken_element.notes_coord.x[0][upper_flag ? 2 : 1];
+
+          for (var _fi = 1; _fi < numflag; ++_fi // fi=0 is alread drawn by common balken
+          ) {
+            var _r8 = _graphic__WEBPACK_IMPORTED_MODULE_2__["CanvasLine"](paper, _pssx, slope * _pssx + intercept + (upper_flag ? +1 : -1) * _fi * param.note_flag_interval, psex, slope * psex + intercept + (upper_flag ? +1 : -1) * _fi * param.note_flag_interval, {
+              width: param.balken_width
+            }, draw);
+
+            bounding_box.add_BB(_r8.bb);
+          }
+          /*
+          if (same_sds[0].balken_element.lengthIndicator.renpu) {
+              var ro = 12;
+              var center_x = (pssx + psex) / 2.0;
+               let r = graphic.CanvasText(paper,
+                  center_x,
+                  slope * center_x +
+                      intercept +
+                      (upper_flag ? -ro : ro),
+                  same_sds[0].balken_element.lengthIndicator.renpu + "",
+                  12,
+                  "cm", undefined, !draw);
+              bounding_box.add_BB(r.bb);
+                if (same_sds[0].balken_element.note_value < 8) {
+                  var rno = 10;
+                  var rnh = 4;
+                   var points1 =
+                      [
+                          [
+                              pssx,
+                              slope * pssx +
+                                  intercept +
+                                  (upper_flag ? -rnh : rnh)
+                          ],
+                          [
+                              pssx,
+                              slope * pssx +
+                                  intercept +
+                                  (upper_flag ? -rno : rno)
+                          ],
+                          [
+                              center_x - 7,
+                              slope * (center_x - 7) +
+                                  intercept +
+                                  (upper_flag ? -rno : rno)
+                          ]
+                      ]; 
+                  
+                  var points2 = 
+                      [
+                          [
+                              center_x + 7,
+                              slope * (center_x + 7) +
+                                  intercept +
+                                  (upper_flag ? -rno : rno)
+                          ],
+                          [
+                              psex,
+                              slope * psex +
+                                  intercept +
+                                  (upper_flag ? -rno : rno)
+                          ],
+                          [
+                              psex,
+                              slope * psex +
+                                  intercept +
+                                  (upper_flag ? -rnh : rnh)
+                          ]
+                      ]; 
+                   let r = graphic.CanvasPolygon(paper, points1, false, false, null, draw);
+                  bounding_box.add_BB(r.bb);
+                  r = graphic.CanvasPolygon(paper, points2, false, false, null, draw);
+                  bounding_box.add_BB(r.bb);
+              }
+          }
+           */
+
+        }
+      }
+
+      return x; //{ x: x, bb: bounding_box };
+    }
+    /*
+     draw_balken(balkenGroup){
+        // 0. make notes_coord for y axis
+         for (let gbi = 0; gbi < balkenGroup.length; ++gbi) {
+            //let ys = balkenGroup[gbi].balken_element.notes_coord[1]; // This is relative value to rs_y_base
+            let e = balkenGroup[gbi].e;
+            let group_y = [];
+            if(e instanceof common.Space || e instanceof common.Simile){
+                group_y.push(rs_y_base); // just dammy
+            }else{
+                for (var ngi = 0; ngi < e.note_group_list.length; ++ngi) {
+                    var ng = e.note_group_list[ngi];
+                    var note_profiles = ng.note_profiles;
+                    if (note_profiles === null) {
+                        // slash or rest
+                        group_y.push(parseInt(rs_y_base + _5lines_intv * 2)); // center
+                        //pos_on_5lines.push(4); // Not used, but put center line for now.
+                    } else {
+                        // notes
+                        for (var nri = 0; nri < note_profiles.length; ++nri) {
+                            let dy = _5lines_intv / 2; // 1/2 of interval of 5 lines
+                            var NLIST = {
+                                C: 0,
+                                D: 1,
+                                E: 2,
+                                F: 3,
+                                G: 4,
+                                A: 5,
+                                B: 6
+                            };
+                            var pos_idx =
+                                NLIST[note_profiles[nri].note.name] +
+                                7 * (note_profiles[nri].note.octave - 3); // C3 is 0
+                            var yoffset = pos_idx * dy; // C3 offset = 0
+                            var ypos = rs_y_base + dy * 10 - yoffset; // rs_y_base corresopnds to the center of rs region and is corresponding to A3 when the notes are drawn with "top".
+                            //var pos_on_5line = Math.round(yoffset / dy) - 2;
+                            group_y.push(ypos);
+                            //pos_on_5lines.push(pos_on_5line);
+                        }
+                    }
+                }
+            }
+            balkenGroup[gbi].balken_element.notes_coord.y = group_y;
+        }
+         // 1. determine the flag direction here
+        var center_y = 0.0;
+        var min_y = 10000000;
+        var max_y = 0;
+        var gbi_at_min_y = null;
+        var gbi_at_max_y = null;
+        var cnt_y = 0;
+         for (let gbi = 0; gbi < balkenGroup.length; ++gbi) {
+            let e = balkenGroup[gbi].e;
+             if(e instanceof common.Chord){ //} || e instanceof common.Rest){
+                 let ys = balkenGroup[gbi].balken_element.notes_coord.y;
+                 for (var ci = 0; ci < ys.length; ++ci) {
+                    center_y += ys[ci];
+                    if (min_y > ys[ci]) {
+                        min_y = ys[ci];
+                        gbi_at_min_y = gbi;
+                    }
+                    if (max_y < ys[ci]) {
+                        max_y = ys[ci];
+                        gbi_at_max_y = gbi;
+                    }
+                    cnt_y += 1;
+                }
+            }else{
+                // Does not affecct flag direction  
+            }
+        }
+        center_y = Math.floor(center_y / cnt_y);
+        var upper_flag = center_y > rs_y_base + _5lines_intv * 2;
+         let x = balkenGroup[0].org_x; // on screen position, no scaling applied
+         // 2. Draw notes and slashes without bars, flags and balkens
+        for (let gbi = 0; gbi < balkenGroup.length; ++gbi) {
+            let this_elem_draw_scale = balkenGroup[gbi].org_draw_scale;
+             let e = balkenGroup[gbi].e;
+            let balken_element = balkenGroup[gbi].balken_element;
+            let ys = balken_element.notes_coord.y;
+             var d = balken_element.note_value;
+             paper.getContext("2d").scale(this_elem_draw_scale, 1);
+            // Here all the output and set value by following funtion will be that with scaling apply.
+            // To use the values which the following functions generates, apply "* this_elem_draw_scale".
+            let wo_flags = this.draw_rs_area_without_flag_balken(draw, paper, param, e,
+                balken_element, x/this_elem_draw_scale, rs_y_base, row_height);
+            paper.getContext("2d").scale(1.0/this_elem_draw_scale, 1);
+             // ----
+            // Convert output to on-screen coordinates
+            // -----
+            wo_flags.bounding_box.scale(this_elem_draw_scale, 1.0);
+            for(let ncc = 0; ncc < balken_element.notes_coord.x.length; ++ncc){
+                balken_element.notes_coord.x[ncc] = balken_element.notes_coord.x[ncc].map(x => x*this_elem_draw_scale);
+            }
+            this.hitManager.add(paper, wo_flags.bounding_box, e);
+            bounding_box.add(wo_flags.bounding_box); // global RS are bounding box
+              let xs = balken_element.notes_coord.x;
+             if( e instanceof common.Chord){
+                if (music_context.tie_info.rs_prev_has_tie) {
+                    // NOTE : Tie is always drawn with on-screen coordinates, no scaling apply
+                     // Draw tie line
+                    var prev_coord = music_context.tie_info.rs_prev_coord;
+                    var psm = music_context.tie_info.rs_prev_meas;
+                     // Check the consistency.
+                    if (prev_coord.y.length != ys.length) {
+                        throw "INVALID TIE NOTATION";
+                    }
+                     let dy = 0;
+                    let sdx = 0;
+                    let edx = 0;
+                    let round = 0;
+                     if (balkenGroup[gbi].balken_element.type == "slash") {
+                        // slash only has down flag
+                        dy = -3;
+                        sdx = 3;
+                        edx = 0;
+                        round = 6;
+                    } else {
+                        // notes
+                        if (upper_flag) {
+                            dy = 3;
+                            sdx = 3;
+                            edx = -3;
+                            round = -6;
+                        } else {
+                            dy = -3;
+                            sdx = 3;
+                            edx = -3;
+                            round = 6;
+                        }
+                    }
+                     for (let ci = 0; ci < ys.length; ++ci) {
+                        let y = ys[ci];
+                        //let prev_draw_scale = music_context.tie_info.rs_prev_draw_scale;
+                         if ((y != prev_coord.y[ci]) || 
+                             music_context.tie_info.rs_prev_tie_paper != paper) {
+                             // Crossing measure row. Previous RS mark could be on another page.
+                            // Make sure to create curve on the paper on which previous RS is drawn.
+                            var brace_points = [
+                                [prev_coord.x[ci][3] + sdx, prev_coord.y[ci] + dy],
+                                [prev_coord.x[ci][3] + sdx, prev_coord.y[ci] - round + dy],
+                                [psm.renderprop.meas_end_x + 20, prev_coord.y[ci] - round + dy],
+                                [psm.renderprop.meas_end_x + 20, prev_coord.y[ci] + dy]
+                            ];
+                             let clip_rect = [
+                                prev_coord.x[ci][3] +sdx, 
+                                (prev_coord.y[ci] - 50), 
+                                (psm.renderprop.meas_end_x - (prev_coord.x[ci][3] + sdx)  + 5),
+                                100];
+                             // eslint-disable-next-line no-constant-condition
+                            if(false){
+                                console.group("Tie");
+                                console.log(brace_points);
+                                console.log(clip_rect);
+                                console.groupEnd();
+                            }
+                            
+                            // In case the previous paper is in the same paper, "draw_scale" is currently applied,
+                            // then temporaryly deactivate scaling.
+                            // In case of differnt paper, such paper shall already be reverted back to scaling=1, 
+                            // no need to do anything.
+                            // Update : 2020 09 03 : No need to apply scaing as all the coordinates are normalized
+                            //                       to on-screen coordinates
+                            //if(paper == music_context.tie_info.rs_prev_tie_paper)
+                            //    music_context.tie_info.rs_prev_tie_paper.getContext("2d").scale(1.0/draw_scale, 1.0);
+                             graphic.CanvasbBzierCurve(music_context.tie_info.rs_prev_tie_paper,
+                                brace_points, false, false, 
+                                {"clip-rect":clip_rect});
+                             brace_points = [
+                                [meas_start_x - 20, y + dy],
+                                [meas_start_x - 20, y - round + dy],
+                                [xs[ci][0] + edx, y - round + dy],
+                                [xs[ci][0] + edx, y + dy]
+                            ];
+                             clip_rect = [meas_start_x - 5, (y - 50), 
+                                (x - (meas_start_x - 5)), 100];
+                             //paper.getContext("2d").scale(1.0/draw_scale, 1.0);
+                            
+                            graphic.CanvasbBzierCurve(paper, brace_points, false, false,
+                                {"clip-rect":clip_rect});
+                             //paper.getContext("2d").scale(draw_scale, 1.0);
+                         } else {
+                            let brace_points = [
+                                [prev_coord.x[ci][3] + sdx, prev_coord.y[ci] + dy],
+                                [prev_coord.x[ci][3] + sdx, prev_coord.y[ci] - round + dy],
+                                [xs[ci][0] + edx, y - round + dy],
+                                [xs[ci][0] + edx, y + dy]
+                            ];
+                             //paper.getContext("2d").scale(1.0/draw_scale, 1.0);
+                            
+                            graphic.CanvasbBzierCurve(paper, brace_points, false, false);
+                            
+                            //paper.getContext("2d").scale(draw_scale, 1.0);
+                        }
+                    }
+                }
+                 music_context.tie_info.rs_prev_has_tie = balkenGroup[gbi].balken_element.has_tie;
+                music_context.tie_info.rs_prev_tie_paper = paper;
+                music_context.tie_info.rs_prev_coord = balken_element.notes_coord;
+                music_context.tie_info.rs_prev_draw_scale = draw_scale;
+                music_context.tie_info.rs_prev_meas = meas;
+            }
+             e.renderprop.x = x; 
+            balken_element.renderprop.x = x;
+             // Here is the only update of x
+            //   * org_room_for_rs_per_element is with on-screen coordinates. In case scaling apply, this value is already set to 0.
+            x += wo_flags.bounding_box.width() + balkenGroup[gbi].org_room_for_rs_per_element; // TODO : FIXME to cater for actual width of components
+        }
+         // 3. Determine the flag intercept and slope
+        
+        // From here other than slash and notes are not reuiqred.
+        if(gbi_at_max_y === null && gbi_at_min_y === null){
+            // In case no chord or rest, no y information defined.
+            return {x:x, bb:bounding_box};
+        } 
+         // Slope and intercepts are calucated for the first and last Chord element. Space is skipped.
+        let first_chord_idx = balkenGroup.findIndex(g=>g.e instanceof common.Chord);
+        let last_chord_idx  = common.findLastIndex(balkenGroup, g=>g.e instanceof common.Chord);
+        let bridge_balken = first_chord_idx >= 0 && (first_chord_idx != last_chord_idx);
+         var x_at_min_y = balkenGroup[gbi_at_min_y].balken_element.notes_coord.x[0][upper_flag?2:1];
+        var x_at_max_y = balkenGroup[gbi_at_max_y].balken_element.notes_coord.x[0][upper_flag?2:1];
+         let slope = 0;
+        if (bridge_balken) {
+            var ps_y = balkenGroup[first_chord_idx].balken_element.notes_coord.y;
+            var ps_bar_x = balkenGroup[first_chord_idx].balken_element.notes_coord.x[0][upper_flag?2:1];
+            
+            var pe_y = balkenGroup[last_chord_idx].balken_element.notes_coord.y;
+            var pe_bar_x =
+                balkenGroup[last_chord_idx].balken_element.notes_coord.x[0][upper_flag?2:1];
+            
+            var delta_y = upper_flag
+                ? Math.min.apply(null, pe_y) - Math.min.apply(null, ps_y)
+                : Math.max.apply(null, pe_y) - Math.max.apply(null, ps_y);
+            slope = delta_y / (pe_bar_x - ps_bar_x);
+        } else {
+            slope = 1.0; // any value is OK
+        }
+         var intercept =
+            (upper_flag ? min_y - param.note_bar_length : max_y + param.note_bar_length) -
+            slope * (upper_flag ? x_at_min_y : x_at_max_y);
+         // 4. Draw vertical bars
+        for (var gbi = 0; gbi < balkenGroup.length; ++gbi) {
+            // Currnetly, not apply scaling for vertical line and line width 1 always set to 1
+             let ys = balkenGroup[gbi].balken_element.notes_coord.y;
+            let xs = balkenGroup[gbi].balken_element.notes_coord.x;
+             if (balkenGroup[gbi].balken_element.type == "slash") {
+                let bar_x = upper_flag ? xs[0][2] : xs[0][1];
+                // eslint-disable-next-line no-empty
+                if (d == "0" || d == "1") {
+                } else {
+                    let r = graphic.CanvasLine(paper,
+                        bar_x,
+                        ys[0] + 3,
+                        bar_x,
+                        slope * bar_x + intercept,
+                        {width:1}, draw);
+                    bounding_box.add_BB(r.bb);
+                }
+                //bar_flag_group.push(o);
+            } else if (balkenGroup[gbi].balken_element.type == "notes") {
+                // eslint-disable-next-line no-empty
+                if (d == "0" || d == "1") {
+                } else {
+                    let bar_x = upper_flag ? xs[0][2] : xs[0][1];
+                    var y0 = upper_flag
+                        ? Math.max.apply(null, ys)
+                        : Math.min.apply(null, ys);
+                    // Draw the basic vertical line. For the note with standalone flag(s), some additional length will be added when to draw flags.
+                      let r = graphic.CanvasLine(paper,
+                        bar_x,
+                        y0,
+                        bar_x,
+                        slope * bar_x + intercept,
+                        {width:1}, draw);
+                    bounding_box.add_BB(r.bb);
+                 }
+            // eslint-disable-next-line no-empty
+            } else if (balkenGroup[gbi].balken_element.type == "rest") {
+            }
+        }
+        //group.push(bar_flag_group);
+         // 5. Draw balkens
+         if (bridge_balken) {
+            // Inter-element balkens, no scaling apply (even for single balken)
+             // Draw flag for balken
+            // Common balken
+            if (balkenGroup[first_chord_idx].balken_element.note_value >= 8) {
+                let r = graphic.CanvasLine(paper,
+                    ps_bar_x,
+                    slope * ps_bar_x + intercept,
+                    pe_bar_x,
+                    slope * pe_bar_x + intercept,
+                    {width:param.balken_width}, draw);
+                bounding_box.add_BB(r.bb);
+            }
+             // Balken for each note_value level
+            var gg = this.to_same_value_group(balkenGroup, function(o) {
+                return o.balken_element.note_value;
+            });
+            for (var g = 0; g < gg.length; ++g) {
+                var same_sds = gg[g];
+                var sd = same_sds[0].balken_element.note_value;
+                var numflag = common.myLog2(parseInt(sd)) - 2;
+                 if (same_sds.length == 1) {
+                    var pssx = same_sds[0].balken_element.notes_coord.x[0][upper_flag?2:1];
+                     // Determine which direction to draw flag. Determined from which neighboring
+                    // rhythm is more natural to coupling with.
+                    // Currently, simple strategy is adopted for now.
+                    var dir = 1;
+                    if (g == gg.length - 1) dir = -1;
+                    var neighbor_x =
+                        gg[g + dir][gg[g + dir].length - 1].balken_element.notes_coord.x[0][upper_flag?2:1];
+                    var blen = Math.abs(neighbor_x - pssx) * 0.3;
+                     for (var fi = 1; fi < numflag; ++fi) {
+                        // fi=0 is alread drawn by common balken
+                        
+                        let r = graphic.CanvasLine(paper,
+                            pssx,
+                            slope * pssx +
+                                intercept +
+                                (upper_flag ? +1 : -1) * fi * param.note_flag_interval,
+                            pssx + dir * blen,
+                            slope * (pssx + dir * blen) +
+                                intercept +
+                                (upper_flag ? +1 : -1) * fi * param.note_flag_interval,
+                            {width:param.balken_width}, draw);
+                        bounding_box.add_BB(r.bb);
+                    }
+                } else if (same_sds.length >= 2) {
+                    let pssx = same_sds[0].balken_element.notes_coord.x[0][upper_flag?2:1];
+                    var psex =
+                        same_sds[same_sds.length - 1].balken_element.notes_coord.x[0][upper_flag?2:1];
+                    for (
+                        let fi = 1;
+                        fi < numflag;
+                        ++fi // fi=0 is alread drawn by common balken
+                    ) {
+                         let r = graphic.CanvasLine(paper,
+                            pssx,
+                            slope * pssx +
+                                intercept +
+                                (upper_flag ? +1 : -1) * fi * param.note_flag_interval,
+                            psex,
+                            slope * psex +
+                                intercept +
+                                (upper_flag ? +1 : -1) * fi * param.note_flag_interval,
+                            {width:param.balken_width}, draw);
+                        bounding_box.add_BB(r.bb);
+                     }
+                    if (same_sds[0].balken_element.lengthIndicator.renpu) {
+                        var ro = 12;
+                        var center_x = (pssx + psex) / 2.0;
+                         let r = graphic.CanvasText(paper,
+                            center_x,
+                            slope * center_x +
+                                intercept +
+                                (upper_flag ? -ro : ro),
+                            same_sds[0].balken_element.lengthIndicator.renpu + "",
+                            12,
+                            "cm", undefined, !draw);
+                        bounding_box.add_BB(r.bb);
+                          if (same_sds[0].balken_element.note_value < 8) {
+                            var rno = 10;
+                            var rnh = 4;
+                             var points1 =
+                                [
+                                    [
+                                        pssx,
+                                        slope * pssx +
+                                            intercept +
+                                            (upper_flag ? -rnh : rnh)
+                                    ],
+                                    [
+                                        pssx,
+                                        slope * pssx +
+                                            intercept +
+                                            (upper_flag ? -rno : rno)
+                                    ],
+                                    [
+                                        center_x - 7,
+                                        slope * (center_x - 7) +
+                                            intercept +
+                                            (upper_flag ? -rno : rno)
+                                    ]
+                                ]; 
+                            
+                            var points2 = 
+                                [
+                                    [
+                                        center_x + 7,
+                                        slope * (center_x + 7) +
+                                            intercept +
+                                            (upper_flag ? -rno : rno)
+                                    ],
+                                    [
+                                        psex,
+                                        slope * psex +
+                                            intercept +
+                                            (upper_flag ? -rno : rno)
+                                    ],
+                                    [
+                                        psex,
+                                        slope * psex +
+                                            intercept +
+                                            (upper_flag ? -rnh : rnh)
+                                    ]
+                                ]; 
+                             let r = graphic.CanvasPolygon(paper, points1, false, false, null, draw);
+                            bounding_box.add_BB(r.bb);
+                            r = graphic.CanvasPolygon(paper, points2, false, false, null, draw);
+                            bounding_box.add_BB(r.bb);
+                        }
+                    }
+                }
+            }
+        } else if (
+            ( first_chord_idx >= 0 ) &&
+            ( balkenGroup[first_chord_idx].balken_element.type == "slash" || balkenGroup[first_chord_idx].balken_element.type == "notes")
+        ) {
+            // This is sigle flag/balken, then scaling apply. This is the only case we apply the scaling
+            let this_elem_draw_scale = balkenGroup[first_chord_idx].org_draw_scale;
+             // Normal drawing of flags
+            let bar_x = balkenGroup[first_chord_idx].balken_element.notes_coord.x[0][upper_flag?2:1];
+            let d = balkenGroup[first_chord_idx].balken_element.note_value;
+            let numflag = common.myLog2(parseInt(d)) - 2;
+             // 8 and 16 the has same length of vertical bars
+            // 32 and uppper will have longer bars of which delta is corresponding to (Num flags - 2)
+            if(numflag >= 1){
+                let x_adj = -0.5; // subpixel adjustment
+                let barlen_delta = Math.max(0, (numflag-2) * 5); // "5" is magic number adjusted for this paticular font
+                let flag_w = _5lines_intv * 1.1; // Normalize by width. Unfortunately, it is not easy to normalize with height as the rule is not clear. "1.1" is magic number.
+                let url = "flag_"+(upper_flag?"f":"i")+numflag; // for now numflags <= 4
+                 paper.getContext("2d").scale(this_elem_draw_scale, 1.0);
+                let r = graphic.CanvasImage(paper, graphic.G_imgmap[url],
+                    (bar_x + x_adj)/this_elem_draw_scale,
+                    slope * bar_x +
+                        intercept +
+                        (upper_flag ? -barlen_delta : barlen_delta), // y coordinates kep the same, then no need to apply scaling
+                    flag_w,  // No need to apply "/this_elem_draw_scale" otherwise no compression apply :).
+                    null, "l"+(upper_flag?"t":"b"), draw);
+                bounding_box.add_BB(r.bb.scale(this_elem_draw_scale, 1.0)); // add based on on-screen coordinates
+                paper.getContext("2d").scale(1.0/this_elem_draw_scale, 1.0);
+             }
+        }else{
+            // Space, Single Rest come in here
+        }
+         return { x: x, bb: bounding_box };
+    }
+     */
+
   }, {
     key: "render_slash",
     value: function render_slash(paper, group, x, y, d, numdot, _5lines_intv) {

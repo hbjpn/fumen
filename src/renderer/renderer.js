@@ -1231,6 +1231,9 @@ export class Renderer {
                     let y0 = upper_flag
                         ? Math.max.apply(null, ys)
                         : Math.min.apply(null, ys);
+                    let y1 = upper_flag
+                        ? Math.min.apply(null, ys) - param.note_bar_length
+                        : Math.max.apply(null, ys) + param.note_bar_length;
                     // Draw the basic vertical line. For the note with standalone flag(s), some additional length will be added when to draw flags.
 
 
@@ -1238,7 +1241,7 @@ export class Renderer {
                         bar_x,
                         y0,
                         bar_x,
-                        y0 + (upper_flag ? -param.note_bar_length : param.note_bar_length),
+                        y1,
                         {width:1}, draw);
                     bounding_box.add_BB(r.bb);
 
@@ -1273,12 +1276,14 @@ export class Renderer {
             let y0 = upper_flag
                 ? Math.max.apply(null, ys)
                 : Math.min.apply(null, ys);
-            
+            let y1 = upper_flag
+                ? Math.min.apply(null, ys) - param.note_bar_length - barlen_delta
+                : Math.max.apply(null, ys) + param.note_bar_length + barlen_delta;
+
             paper.getContext("2d").scale(this_elem_draw_scale, 1.0);
             let r = graphic.CanvasImage(paper, graphic.G_imgmap[url],
                 (bar_x + x_adj)/this_elem_draw_scale,
-                y0 + (upper_flag ? -param.note_bar_length : param.note_bar_length) +
-                    (upper_flag ? -barlen_delta : barlen_delta), // y coordinates kep the same, then no need to apply scaling
+                y1,
                 flag_w,  // No need to apply "/this_elem_draw_scale" otherwise no compression apply :).
                 null, "l"+(upper_flag?"t":"b"), draw);
             bounding_box.add_BB(r.bb.scale(this_elem_draw_scale, 1.0)); // add based on on-screen coordinates

@@ -20380,10 +20380,10 @@ var Renderer = /*#__PURE__*/function () {
         //   - If the contiguous notes/slashes 's length becomes larger than 4th note, balken are separated.
         // Flush current groups if needed
 
-        if (balken.groups.length > 0) {
+        if (music_context.first_li) {
           var _threshDuration = this.getThreshDuration(music_context.first_li);
 
-          var _flushCond = music_context.in_tuplet == false && (balken_element.chord_length >= _common_common__WEBPACK_IMPORTED_MODULE_1__["WHOLE_NOTE_LENGTH"] / 4 || balken_element.lengthIndicator.renpu != null) || music_context.in_tuplet == true && (balken_element.lengthIndicator.renpu == null || music_context.first_li.renpu != balken_element.lengthIndicator.renpu || music_context.cumal_block_duration + balken_element.chord_length > _threshDuration); // Flush current groups
+          var _flushCond = music_context.in_tuplet == false && (balken_element.chord_length >= _common_common__WEBPACK_IMPORTED_MODULE_1__["WHOLE_NOTE_LENGTH"] / 4 || balken_element.lengthIndicator.renpu != null) || music_context.in_tuplet == true && (balken_element.lengthIndicator.renpu == null || music_context.first_li.renpu != balken_element.lengthIndicator.renpu || music_context.cumal_block_duration + balken_element.chord_length > _threshDuration) || balken_element.type == "simile"; // Flush current groups
 
 
           if ( //(balken_element.chord_length >= common.WHOLE_NOTE_LENGTH / 4 
@@ -20394,7 +20394,7 @@ var Renderer = /*#__PURE__*/function () {
             var dbret = this.draw_rs_area_balkens(true, draw_scale, paper, balken, rs_y_base, row_height, meas_start_x, music_context, meas, param);
             balken.groups = [];
             x = dbret.x;
-            music_context.first_li = balken_element.lengthIndicator; // update the head li
+            music_context.first_li = balken_element.lengthIndicator; // update the head li. Could be null.
 
             music_context.cumal_block_duration = 0;
             if (music_context.in_tuplet == false && balken_element.lengthIndicator.renpu != null) music_context.in_tuplet = true;else if (music_context.in_tuplet == true && balken_element.lengthIndicator.renpu == null) music_context.in_tuplet = false;

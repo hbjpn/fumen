@@ -315,7 +315,7 @@ export class Renderer {
             //   - If the contiguous notes/slashes 's length becomes larger than 4th note, balken are separated.
 
             // Flush current groups if needed
-            if(balken.groups.length > 0){
+            if(music_context.first_li){
 
                 let threshDuration = this.getThreshDuration(music_context.first_li);
 
@@ -334,6 +334,9 @@ export class Renderer {
                         ( music_context.first_li.renpu != balken_element.lengthIndicator.renpu) ||
                         ( music_context.cumal_block_duration + balken_element.chord_length > threshDuration)
                     )
+                ) ||
+                ( 
+                    balken_element.type == "simile"
                 );
     
                 // Flush current groups
@@ -359,7 +362,7 @@ export class Renderer {
                     balken.groups = [];
                     x = dbret.x;
 
-                    music_context.first_li = balken_element.lengthIndicator; // update the head li
+                    music_context.first_li = balken_element.lengthIndicator; // update the head li. Could be null.
                     music_context.cumal_block_duration = 0; 
 
 

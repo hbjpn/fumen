@@ -9,7 +9,8 @@ cp ../OFL.txt ${name}/
 cp ../README.md ${name}/
 cp ../dist/fumen.js ${name}/${name}.js
 cp ../dist/fumen.js.map ${name}/${name}.js.map
-tar cvzf ${name}.tar.gz ${name}
+#tar cvzf ${name}.tar.gz ${name}
+zip -r ${name}.zip ${name}
 cd ..
 
 

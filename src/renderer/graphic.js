@@ -113,39 +113,44 @@ export function CanvasLine(canvas, x0, y0, x1, y1, opt, draw=true) {
     return {bb:new BoundingBox(Math.min(x0,x1), Math.min(y0,y1), Math.abs(x0-x1), Math.abs(y0-y1))};
 }
 
-export function CanvasPolygon(canvas, points, close=false, fill=false, opt=null){
-    var context = canvas.getContext("2d");
-
-    context.save();
+export function CanvasPolygon(canvas, points, close=false, fill=false, opt=null, draw=true){
 
     let bb = new BoundingBox();
-
-    let orgValues = {};
-    if (opt != null) {
-        for (let key in opt) {
-            orgValues[key] = context[key];
-            context[key] = opt[key];
-        }
-    }
-
-    context.beginPath();
-    for(var i=0; i < points.length; ++i){
-        if(i==0){
-            context.moveTo(points[i][0], points[i][1]);
-        }else{
-            context.lineTo(points[i][0], points[i][1]);
-        }
+    for(let i=0; i < points.length; ++i){
         bb.add(points[i][0], points[i][1]);
     }
-    if(close){
-        context.closePath();
-    }
-    context.stroke();
-    if(fill){
-        context.fill();
-    }
 
-    context.restore();
+    if(draw){
+        var context = canvas.getContext("2d");
+
+        context.save();
+
+        let orgValues = {};
+        if (opt != null) {
+            for (let key in opt) {
+                orgValues[key] = context[key];
+                context[key] = opt[key];
+            }
+        }
+
+        context.beginPath();
+        for(let i=0; i < points.length; ++i){
+            if(i==0){
+                context.moveTo(points[i][0], points[i][1]);
+            }else{
+                context.lineTo(points[i][0], points[i][1]);
+            }
+        }
+        if(close){
+            context.closePath();
+        }
+        context.stroke();
+        if(fill){
+            context.fill();
+        }
+
+        context.restore();
+    }
 
     return {bb:bb};
 }

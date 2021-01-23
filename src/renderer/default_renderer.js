@@ -888,7 +888,11 @@ export class DefaultRenderer extends Renderer {
                 rs_prev_tie_paper: null,
                 prev_has_tie: false
             },
-            pos_in_a_measure: 0
+            pos_in_a_measure: 0,
+
+            cumal_block_duration: 0, // Culmative duration of this blaken block.
+            first_li: null, // length indicator of the first element amongcurrently stored elements. This shall be non-null other than first state
+            in_tuplet: false // tuplet mode or not
         };
 
         let meas_row_list = [];
@@ -1295,6 +1299,7 @@ export class DefaultRenderer extends Renderer {
 
         // Screening of y-axis areas
         let rg_mark_detected = false;
+        let fixed_mu_elem_detected = false;
         for (let ml = 0; ml < row_elements_list.length; ++ml) {
             var m = row_elements_list[ml];
             if(m.renderprop && 
@@ -1305,16 +1310,21 @@ export class DefaultRenderer extends Renderer {
             for (let ei = 0; ei < m.childNodes.length; ++ei) {
                 var e = m.childNodes[ei];
                 if (
-                    e instanceof common.Coda ||
-                    e instanceof common.Segno ||
-                    e instanceof common.Comment ||
-                    e instanceof common.LoopIndicator ||
                     e instanceof common.ToCoda ||
                     e instanceof common.DalSegno ||
                     e instanceof common.DaCapo ||
                     e instanceof common.Fine
-                ) {
+                ){
+                    // Provisinally, judged as mu element. In case of RS detected, it will goes to body area.
                     yprof.mu.detected = true;
+                } else if(
+                    e instanceof common.Coda ||
+                    e instanceof common.Segno ||
+                    e instanceof common.Comment ||
+                    e instanceof common.LoopIndicator
+                ){
+                    yprof.mu.detected = true;
+                    fixed_mu_elem_detected = true;
                 } else if (e instanceof common.MeasureBoundary) {
                     yprof.ml.detected =
                     yprof.ml.detected ||
@@ -1330,6 +1340,7 @@ export class DefaultRenderer extends Renderer {
                     }
                     if(e.exceptinal_comment){
                         yprof.mu.detected = true;
+                        fixed_mu_elem_detected = true;
                     }
                 } else if (e instanceof common.Lyric) {
                     throw "Illegal parsing";
@@ -1338,6 +1349,13 @@ export class DefaultRenderer extends Renderer {
         }
         if (show_staff == "NO") {
             yprof.rs.detected = false;
+        }
+
+        // Adjust mu area elements in case of RS area detected
+        if(yprof.rs.detected){
+            if(!fixed_mu_elem_detected){
+                yprof.mu.detected = false; // Reset it !
+            }
         }
 
         if(rg_mark_detected){
@@ -1396,6 +1414,9 @@ export class DefaultRenderer extends Renderer {
 
             // Reset music context
             music_context.pos_in_a_measure = 0; // reset
+            music_context.cumal_block_duration = 0;
+            music_context.first_li = null;
+            music_context.in_tuplet = false;
             // TODO : consider key infomration
             // TODO : consider tie
             // C3 -> 0x3C as 0 C-2 as index 0, G8 as 127(0x7F)
@@ -1684,10 +1705,6 @@ export class DefaultRenderer extends Renderer {
                         yprof.rs.y,
                         yprof.rs.height,
                         meas_start_x, // NOTE : meas_start_x sould be irrespective of draw_scale.
-                        draw,
-                        0,
-                        1.0,
-                        x_global_scale,
                         music_context,
                         m,
                         param,
@@ -1800,7 +1817,7 @@ export class DefaultRenderer extends Renderer {
                             draw,
                             x / draw_scale,
                             y_body_or_rs_base,
-                            C7_width,
+                            "l",
                             yprof.rs.detected ? param.rs_area_height : param.row_height,
                             yprof.rs.detected ? param.rs_area_height : param.base_body_height,
                             param
@@ -1988,6 +2005,9 @@ export class DefaultRenderer extends Renderer {
 
             // Reset music context
             music_context.pos_in_a_measure = 0; // reset
+            music_context.cumal_block_duration = 0; 
+            music_context.first_li = null;
+            music_context.in_tuplet = false;
             // TODO : consider key infomration
             // TODO : consider tie
             // C3 -> 0x3C as 0 C-2 as index 0, G8 as 127(0x7F)
@@ -2320,6 +2340,24 @@ export class DefaultRenderer extends Renderer {
                     this.hitManager.add(paper, bb, e);
 
                     //rest_or_long_rests_detected |= true;
+                } else if (e instanceof common.Rest){
+                    // This shall be whole rest
+                    let sx =
+                        meas_start_x +
+                        header_width; // header_width does not include header_body_margin
+                    let fx = meas_end_x - footer_width;
+                    let cr = this.render_rest_plain(
+                        e,
+                        paper,
+                        true,
+                        (sx + fx) / 2,
+                        y_body_or_rs_base,
+                        "c",
+                        yprof.rs.detected ? param.rs_area_height : param.row_height,
+                        yprof.rs.detected ? param.rs_area_height : param.base_body_height,
+                        param
+                    );
+                    this.hitManager.add(paper, cr.bb, e);
                 } else if (e instanceof common.Simile) {
                     // Simile mark in measure wide element if there is no other body elements in this measure
                     let sx =
@@ -2505,7 +2543,7 @@ export class DefaultRenderer extends Renderer {
         draw,
         x,
         y_body_or_rs_base,
-        C7_width,
+        align, // "l or "c" or "r"
         row_height,
         base_body_height,
         param
@@ -2556,11 +2594,29 @@ export class DefaultRenderer extends Renderer {
                 );
             }
         }
+        let namemap = {1:"uniE4F4", 2:"uniE4F5", 4:"uniE4E5", 8:"uniE4E6"};
+        let img = graphic.G_imgmap[namemap[(rd <= 4 ? rd : 8)]];
+        let s = img.height / heights[rd];
 
-        if(draw){
-            let namemap = {1:"uniE4F4", 2:"uniE4F5", 4:"uniE4E5", 8:"uniE4E6"};
-            var img = graphic.G_imgmap[namemap[(rd <= 4 ? rd : 8)]];
-            var s = img.height / heights[rd];
+        let rdx = 2;
+        let rdy = -_5i;
+        
+        let nKasane = common.myLog2(rd) - 2;
+
+        // pre-calculate total width
+        let w = 0;
+        if (rd <= 4) {
+            w = img.width / s;
+        } else {
+            w = rdx * (nKasane-1) + img.width / s;
+        }
+        // dots
+        w = Math.max(w, dot_xoffsets[rd] + (numdot-1)*5);
+
+        if(align == "c") x -= w/2;
+        else if(align == "r") x -= w;
+
+        if(draw){            
             if (rd <= 4) {
                 ctx.drawImage(
                     img,
@@ -2570,9 +2626,6 @@ export class DefaultRenderer extends Renderer {
                     img.height / s
                 );
             } else {
-                var nKasane = common.myLog2(rd) - 2;
-                var rdx = 2;
-                var rdy = -_5i;
                 for (var k = 0; k < nKasane; ++k) {
                     ctx.drawImage(
                         img,
@@ -2594,7 +2647,7 @@ export class DefaultRenderer extends Renderer {
             }
         }
 
-        return { bb: new graphic.BoundingBox(x,y_body_or_rs_base, 10, row_height)}; // TODO : Impelment correctly
+        return { bb: new graphic.BoundingBox(x,y_body_or_rs_base, w, row_height)};
     }
 
     render_simile_mark_plain(

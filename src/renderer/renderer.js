@@ -321,32 +321,27 @@ export class Renderer {
 
                 let flushCond = 
                 (
-                    music_context.in_tuplet == false &&
+                    music_context.in_tuplet == false && balken_element.lengthIndicator &&
                     (
                         ( balken_element.chord_length >= common.WHOLE_NOTE_LENGTH / 4 ) ||
                         ( balken_element.lengthIndicator.renpu != null) 
                     ) 
                 ) ||
                 (
-                    music_context.in_tuplet == true &&
+                    music_context.in_tuplet == true && balken_element.lengthIndicator &&
                     (
                         ( balken_element.lengthIndicator.renpu == null) ||
-                        ( music_context.first_li.renpu != balken_element.lengthIndicator.renpu) ||
+                        ( music_context.first_li.renpu != balken_element.lengthIndicator.renpu ) ||
                         ( music_context.cumal_block_duration + balken_element.chord_length > threshDuration)
                     )
                 ) ||
                 ( 
                     balken_element.type == "simile"
                 );
+                // Note : Space does not make flushCond = true.
     
                 // Flush current groups
-                if (
-                    //(balken_element.chord_length >= common.WHOLE_NOTE_LENGTH / 4 
-                    //    || e instanceof common.Rest) &&
-                    // balken_element.chord_length >= threshDuration &&
-                    // balken.groups.length > 0
-                    flushCond
-                ) {
+                if (flushCond) {
                     var dbret = this.draw_rs_area_balkens(
                         true, 
                         draw_scale,
@@ -372,8 +367,10 @@ export class Renderer {
                         music_context.in_tuplet = false;
                 }
             }else{
-                music_context.first_li = balken_element.lengthIndicator;
-                music_context.in_tuplet = (balken_element.lengthIndicator.renpu != null);
+                music_context.first_li = balken_element.lengthIndicator; // can be null for e.g. space or simile
+                music_context.in_tuplet = (
+                    balken_element.lengthIndicator && 
+                    balken_element.lengthIndicator.renpu != null) || false;  // Element w/o length indicator has null LI.
             }
             
             music_context.pos_in_a_measure += balken_element.chord_length;
@@ -384,28 +381,24 @@ export class Renderer {
             balken.groups.push({balken_element:balken_element,e:e,
                 org_x:x,org_draw_scale:draw_scale,org_room_for_rs_per_element:room_for_rs_per_element});
 
-            let threshDuration = this.getThreshDuration(music_context.first_li);
+            let threshDuration = music_context.first_li ? this.getThreshDuration(music_context.first_li) : 0;
 
             let flushCond = 
             (
-                music_context.in_tuplet == false &&
+                music_context.in_tuplet == false && music_context.first_li && // first_li is checked to eliminate the case only space/simile is in flushed.
                 (
                     ( music_context.pos_in_a_measure % (common.WHOLE_NOTE_LENGTH / 4) == 0 ) ||
                     ( balken_element.chord_length >= common.WHOLE_NOTE_LENGTH / 4 )
                 ) 
             ) ||
             (
-                music_context.in_tuplet == true &&
+                music_context.in_tuplet == true && music_context.first_li &&
                 (
                     ( music_context.cumal_block_duration == threshDuration )
                 )
             );
 
             if ( 
-                // e instanceof common.Rest ||
-                // balken_element.chord_length >= common.WHOLE_NOTE_LENGTH / 4 ||
-                // music_context.pos_in_a_measure % (common.WHOLE_NOTE_LENGTH / 4) == 0 ||
-                //balken_element.chord_length >= threshDuration ||
                 flushCond || 
                 (ei == elems.length - 1 && is_last_body_elem_group_in_a_measure) // the last element in a measure
             ) {
@@ -734,15 +727,15 @@ export class Renderer {
 
     balkenGrouping(balken){
         //下記でクラス分けする : balkenGrouping()
-        //休符は独立 a)
+        //休符,空白は独立 a)
         //4分(連符除く)以上は独立 b)
         //隣が休符 or 4分である単独の8分およびそれより短いNote c)
-        //8分およびそれより短いNoteは隣り合う同じ音価のNoteをグルーピング→これらは同じ数のバーデ結ばれる d)
+        //連続する8分およびそれより短いNoteと空白をグルーピング→これらは同じ数のバーデ結ばれる d)
         let balkenGroups = [];
         for (let gbi = 0; gbi < balken.groups.length; ++gbi) {
             //let ys = balken.groups[gbi].balken_element.notes_coord[1]; // This is relative value to rs_y_base
             let g = balken.groups[gbi];
-            if(g.e instanceof common.Rest){
+            if(g.e instanceof common.Rest || g.e instanceof common.Space){
                 balkenGroups.push({type:"a", elem:[g]});
             }else if(g.e instanceof common.Chord && g.balken_element.note_value <= 4){
                 balkenGroups.push({type:"b", elem:[g]});
@@ -750,9 +743,10 @@ export class Renderer {
                 // 8-th and shorter Chord
                 let tmp = [g];
                 let t_gbi = gbi + 1;
+                // Collect contiguous Chord of 8th and shorter and Space.  Space is included intentionally for the case space is inserted between chords with balken.
                 while(t_gbi < balken.groups.length){
-                    if(balken.groups[t_gbi].e instanceof common.Chord && 
-                       balken.groups[t_gbi].balken_element.note_value >= 8)
+                    if((balken.groups[t_gbi].e instanceof common.Space) ||
+                       (balken.groups[t_gbi].e instanceof common.Chord && balken.groups[t_gbi].balken_element.note_value >= 8))
                     {
                         tmp.push(balken.groups[t_gbi]);
                         ++t_gbi;
@@ -760,8 +754,14 @@ export class Renderer {
                         break;
                     }
                 }
-                if(tmp.length == 1){
-                    balkenGroups.push({type:"c", elem:tmp});
+                if(tmp.filter(t=>t.e instanceof common.Chord).length == 1){
+                    tmp.forEach(t=>{
+                        if(t.e instanceof common.Chord)
+                            balkenGroups.push({type:"c", elem:[t]});
+                        else if(t.e instanceof common.Space)
+                            balkenGroups.push({type:"a", elem:[t]});
+                    });
+//                   balkenGroups.push({type:"c", elem:tmp});
                 }else{
                     balkenGroups.push({type:"d", elem:tmp});
                 }
@@ -799,7 +799,7 @@ export class Renderer {
             // a : sole Rest
             // b : sole Chord/Note of 4th note and longer
             // c : sole CHord/Note with shorter than 4th note but is judged as sole note
-            // d : more than 1 contiguous chords with shorter than 4th notes. Balken will be drawn.
+            // d : more than 1 contiguous chords with shorter than 4th notes. Balken will be drawn. Mixing of Space lement is possible unless number of chord >= 2.
             if(balkenGroup.type == "a" || balkenGroup.type == "b" || balkenGroup.type == "c"){
                 x = this.draw_balken_abc(
                     balkenGroup, x, rs_y_base, _5lines_intv, bounding_box, param, paper, 
@@ -1072,12 +1072,18 @@ export class Renderer {
     draw_tuplet(balken, balkenGroups, bounding_box, paper, draw, param){
                 // Draw tuplet(renpu) marker.
         // Tuplet marker drawing is possible even if no balken drawn. e.g. 
-        let tuplet = balken.groups[0].balken_element.lengthIndicator.renpu; // TODO : Space should be eliminated
+        let first_chord_rest_idx = balken.groups.findIndex(g=> (g.e instanceof common.Chord || g.e instanceof common.Rest));
+
+        if(first_chord_rest_idx < 0) return;
+
+        let last_chord_rest_idx  = common.findLastIndex(balken.groups, g=>(g.e instanceof common.Chord || g.e instanceof common.Rest));
+
+        let tuplet = balken.groups[first_chord_rest_idx].balken_element.lengthIndicator.renpu; // TODO : Space should be eliminated
 
         if(!tuplet) return; // No tuplet.
 
-        let pssx = balken.groups[0].balken_element.notes_coord.x[0][1];
-        let psex = balken.groups[balken.groups.length-1].balken_element.notes_coord.x[0][2];
+        let pssx = balken.groups[first_chord_rest_idx].balken_element.notes_coord.x[0][1];
+        let psex = balken.groups[last_chord_rest_idx].balken_element.notes_coord.x[0][2];
         let ro = 10;
         let center_x = (pssx + psex) / 2.0;
         let inherit_balken = balkenGroups.length==1 && balkenGroups[0].type=="d";
@@ -1176,7 +1182,7 @@ export class Renderer {
         let elements = balkenGroup.elem;
 
         if(elements.length != 1){
-            throw "Invalid contenxt";
+            throw "Invalid context in draw_balken_abc";
         }
 
         // 0. make notes_coord for y axis
@@ -1301,8 +1307,8 @@ export class Renderer {
         
         let elements = balkenGroup.elem;
 
-        if(!elements.every((g)=>g.e instanceof common.Chord)){
-            throw "Invalid contenxt";
+        if(!elements.every((g)=>( g.e instanceof common.Chord || g.e instanceof common.Space)) ){
+            throw "Invalid context in draw_balken_d";
         }
 
         // 0. make notes_coord for y axis
@@ -1480,78 +1486,6 @@ export class Renderer {
                     bounding_box.add_BB(r.bb);
 
                 }
-                /*
-                if (same_sds[0].balken_element.lengthIndicator.renpu) {
-                    var ro = 12;
-                    var center_x = (pssx + psex) / 2.0;
-
-                    let r = graphic.CanvasText(paper,
-                        center_x,
-                        slope * center_x +
-                            intercept +
-                            (upper_flag ? -ro : ro),
-                        same_sds[0].balken_element.lengthIndicator.renpu + "",
-                        12,
-                        "cm", undefined, !draw);
-                    bounding_box.add_BB(r.bb);
-
-
-                    if (same_sds[0].balken_element.note_value < 8) {
-                        var rno = 10;
-                        var rnh = 4;
-
-                        var points1 =
-                            [
-                                [
-                                    pssx,
-                                    slope * pssx +
-                                        intercept +
-                                        (upper_flag ? -rnh : rnh)
-                                ],
-                                [
-                                    pssx,
-                                    slope * pssx +
-                                        intercept +
-                                        (upper_flag ? -rno : rno)
-                                ],
-                                [
-                                    center_x - 7,
-                                    slope * (center_x - 7) +
-                                        intercept +
-                                        (upper_flag ? -rno : rno)
-                                ]
-                            ]; 
-                        
-                        var points2 = 
-                            [
-                                [
-                                    center_x + 7,
-                                    slope * (center_x + 7) +
-                                        intercept +
-                                        (upper_flag ? -rno : rno)
-                                ],
-                                [
-                                    psex,
-                                    slope * psex +
-                                        intercept +
-                                        (upper_flag ? -rno : rno)
-                                ],
-                                [
-                                    psex,
-                                    slope * psex +
-                                        intercept +
-                                        (upper_flag ? -rnh : rnh)
-                                ]
-                            ]; 
-
-                        let r = graphic.CanvasPolygon(paper, points1, false, false, null, draw);
-                        bounding_box.add_BB(r.bb);
-                        r = graphic.CanvasPolygon(paper, points2, false, false, null, draw);
-                        bounding_box.add_BB(r.bb);
-                    }
-                }
-
-                */
             }
         }
 

@@ -30,7 +30,6 @@ export var Mobile = {
     pixel_ratio     : 2, // integer. null : use system default, this is not configurable in source as it is memoried in global variable.
     ncol            : 1, // Number of columns of score inside the paper
     nrow            : 1, // Number of rows of score inside the paper
-    origin          : { x: 0, y: 0 },
 
     // Papaer Margins
     y_title_offset      : 2,

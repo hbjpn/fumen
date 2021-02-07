@@ -1139,6 +1139,7 @@ export class DefaultRenderer extends Renderer {
             return {x: page_width * c, y: page_height * r};
         };
 
+        let start_pageidx = this.context.pageidx;
         let page_origin = param.paper_height > 0 ? pageOffset(this.context.pageidx) : {x:0, y:0};
 
         if(this.context.pageidx % (param.ncol * param.nrow) == 0){
@@ -1265,12 +1266,12 @@ export class DefaultRenderer extends Renderer {
             }
 
             //var score_width = param.paper_width / param.text_size / param.ncol;
-            pages.forEach((canvas,pageidx)=>{
+            pages.forEach((canvas,l_pageidx)=>{
                 // Page number footer
-                page_origin = pageOffset(pageidx);
+                page_origin = pageOffset(l_pageidx + start_pageidx);
 
                 let footerstr =
-                    (songname ? (songname + " - ") : "") + (pageidx + 1) + " of " + pages.length;
+                    (songname ? (songname + " - ") : "") + (l_pageidx + 1) + " of " + pages.length;
                 graphic.CanvasText(
                     canvas,
                     page_origin.x + page_width / 2,

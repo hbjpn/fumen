@@ -176,7 +176,12 @@
                 });
               })
               //renderer.hitManager._drawBBs();
+            }).then(async ()=>{
+              // Test code for multiple track rendering
+              // await renderer.render(parser.parse("%TITLE=\"HOGE\"\n [No2]\n| F |\n| F |\n| F |"));
+              // await renderer.render(parser.parse("[No3]\n| G | F | B ||"));
             });
+
 
       }
       function updated()

@@ -151,25 +151,25 @@ export class DefaultRenderer extends Renderer {
 
         this.memCanvas = null; // Canvas on memory used for screening
 
-        this.param = common.deepcopy(SR_RENDER_PARAM); // Default parameters
+        this.init_param = common.deepcopy(SR_RENDER_PARAM); // Default parameters
 
         // Overwrite with preset if specified
         if("preset" in param){
             let preset = param.preset;
             for (let key in presets[preset]) {
-                this.param[key] = common.deepcopy(presets[preset][key]);
+                this.init_param[key] = common.deepcopy(presets[preset][key]);
             }
         }
         // Overwrite
         for (let key in param) {
-            this.param[key] = common.deepcopy(param[key]);
+            this.init_param[key] = common.deepcopy(param[key]);
         }
         
         // Determine offset values in case some are omitted
-        this.param.y_offset_top    =  this.param.y_offset_top    || this.param.y_offset;
-        this.param.y_offset_bottom =  this.param.y_offset_bottom || this.param.y_offset;
-        this.param.x_offset_left   =  this.param.x_offset_left   || this.param.x_offset;
-        this.param.x_offset_right  =  this.param.x_offset_right  || this.param.x_offset;
+        this.init_param.y_offset_top    =  this.init_param.y_offset_top    || this.init_param.y_offset;
+        this.init_param.y_offset_bottom =  this.init_param.y_offset_bottom || this.init_param.y_offset;
+        this.init_param.x_offset_left   =  this.init_param.x_offset_left   || this.init_param.x_offset;
+        this.init_param.x_offset_right  =  this.init_param.x_offset_right  || this.init_param.x_offset;
         
         this.track = null;
 
@@ -193,23 +193,6 @@ export class DefaultRenderer extends Renderer {
             return this.render_impl(track);
         });
     }
-
-    /*render_footer(pages, songname, y){
-        var score_width = this.param.paper_width / this.param.text_size / this.param.ncol;
-        pages.forEach((canvas,pageidx)=>{
-            // Page number footer
-            let footerstr =
-                (songname ? (songname + " - ") : "") + (pageidx + 1) + " of " + pages.length;
-            graphic.CanvasText(
-                canvas,
-                this.param.origin.x + score_width / 2,
-                y, 
-                footerstr,
-                12,
-                "ct"
-            );
-        });
-    }*/
 
     field_sum(arr,field){
         return arr.reduce( (acc,e)=>{ let obj={}; obj[field]=acc[field]+e[field]; return obj;} )[field];
@@ -443,8 +426,6 @@ export class DefaultRenderer extends Renderer {
     }
 
     determine_rooms(param, reharsal_x_width_info, total_width){
-        //let total_width = param.paper_width / this.param.text_size - (param.x_offset_left + param.x_offset_right);
-
         // Optimize width of each measure
         let row = 0;
 
@@ -803,7 +784,7 @@ export class DefaultRenderer extends Renderer {
         }
     }
 
-    drawheader(canvas, stage, x, width, track){
+    drawheader(canvas, param, stage, x, width, track){
         let max_header_height = 0;
 
         // Title
@@ -811,14 +792,14 @@ export class DefaultRenderer extends Renderer {
             let ri = graphic.CanvasText(
                 canvas,
                 x + width / 2,
-                this.param.y_title_offset,
+                param.y_title_offset,
                 track.getVariable("TITLE"),
-                this.param.title_font_size,
+                param.title_font_size,
                 "ct",
-                null, stage==1, {font:this.param.title_font}
+                null, stage==1, {font:param.title_font}
             );
 
-            max_header_height = Math.max(max_header_height, this.param.y_title_offset + ri.height);
+            max_header_height = Math.max(max_header_height, param.y_title_offset + ri.height);
 
             this.hitManager.add(canvas, ri.bb, track.getVariableObject("TITLE"));
         }
@@ -828,14 +809,14 @@ export class DefaultRenderer extends Renderer {
             let ri = graphic.CanvasText(
                 canvas,
                 x + width / 2,
-                this.param.y_subtitle_offset,
+                param.y_subtitle_offset,
                 track.getVariable("SUB_TITLE"),
-                this.param.subtitle_font_size,
+                param.subtitle_font_size,
                 "ct",
                 null, stage==1
             );
 
-            max_header_height = Math.max(max_header_height, this.param.y_subtitle_offset + ri.height);
+            max_header_height = Math.max(max_header_height, param.y_subtitle_offset + ri.height);
 
             this.hitManager.add(canvas, ri.bb, track.getVariableObject("SUB_TITLE"));
         }
@@ -845,14 +826,14 @@ export class DefaultRenderer extends Renderer {
             let ri = graphic.CanvasText(
                 canvas,
                 x + width,
-                this.param.y_artist_offset,
+                param.y_artist_offset,
                 track.getVariable("ARTIST"),
-                this.param.artist_font_size,
+                param.artist_font_size,
                 "rt",
                 null, stage==1
             );
 
-            max_header_height = Math.max(max_header_height, this.param.y_artist_offset + ri.height);
+            max_header_height = Math.max(max_header_height, param.y_artist_offset + ri.height);
 
             this.hitManager.add(canvas, ri.bb, track.getVariableObject("ARTIST"));
         }
@@ -862,13 +843,15 @@ export class DefaultRenderer extends Renderer {
 
     async render_impl(track) {
 
+        let param =  common.deepcopy(this.init_param);
+
         // firstly, merge global PARAM.
         if(track.getVariable("PARAM")){
-            this.merge_param(this.param, track.getVariable("PARAM"), false); // Merge to defaul param
+            this.merge_param(param, track.getVariable("PARAM"), false); // Merge to defaul param
         }
 
-        let page_width = this.param.paper_width / this.param.text_size / this.param.ncol;
-        var page_content_width = page_width - ( this.param.x_offset_left + this.param.x_offset_right );
+        let page_width = param.paper_width / param.text_size / param.ncol;
+        var page_content_width = page_width - ( param.x_offset_left + param.x_offset_right );
 
         var show_footer = track.getVariable("SHOW_FOOTER") == "YES";
 
@@ -901,7 +884,7 @@ export class DefaultRenderer extends Renderer {
 
         let reharsal_groups = track.childNodes.filter(e=>e instanceof common.RehearsalGroup);
 
-        if(this.param.row_gen_mode == "default"){
+        if(param.row_gen_mode == "default"){
             for (let i = 0; i < reharsal_groups.length; ++i) {
                 let rg = reharsal_groups[i];
                 let blocks = rg.childNodes.filter(e=>e instanceof common.Block);
@@ -956,7 +939,7 @@ export class DefaultRenderer extends Renderer {
                     meas_row_list_inv = meas_row_list.slice().reverse();
                 }
             }
-        }else if(this.param.row_gen_mode == "constant_n_meas"){
+        }else if(param.row_gen_mode == "constant_n_meas"){
             for (let i = 0; i < reharsal_groups.length; ++i) {
                 let rg = reharsal_groups[i];
                 let blocks = rg.childNodes.filter(e=>e instanceof common.Block);
@@ -967,7 +950,7 @@ export class DefaultRenderer extends Renderer {
                         meas_row.push(m);
                         meas_row_rg_ids.push(i);
                         meas_row_block_ids.push(accum_block_id);
-                        if(meas_row.length == this.param.row_gen_n_meas){
+                        if(meas_row.length == param.row_gen_n_meas){
                             meas_row_list.push({
                                 meas_row: meas_row,
                                 meas_row_rg_ids: meas_row_rg_ids,
@@ -1013,7 +996,7 @@ export class DefaultRenderer extends Renderer {
 
             // Determine params to be applied for this. 
             // As of now, 
-            var param_for_row = common.deepcopy(this.param); 
+            var param_for_row = common.deepcopy(param); 
             let param_for_row_alt = false;
             e.meas_row.forEach(m=>{
                 let mparam = m.getVariable("PARAM");
@@ -1049,10 +1032,10 @@ export class DefaultRenderer extends Renderer {
             this.memCanvas = document.createElement("canvas");
             graphic.SetupHiDPICanvas(
                 this.memCanvas,
-                this.param.paper_width / this.param.text_size,
-                400 / this.param.text_size, /// 400 is dammy
-                this.param.pixel_ratio,
-                this.param.text_size
+                param.paper_width / param.text_size,
+                400 / param.text_size, /// 400 is dammy
+                param.pixel_ratio,
+                param.text_size
             );
         }
 
@@ -1060,12 +1043,12 @@ export class DefaultRenderer extends Renderer {
 
         let y_base_screening = 0;
 
-        let headerHeight = this.drawheader(this.memCanvas, 1, 0, 100, track); // x position, width is dammy, as only height information is important.
+        let headerHeight = this.drawheader(this.memCanvas, param, 1, 0, 100, track); // x position, width is dammy, as only height information is important.
         if(headerHeight > 0){
             y_base_screening += headerHeight;
-            y_base_screening += headerHeight > 0 ? this.param.y_header_margin : 0;
+            y_base_screening += headerHeight > 0 ? param.y_header_margin : 0;
         }else{
-            y_base_screening += this.param.y_offset_top;
+            y_base_screening += param.y_offset_top;
         }
 
         let dammy_music_context = common.deepcopy(music_context); // Maybe not required ?
@@ -1133,8 +1116,8 @@ export class DefaultRenderer extends Renderer {
                this.determine_rooms(yse[pei].param, reharsal_x_width_info, page_content_width);
            }
        }
-       y_base_screening += this.param.y_offset_bottom; // Here y_base_screening means the height of the total score if single page applied.
-       if(show_footer) y_base_screening += this.param.y_footer_offset;
+       y_base_screening += param.y_offset_bottom; // Here y_base_screening means the height of the total score if single page applied.
+       if(show_footer) y_base_screening += param.y_footer_offset;
 
        // Release memCanvas
        graphic.ReleaseCanvas(this.memCanvas);
@@ -1144,19 +1127,19 @@ export class DefaultRenderer extends Renderer {
         // Stage 2 : Rendering
         // ----------------------
         let pageidx = 0;
-        let page_height = this.param.paper_height > 0 ? 
-            this.param.paper_height / this.param.text_size / this.param.nrow :
+        let page_height = param.paper_height > 0 ? 
+            param.paper_height / param.text_size / param.nrow :
             y_base_screening;
 
         let pageOffset = (pageidx)=>{
-            let r = Math.floor( pageidx / this.param.ncol ) % this.param.nrow;
-            let c = pageidx % this.param.ncol;
-            //let page_width  = this.param.paper_width / this.param.text_size / this.param.ncol;
-            //let page_height = this.param.paper_height / this.param.text_size / this.param.nrow;
+            let r = Math.floor( pageidx / param.ncol ) % param.nrow;
+            let c = pageidx % param.ncol;
+            //let page_width  = param.paper_width / param.text_size / param.ncol;
+            //let page_height = param.paper_height / param.text_size / param.nrow;
             return {x: page_width * c, y: page_height * r};
         };
 
-        let page_origin = this.param.paper_height > 0 ? pageOffset(pageidx) : {x:0, y:0};
+        let page_origin = param.paper_height > 0 ? pageOffset(pageidx) : {x:0, y:0};
 
         let canvas = this.canvas;
         if (canvas == null) {
@@ -1164,28 +1147,28 @@ export class DefaultRenderer extends Renderer {
         }
         graphic.SetupHiDPICanvas(
             canvas,
-            this.param.paper_width / this.param.text_size,
-            (this.param.paper_height > 0 ? this.param.paper_height/this.param.text_size : y_base_screening),
-            this.param.pixel_ratio,
-            this.param.text_size
+            param.paper_width / param.text_size,
+            (param.paper_height > 0 ? param.paper_height/param.text_size : y_base_screening),
+            param.pixel_ratio,
+            param.text_size
         );
 
-        this.hitManager.setGlobalScale(this.param.text_size, this.param.text_size);
+        this.hitManager.setGlobalScale(param.text_size, param.text_size);
 
-        if(this.param.background_color)
+        if(param.background_color)
             graphic.CanvasRect(canvas, 0, 0, 
-                this.param.paper_width / this.param.text_size, 
-                (this.param.paper_height > 0 ? this.param.paper_height/this.param.text_size : y_base_screening), 
-                this.param.background_color);
+                param.paper_width / param.text_size, 
+                (param.paper_height > 0 ? param.paper_height/param.text_size : y_base_screening), 
+                param.background_color);
 
         var y_base = page_origin.y;
 
-        let max_header_height = this.drawheader(canvas, 2, page_origin.x + this.param.x_offset_left, page_content_width, track);
+        let max_header_height = this.drawheader(canvas, param, 2, page_origin.x + param.x_offset_left, page_content_width, track);
         if(max_header_height > 0){
-            y_stacks.push({ type: "titles", height: (max_header_height + this.param.y_header_margin) });
-            y_base += (max_header_height + this.param.y_header_margin);
+            y_stacks.push({ type: "titles", height: (max_header_height + param.y_header_margin) });
+            y_base += (max_header_height + param.y_header_margin);
         }else{
-            y_base += this.param.y_offset_top;
+            y_base += param.y_offset_top;
         }
 
         let headerH = y_base - page_origin.y;
@@ -1211,7 +1194,7 @@ export class DefaultRenderer extends Renderer {
                 
                 let r = this.render_measure_row_simplified(
                     track,
-                    page_origin.x + this.param.x_offset_left,
+                    page_origin.x + param.x_offset_left,
                     canvas,
                     row_elements_list,
                     yse[pei].pm,
@@ -1233,7 +1216,7 @@ export class DefaultRenderer extends Renderer {
                     page_origin = pageOffset(pageidx);
                     y_base = page_origin.y + yse[pei].param.y_offset_top;
                     
-                    let new_canvas = pageidx % (this.param.ncol * this.param.nrow) == 0;
+                    let new_canvas = pageidx % (param.ncol * param.nrow) == 0;
 
                     if(new_canvas){
                         this.hitManager.commit(canvas);
@@ -1241,17 +1224,17 @@ export class DefaultRenderer extends Renderer {
                         canvaslist.push(canvas);
                         graphic.SetupHiDPICanvas(
                             canvas,
-                            yse[pei].param.paper_width / this.param.text_size,
-                            yse[pei].param.paper_height / this.param.text_size,
-                            this.param.pixel_ratio,
-                            this.param.text_size
+                            yse[pei].param.paper_width / param.text_size,
+                            yse[pei].param.paper_height / param.text_size,
+                            param.pixel_ratio,
+                            param.text_size
                         );
                         
-                        if(this.param.background_color)
+                        if(param.background_color)
                             graphic.CanvasRect(canvas, 0, 0, 
-                                this.param.paper_width / this.param.text_size, 
-                                this.param.paper_height / this.param.text_size, 
-                                this.param.background_color);
+                                param.paper_width / param.text_size, 
+                                param.paper_height / param.text_size, 
+                                param.background_color);
                     }
 
                     pages.push(canvas);
@@ -1263,11 +1246,11 @@ export class DefaultRenderer extends Renderer {
                         let rb = [row_elements_list[0], row_elements_list[row_elements_list.length-1]];
                         if(row_elements_list[0].renderprop.rg_from_here) rb[0] = row_elements_list[0].renderprop.rg_from_here;
                         this.hitManager.add(canvas, 
-                            new graphic.BoundingBox(0, y_base, this.param.paper_width / this.param.text_size, r.mu_y - y_base),
+                            new graphic.BoundingBox(0, y_base, param.paper_width / param.text_size, r.mu_y - y_base),
                             new common.GenericRow("RM", rb));
                     }
                     this.hitManager.add(canvas, 
-                        new graphic.BoundingBox(0, r.mu_y, this.param.paper_width / this.param.text_size, r.y_base - r.mu_y),
+                        new graphic.BoundingBox(0, r.mu_y, param.paper_width / param.text_size, r.y_base - r.mu_y),
                         new common.GenericRow("BODY", [row_elements_list[0], row_elements_list[row_elements_list.length-1]]));
                     y_base = r.y_base;
                 }
@@ -1283,7 +1266,7 @@ export class DefaultRenderer extends Renderer {
                 if(artist) songname += "/" + artist;
             }
 
-            //var score_width = this.param.paper_width / this.param.text_size / this.param.ncol;
+            //var score_width = param.paper_width / param.text_size / param.ncol;
             pages.forEach((canvas,pageidx)=>{
                 // Page number footer
                 page_origin = pageOffset(pageidx);
@@ -1293,7 +1276,7 @@ export class DefaultRenderer extends Renderer {
                 graphic.CanvasText(
                     canvas,
                     page_origin.x + page_width / 2,
-                    page_origin.y + page_height - this.param.y_footer_offset, 
+                    page_origin.y + page_height - param.y_footer_offset, 
                     footerstr,
                     12,
                     "ct"
@@ -1301,7 +1284,7 @@ export class DefaultRenderer extends Renderer {
             });
 
             //this.render_footer(pages, songname,
-            //    page_origin.y + page_height - this.param.y_footer_offset);
+            //    page_origin.y + page_height - param.y_footer_offset);
         }
         
         this.hitManager.commit(canvas);
@@ -2079,6 +2062,7 @@ export class DefaultRenderer extends Renderer {
                 if (e instanceof common.Coda) {
                     let r = this.draw_coda_plain(
                         paper,
+                        param,
                         meas_base_x + mh_offset,
                         yprof.mu.y + yprof.mu.height,
                         "lb",
@@ -2090,6 +2074,7 @@ export class DefaultRenderer extends Renderer {
                 } else if (e instanceof common.Segno) {
                     let r = this.draw_segno_plain(
                         paper,
+                        param,
                         meas_base_x + mh_offset,
                         yprof.mu.y + yprof.mu.height,
                         e,
@@ -2253,6 +2238,7 @@ export class DefaultRenderer extends Renderer {
                 } else if (e instanceof common.ToCoda) {
                     let r = this.draw_coda_plain(
                         paper,
+                        param,
                         x,
                         repeat_mark_y_base,
                         "rb",
@@ -2445,7 +2431,7 @@ export class DefaultRenderer extends Renderer {
         return { rm_detected: yprof.rm.detected, mu_y: yprof.mu.y, y_base: yprof.end.y };
     }
 
-    draw_segno_plain(paper, x, y, segno, B) {
+    draw_segno_plain(paper, param, x, y, segno, B) {
         var lx = x;
         var img_width = B/3;
         var img_height = B/2;
@@ -2469,7 +2455,7 @@ export class DefaultRenderer extends Renderer {
                 segno.number,
                 text_size,
                 "lb"
-                , null, null, {font:this.param.repeat_mark_font}
+                , null, null, {font:param.repeat_mark_font}
             );
             lx += r.width;
             bb.add_BB(r.bb);
@@ -2482,7 +2468,7 @@ export class DefaultRenderer extends Renderer {
                 "(" + segno.opt + ")",
                 text_size,
                 "lb"
-                , null, null, {font:this.param.repeat_mark_font}
+                , null, null, {font:param.repeat_mark_font}
             );
             lx += r.width;
             bb.add_BB(r.bb);
@@ -2491,7 +2477,7 @@ export class DefaultRenderer extends Renderer {
         return { width: lx - x, bb:bb };
     }
 
-    draw_coda_plain(paper, x, y, align, coda, B) {
+    draw_coda_plain(paper, param, x, y, align, coda, B) {
         let bb = new graphic.BoundingBox();
         var width = 0;
         var ys = 0;
@@ -2513,7 +2499,7 @@ export class DefaultRenderer extends Renderer {
                     y, //img_y + img_height,
                     coda.number,
                     text_size,
-                    "rb", null, null, {font:this.param.repeat_mark_font}
+                    "rb", null, null, {font:param.repeat_mark_font}
                 );
                 width += r.width;
                 bb.add_BB(r.bb);
@@ -2547,7 +2533,7 @@ export class DefaultRenderer extends Renderer {
                     coda.number,
                     text_size,
                     "lb",
-                    null, null, {font:this.param.repeat_mark_font}
+                    null, null, {font:param.repeat_mark_font}
                 );
                 width += r.width;
                 bb.add_BB(r.bb);

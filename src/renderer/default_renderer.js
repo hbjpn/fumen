@@ -174,11 +174,9 @@ export class DefaultRenderer extends Renderer {
         this.track = null;
 
         this.context = {
-            paper: null,
-            region_id: 0
+            pageidx: 0,
+            current_canvas: null
         };
-
-        this.canvas_count = 0;
     }
 
     /**
@@ -1126,7 +1124,9 @@ export class DefaultRenderer extends Renderer {
         // ----------------------
         // Stage 2 : Rendering
         // ----------------------
-        let pageidx = 0;
+
+        this.hitManager.setGlobalScale(param.text_size, param.text_size);
+
         let page_height = param.paper_height > 0 ? 
             param.paper_height / param.text_size / param.nrow :
             y_base_screening;
@@ -1139,31 +1139,33 @@ export class DefaultRenderer extends Renderer {
             return {x: page_width * c, y: page_height * r};
         };
 
-        let page_origin = param.paper_height > 0 ? pageOffset(pageidx) : {x:0, y:0};
+        let page_origin = param.paper_height > 0 ? pageOffset(this.context.pageidx) : {x:0, y:0};
 
-        let canvas = this.canvas;
-        if (canvas == null) {
-            canvas = await this.canvas_provider();
+        if(this.context.pageidx % (param.ncol * param.nrow) == 0){
+            let canvas = this.canvas;
+            if (canvas == null) {
+                canvas = await this.canvas_provider();
+            }
+            graphic.SetupHiDPICanvas(
+                canvas,
+                param.paper_width / param.text_size,
+                (param.paper_height > 0 ? param.paper_height/param.text_size : y_base_screening),
+                param.pixel_ratio,
+                param.text_size
+            );
+
+            if(param.background_color)
+                graphic.CanvasRect(canvas, 0, 0, 
+                    param.paper_width / param.text_size, 
+                    (param.paper_height > 0 ? param.paper_height/param.text_size : y_base_screening), 
+                    param.background_color);
+            
+            this.context.current_canvas = canvas;
         }
-        graphic.SetupHiDPICanvas(
-            canvas,
-            param.paper_width / param.text_size,
-            (param.paper_height > 0 ? param.paper_height/param.text_size : y_base_screening),
-            param.pixel_ratio,
-            param.text_size
-        );
-
-        this.hitManager.setGlobalScale(param.text_size, param.text_size);
-
-        if(param.background_color)
-            graphic.CanvasRect(canvas, 0, 0, 
-                param.paper_width / param.text_size, 
-                (param.paper_height > 0 ? param.paper_height/param.text_size : y_base_screening), 
-                param.background_color);
 
         var y_base = page_origin.y;
 
-        let max_header_height = this.drawheader(canvas, param, 2, page_origin.x + param.x_offset_left, page_content_width, track);
+        let max_header_height = this.drawheader(this.context.current_canvas, param, 2, page_origin.x + param.x_offset_left, page_content_width, track);
         if(max_header_height > 0){
             y_stacks.push({ type: "titles", height: (max_header_height + param.y_header_margin) });
             y_base += (max_header_height + param.y_header_margin);
@@ -1172,13 +1174,12 @@ export class DefaultRenderer extends Renderer {
         }
 
         let headerH = y_base - page_origin.y;
-        this.hitManager.add(canvas, 
+        this.hitManager.add(this.context.current_canvas, 
             new graphic.BoundingBox(0, page_origin.y - Math.max(0, 2-headerH),
             page_width, Math.max(2, headerH)),
             new common.GenericRow("HEADER", null));
 
-        let canvaslist = [canvas];
-        let pages = [canvas];
+        let pages = [this.context.current_canvas];
 
         for (let pei = 0; pei < yse.length; ++pei) {
             // Loop each y_stacks
@@ -1195,7 +1196,7 @@ export class DefaultRenderer extends Renderer {
                 let r = this.render_measure_row_simplified(
                     track,
                     page_origin.x + param.x_offset_left,
-                    canvas,
+                    this.context.current_canvas,
                     row_elements_list,
                     yse[pei].pm,
                     yse[pei].nm,
@@ -1212,18 +1213,15 @@ export class DefaultRenderer extends Renderer {
                     }
 
                     // increment the page
-                    ++pageidx;
-                    page_origin = pageOffset(pageidx);
+                    ++this.context.pageidx;
+                    page_origin = pageOffset(this.context.pageidx);
                     y_base = page_origin.y + yse[pei].param.y_offset_top;
-                    
-                    let new_canvas = pageidx % (param.ncol * param.nrow) == 0;
 
-                    if(new_canvas){
-                        this.hitManager.commit(canvas);
-                        canvas = await this.canvas_provider();
-                        canvaslist.push(canvas);
+                    if(this.context.pageidx % (param.ncol * param.nrow) == 0){
+                        this.hitManager.commit(this.context.current_canvas);
+                        this.context.current_canvas = await this.canvas_provider();
                         graphic.SetupHiDPICanvas(
-                            canvas,
+                            this.context.current_canvas,
                             yse[pei].param.paper_width / param.text_size,
                             yse[pei].param.paper_height / param.text_size,
                             param.pixel_ratio,
@@ -1231,13 +1229,13 @@ export class DefaultRenderer extends Renderer {
                         );
                         
                         if(param.background_color)
-                            graphic.CanvasRect(canvas, 0, 0, 
+                            graphic.CanvasRect(this.context.current_canvas, 0, 0, 
                                 param.paper_width / param.text_size, 
                                 param.paper_height / param.text_size, 
                                 param.background_color);
                     }
 
-                    pages.push(canvas);
+                    pages.push(this.context.current_canvas);
 
                     // try again next page
                     pei = pei - 1;
@@ -1245,11 +1243,11 @@ export class DefaultRenderer extends Renderer {
                     if(r.rm_detected){
                         let rb = [row_elements_list[0], row_elements_list[row_elements_list.length-1]];
                         if(row_elements_list[0].renderprop.rg_from_here) rb[0] = row_elements_list[0].renderprop.rg_from_here;
-                        this.hitManager.add(canvas, 
+                        this.hitManager.add(this.context.current_canvas, 
                             new graphic.BoundingBox(0, y_base, param.paper_width / param.text_size, r.mu_y - y_base),
                             new common.GenericRow("RM", rb));
                     }
-                    this.hitManager.add(canvas, 
+                    this.hitManager.add(this.context.current_canvas, 
                         new graphic.BoundingBox(0, r.mu_y, param.paper_width / param.text_size, r.y_base - r.mu_y),
                         new common.GenericRow("BODY", [row_elements_list[0], row_elements_list[row_elements_list.length-1]]));
                     y_base = r.y_base;
@@ -1282,15 +1280,15 @@ export class DefaultRenderer extends Renderer {
                     "ct"
                 );
             });
-
-            //this.render_footer(pages, songname,
-            //    page_origin.y + page_height - param.y_footer_offset);
         }
+
+        // Increment for next session(if any)
+        ++this.context.pageidx;
         
-        this.hitManager.commit(canvas);
+        this.hitManager.commit(this.context.current_canvas);
 
         return {
-            pages: canvaslist.length,
+            pages: pages.length,
             height: page_height
         };
     }

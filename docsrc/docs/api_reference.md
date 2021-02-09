@@ -39,8 +39,8 @@
         * [new Parser()](#new_module_Fumen.Parser_new)
         * [.parse(code)](#module_Fumen.Parser+parse)
     * [.DefaultRenderer](#module_Fumen.DefaultRenderer)
-        * [new DefaultRenderer(canvas, param)](#new_module_Fumen.DefaultRenderer_new)
-        * [.render(track)](#module_Fumen.DefaultRenderer+render)
+        * [new DefaultRenderer(canvas, [param])](#new_module_Fumen.DefaultRenderer_new)
+        * [.render(track, [param])](#module_Fumen.DefaultRenderer+render)
 
 <a name="module_Fumen.Node"></a>
 
@@ -301,30 +301,31 @@ Parse the fumen markdown code
 **Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
 
 * [.DefaultRenderer](#module_Fumen.DefaultRenderer)
-    * [new DefaultRenderer(canvas, param)](#new_module_Fumen.DefaultRenderer_new)
-    * [.render(track)](#module_Fumen.DefaultRenderer+render)
+    * [new DefaultRenderer(canvas, [param])](#new_module_Fumen.DefaultRenderer_new)
+    * [.render(track, [param])](#module_Fumen.DefaultRenderer+render)
 
 <a name="new_module_Fumen.DefaultRenderer_new"></a>
 
-#### new DefaultRenderer(canvas, param)
+#### new DefaultRenderer(canvas, [param])
 Default Renderer class for HTML canvas element
 
 
-| Param | Type | Description |
-| --- | --- | --- |
-| canvas | <code>HTMLElement</code> \| [<code>canvasProvider</code>](#canvasProvider) | HTML canvas element to draw the image. Or, callback function which returns HTML canvas element. |
-| param | [<code>RenderParam</code>](#RenderParam) | Parameter for the rednering |
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| canvas | <code>HTMLElement</code> \| [<code>canvasProvider</code>](#canvasProvider) |  | HTML canvas element to draw the image. Or, callback function which returns HTML canvas element. |
+| [param] | [<code>RenderParam</code>](#RenderParam) | <code>{}</code> | Parameter for the rednering. If not specified, internal default values are used. |
 
 <a name="module_Fumen.DefaultRenderer+render"></a>
 
-#### defaultRenderer.render(track)
+#### defaultRenderer.render(track, [param])
 Render the track
 
 **Kind**: instance method of [<code>DefaultRenderer</code>](#module_Fumen.DefaultRenderer)  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| track | <code>Track</code> | Track object passed from Parser.parse function |
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| track | <code>Track</code> |  | Track object passed from Parser.parse function |
+| [param] | [<code>RenderParam</code>](#RenderParam) | <code>{}</code> | Rendering parameter for this rendering. Supercedes(field by field) the prameters specified in constructor. |
 
 <a name="A4"></a>
 

@@ -135,9 +135,9 @@ export class DefaultRenderer extends Renderer {
     /**
      * Default Renderer class for HTML canvas element
      * @param {(HTMLElement|canvasProvider)} canvas - HTML canvas element to draw the image. Or, callback function which returns HTML canvas element.
-     * @param {RenderParam} param - Parameter for the rednering
+     * @param {RenderParam} [param={}] - Parameter for the rednering. If not specified, internal default values are used.
      */
-    constructor(canvas, param) {
+    constructor(canvas, param={}) {
         super();
 
         if(typeof(canvas)=="function"){
@@ -181,14 +181,14 @@ export class DefaultRenderer extends Renderer {
     /**
      * Render the track
      * @param {Track} track - Track object passed from Parser.parse function 
-     * @param {RenderParam} [rparam={}] - Rendering parameter for this rendering. Supercedes(field by field) the prameters specified in constructor. 
+     * @param {RenderParam} [param={}] - Rendering parameter for this rendering. Supercedes(field by field) the prameters specified in constructor. 
      */
-    render(track, rparam={}) {
+    render(track, param={}) {
         this.track = track;
 
         return graphic.PreloadJsonFont()
         .then(()=>{
-            return this.render_impl(track,rparam);
+            return this.render_impl(track,param);
         });
     }
 

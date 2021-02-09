@@ -651,14 +651,14 @@
         
           <li class="md-nav__item">
   <a href="#new-defaultrenderercanvas-param" class="md-nav__link">
-    new DefaultRenderer(canvas, param)
+    new DefaultRenderer(canvas, [param])
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#defaultrendererrendertrack" class="md-nav__link">
-    defaultRenderer.render(track)
+  <a href="#defaultrendererrendertrack-param" class="md-nav__link">
+    defaultRenderer.render(track, [param])
   </a>
   
 </li>
@@ -1014,14 +1014,14 @@
         
           <li class="md-nav__item">
   <a href="#new-defaultrenderercanvas-param" class="md-nav__link">
-    new DefaultRenderer(canvas, param)
+    new DefaultRenderer(canvas, [param])
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#defaultrendererrendertrack" class="md-nav__link">
-    defaultRenderer.render(track)
+  <a href="#defaultrendererrendertrack-param" class="md-nav__link">
+    defaultRenderer.render(track, [param])
   </a>
   
 </li>
@@ -1123,8 +1123,8 @@
 </ul>
 </li>
 <li><a href="#module_Fumen.DefaultRenderer">.DefaultRenderer</a><ul>
-<li><a href="#new_module_Fumen.DefaultRenderer_new">new DefaultRenderer(canvas, param)</a></li>
-<li><a href="#module_Fumen.DefaultRenderer+render">.render(track)</a></li>
+<li><a href="#new_module_Fumen.DefaultRenderer_new">new DefaultRenderer(canvas, [param])</a></li>
+<li><a href="#module_Fumen.DefaultRenderer+render">.render(track, [param])</a></li>
 </ul>
 </li>
 </ul>
@@ -1347,19 +1347,20 @@ Only used in HitManager</p>
 <p><strong>Kind</strong>: static class of <a href="#module_Fumen"><code>Fumen</code></a>  </p>
 <ul>
 <li><a href="#module_Fumen.DefaultRenderer">.DefaultRenderer</a><ul>
-<li><a href="#new_module_Fumen.DefaultRenderer_new">new DefaultRenderer(canvas, param)</a></li>
-<li><a href="#module_Fumen.DefaultRenderer+render">.render(track)</a></li>
+<li><a href="#new_module_Fumen.DefaultRenderer_new">new DefaultRenderer(canvas, [param])</a></li>
+<li><a href="#module_Fumen.DefaultRenderer+render">.render(track, [param])</a></li>
 </ul>
 </li>
 </ul>
 <p><a name="new_module_Fumen.DefaultRenderer_new"></a></p>
-<h4 id="new-defaultrenderercanvas-param">new DefaultRenderer(canvas, param)</h4>
+<h4 id="new-defaultrenderercanvas-param">new DefaultRenderer(canvas, [param])</h4>
 <p>Default Renderer class for HTML canvas element</p>
 <table>
 <thead>
 <tr>
 <th>Param</th>
 <th>Type</th>
+<th>Default</th>
 <th>Description</th>
 </tr>
 </thead>
@@ -1367,17 +1368,19 @@ Only used in HitManager</p>
 <tr>
 <td>canvas</td>
 <td><code>HTMLElement</code> | <a href="#canvasProvider"><code>canvasProvider</code></a></td>
+<td></td>
 <td>HTML canvas element to draw the image. Or, callback function which returns HTML canvas element.</td>
 </tr>
 <tr>
-<td>param</td>
+<td>[param]</td>
 <td><a href="#RenderParam"><code>RenderParam</code></a></td>
-<td>Parameter for the rednering</td>
+<td><code>{}</code></td>
+<td>Parameter for the rednering. If not specified, internal default values are used.</td>
 </tr>
 </tbody>
 </table>
 <p><a name="module_Fumen.DefaultRenderer+render"></a></p>
-<h4 id="defaultrendererrendertrack">defaultRenderer.render(track)</h4>
+<h4 id="defaultrendererrendertrack-param">defaultRenderer.render(track, [param])</h4>
 <p>Render the track</p>
 <p><strong>Kind</strong>: instance method of <a href="#module_Fumen.DefaultRenderer"><code>DefaultRenderer</code></a>  </p>
 <table>
@@ -1385,6 +1388,7 @@ Only used in HitManager</p>
 <tr>
 <th>Param</th>
 <th>Type</th>
+<th>Default</th>
 <th>Description</th>
 </tr>
 </thead>
@@ -1392,7 +1396,14 @@ Only used in HitManager</p>
 <tr>
 <td>track</td>
 <td><code>Track</code></td>
+<td></td>
 <td>Track object passed from Parser.parse function</td>
+</tr>
+<tr>
+<td>[param]</td>
+<td><a href="#RenderParam"><code>RenderParam</code></a></td>
+<td><code>{}</code></td>
+<td>Rendering parameter for this rendering. Supercedes(field by field) the prameters specified in constructor.</td>
 </tr>
 </tbody>
 </table>

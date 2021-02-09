@@ -468,26 +468,27 @@ export function GetPixelRatio(canvas) {
     return dpr / bsr;
 }
 
-export function SetupHiDPICanvas(canvas, w, h, ratio, zoom) {
+export function SetupHiDPICanvas(canvas, w, h, ratio, zoom, zoomChangeOnly=false) {
     if (!ratio) ratio = GetPixelRatio(canvas);
     if (!zoom) zoom = 1.0;
 
-    // This is not a good manner, though...
-    // = ratio;
-    //G_zoom = zoom;
     canvas.ratio = ratio;
     canvas.zoom = zoom;
 
-    //console.log(ratio + "/" + w + "," + h);
-
-    var ctx = canvas.getContext("2d");
-    canvas.width = w * ratio * zoom;
-    canvas.height = h * ratio * zoom;
-    canvas.style.width = w * zoom + "px";
-    canvas.style.height = h * zoom + "px";
-    ctx.setTransform(ratio * zoom, 0, 0, ratio * zoom, 0, 0);
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // This is not a good manner, though...
+    if(zoomChangeOnly){
+        // Reset absolute transforms. Only called at the begging of the rendering    
+        let ctx = canvas.getContext("2d");    
+        ctx.setTransform(ratio * zoom, 0, 0, ratio * zoom, 0, 0);
+    }else{
+        let ctx = canvas.getContext("2d");
+        canvas.width = w * ratio * zoom;
+        canvas.height = h * ratio * zoom;
+        canvas.style.width = w * zoom + "px";
+        canvas.style.height = h * zoom + "px";
+        ctx.setTransform(ratio * zoom, 0, 0, ratio * zoom, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
 
     return { ratio: ratio };
 }

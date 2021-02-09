@@ -1628,7 +1628,11 @@ export class HitManager
         if(paper.fumen_canvas_id === undefined){
             paper.fumen_canvas_id = this._uuid();
         }
-        if(bb.width() <= 4) bb = bb.clone().expand(2,2,0,0);
+        bb = bb.clone();
+
+        if(bb.width() <= 4) bb.expand(2,2,0,0);
+
+        bb.scale(this.global_scale.x, this.global_scale.y); // Registered as on-screen coordinates
 
         if(! (paper.fumen_canvas_id in this.papers)){
             this.papers[paper.fumen_canvas_id] = {
@@ -1691,26 +1695,26 @@ export class HitManager
         var len = p.objs.length;
 
         var lx_end = p.left_x_sorted.findIndex(n => {
-            return p.objs[n].bb.x[0] > coord.x / this.global_scale.x;
+            return p.objs[n].bb.x[0] > coord.x;
         });
         if(lx_end == 0) return [];
         else if(lx_end == -1) lx_end = len-1;
         else lx_end -= 1;
 
         var rx_start = p.right_x_sorted.findIndex(n => {
-            return p.objs[n].bb.x[1] >= coord.x / this.global_scale.x;
+            return p.objs[n].bb.x[1] >= coord.x;
         });
         if(rx_start == -1) return [];
 
         var ty_end = p.top_y_sorted.findIndex(n => {
-            return p.objs[n].bb.y[0] > coord.y / this.global_scale.y;
+            return p.objs[n].bb.y[0] > coord.y;
         });
         if(ty_end == 0) return [];
         else if(ty_end == -1) ty_end = len-1;
         else ty_end -= 1;
 
         var by_start = p.bottom_y_sorted.findIndex(n => {
-            return p.objs[n].bb.y[1] >= coord.y / this.global_scale.y;
+            return p.objs[n].bb.y[1] >= coord.y;
         });
         if(by_start == -1) return [];
 
@@ -1731,7 +1735,7 @@ export class HitManager
         })
         .map((val)=>{
             return {element: p.objs[val].element, 
-                bb: p.objs[val].bb.clone().scale(this.global_scale.x, this.global_scale.y)};
+                bb: p.objs[val].bb.clone()};
         });
         
         return hit_objs;

@@ -160,16 +160,8 @@ export class DefaultRenderer extends Renderer {
                 this.init_param[key] = common.deepcopy(presets[preset][key]);
             }
         }
-        // Overwrite
-        for (let key in param) {
-            this.init_param[key] = common.deepcopy(param[key]);
-        }
-        
-        // Determine offset values in case some are omitted
-        this.init_param.y_offset_top    =  this.init_param.y_offset_top    || this.init_param.y_offset;
-        this.init_param.y_offset_bottom =  this.init_param.y_offset_bottom || this.init_param.y_offset;
-        this.init_param.x_offset_left   =  this.init_param.x_offset_left   || this.init_param.x_offset;
-        this.init_param.x_offset_right  =  this.init_param.x_offset_right  || this.init_param.x_offset;
+
+        this.merge_param(this.init_param, param, false);
         
         this.track = null;
 
@@ -179,16 +171,24 @@ export class DefaultRenderer extends Renderer {
         };
     }
 
+    setoffsetparam(param){
+        if("y_offset" in param) param.y_offset_top    =  param.y_offset_top    || param.y_offset;
+        if("y_offset" in param) param.y_offset_bottom =  param.y_offset_bottom || param.y_offset;
+        if("x_offset" in param) param.x_offset_left   =  param.x_offset_left   || param.x_offset;
+        if("x_offset" in param) param.x_offset_right  =  param.x_offset_right  || param.x_offset;
+    }
+
     /**
      * Render the track
      * @param {Track} track - Track object passed from Parser.parse function 
+     * @param {RenderParam} [rparam={}] - Rendering parameter for this rendering. Supercedes(field by field) the prameters specified in constructor. 
      */
-    render(track) {
+    render(track, rparam={}) {
         this.track = track;
 
         return graphic.PreloadJsonFont()
         .then(()=>{
-            return this.render_impl(track);
+            return this.render_impl(track,rparam);
         });
     }
 
@@ -773,6 +773,9 @@ export class DefaultRenderer extends Renderer {
     }
 
     merge_param(param, additional_param, takemax=false){
+        // Important to do this before merging, otherwise the offset_l|r|b|t value already configured remains to be used.
+        this.setoffsetparam(additional_param);
+
         for(const [param_key, param_value] of Object.entries(additional_param)){
             if(param_key.includes("margin") && takemax){
                 param[param_key] = Math.max(param[param_key], param_value);
@@ -780,6 +783,9 @@ export class DefaultRenderer extends Renderer {
                 param[param_key] = param_value;
             }
         }
+
+        // In case, no offset specifieed in additional_param, this still needed.
+       this.setoffsetparam(param);
     }
 
     drawheader(canvas, param, stage, x, width, track){
@@ -839,11 +845,15 @@ export class DefaultRenderer extends Renderer {
         return max_header_height;
     }
 
-    async render_impl(track) {
+    async render_impl(track, rparam) {
 
+        // parameter constructing. Parameter applicability order: Embeded track variable > Parameter specifed in render() call > Parameter specified in constructor
         let param =  common.deepcopy(this.init_param);
 
-        // firstly, merge global PARAM.
+        // Merge parameter specified by render() call
+        this.merge_param(param, rparam, false);
+
+        // firstly, merge global PARAM specified in the source.
         if(track.getVariable("PARAM")){
             this.merge_param(param, track.getVariable("PARAM"), false); // Merge to defaul param
         }
@@ -1125,8 +1135,6 @@ export class DefaultRenderer extends Renderer {
         // Stage 2 : Rendering
         // ----------------------
 
-        this.hitManager.setGlobalScale(param.text_size, param.text_size);
-
         let page_height = param.paper_height > 0 ? 
             param.paper_height / param.text_size / param.nrow :
             y_base_screening;
@@ -1149,7 +1157,7 @@ export class DefaultRenderer extends Renderer {
             }
             graphic.SetupHiDPICanvas(
                 canvas,
-                param.paper_width / param.text_size,
+                param.paper_width / param.text_size, // Internally, canvas size is set to this value * zoom, then eventually equals to param.paper_height.
                 (param.paper_height > 0 ? param.paper_height/param.text_size : y_base_screening),
                 param.pixel_ratio,
                 param.text_size
@@ -1162,6 +1170,22 @@ export class DefaultRenderer extends Renderer {
                     param.background_color);
             
             this.context.current_canvas = canvas;
+
+            this.hitManager.setGlobalScale(param.text_size, param.text_size);
+
+        }else if(this.context.current_canvas.zoom != param.text_size){
+            // text_size is changed  from the previous score drawing. This can happen when ncol and/or nrow > 1
+            // Only change the zooming configuration.
+            graphic.SetupHiDPICanvas(
+                this.context.current_canvas,
+                0, // not used
+                0, // not used
+                param.pixel_ratio,
+                param.text_size,
+                true
+            );
+
+            this.hitManager.setGlobalScale(param.text_size, param.text_size);
         }
 
         var y_base = page_origin.y;

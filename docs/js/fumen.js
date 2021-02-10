@@ -17000,7 +17000,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
                 headerH = y_base - page_origin.y;
                 this.hitManager.add(this.context.current_canvas, new _graphic__WEBPACK_IMPORTED_MODULE_3__["BoundingBox"](0, page_origin.y - Math.max(0, 2 - headerH), page_width, Math.max(2, headerH)), new _common_common__WEBPACK_IMPORTED_MODULE_2__["GenericRow"]("HEADER", null));
-                pages = [this.context.current_canvas];
+                pages = [{
+                  canvas: this.context.current_canvas
+                }];
                 _pei = 0;
 
               case 68:
@@ -17060,7 +17062,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 if (param.background_color) _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasRect"](this.context.current_canvas, 0, 0, param.paper_width / param.text_size, param.paper_height / param.text_size, param.background_color);
 
               case 89:
-                pages.push(this.context.current_canvas); // try again next page
+                pages.push({
+                  canvas: this.context.current_canvas
+                }); // try again next page
 
                 _pei = _pei - 1;
                 _context.next = 96;
@@ -17093,11 +17097,11 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                   } //var score_width = param.paper_width / param.text_size / param.ncol;
 
 
-                  pages.forEach(function (canvas, l_pageidx) {
+                  pages.forEach(function (page, l_pageidx) {
                     // Page number footer
                     page_origin = pageOffset(l_pageidx + start_pageidx);
                     var footerstr = (songname ? songname + " - " : "") + (l_pageidx + 1) + " of " + pages.length;
-                    _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](canvas, page_origin.x + page_width / 2, page_origin.y + page_height - param.y_footer_offset, footerstr, 12, "ct");
+                    _graphic__WEBPACK_IMPORTED_MODULE_3__["CanvasText"](page.canvas, page_origin.x + page_width / 2, page_origin.y + page_height - param.y_footer_offset, footerstr, 12, "ct");
                   });
                 } // Increment for next session(if any)
 
@@ -17105,8 +17109,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 ++this.context.pageidx;
                 this.hitManager.commit(this.context.current_canvas);
                 return _context.abrupt("return", {
-                  pages: pages.length,
-                  height: page_height
+                  pages: _common_common__WEBPACK_IMPORTED_MODULE_2__["shallowcopy"](pages)
                 });
 
               case 103:

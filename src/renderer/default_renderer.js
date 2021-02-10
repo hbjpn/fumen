@@ -1204,7 +1204,7 @@ export class DefaultRenderer extends Renderer {
             page_width, Math.max(2, headerH)),
             new common.GenericRow("HEADER", null));
 
-        let pages = [this.context.current_canvas];
+        let pages = [{canvas:this.context.current_canvas}];
 
         for (let pei = 0; pei < yse.length; ++pei) {
             // Loop each y_stacks
@@ -1260,7 +1260,7 @@ export class DefaultRenderer extends Renderer {
                                 param.background_color);
                     }
 
-                    pages.push(this.context.current_canvas);
+                    pages.push({canvas:this.context.current_canvas});
 
                     // try again next page
                     pei = pei - 1;
@@ -1290,14 +1290,14 @@ export class DefaultRenderer extends Renderer {
             }
 
             //var score_width = param.paper_width / param.text_size / param.ncol;
-            pages.forEach((canvas,l_pageidx)=>{
+            pages.forEach((page,l_pageidx)=>{
                 // Page number footer
                 page_origin = pageOffset(l_pageidx + start_pageidx);
 
                 let footerstr =
                     (songname ? (songname + " - ") : "") + (l_pageidx + 1) + " of " + pages.length;
                 graphic.CanvasText(
-                    canvas,
+                    page.canvas,
                     page_origin.x + page_width / 2,
                     page_origin.y + page_height - param.y_footer_offset, 
                     footerstr,
@@ -1313,8 +1313,7 @@ export class DefaultRenderer extends Renderer {
         this.hitManager.commit(this.context.current_canvas);
 
         return {
-            pages: pages.length,
-            height: page_height
+            pages: common.shallowcopy(pages)
         };
     }
 

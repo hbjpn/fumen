@@ -181,7 +181,8 @@ let dotest = async (headInfo)=>{
         "on_bass.fumen",
         "zoom.fumen",
         "align.fumen",
-        "tuplet.fumen"];
+        "tuplet.fumen",
+        "multiup.fumen"];
     const results = [];
     for(let i=0; i<files.length; ++i){
         let r = await capture(addr,files[i], headInfo, base_commit);

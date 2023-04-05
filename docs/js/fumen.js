@@ -19417,6 +19417,7 @@ function CanvasLine(canvas, x0, y0, x1, y1, opt) {
 
   if (draw) {
     var context = canvas.getContext("2d");
+    context.save();
     context.beginPath();
     if (opt && opt.dash) context.setLineDash([2, 2]);
     if (opt && opt.width) context.lineWidth = opt.width;
@@ -19425,6 +19426,7 @@ function CanvasLine(canvas, x0, y0, x1, y1, opt) {
     context.stroke();
     if (opt && opt.dash) context.setLineDash([]);
     if (opt && opt.width) context.lineWidth = 1;
+    context.restore();
   } //return {bounding_box:{x:Math.min(x0,x1), y:Math.min(y0,y1), w:Math.abs(x0-x1), h:Math.abs(y0-y1)}};
 
 

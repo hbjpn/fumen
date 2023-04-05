@@ -100,14 +100,16 @@ export function CanvasCircle(canvas, x, y, r, draw=true) {
 export function CanvasLine(canvas, x0, y0, x1, y1, opt, draw=true) {
     if(draw){
         var context = canvas.getContext("2d");
+        context.save(); // In iOS 16.1, somewhat lineWidth is not reset....
         context.beginPath();
         if (opt && opt.dash) context.setLineDash([2, 2]);
         if (opt && opt.width) context.lineWidth = opt.width;
         context.moveTo(x0, y0);
         context.lineTo(x1, y1);
         context.stroke();
-        if (opt && opt.dash) context.setLineDash([]);
-        if (opt && opt.width) context.lineWidth = 1;
+        //if (opt && opt.dash) context.setLineDash([]);
+        //if (opt && opt.width) context.lineWidth = 1;
+        context.restore(); // To restore the old state
     }
     //return {bounding_box:{x:Math.min(x0,x1), y:Math.min(y0,y1), w:Math.abs(x0-x1), h:Math.abs(y0-y1)}};
     return {bb:new BoundingBox(Math.min(x0,x1), Math.min(y0,y1), Math.abs(x0-x1), Math.abs(y0-y1))};

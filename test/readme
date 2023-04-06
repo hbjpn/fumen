@@ -1,0 +1,6 @@
+This script is for testing the regression of the rendering engine.
+1. "node install" on the parent directly
+2. Build the fumen.js with build.sh. 
+3. Make a local HTTP server to host the dist directly. e.g. using http-server
+4. Invoke node fumen2-ci.js {Address of the local http server}
+

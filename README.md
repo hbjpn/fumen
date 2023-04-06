@@ -1,8 +1,6 @@
 # Fumen
 
-Fumen is a lightweight markup language and rendering engine for chord and rhthm chart with simple, easy and intuitive syntax, supporting various types of compoents used in popular music's chord and rhythm chart such as chord symbols, rhythm slashes, rest marks, repeat marks, rehearsal marks, comments, lyrics. 
-
-Differnt from the other sheetmusic redenring softwares, Fumen is **specialized for creating quick chord and rhythm chart** which is oftenly used in popular music contexts.
+Fumen is a lightweight markup language and rendering engine designed to generate chord charts and rhythm charts from simple, easy-to-write text. Fumen supports various types of components commonly used in popular music chord and rhythm charts, such as chord symbols, rhythm slashes, rest marks, repeat marks, rehearsal marks, comments, and lyrics. Fumen is **specialized for creating quick chord and rhythm charts** that are often used in popular music contexts. It is different from other sheet music rendering software and is designed to be simple and intuitive to use. 
 
 ## Quick start
 

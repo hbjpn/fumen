@@ -16,13 +16,13 @@ Just import fumen.js. No other depending modules !
 You can also use the released version in jsdeliver CDN
 
 ```html
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/hbjpn/fumen@1.3.0/dist/fumen.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/hbjpn/fumen@1.3.1/dist/fumen.js"></script>
 ```
 
 Minified version :
 
 ```html
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/hbjpn/fumen@1.3.0/dist/fumen.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/hbjpn/fumen@1.3.1/dist/fumen.min.js"></script>
 ```
 
 

@@ -1,6 +1,6 @@
 
 /*!
-fumen v1.3.0
+fumen v1.3.1
 
 The MIT License (MIT)
 

@@ -83,7 +83,9 @@ let capture = (async(addr, fumenfile, headInfo, base_commit) => {
         height: 10000 // set whatever you want
 	});
 
-	await page.waitFor(1000);
+	//await page.waitForTimeout(1000); // Deprecated in latest puppeteer
+    await (new Promise(r => setTimeout(r, 1000))); 
+
 	const clips = await page.evaluate(s => {
         const els = document.querySelectorAll(s);
         let cliprects = [];
@@ -96,7 +98,7 @@ let capture = (async(addr, fumenfile, headInfo, base_commit) => {
 
     //console.log(clips);
     //console.log(clips.length);
-    await page.waitFor(1000);
+    await (new Promise(r => setTimeout(r, 1000)));
      
     // Take diff from the previous image
     

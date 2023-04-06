@@ -22,7 +22,7 @@ module.exports = {
   devtool: "source-map",
   module: {
     rules: [
-      {
+      /*{
         enforce: "pre",
         test: /\.js$/,
         exclude: /(node_modules|dist)/,
@@ -30,7 +30,7 @@ module.exports = {
         options: {
             fix: true
         }
-      },
+      },*/
       {
         test: /\.js$/,
         use: [
@@ -47,8 +47,8 @@ module.exports = {
     ]
   },
   plugins:[
-    new CopyWebpackPlugin(
-      [
+    new CopyWebpackPlugin({
+      patterns: [
         {
           from: "src/lib",
           to: "lib",
@@ -66,7 +66,7 @@ module.exports = {
           to: "font-make.html",
         },   
       ],
-    ),
+    }),
     new webpack.BannerPlugin({
       banner: `
 /*!

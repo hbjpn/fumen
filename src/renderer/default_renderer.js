@@ -145,7 +145,7 @@ export class DefaultRenderer extends Renderer {
             this.canvas = null;
         }else{
             this.canvas = canvas;
-            if(canvas.id === undefined){ canvas.id = common.guid; }
+            if(canvas.id === undefined){ canvas.id = "thefumencanvas"; } // dummy }
             this.canvas_provider = null;    
         }
 

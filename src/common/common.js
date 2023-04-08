@@ -210,6 +210,7 @@ export class Element extends Node {
     }
 
     clone(){ throw "Shall be overrided"; }
+    getElementName() { throw "Shall be overrided; "}
 }
 
 /**
@@ -224,6 +225,8 @@ export class Track extends Element {
         }
         this.pre_render_info = {};
     }
+
+    getElementName() { return "Track"; }
     
     // Utility functions open for external
     getKey() {
@@ -273,6 +276,7 @@ export class RehearsalGroup extends Element{
         this.name = name;
         this.inline = inline;
     }
+    getElementName() { return "RehearsalGroup"; }
     exportCode(){
         let code = "";
         let blockcnt = 0;
@@ -304,7 +308,7 @@ export class Block extends Element{
     constructor(){
         super();
     }
-
+    getElementName() { return "Block"; }
     concat(newmeasures){
         // in-place concat.
         // do not use concat as the object is replaced.
@@ -351,7 +355,7 @@ export class Measure extends Element{
 
         this.renderprop = {}; // Rendering information storage
     }
-
+    getElementName() { return "Measure"; }
     clone(){
         let n = new Measure();
         n.raw_new_line = this.raw_new_line;
@@ -421,6 +425,7 @@ export class Rest extends Element{
         super();
         this.init(length_s);
     }
+    getElementName() { return "Rest"; }
     init(length_s){
         this.length_s = length_s;
         this.note_group_list = [
@@ -447,6 +452,7 @@ export class Simile extends Element{
         this.renderprop = {};
         this.note_group_list = null;
     }
+    getElementName() { return "Simile"; }
     exportCode(){
         return "."+("/".repeat(this.numslash))+".";
     }
@@ -462,6 +468,7 @@ export class Chord extends Element {
         super();
         this.init(chord_str);
     }
+    getElementName() { return "Chord"; }
     clone(){
         let n = new Chord(this.chord_str);
         if(this.exceptinal_comment){
@@ -1147,7 +1154,7 @@ export class LoopIndicator extends Element {
         super();
         this.init(loopIndStr);
     }
-
+    getElementName() { return "LoopIndicator"; }
     init(loopIndStr){
         // Note : Content of indicators are not always integers.
         // intindicators is storage for integer indicators analyzed from indicators.
@@ -1176,6 +1183,7 @@ export class Space extends Element{
         this.length = length;
         this.renderprop = {};
     }
+    getElementName() { return "Space"; }
     exportCode(){ return ",".repeat(this.length); }
     clone(){ return new Space(this.length); }
 }
@@ -1189,6 +1197,7 @@ export class LongRest extends Element {
         super();
         this.longrestlen = longrestlen;
     }
+    getElementName() { return "LongRest"; }
     exportCode() {
         return `-${this.longrestlen}-`;
     }
@@ -1205,6 +1214,7 @@ export class Time extends Element {
         this.numer = numer;
         this.denom = denom;
     }
+    getElementName() { return "Time"; }
     exportCode() {
         return `(${this.numer}/${this.denom})`;
     }
@@ -1220,6 +1230,7 @@ export class MeasureBoundary extends Element {
         super();
         this.exportTarget = exportTarget;
     }
+    getElementName() { return "MeasureBoundary"; }
     // Factory function to make a new boundary from 2 boundaries
     static combine(b0, b1){
         // s,d,b,e,B,f,r,n
@@ -1264,6 +1275,7 @@ export class MeasureBoundaryMark extends MeasureBoundary {
         this.nline = nline;
         this.typestr = this.nline==1 ? "s":"d";
     }
+    getElementName() { return "MeasureBoundaryMark"; }
     exportCode() {
         return this.exportTarget ? "|".repeat(this.nline) : "";
     }
@@ -1279,6 +1291,7 @@ export class LoopBeginMark  extends MeasureBoundary {
         super(exportTarget);
         this.typestr = "b";
     }
+    getElementName() { return "LoopBeginMark"; }
     exportCode() {
         return this.exportTarget ?  "||:" : "";
     }
@@ -1296,6 +1309,7 @@ export class LoopEndMark  extends MeasureBoundary {
         this.ntimes = param.ntimes;
         this.typestr = "e";
     }
+    getElementName() { return "LoopEndMark"; }
     exportCode() {
         let ts = this.ntimes?"xX":(this.times?`x${this.times}`:"");
         return this.exportTarget ? ":||"+(ts=="x2"?"":ts) : "";// x2 is not explicity stated : TODO : align with what wrote in the code.
@@ -1314,6 +1328,7 @@ export class LoopBothMark  extends MeasureBoundary {
         this.ntimes = param.ntimes;
         this.typestr = "B";
     }
+    getElementName() { return "LoopBothMark"; }
     exportCode() {
         let ts = this.ntimes?"xX":(this.times?`x${this.times}`:"");
         return this.exportTarget ? ":||:"+(ts=="x2"?"":ts) : ""; // x2 is not explicity stated : TODO : align with what wrote in the code.
@@ -1330,6 +1345,7 @@ export class MeasureBoundaryFinMark  extends MeasureBoundary {
         super(exportTarget);
         this.typestr = "f";
     }
+    getElementName() { return "MeasureBoundaryFinMark"; }
     exportCode() {
         return this.exportTarget ? "||." : "";
     }
@@ -1345,6 +1361,7 @@ export class MeasureBoundaryDblSimile  extends MeasureBoundary {
         super(exportTarget);
         this.typestr = "r";
     }
+    getElementName() { return "MeasureBoundaryDblSimile"; }
     exportCode() {
         return this.exportTarget ? "./|/." : "";
     }
@@ -1361,7 +1378,7 @@ export class DaCapo extends Element {
         super();
         this.init(al);
     }
-
+    getElementName() { return "DaCapo"; }
     init(al){
         this.al = al; // Either Coda/Fine
     }
@@ -1384,7 +1401,7 @@ export class DalSegno extends Element {
         super();
         this.init(number, al);
     }
-
+    getElementName() { return "DalSegno"; }
     init(number, al){
         this.number = number;
         this.al = al; // Either Coda/Fine
@@ -1409,6 +1426,7 @@ export class Segno extends Element{
         this.number = number;
         this.opt = opt;
     }
+    getElementName() { return "Segno"; }
     exportCode(){
         let opts = this.opt ? ` ${this.opt}` : "";
         return `<S${this.number||""}${opts}>`;
@@ -1425,7 +1443,7 @@ export class Coda extends Element {
         super();
         this.number = number;
     }
-
+    getElementName() { return "Coda"; }
     toString() {
         return "Coda" + (this.number || "");
     }
@@ -1442,6 +1460,7 @@ export class ToCoda extends Element {
         super();
         this.number = number;
     }
+    getElementName() { return "ToCoda"; }
     exportCode(){ return `<to Coda${this.number||""}>`; }
     clone(){ return new ToCoda(this.number); }
 }
@@ -1454,7 +1473,7 @@ export class Fine extends Element {
     constructor() {
         super();
     }
-
+    getElementName() { return "Fine"; }
     toString() {
         return "Fine";
     }
@@ -1472,6 +1491,7 @@ export class Comment extends Element {
         this.comment = comment;
         this.chorddep = chorddep; // Dependency for particular chord : true/false
     }
+    getElementName() { return "Comment"; }
     setCodeDependency(v){ this.chorddep = v; }
     exportCode(){ return "'"+this.comment+"'"; } // TODO : quote considrtaion
     remove(){
@@ -1494,6 +1514,7 @@ export class Lyric extends Element {
         this.lyric = lyric;
         this.chorddep = chorddep; // Dependency for particular chord : true/false
     }
+    getElementName() { return "Lyric"; }
     setCodeDependency(v){ this.chorddep = v; }
     exportCode(){ return "`"+this.lyric+"`"; } // TODO : quote considrtaion
     remove(){
@@ -1522,18 +1543,21 @@ export class Title extends Element {
         super();
         this.variable = variable;
     }
+    getElementName() { return "Title"; }
 }
 export class SubTitle extends Element {
     constructor(variable){
         super();
         this.variable = variable;
     }
+    getElementName() { return "SubTitle"; }
 }
 export class Artist extends Element {
     constructor(variable){
         super();
         this.variable = variable;
     }
+    getElementName() { return "Artist"; }
 }
 
 /**

@@ -13,6 +13,7 @@ export { getFontSizeFromHeight } from "./renderer/graphic";
 // Export Component Classes
 export {
     RehearsalGroup, Block, Measure,
+    Title, SubTitle, Artist,
     Chord, Rest, LongRest, Comment, Lyric, Space,
     MeasureBoundary, MeasureBoundaryMark, LoopBeginMark, LoopEndMark, LoopBothMark, MeasureBoundaryFinMark, MeasureBoundaryDblSimile,
     LoopIndicator,

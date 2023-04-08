@@ -10021,6 +10021,11 @@ var Element = /*#__PURE__*/function (_Node) {
     value: function clone() {
       throw "Shall be overrided";
     }
+  }, {
+    key: "getElementName",
+    value: function getElementName() {
+      throw "Shall be overrided; ";
+    }
   }]);
   return Element;
 }(Node);
@@ -10042,9 +10047,14 @@ var Track = /*#__PURE__*/function (_Element) {
     _this.pre_render_info = {};
     return _this;
   }
-
-  // Utility functions open for external
   _createClass(Track, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "Track";
+    }
+
+    // Utility functions open for external
+  }, {
     key: "getKey",
     value: function getKey() {
       if (Number.isInteger(this.getVariable("TRANSPOSE"))) {
@@ -10112,6 +10122,11 @@ var RehearsalGroup = /*#__PURE__*/function (_Element2) {
     return _this2;
   }
   _createClass(RehearsalGroup, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "RehearsalGroup";
+    }
+  }, {
     key: "exportCode",
     value: function exportCode() {
       var code = "";
@@ -10153,6 +10168,11 @@ var Block = /*#__PURE__*/function (_Element3) {
     return _super4.call(this);
   }
   _createClass(Block, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "Block";
+    }
+  }, {
     key: "concat",
     value: function concat(newmeasures) {
       // in-place concat.
@@ -10212,6 +10232,11 @@ var Measure = /*#__PURE__*/function (_Element4) {
     return _this3;
   }
   _createClass(Measure, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "Measure";
+    }
+  }, {
     key: "clone",
     value: function clone() {
       var n = new Measure();
@@ -10297,6 +10322,11 @@ var Rest = /*#__PURE__*/function (_Element5) {
     return _this4;
   }
   _createClass(Rest, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "Rest";
+    }
+  }, {
     key: "init",
     value: function init(length_s) {
       this.length_s = length_s;
@@ -10338,6 +10368,11 @@ var Simile = /*#__PURE__*/function (_Element6) {
     return _this5;
   }
   _createClass(Simile, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "Simile";
+    }
+  }, {
     key: "exportCode",
     value: function exportCode() {
       return "." + "/".repeat(this.numslash) + ".";
@@ -10366,6 +10401,11 @@ var Chord = /*#__PURE__*/function (_Element7) {
     return _this6;
   }
   _createClass(Chord, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "Chord";
+    }
+  }, {
     key: "clone",
     value: function clone() {
       var n = new Chord(this.chord_str);
@@ -11213,6 +11253,11 @@ var LoopIndicator = /*#__PURE__*/function (_Element8) {
     return _this7;
   }
   _createClass(LoopIndicator, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "LoopIndicator";
+    }
+  }, {
     key: "init",
     value: function init(loopIndStr) {
       // Note : Content of indicators are not always integers.
@@ -11259,6 +11304,11 @@ var Space = /*#__PURE__*/function (_Element9) {
     return _this8;
   }
   _createClass(Space, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "Space";
+    }
+  }, {
     key: "exportCode",
     value: function exportCode() {
       return ",".repeat(this.length);
@@ -11287,6 +11337,11 @@ var LongRest = /*#__PURE__*/function (_Element10) {
     return _this9;
   }
   _createClass(LongRest, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "LongRest";
+    }
+  }, {
     key: "exportCode",
     value: function exportCode() {
       return "-".concat(this.longrestlen, "-");
@@ -11316,6 +11371,11 @@ var Time = /*#__PURE__*/function (_Element11) {
     return _this10;
   }
   _createClass(Time, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "Time";
+    }
+  }, {
     key: "exportCode",
     value: function exportCode() {
       return "(".concat(this.numer, "/").concat(this.denom, ")");
@@ -11344,8 +11404,13 @@ var MeasureBoundary = /*#__PURE__*/function (_Element12) {
     _this11.exportTarget = exportTarget;
     return _this11;
   }
-  // Factory function to make a new boundary from 2 boundaries
-  _createClass(MeasureBoundary, null, [{
+  _createClass(MeasureBoundary, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "MeasureBoundary";
+    }
+    // Factory function to make a new boundary from 2 boundaries
+  }], [{
     key: "combine",
     value: function combine(b0, b1) {
       // s,d,b,e,B,f,r,n
@@ -11434,6 +11499,11 @@ var MeasureBoundaryMark = /*#__PURE__*/function (_MeasureBoundary) {
     return _this12;
   }
   _createClass(MeasureBoundaryMark, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "MeasureBoundaryMark";
+    }
+  }, {
     key: "exportCode",
     value: function exportCode() {
       return this.exportTarget ? "|".repeat(this.nline) : "";
@@ -11463,6 +11533,11 @@ var LoopBeginMark = /*#__PURE__*/function (_MeasureBoundary2) {
     return _this13;
   }
   _createClass(LoopBeginMark, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "LoopBeginMark";
+    }
+  }, {
     key: "exportCode",
     value: function exportCode() {
       return this.exportTarget ? "||:" : "";
@@ -11494,6 +11569,11 @@ var LoopEndMark = /*#__PURE__*/function (_MeasureBoundary3) {
     return _this14;
   }
   _createClass(LoopEndMark, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "LoopEndMark";
+    }
+  }, {
     key: "exportCode",
     value: function exportCode() {
       var ts = this.ntimes ? "xX" : this.times ? "x".concat(this.times) : "";
@@ -11529,6 +11609,11 @@ var LoopBothMark = /*#__PURE__*/function (_MeasureBoundary4) {
     return _this15;
   }
   _createClass(LoopBothMark, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "LoopBothMark";
+    }
+  }, {
     key: "exportCode",
     value: function exportCode() {
       var ts = this.ntimes ? "xX" : this.times ? "x".concat(this.times) : "";
@@ -11562,6 +11647,11 @@ var MeasureBoundaryFinMark = /*#__PURE__*/function (_MeasureBoundary5) {
     return _this16;
   }
   _createClass(MeasureBoundaryFinMark, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "MeasureBoundaryFinMark";
+    }
+  }, {
     key: "exportCode",
     value: function exportCode() {
       return this.exportTarget ? "||." : "";
@@ -11591,6 +11681,11 @@ var MeasureBoundaryDblSimile = /*#__PURE__*/function (_MeasureBoundary6) {
     return _this17;
   }
   _createClass(MeasureBoundaryDblSimile, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "MeasureBoundaryDblSimile";
+    }
+  }, {
     key: "exportCode",
     value: function exportCode() {
       return this.exportTarget ? "./|/." : "";
@@ -11620,6 +11715,11 @@ var DaCapo = /*#__PURE__*/function (_Element13) {
     return _this18;
   }
   _createClass(DaCapo, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "DaCapo";
+    }
+  }, {
     key: "init",
     value: function init(al) {
       this.al = al; // Either Coda/Fine
@@ -11660,6 +11760,11 @@ var DalSegno = /*#__PURE__*/function (_Element14) {
     return _this19;
   }
   _createClass(DalSegno, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "DalSegno";
+    }
+  }, {
     key: "init",
     value: function init(number, al) {
       this.number = number;
@@ -11702,6 +11807,11 @@ var Segno = /*#__PURE__*/function (_Element15) {
     return _this20;
   }
   _createClass(Segno, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "Segno";
+    }
+  }, {
     key: "exportCode",
     value: function exportCode() {
       var opts = this.opt ? " ".concat(this.opt) : "";
@@ -11731,6 +11841,11 @@ var Coda = /*#__PURE__*/function (_Element16) {
     return _this21;
   }
   _createClass(Coda, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "Coda";
+    }
+  }, {
     key: "toString",
     value: function toString() {
       return "Coda" + (this.number || "");
@@ -11764,6 +11879,11 @@ var ToCoda = /*#__PURE__*/function (_Element17) {
     return _this22;
   }
   _createClass(ToCoda, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "ToCoda";
+    }
+  }, {
     key: "exportCode",
     value: function exportCode() {
       return "<to Coda".concat(this.number || "", ">");
@@ -11789,6 +11909,11 @@ var Fine = /*#__PURE__*/function (_Element18) {
     return _super25.call(this);
   }
   _createClass(Fine, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "Fine";
+    }
+  }, {
     key: "toString",
     value: function toString() {
       return "Fine";
@@ -11824,6 +11949,11 @@ var Comment = /*#__PURE__*/function (_Element19) {
     return _this23;
   }
   _createClass(Comment, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "Comment";
+    }
+  }, {
     key: "setCodeDependency",
     value: function setCodeDependency(v) {
       this.chorddep = v;
@@ -11868,6 +11998,11 @@ var Lyric = /*#__PURE__*/function (_Element20) {
     return _this24;
   }
   _createClass(Lyric, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "Lyric";
+    }
+  }, {
     key: "setCodeDependency",
     value: function setCodeDependency(v) {
       this.chorddep = v;
@@ -11914,7 +12049,13 @@ var Title = /*#__PURE__*/function (_Element21) {
     _this25.variable = variable;
     return _this25;
   }
-  return _createClass(Title);
+  _createClass(Title, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "Title";
+    }
+  }]);
+  return Title;
 }(Element);
 var SubTitle = /*#__PURE__*/function (_Element22) {
   _inherits(SubTitle, _Element22);
@@ -11926,7 +12067,13 @@ var SubTitle = /*#__PURE__*/function (_Element22) {
     _this26.variable = variable;
     return _this26;
   }
-  return _createClass(SubTitle);
+  _createClass(SubTitle, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "SubTitle";
+    }
+  }]);
+  return SubTitle;
 }(Element);
 var Artist = /*#__PURE__*/function (_Element23) {
   _inherits(Artist, _Element23);
@@ -11938,7 +12085,13 @@ var Artist = /*#__PURE__*/function (_Element23) {
     _this27.variable = variable;
     return _this27;
   }
-  return _createClass(Artist);
+  _createClass(Artist, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "Artist";
+    }
+  }]);
+  return Artist;
 }(Element);
 
 /**
@@ -18451,6 +18604,7 @@ var __webpack_exports__ = {};
   \**********************/
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "Artist": () => (/* reexport safe */ _common_common__WEBPACK_IMPORTED_MODULE_4__.Artist),
 /* harmony export */   "Block": () => (/* reexport safe */ _common_common__WEBPACK_IMPORTED_MODULE_4__.Block),
 /* harmony export */   "CanvasText": () => (/* reexport safe */ _renderer_graphic__WEBPACK_IMPORTED_MODULE_3__.CanvasText),
 /* harmony export */   "CanvasTextWithBox": () => (/* reexport safe */ _renderer_graphic__WEBPACK_IMPORTED_MODULE_3__.CanvasTextWithBox),
@@ -18481,7 +18635,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "SetupHiDPICanvas": () => (/* reexport safe */ _renderer_graphic__WEBPACK_IMPORTED_MODULE_3__.SetupHiDPICanvas),
 /* harmony export */   "Simile": () => (/* reexport safe */ _common_common__WEBPACK_IMPORTED_MODULE_4__.Simile),
 /* harmony export */   "Space": () => (/* reexport safe */ _common_common__WEBPACK_IMPORTED_MODULE_4__.Space),
+/* harmony export */   "SubTitle": () => (/* reexport safe */ _common_common__WEBPACK_IMPORTED_MODULE_4__.SubTitle),
 /* harmony export */   "Time": () => (/* reexport safe */ _common_common__WEBPACK_IMPORTED_MODULE_4__.Time),
+/* harmony export */   "Title": () => (/* reexport safe */ _common_common__WEBPACK_IMPORTED_MODULE_4__.Title),
 /* harmony export */   "ToCoda": () => (/* reexport safe */ _common_common__WEBPACK_IMPORTED_MODULE_4__.ToCoda),
 /* harmony export */   "Variable": () => (/* reexport safe */ _common_common__WEBPACK_IMPORTED_MODULE_4__.Variable),
 /* harmony export */   "getFontSizeFromHeight": () => (/* reexport safe */ _renderer_graphic__WEBPACK_IMPORTED_MODULE_3__.getFontSizeFromHeight)

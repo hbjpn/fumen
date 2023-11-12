@@ -364,6 +364,15 @@ export class Measure extends Element{
         return n;
     }
 
+    pushToBody(elem){
+        let i =  this.childNodes.length-1;
+        for(; i >= 0; --i){
+            let e = this.childNodes[i];
+            if(e instanceof MeasureBoundary) break;
+        }
+        this.childNodes.splice(i, 0, elem);
+    }
+
     exportCode(){
         let code = "";
         //if(this.raw_new_line) code += "\n"; // added at block export
@@ -481,6 +490,16 @@ export class Chord extends Element {
         }
         return n;
     }
+    cloneSyncopatedChord(se){
+        let n = new Chord(this.chord_str);
+        n.syncopotaionElement = se;
+
+        n.note_group_list.forEach((ng)=>{
+            ng.lengthIndicator = se.lengthindicator;
+        });
+
+        return n;
+    }
     init(chord_str){
         this.chord_str = chord_str;
 
@@ -490,6 +509,8 @@ export class Chord extends Element {
 
         this.exceptinal_comment = null;
         this.lyric = null;
+
+        this.syncopotaionElement = null; // When this is associated with syncopated chord
 
         //this.lengthIndicator = null;
 
@@ -586,6 +607,8 @@ export class Chord extends Element {
     }
 
     exportCode(){
+        if(this.syncopotaionElement) return ""; // This shall be not exported.
+
         let code = "";
         if(this.exceptinal_comment){
             code += this.exceptinal_comment.exportCode() + "@ ";
@@ -1143,6 +1166,29 @@ export class Chord extends Element {
 
         return transposed_key;
     }
+}
+
+/**
+ * A class represents a syncopation
+ * @extends Element
+ */
+export class Syncopation extends Element {
+    constructor(ins) {
+        super();
+        this.init(ins);
+    }
+    getElementName() { return "LoopIndicator"; }
+    init(ins){
+        // Note : Content of indicators are not always integers.
+        // intindicators is storage for integer indicators analyzed from indicators.
+        this.indstr = ins;
+        this.lengthindicator = Chord.parseLengthIndicator(ins);
+        this.lengthindicator.has_tie = true; // Force tie
+    }
+    exportCode(){  
+        return `<:${this.indstr}`;
+    }
+    clone(){ return new Syncopation(this.indstr); }
 }
 
 /**

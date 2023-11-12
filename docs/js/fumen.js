@@ -9743,6 +9743,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "Simile": () => (/* binding */ Simile),
 /* harmony export */   "Space": () => (/* binding */ Space),
 /* harmony export */   "SubTitle": () => (/* binding */ SubTitle),
+/* harmony export */   "Syncopation": () => (/* binding */ Syncopation),
 /* harmony export */   "Time": () => (/* binding */ Time),
 /* harmony export */   "Title": () => (/* binding */ Title),
 /* harmony export */   "ToCoda": () => (/* binding */ ToCoda),
@@ -10248,6 +10249,16 @@ var Measure = /*#__PURE__*/function (_Element4) {
       return n;
     }
   }, {
+    key: "pushToBody",
+    value: function pushToBody(elem) {
+      var i = this.childNodes.length - 1;
+      for (; i >= 0; --i) {
+        var e = this.childNodes[i];
+        if (e instanceof MeasureBoundary) break;
+      }
+      this.childNodes.splice(i, 0, elem);
+    }
+  }, {
     key: "exportCode",
     value: function exportCode() {
       var code = "";
@@ -10420,6 +10431,16 @@ var Chord = /*#__PURE__*/function (_Element7) {
       return n;
     }
   }, {
+    key: "cloneSyncopatedChord",
+    value: function cloneSyncopatedChord(se) {
+      var n = new Chord(this.chord_str);
+      n.syncopotaionElement = se;
+      n.note_group_list.forEach(function (ng) {
+        ng.lengthIndicator = se.lengthindicator;
+      });
+      return n;
+    }
+  }, {
     key: "init",
     value: function init(chord_str) {
       this.chord_str = chord_str;
@@ -10427,6 +10448,7 @@ var Chord = /*#__PURE__*/function (_Element7) {
       this.renderprop = {};
       this.exceptinal_comment = null;
       this.lyric = null;
+      this.syncopotaionElement = null; // When this is associated with syncopated chord
 
       //this.lengthIndicator = null;
 
@@ -10517,6 +10539,8 @@ var Chord = /*#__PURE__*/function (_Element7) {
   }, {
     key: "exportCode",
     value: function exportCode() {
+      if (this.syncopotaionElement) return ""; // This shall be not exported.
+
       var code = "";
       if (this.exceptinal_comment) {
         code += this.exceptinal_comment.exportCode() + "@ ";
@@ -11239,18 +11263,60 @@ var Chord = /*#__PURE__*/function (_Element7) {
 }(Element);
 
 /**
+ * A class represents a syncopation
+ * @extends Element
+ */
+var Syncopation = /*#__PURE__*/function (_Element8) {
+  _inherits(Syncopation, _Element8);
+  var _super9 = _createSuper(Syncopation);
+  function Syncopation(ins) {
+    var _this7;
+    _classCallCheck(this, Syncopation);
+    _this7 = _super9.call(this);
+    _this7.init(ins);
+    return _this7;
+  }
+  _createClass(Syncopation, [{
+    key: "getElementName",
+    value: function getElementName() {
+      return "LoopIndicator";
+    }
+  }, {
+    key: "init",
+    value: function init(ins) {
+      // Note : Content of indicators are not always integers.
+      // intindicators is storage for integer indicators analyzed from indicators.
+      this.indstr = ins;
+      this.lengthindicator = Chord.parseLengthIndicator(ins);
+      this.lengthindicator.has_tie = true; // Force tie
+    }
+  }, {
+    key: "exportCode",
+    value: function exportCode() {
+      return "<:".concat(this.indstr);
+    }
+  }, {
+    key: "clone",
+    value: function clone() {
+      return new Syncopation(this.indstr);
+    }
+  }]);
+  return Syncopation;
+}(Element);
+
+/**
  * A class represents a loop indicator
  * @extends Element
  */
-var LoopIndicator = /*#__PURE__*/function (_Element8) {
-  _inherits(LoopIndicator, _Element8);
-  var _super9 = _createSuper(LoopIndicator);
+var LoopIndicator = /*#__PURE__*/function (_Element9) {
+  _inherits(LoopIndicator, _Element9);
+  var _super10 = _createSuper(LoopIndicator);
   function LoopIndicator(loopIndStr) {
-    var _this7;
+    var _this8;
     _classCallCheck(this, LoopIndicator);
-    _this7 = _super9.call(this);
-    _this7.init(loopIndStr);
-    return _this7;
+    _this8 = _super10.call(this);
+    _this8.init(loopIndStr);
+    return _this8;
   }
   _createClass(LoopIndicator, [{
     key: "getElementName",
@@ -11291,17 +11357,17 @@ var LoopIndicator = /*#__PURE__*/function (_Element8) {
  * A class represents a space
  * @extends Element
  */
-var Space = /*#__PURE__*/function (_Element9) {
-  _inherits(Space, _Element9);
-  var _super10 = _createSuper(Space);
+var Space = /*#__PURE__*/function (_Element10) {
+  _inherits(Space, _Element10);
+  var _super11 = _createSuper(Space);
   function Space() {
-    var _this8;
+    var _this9;
     var length = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
     _classCallCheck(this, Space);
-    _this8 = _super10.call(this);
-    _this8.length = length;
-    _this8.renderprop = {};
-    return _this8;
+    _this9 = _super11.call(this);
+    _this9.length = length;
+    _this9.renderprop = {};
+    return _this9;
   }
   _createClass(Space, [{
     key: "getElementName",
@@ -11326,15 +11392,15 @@ var Space = /*#__PURE__*/function (_Element9) {
  * A class represents a long rest
  * @extends Element
  */
-var LongRest = /*#__PURE__*/function (_Element10) {
-  _inherits(LongRest, _Element10);
-  var _super11 = _createSuper(LongRest);
+var LongRest = /*#__PURE__*/function (_Element11) {
+  _inherits(LongRest, _Element11);
+  var _super12 = _createSuper(LongRest);
   function LongRest(longrestlen) {
-    var _this9;
+    var _this10;
     _classCallCheck(this, LongRest);
-    _this9 = _super11.call(this);
-    _this9.longrestlen = longrestlen;
-    return _this9;
+    _this10 = _super12.call(this);
+    _this10.longrestlen = longrestlen;
+    return _this10;
   }
   _createClass(LongRest, [{
     key: "getElementName",
@@ -11359,16 +11425,16 @@ var LongRest = /*#__PURE__*/function (_Element10) {
  * A class represents a time signature
  * @extends Element
  */
-var Time = /*#__PURE__*/function (_Element11) {
-  _inherits(Time, _Element11);
-  var _super12 = _createSuper(Time);
+var Time = /*#__PURE__*/function (_Element12) {
+  _inherits(Time, _Element12);
+  var _super13 = _createSuper(Time);
   function Time(numer, denom) {
-    var _this10;
+    var _this11;
     _classCallCheck(this, Time);
-    _this10 = _super12.call(this);
-    _this10.numer = numer;
-    _this10.denom = denom;
-    return _this10;
+    _this11 = _super13.call(this);
+    _this11.numer = numer;
+    _this11.denom = denom;
+    return _this11;
   }
   _createClass(Time, [{
     key: "getElementName",
@@ -11393,16 +11459,16 @@ var Time = /*#__PURE__*/function (_Element11) {
  * Abstract class represents a measure boundary
  * @extends Element
  */
-var MeasureBoundary = /*#__PURE__*/function (_Element12) {
-  _inherits(MeasureBoundary, _Element12);
-  var _super13 = _createSuper(MeasureBoundary);
+var MeasureBoundary = /*#__PURE__*/function (_Element13) {
+  _inherits(MeasureBoundary, _Element13);
+  var _super14 = _createSuper(MeasureBoundary);
   function MeasureBoundary() {
-    var _this11;
+    var _this12;
     var exportTarget = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
     _classCallCheck(this, MeasureBoundary);
-    _this11 = _super13.call(this);
-    _this11.exportTarget = exportTarget;
-    return _this11;
+    _this12 = _super14.call(this);
+    _this12.exportTarget = exportTarget;
+    return _this12;
   }
   _createClass(MeasureBoundary, [{
     key: "getElementName",
@@ -11489,14 +11555,14 @@ var MeasureBoundary = /*#__PURE__*/function (_Element12) {
  */
 var MeasureBoundaryMark = /*#__PURE__*/function (_MeasureBoundary) {
   _inherits(MeasureBoundaryMark, _MeasureBoundary);
-  var _super14 = _createSuper(MeasureBoundaryMark);
+  var _super15 = _createSuper(MeasureBoundaryMark);
   function MeasureBoundaryMark(nline, exportTarget) {
-    var _this12;
+    var _this13;
     _classCallCheck(this, MeasureBoundaryMark);
-    _this12 = _super14.call(this, exportTarget);
-    _this12.nline = nline;
-    _this12.typestr = _this12.nline == 1 ? "s" : "d";
-    return _this12;
+    _this13 = _super15.call(this, exportTarget);
+    _this13.nline = nline;
+    _this13.typestr = _this13.nline == 1 ? "s" : "d";
+    return _this13;
   }
   _createClass(MeasureBoundaryMark, [{
     key: "getElementName",
@@ -11523,14 +11589,14 @@ var MeasureBoundaryMark = /*#__PURE__*/function (_MeasureBoundary) {
  */
 var LoopBeginMark = /*#__PURE__*/function (_MeasureBoundary2) {
   _inherits(LoopBeginMark, _MeasureBoundary2);
-  var _super15 = _createSuper(LoopBeginMark);
+  var _super16 = _createSuper(LoopBeginMark);
   function LoopBeginMark() {
-    var _this13;
+    var _this14;
     var exportTarget = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
     _classCallCheck(this, LoopBeginMark);
-    _this13 = _super15.call(this, exportTarget);
-    _this13.typestr = "b";
-    return _this13;
+    _this14 = _super16.call(this, exportTarget);
+    _this14.typestr = "b";
+    return _this14;
   }
   _createClass(LoopBeginMark, [{
     key: "getElementName",
@@ -11557,16 +11623,16 @@ var LoopBeginMark = /*#__PURE__*/function (_MeasureBoundary2) {
  */
 var LoopEndMark = /*#__PURE__*/function (_MeasureBoundary3) {
   _inherits(LoopEndMark, _MeasureBoundary3);
-  var _super16 = _createSuper(LoopEndMark);
+  var _super17 = _createSuper(LoopEndMark);
   function LoopEndMark(param) {
-    var _this14;
+    var _this15;
     var exportTarget = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
     _classCallCheck(this, LoopEndMark);
-    _this14 = _super16.call(this, exportTarget);
-    _this14.times = param.times;
-    _this14.ntimes = param.ntimes;
-    _this14.typestr = "e";
-    return _this14;
+    _this15 = _super17.call(this, exportTarget);
+    _this15.times = param.times;
+    _this15.ntimes = param.ntimes;
+    _this15.typestr = "e";
+    return _this15;
   }
   _createClass(LoopEndMark, [{
     key: "getElementName",
@@ -11597,16 +11663,16 @@ var LoopEndMark = /*#__PURE__*/function (_MeasureBoundary3) {
  */
 var LoopBothMark = /*#__PURE__*/function (_MeasureBoundary4) {
   _inherits(LoopBothMark, _MeasureBoundary4);
-  var _super17 = _createSuper(LoopBothMark);
+  var _super18 = _createSuper(LoopBothMark);
   function LoopBothMark(param) {
-    var _this15;
+    var _this16;
     var exportTarget = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
     _classCallCheck(this, LoopBothMark);
-    _this15 = _super17.call(this, exportTarget);
-    _this15.times = param.times;
-    _this15.ntimes = param.ntimes;
-    _this15.typestr = "B";
-    return _this15;
+    _this16 = _super18.call(this, exportTarget);
+    _this16.times = param.times;
+    _this16.ntimes = param.ntimes;
+    _this16.typestr = "B";
+    return _this16;
   }
   _createClass(LoopBothMark, [{
     key: "getElementName",
@@ -11637,14 +11703,14 @@ var LoopBothMark = /*#__PURE__*/function (_MeasureBoundary4) {
  */
 var MeasureBoundaryFinMark = /*#__PURE__*/function (_MeasureBoundary5) {
   _inherits(MeasureBoundaryFinMark, _MeasureBoundary5);
-  var _super18 = _createSuper(MeasureBoundaryFinMark);
+  var _super19 = _createSuper(MeasureBoundaryFinMark);
   function MeasureBoundaryFinMark() {
-    var _this16;
+    var _this17;
     var exportTarget = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
     _classCallCheck(this, MeasureBoundaryFinMark);
-    _this16 = _super18.call(this, exportTarget);
-    _this16.typestr = "f";
-    return _this16;
+    _this17 = _super19.call(this, exportTarget);
+    _this17.typestr = "f";
+    return _this17;
   }
   _createClass(MeasureBoundaryFinMark, [{
     key: "getElementName",
@@ -11671,14 +11737,14 @@ var MeasureBoundaryFinMark = /*#__PURE__*/function (_MeasureBoundary5) {
  */
 var MeasureBoundaryDblSimile = /*#__PURE__*/function (_MeasureBoundary6) {
   _inherits(MeasureBoundaryDblSimile, _MeasureBoundary6);
-  var _super19 = _createSuper(MeasureBoundaryDblSimile);
+  var _super20 = _createSuper(MeasureBoundaryDblSimile);
   function MeasureBoundaryDblSimile() {
-    var _this17;
+    var _this18;
     var exportTarget = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
     _classCallCheck(this, MeasureBoundaryDblSimile);
-    _this17 = _super19.call(this, exportTarget);
-    _this17.typestr = "r";
-    return _this17;
+    _this18 = _super20.call(this, exportTarget);
+    _this18.typestr = "r";
+    return _this18;
   }
   _createClass(MeasureBoundaryDblSimile, [{
     key: "getElementName",
@@ -11704,15 +11770,15 @@ var MeasureBoundaryDblSimile = /*#__PURE__*/function (_MeasureBoundary6) {
  * Class represents a DaCapo mark
  * @extends Element
  */
-var DaCapo = /*#__PURE__*/function (_Element13) {
-  _inherits(DaCapo, _Element13);
-  var _super20 = _createSuper(DaCapo);
+var DaCapo = /*#__PURE__*/function (_Element14) {
+  _inherits(DaCapo, _Element14);
+  var _super21 = _createSuper(DaCapo);
   function DaCapo(al) {
-    var _this18;
+    var _this19;
     _classCallCheck(this, DaCapo);
-    _this18 = _super20.call(this);
-    _this18.init(al);
-    return _this18;
+    _this19 = _super21.call(this);
+    _this19.init(al);
+    return _this19;
   }
   _createClass(DaCapo, [{
     key: "getElementName",
@@ -11749,15 +11815,15 @@ var DaCapo = /*#__PURE__*/function (_Element13) {
  * Class represents a DalSegno mark
  * @extends Element
  */
-var DalSegno = /*#__PURE__*/function (_Element14) {
-  _inherits(DalSegno, _Element14);
-  var _super21 = _createSuper(DalSegno);
+var DalSegno = /*#__PURE__*/function (_Element15) {
+  _inherits(DalSegno, _Element15);
+  var _super22 = _createSuper(DalSegno);
   function DalSegno(number, al) {
-    var _this19;
+    var _this20;
     _classCallCheck(this, DalSegno);
-    _this19 = _super21.call(this);
-    _this19.init(number, al);
-    return _this19;
+    _this20 = _super22.call(this);
+    _this20.init(number, al);
+    return _this20;
   }
   _createClass(DalSegno, [{
     key: "getElementName",
@@ -11795,16 +11861,16 @@ var DalSegno = /*#__PURE__*/function (_Element14) {
  * Class represents a Segno mark
  * @extends Element
  */
-var Segno = /*#__PURE__*/function (_Element15) {
-  _inherits(Segno, _Element15);
-  var _super22 = _createSuper(Segno);
+var Segno = /*#__PURE__*/function (_Element16) {
+  _inherits(Segno, _Element16);
+  var _super23 = _createSuper(Segno);
   function Segno(number, opt) {
-    var _this20;
+    var _this21;
     _classCallCheck(this, Segno);
-    _this20 = _super22.call(this);
-    _this20.number = number;
-    _this20.opt = opt;
-    return _this20;
+    _this21 = _super23.call(this);
+    _this21.number = number;
+    _this21.opt = opt;
+    return _this21;
   }
   _createClass(Segno, [{
     key: "getElementName",
@@ -11830,15 +11896,15 @@ var Segno = /*#__PURE__*/function (_Element15) {
  * Class represents a Coda mark
  * @extends Element
  */
-var Coda = /*#__PURE__*/function (_Element16) {
-  _inherits(Coda, _Element16);
-  var _super23 = _createSuper(Coda);
+var Coda = /*#__PURE__*/function (_Element17) {
+  _inherits(Coda, _Element17);
+  var _super24 = _createSuper(Coda);
   function Coda(number) {
-    var _this21;
+    var _this22;
     _classCallCheck(this, Coda);
-    _this21 = _super23.call(this);
-    _this21.number = number;
-    return _this21;
+    _this22 = _super24.call(this);
+    _this22.number = number;
+    return _this22;
   }
   _createClass(Coda, [{
     key: "getElementName",
@@ -11868,15 +11934,15 @@ var Coda = /*#__PURE__*/function (_Element16) {
  * Class represents a To Coda mark
  * @extends Element
  */
-var ToCoda = /*#__PURE__*/function (_Element17) {
-  _inherits(ToCoda, _Element17);
-  var _super24 = _createSuper(ToCoda);
+var ToCoda = /*#__PURE__*/function (_Element18) {
+  _inherits(ToCoda, _Element18);
+  var _super25 = _createSuper(ToCoda);
   function ToCoda(number) {
-    var _this22;
+    var _this23;
     _classCallCheck(this, ToCoda);
-    _this22 = _super24.call(this);
-    _this22.number = number;
-    return _this22;
+    _this23 = _super25.call(this);
+    _this23.number = number;
+    return _this23;
   }
   _createClass(ToCoda, [{
     key: "getElementName",
@@ -11901,12 +11967,12 @@ var ToCoda = /*#__PURE__*/function (_Element17) {
  * Class represents a Fine mark
  * @extends Element
  */
-var Fine = /*#__PURE__*/function (_Element18) {
-  _inherits(Fine, _Element18);
-  var _super25 = _createSuper(Fine);
+var Fine = /*#__PURE__*/function (_Element19) {
+  _inherits(Fine, _Element19);
+  var _super26 = _createSuper(Fine);
   function Fine() {
     _classCallCheck(this, Fine);
-    return _super25.call(this);
+    return _super26.call(this);
   }
   _createClass(Fine, [{
     key: "getElementName",
@@ -11936,17 +12002,17 @@ var Fine = /*#__PURE__*/function (_Element18) {
  * Class represents a Comment
  * @extends Element
  */
-var Comment = /*#__PURE__*/function (_Element19) {
-  _inherits(Comment, _Element19);
-  var _super26 = _createSuper(Comment);
+var Comment = /*#__PURE__*/function (_Element20) {
+  _inherits(Comment, _Element20);
+  var _super27 = _createSuper(Comment);
   function Comment(comment) {
-    var _this23;
+    var _this24;
     var chorddep = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     _classCallCheck(this, Comment);
-    _this23 = _super26.call(this);
-    _this23.comment = comment;
-    _this23.chorddep = chorddep; // Dependency for particular chord : true/false
-    return _this23;
+    _this24 = _super27.call(this);
+    _this24.comment = comment;
+    _this24.chorddep = chorddep; // Dependency for particular chord : true/false
+    return _this24;
   }
   _createClass(Comment, [{
     key: "getElementName",
@@ -11985,17 +12051,17 @@ var Comment = /*#__PURE__*/function (_Element19) {
  * Class represents a lyric
  * @extends Element
  */
-var Lyric = /*#__PURE__*/function (_Element20) {
-  _inherits(Lyric, _Element20);
-  var _super27 = _createSuper(Lyric);
+var Lyric = /*#__PURE__*/function (_Element21) {
+  _inherits(Lyric, _Element21);
+  var _super28 = _createSuper(Lyric);
   function Lyric(lyric) {
-    var _this24;
+    var _this25;
     var chorddep = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     _classCallCheck(this, Lyric);
-    _this24 = _super27.call(this);
-    _this24.lyric = lyric;
-    _this24.chorddep = chorddep; // Dependency for particular chord : true/false
-    return _this24;
+    _this25 = _super28.call(this);
+    _this25.lyric = lyric;
+    _this25.chorddep = chorddep; // Dependency for particular chord : true/false
+    return _this25;
   }
   _createClass(Lyric, [{
     key: "getElementName",
@@ -12039,15 +12105,15 @@ function isObject(val) {
 }
 
 // Represents Variable that is explicit shown in the drawing and user can select it.
-var Title = /*#__PURE__*/function (_Element21) {
-  _inherits(Title, _Element21);
-  var _super28 = _createSuper(Title);
+var Title = /*#__PURE__*/function (_Element22) {
+  _inherits(Title, _Element22);
+  var _super29 = _createSuper(Title);
   function Title(variable) {
-    var _this25;
+    var _this26;
     _classCallCheck(this, Title);
-    _this25 = _super28.call(this);
-    _this25.variable = variable;
-    return _this25;
+    _this26 = _super29.call(this);
+    _this26.variable = variable;
+    return _this26;
   }
   _createClass(Title, [{
     key: "getElementName",
@@ -12057,15 +12123,15 @@ var Title = /*#__PURE__*/function (_Element21) {
   }]);
   return Title;
 }(Element);
-var SubTitle = /*#__PURE__*/function (_Element22) {
-  _inherits(SubTitle, _Element22);
-  var _super29 = _createSuper(SubTitle);
+var SubTitle = /*#__PURE__*/function (_Element23) {
+  _inherits(SubTitle, _Element23);
+  var _super30 = _createSuper(SubTitle);
   function SubTitle(variable) {
-    var _this26;
+    var _this27;
     _classCallCheck(this, SubTitle);
-    _this26 = _super29.call(this);
-    _this26.variable = variable;
-    return _this26;
+    _this27 = _super30.call(this);
+    _this27.variable = variable;
+    return _this27;
   }
   _createClass(SubTitle, [{
     key: "getElementName",
@@ -12075,15 +12141,15 @@ var SubTitle = /*#__PURE__*/function (_Element22) {
   }]);
   return SubTitle;
 }(Element);
-var Artist = /*#__PURE__*/function (_Element23) {
-  _inherits(Artist, _Element23);
-  var _super30 = _createSuper(Artist);
+var Artist = /*#__PURE__*/function (_Element24) {
+  _inherits(Artist, _Element24);
+  var _super31 = _createSuper(Artist);
   function Artist(variable) {
-    var _this27;
+    var _this28;
     _classCallCheck(this, Artist);
-    _this27 = _super30.call(this);
-    _this27.variable = variable;
-    return _this27;
+    _this28 = _super31.call(this);
+    _this28.variable = variable;
+    return _this28;
   }
   _createClass(Artist, [{
     key: "getElementName",
@@ -12100,14 +12166,14 @@ var Artist = /*#__PURE__*/function (_Element23) {
  */
 var Variable = /*#__PURE__*/function (_Node2) {
   _inherits(Variable, _Node2);
-  var _super31 = _createSuper(Variable);
+  var _super32 = _createSuper(Variable);
   function Variable(name, value) {
-    var _this28;
+    var _this29;
     _classCallCheck(this, Variable);
-    _this28 = _super31.call(this);
-    _this28.name = name;
-    _this28.value = deepcopy(value);
-    return _this28;
+    _this29 = _super32.call(this);
+    _this29.name = name;
+    _this29.value = deepcopy(value);
+    return _this29;
   }
   _createClass(Variable, [{
     key: "exportCode",
@@ -12140,14 +12206,14 @@ var VirtualElement = /*#__PURE__*/_createClass(function VirtualElement() {
  */
 var GenericRow = /*#__PURE__*/function (_VirtualElement) {
   _inherits(GenericRow, _VirtualElement);
-  var _super32 = _createSuper(GenericRow);
+  var _super33 = _createSuper(GenericRow);
   function GenericRow(type, param) {
-    var _this29;
+    var _this30;
     _classCallCheck(this, GenericRow);
-    _this29 = _super32.call(this);
-    _this29.type = type;
-    _this29.param = param; // Any element can be associated.
-    return _this29;
+    _this30 = _super33.call(this);
+    _this30.type = type;
+    _this30.param = param; // Any element can be associated.
+    return _this30;
   }
   return _createClass(GenericRow);
 }(VirtualElement);
@@ -12168,9 +12234,9 @@ var HitManager = /*#__PURE__*/function () {
   }, {
     key: "_drawBBs",
     value: function _drawBBs() {
-      var _this30 = this;
+      var _this31 = this;
       var _loop = function _loop() {
-        var p = _this30.papers[paper_id];
+        var p = _this31.papers[paper_id];
         var ctx = p.paper.getContext("2d");
         p.objs.forEach(function (entry) {
           ctx.fillStyle = "rgb(0, 0, 255, 0.5)";
@@ -12577,6 +12643,22 @@ var Parser = /*#__PURE__*/function () {
       this.onParseError("Invalid rehearsal mark");
     }
   }, {
+    key: "parseSyncopation",
+    value: function parseSyncopation(trig_token_type, s) {
+      // prerequisite
+      //   trig_token_type =(TOKEN_BRACKET_LS + )TOKEN_COLON
+
+      var m = s.match(/^[\d._~]*/);
+      if (m != null) {
+        var nexts = s.substr(m[0].length);
+        return {
+          syncopation: new _common_common__WEBPACK_IMPORTED_MODULE_1__.Syncopation(m[0]),
+          s: nexts
+        };
+      }
+      this.onParseError("Invalid syncopation indicator");
+    }
+  }, {
     key: "parseLoopIndicator",
     value: function parseLoopIndicator(trig_token_type, s) {
       // prerequisite
@@ -12754,7 +12836,7 @@ var Parser = /*#__PURE__*/function () {
     }
   }, {
     key: "parseMeasure",
-    value: function parseMeasure(trig_token_obj, s) {
+    value: function parseMeasure(trig_token_obj, s, prev_measure) {
       // prerequisite:
       //   trig_boundary == TOKEN_MB || TOKEN_MB_DBL || TOKEN_MB_LOOP_BEGIN || TOKEN_MB_DBL_SIMILE
       // note:
@@ -12763,6 +12845,7 @@ var Parser = /*#__PURE__*/function () {
       if (trig_token_obj.type == TOKEN_MB) measure.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__.MeasureBoundaryMark(1));else if (trig_token_obj.type == TOKEN_MB_DBL) measure.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__.MeasureBoundaryMark(2));else if (trig_token_obj.type == TOKEN_MB_LOOP_END) measure.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__.LoopEndMark(trig_token_obj.param));else if (trig_token_obj.type == TOKEN_MB_LOOP_BEGIN) measure.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__.LoopBeginMark());else if (trig_token_obj.type == TOKEN_MB_LOOP_BOTH) measure.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__.LoopBothMark(trig_token_obj.param));else if (trig_token_obj.type == TOKEN_MB_FIN) measure.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__.MeasureBoundaryFinMark());else if (trig_token_obj.type == TOKEN_MB_DBL_SIMILE) measure.appendChild(new _common_common__WEBPACK_IMPORTED_MODULE_1__.MeasureBoundaryDblSimile());
       var loop_flg = true;
       var atmark_associated_elements = [];
+      var cur_syncopation = null;
       var associator = function associator(elem_list, chord) {
         for (var ei = elem_list.length - 1; ei >= 0; --ei) {
           var elem = elem_list[ei];
@@ -12833,6 +12916,7 @@ var Parser = /*#__PURE__*/function () {
             if (rr.rest !== null) {
               measure.appendChild(rr.rest);
               s = rr.s;
+              cur_syncopation = null; // Cancel it
               break;
             }
           // else continute to chord symbol analysis
@@ -12845,6 +12929,12 @@ var Parser = /*#__PURE__*/function () {
               associator(atmark_associated_elements, r.chord);
               atmark_associated_elements = [];
             }
+            if (cur_syncopation) {
+              //cur_syncopation.setCodeDependency(r.chord);
+              var syncchord = r.chord.cloneSyncopatedChord(cur_syncopation);
+              this.context.prev_measure.pushToBody(syncchord);
+              cur_syncopation = null;
+            }
             measure.appendChild(r.chord);
             s = r.s;
             break;
@@ -12855,8 +12945,15 @@ var Parser = /*#__PURE__*/function () {
             s = r.s;
             break;
           case TOKEN_BRACKET_LA:
-            r = this.parseSign(r.type, r.s);
-            measure.appendChild(r.sign);
+            var r_tmp = this.nextToken(r.s);
+            if (r_tmp.type == TOKEN_COLON) {
+              r = this.parseSyncopation(r_tmp.type, r_tmp.s);
+              cur_syncopation = r.syncopation;
+              measure.appendChild(r.syncopation); // Not processed actually but stored for recovering the code
+            } else {
+              r = this.parseSign(r.type, r.s);
+              measure.appendChild(r.sign);
+            }
             s = r.s;
             break;
           case TOKEN_BRACKET_LR:
@@ -12933,6 +13030,7 @@ var Parser = /*#__PURE__*/function () {
         var r = this.parseMeasure(trig_token_obj, s);
         s = r.s;
         measures.push(r.measure);
+        this.context.prev_measure = r.measure;
         r = this.nextToken(s); // Not skipped spaces are already consumed.
         if (r.sss.length > 0) {
           this.onParseError("ERROR_WHILE_PARSE_MEASURES");
@@ -13177,7 +13275,8 @@ var Parser = /*#__PURE__*/function () {
         var track = new _common_common__WEBPACK_IMPORTED_MODULE_1__.Track();
         this.context = {
           line: 0,
-          contiguous_line_break: 0
+          contiguous_line_break: 0,
+          prev_measure: null // Refernce to the previous measure for the backward affection elements such as syncopation
         };
 
         // eslint-disable-next-line no-constant-condition
@@ -17405,6 +17504,8 @@ var Renderer = /*#__PURE__*/function () {
             header_elements.push(e);
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Space) {
             body_elements.push(e);
+          } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Syncopation) {
+            // Intentionally ignore this
           } else {
             throw "Unkown component found";
           }

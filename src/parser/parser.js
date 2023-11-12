@@ -255,6 +255,18 @@ export class Parser {
         this.onParseError("Invalid rehearsal mark");
     }
 
+    parseSyncopation(trig_token_type, s) {
+        // prerequisite
+        //   trig_token_type =(TOKEN_BRACKET_LS + )TOKEN_COLON
+        
+        let m = s.match(/^[\d._~]*/);
+        if (m != null) {
+            let nexts = s.substr(m[0].length);
+            return { syncopation: new common.Syncopation(m[0]), s: nexts };
+        }
+        this.onParseError("Invalid syncopation indicator");
+    }
+
     parseLoopIndicator(trig_token_type, s) {
         // prerequisite
         //   trig_token_type = TOKEN_BRACKET_LS
@@ -426,7 +438,7 @@ export class Parser {
         return { s: s, rest: rest };
     }
 
-    parseMeasure(trig_token_obj, s) {
+    parseMeasure(trig_token_obj, s, prev_measure) {
         // prerequisite:
         //   trig_boundary == TOKEN_MB || TOKEN_MB_DBL || TOKEN_MB_LOOP_BEGIN || TOKEN_MB_DBL_SIMILE
         // note:
@@ -453,6 +465,8 @@ export class Parser {
         var loop_flg = true;
 
         var atmark_associated_elements = [];
+
+        var cur_syncopation = null;
 
         var associator = function(elem_list, chord){
             for(let ei=elem_list.length - 1; ei >= 0; --ei){
@@ -533,6 +547,7 @@ export class Parser {
                     if (rr.rest !== null) {
                         measure.appendChild(rr.rest);
                         s = rr.s;
+                        cur_syncopation = null; // Cancel it
                         break;
                     }
                     // else continute to chord symbol analysis
@@ -546,6 +561,12 @@ export class Parser {
                         associator(atmark_associated_elements, r.chord);
                         atmark_associated_elements = [];
                     }
+                    if(cur_syncopation){
+                        //cur_syncopation.setCodeDependency(r.chord);
+                        let syncchord = r.chord.cloneSyncopatedChord(cur_syncopation);
+                        this.context.prev_measure.pushToBody(syncchord);
+                        cur_syncopation = null;
+                    }
 
                     measure.appendChild(r.chord);
                     
@@ -558,8 +579,16 @@ export class Parser {
                     s = r.s;
                     break;
                 case TOKEN_BRACKET_LA:
-                    r = this.parseSign(r.type, r.s);
-                    measure.appendChild(r.sign);
+                    let r_tmp = this.nextToken(r.s);
+                    if(r_tmp.type == TOKEN_COLON){
+                        r = this.parseSyncopation(r_tmp.type, r_tmp.s);
+                        cur_syncopation = r.syncopation;
+                        measure.appendChild(r.syncopation); // Not processed actually but stored for recovering the code
+                    }else
+                    {
+                        r = this.parseSign(r.type, r.s);
+                        measure.appendChild(r.sign);
+                    }
                     s = r.s;
                     break;
                 case TOKEN_BRACKET_LR:
@@ -635,6 +664,7 @@ export class Parser {
             var r = this.parseMeasure(trig_token_obj, s);
             s = r.s;
             measures.push(r.measure);
+            this.context.prev_measure = r.measure;
             r = this.nextToken(s); // Not skipped spaces are already consumed.
             if(r.sss.length > 0){ this.onParseError("ERROR_WHILE_PARSE_MEASURES"); }
             s = r.s;
@@ -881,6 +911,7 @@ export class Parser {
             this.context = {
                 line: 0,
                 contiguous_line_break: 0,
+                prev_measure: null // Refernce to the previous measure for the backward affection elements such as syncopation
             };
 
             // eslint-disable-next-line no-constant-condition

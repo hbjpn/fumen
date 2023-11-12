@@ -13,6 +13,7 @@
     * [.Simile](#module_Fumen.Simile) ⇐ <code>Element</code>
     * [.Chord](#module_Fumen.Chord) ⇐ <code>Element</code>
         * [.chordMidSerialize(p, callback)](#module_Fumen.Chord.chordMidSerialize)
+    * [.Syncopation](#module_Fumen.Syncopation) ⇐ <code>Element</code>
     * [.LoopIndicator](#module_Fumen.LoopIndicator) ⇐ <code>Element</code>
     * [.Space](#module_Fumen.Space) ⇐ <code>Element</code>
     * [.LongRest](#module_Fumen.LongRest) ⇐ <code>Element</code>
@@ -116,6 +117,13 @@ Convert the data structure (chord mids) to flat list and code string.
 | p | <code>\*</code> | Data structure of chord mids. |
 | callback | <code>\*</code> | callback called for each leaf element. (Called synchrnously) |
 
+<a name="module_Fumen.Syncopation"></a>
+
+### Fumen.Syncopation ⇐ <code>Element</code>
+A class represents a syncopation
+
+**Kind**: static class of [<code>Fumen</code>](#module_Fumen)  
+**Extends**: <code>Element</code>  
 <a name="module_Fumen.LoopIndicator"></a>
 
 ### Fumen.LoopIndicator ⇐ <code>Element</code>

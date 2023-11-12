@@ -136,6 +136,8 @@ export class Renderer {
                     header_elements.push(e);
                 } else if (e instanceof common.Space) {
                     body_elements.push(e);
+                } else if (e instanceof common.Syncopation){
+                    // Intentionally ignore this
                 } else{
 					throw "Unkown component found";
 				}

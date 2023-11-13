@@ -2804,6 +2804,11 @@ export class DefaultRenderer extends Renderer {
         if (bases[0] == null && bases[1] == null && elems === undefined) {
             return { width: B, bb: new graphic.BoundingBox(x, y_body_base, B, B) }; // TODO : Check
         }
+        // If syncopation is associated and we have shadow chord which is placed at the right place, we do not render chord symbol for this.
+        if (chord.syncopated) {
+            return { width: B, bb: new graphic.BoundingBox(x, y_body_base, B, B) }; // TODO : Check
+        }
+        
 
         var _3rdelem = ce._3rdelem;
         var _5thelem = ce._5thelem;

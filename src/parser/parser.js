@@ -563,7 +563,7 @@ export class Parser {
                     }
                     if(cur_syncopation){
                         //cur_syncopation.setCodeDependency(r.chord);
-                        let syncchord = r.chord.cloneSyncopatedChord(cur_syncopation);
+                        let syncchord = r.chord.setSyncopationAndGetShadowChord(cur_syncopation);
                         this.context.prev_measure.pushToBody(syncchord);
                         cur_syncopation = null;
                     }

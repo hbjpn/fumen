@@ -490,7 +490,9 @@ export class Chord extends Element {
         }
         return n;
     }
-    cloneSyncopatedChord(se){
+    setSyncopationAndGetShadowChord(se){
+        this.syncopated = true;
+
         let n = new Chord(this.chord_str);
         n.syncopotaionElement = se;
 
@@ -510,9 +512,8 @@ export class Chord extends Element {
         this.exceptinal_comment = null;
         this.lyric = null;
 
-        this.syncopotaionElement = null; // When this is associated with syncopated chord
-
-        //this.lengthIndicator = null;
+        this.syncopated = false; // This is set to the original chord for which syncopation is applied.
+        this.syncopotaionElement = null; // This is set to the generated shadow chord which is syncopation of other chord.
 
         this.note_group_list = null;
 

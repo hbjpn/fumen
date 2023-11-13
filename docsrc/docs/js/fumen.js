@@ -10431,8 +10431,9 @@ var Chord = /*#__PURE__*/function (_Element7) {
       return n;
     }
   }, {
-    key: "cloneSyncopatedChord",
-    value: function cloneSyncopatedChord(se) {
+    key: "setSyncopationAndGetShadowChord",
+    value: function setSyncopationAndGetShadowChord(se) {
+      this.syncopated = true;
       var n = new Chord(this.chord_str);
       n.syncopotaionElement = se;
       n.note_group_list.forEach(function (ng) {
@@ -10448,9 +10449,8 @@ var Chord = /*#__PURE__*/function (_Element7) {
       this.renderprop = {};
       this.exceptinal_comment = null;
       this.lyric = null;
-      this.syncopotaionElement = null; // When this is associated with syncopated chord
-
-      //this.lengthIndicator = null;
+      this.syncopated = false; // This is set to the original chord for which syncopation is applied.
+      this.syncopotaionElement = null; // This is set to the generated shadow chord which is syncopation of other chord.
 
       this.note_group_list = null;
 
@@ -12931,7 +12931,7 @@ var Parser = /*#__PURE__*/function () {
             }
             if (cur_syncopation) {
               //cur_syncopation.setCodeDependency(r.chord);
-              var syncchord = r.chord.cloneSyncopatedChord(cur_syncopation);
+              var syncchord = r.chord.setSyncopationAndGetShadowChord(cur_syncopation);
               this.context.prev_measure.pushToBody(syncchord);
               cur_syncopation = null;
             }
@@ -15746,6 +15746,13 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
       // if bases are null, elems are null, then it is just a duration information
       if (bases[0] == null && bases[1] == null && elems === undefined) {
+        return {
+          width: B,
+          bb: new _graphic__WEBPACK_IMPORTED_MODULE_3__.BoundingBox(x, y_body_base, B, B)
+        }; // TODO : Check
+      }
+      // If syncopation is associated and we have shadow chord which is placed at the right place, we do not render chord symbol for this.
+      if (chord.syncopated) {
         return {
           width: B,
           bb: new _graphic__WEBPACK_IMPORTED_MODULE_3__.BoundingBox(x, y_body_base, B, B)

@@ -1372,16 +1372,16 @@ export class DefaultRenderer extends Renderer {
                         (e.times != null && (e.ntimes || e.times != 2));
                 } else if (e instanceof common.Chord) {
                     yprof.rs.detected |= e.note_group_list !== null;
-                    if(e.lyric){
+                    if(e.exceptinal_comment && !e.isSyncopatedSource() ){
+                        yprof.mu.detected = true;
+                        fixed_mu_elem_detected = true;
+                    }
+                    if(e.lyric && !e.isSyncopatedSource() ){
                         yprof.ml.detected = true;
                         lyric_rows = Math.max(
                             e.lyric.lyric.split("/").length,
                             lyric_rows
                         );
-                    }
-                    if(e.exceptinal_comment){
-                        yprof.mu.detected = true;
-                        fixed_mu_elem_detected = true;
                     }
                 } else if (e instanceof common.Lyric) {
                     throw "Illegal parsing";
@@ -1694,7 +1694,7 @@ export class DefaultRenderer extends Renderer {
 
                     if(draw) this.hitManager.add(paper, cr.bb.scale(draw_scale,1), e0);
 
-                    if (draw && e0.exceptinal_comment !== null) {
+                    if (draw && e0.exceptinal_comment !== null && !e0.isSyncopatedSource()) {
                         let r = graphic.CanvasText(
                             paper,
                             x / draw_scale,
@@ -1705,7 +1705,7 @@ export class DefaultRenderer extends Renderer {
                         );
                         this.hitManager.add(paper, r.bb.scale(draw_scale,1), e0.exceptinal_comment);
                     }
-                    if (draw && e0.lyric !== null) {
+                    if (draw && e0.lyric !== null &&  !e0.isSyncopatedSource()) {
                         var llist = e0.lyric.lyric.split("/");
                         for (var li = 0; li < llist.length; ++li) {
                             let r = graphic.CanvasText(
@@ -1810,7 +1810,7 @@ export class DefaultRenderer extends Renderer {
                             C7_width
                         );
 
-                        if (draw && e.exceptinal_comment !== null) {
+                        if (draw && e.exceptinal_comment !== null && !e.isSyncopatedSource()) {
                             let r = graphic.CanvasText(
                                 paper,
                                 x / draw_scale,
@@ -1821,7 +1821,7 @@ export class DefaultRenderer extends Renderer {
                             );
                             this.hitManager.add(paper, r.bb.scale(draw_scale,1), e.exceptinal_comment);
                         }
-                        if (draw && e.lyric !== null) {
+                        if (draw && e.lyric !== null && !e.isSyncopatedSource()) {
                             var llist = e.lyric.lyric.split("/");
                             for (var li = 0; li < llist.length; ++li) {
                                 let r = graphic.CanvasText(

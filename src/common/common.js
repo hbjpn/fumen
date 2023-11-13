@@ -494,6 +494,15 @@ export class Chord extends Element {
         this.syncopationElement = se;
 
         let n = new Chord(this.chord_str);
+        if(this.exceptinal_comment){
+            n.exceptinal_comment = this.exceptinal_comment; // Just use reference
+            //n.exceptinal_comment.setCodeDependency(n); // Chord dependency is kept for source chord.
+        }
+        if(this.lyric){
+            n.lyric = this.lyric; // Just use reference
+            //n.lyric.setCodeDependency(n); // Chord dependency is kept for source chord.
+        }
+
         n.syncopationElement = se;
         n.isSyncopationShadowChord = true;
 
@@ -608,8 +617,16 @@ export class Chord extends Element {
         Chord.chordMidSerialize(this.mid_elems, callback);
     }
 
+    isSyncopatedShadow(){
+        return this.isSyncopationShadowChord;
+    }
+
+    isSyncopatedSource(){
+        return (this.syncopationElement && (!this.isSyncopationShadowChord));
+    }
+
     exportCode(){
-        if(this.syncopationElement && this.isSyncopationShadowChord) return ""; // This shall be not exported.
+        if(this.isSyncopatedShadow()) return ""; // This shall be not exported.
 
         let code = "";
         if(this.exceptinal_comment){

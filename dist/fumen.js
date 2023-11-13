@@ -10435,6 +10435,16 @@ var Chord = /*#__PURE__*/function (_Element7) {
     value: function setSyncopationAndGetShadowChord(se) {
       this.syncopationElement = se;
       var n = new Chord(this.chord_str);
+      if (this.exceptinal_comment) {
+        n.exceptinal_comment = this.exceptinal_comment; // Just use reference
+        //n.exceptinal_comment.setCodeDependency(n); // Chord dependency is kept for source chord.
+      }
+
+      if (this.lyric) {
+        n.lyric = this.lyric; // Just use reference
+        //n.lyric.setCodeDependency(n); // Chord dependency is kept for source chord.
+      }
+
       n.syncopationElement = se;
       n.isSyncopationShadowChord = true;
       n.note_group_list.forEach(function (ng) {
@@ -10538,9 +10548,19 @@ var Chord = /*#__PURE__*/function (_Element7) {
       Chord.chordMidSerialize(this.mid_elems, callback);
     }
   }, {
+    key: "isSyncopatedShadow",
+    value: function isSyncopatedShadow() {
+      return this.isSyncopationShadowChord;
+    }
+  }, {
+    key: "isSyncopatedSource",
+    value: function isSyncopatedSource() {
+      return this.syncopationElement && !this.isSyncopationShadowChord;
+    }
+  }, {
     key: "exportCode",
     value: function exportCode() {
-      if (this.syncopationElement && this.isSyncopationShadowChord) return ""; // This shall be not exported.
+      if (this.isSyncopatedShadow()) return ""; // This shall be not exported.
 
       var code = "";
       if (this.exceptinal_comment) {
@@ -14740,13 +14760,13 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             yprof.ml.detected = yprof.ml.detected || e.times != null && (e.ntimes || e.times != 2);
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__.Chord) {
             yprof.rs.detected |= e.note_group_list !== null;
-            if (e.lyric) {
-              yprof.ml.detected = true;
-              lyric_rows = Math.max(e.lyric.lyric.split("/").length, lyric_rows);
-            }
-            if (e.exceptinal_comment) {
+            if (e.exceptinal_comment && !e.isSyncopatedSource()) {
               yprof.mu.detected = true;
               fixed_mu_elem_detected = true;
+            }
+            if (e.lyric && !e.isSyncopatedSource()) {
+              yprof.ml.detected = true;
+              lyric_rows = Math.max(e.lyric.lyric.split("/").length, lyric_rows);
             }
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__.Lyric) {
             throw "Illegal parsing";
@@ -15001,11 +15021,11 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           if (e0 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__.Chord) {
             cr = _this5.render_chord_simplified(draw, e0, transpose, half_type, key, paper, x / _draw_scale, yprof.body.y, param, C7_width);
             if (draw) _this5.hitManager.add(paper, cr.bb.scale(_draw_scale, 1), e0);
-            if (draw && e0.exceptinal_comment !== null) {
+            if (draw && e0.exceptinal_comment !== null && !e0.isSyncopatedSource()) {
               var r = _graphic__WEBPACK_IMPORTED_MODULE_3__.CanvasText(paper, x / _draw_scale, yprof.mu.y + yprof.mu.height, e0.exceptinal_comment.comment, param.base_font_size / 2, "lb");
               _this5.hitManager.add(paper, r.bb.scale(_draw_scale, 1), e0.exceptinal_comment);
             }
-            if (draw && e0.lyric !== null) {
+            if (draw && e0.lyric !== null && !e0.isSyncopatedSource()) {
               var llist = e0.lyric.lyric.split("/");
               for (var li = 0; li < llist.length; ++li) {
                 var _r2 = _graphic__WEBPACK_IMPORTED_MODULE_3__.CanvasText(paper, x / _draw_scale, yprof.ml.y + li * param.ml_row_height, llist[li], param.base_font_size / 3, "lt");
@@ -15087,11 +15107,11 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 _elem_width = _scale10[1];
               }
               var _cr = _this5.render_chord_simplified(draw, e, transpose, half_type, key, paper, x / _draw_scale2, yprof.body.y, param, C7_width);
-              if (draw && e.exceptinal_comment !== null) {
+              if (draw && e.exceptinal_comment !== null && !e.isSyncopatedSource()) {
                 var _r3 = _graphic__WEBPACK_IMPORTED_MODULE_3__.CanvasText(paper, x / _draw_scale2, yprof.mu.y + yprof.mu.height, e.exceptinal_comment.comment, param.base_font_size / 2, "lb");
                 _this5.hitManager.add(paper, _r3.bb.scale(_draw_scale2, 1), e.exceptinal_comment);
               }
-              if (draw && e.lyric !== null) {
+              if (draw && e.lyric !== null && !e.isSyncopatedSource()) {
                 var llist = e.lyric.lyric.split("/");
                 for (var li = 0; li < llist.length; ++li) {
                   var _r4 = _graphic__WEBPACK_IMPORTED_MODULE_3__.CanvasText(paper, x / _draw_scale2, yprof.ml.y + li * param.ml_row_height, llist[li], param.base_font_size / 3, "lt");

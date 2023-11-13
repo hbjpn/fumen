@@ -10433,11 +10433,12 @@ var Chord = /*#__PURE__*/function (_Element7) {
   }, {
     key: "setSyncopationAndGetShadowChord",
     value: function setSyncopationAndGetShadowChord(se) {
-      this.syncopated = true;
+      this.syncopationElement = se;
       var n = new Chord(this.chord_str);
-      n.syncopotaionElement = se;
+      n.syncopationElement = se;
+      n.isSyncopationShadowChord = true;
       n.note_group_list.forEach(function (ng) {
-        ng.lengthIndicator = se.lengthindicator;
+        ng.lengthIndicator = se.lengthIndicator;
       });
       return n;
     }
@@ -10449,8 +10450,8 @@ var Chord = /*#__PURE__*/function (_Element7) {
       this.renderprop = {};
       this.exceptinal_comment = null;
       this.lyric = null;
-      this.syncopated = false; // This is set to the original chord for which syncopation is applied.
-      this.syncopotaionElement = null; // This is set to the generated shadow chord which is syncopation of other chord.
+      this.isSyncopationShadowChord = false; // This is set to the original chord for which syncopation is applied.
+      this.syncopationElement = null; // This is set to the generated shadow chord which is syncopation of other chord.
 
       this.note_group_list = null;
 
@@ -11287,8 +11288,8 @@ var Syncopation = /*#__PURE__*/function (_Element8) {
       // Note : Content of indicators are not always integers.
       // intindicators is storage for integer indicators analyzed from indicators.
       this.indstr = ins;
-      this.lengthindicator = Chord.parseLengthIndicator(ins);
-      this.lengthindicator.has_tie = true; // Force tie
+      this.lengthIndicator = Chord.parseLengthIndicator(ins);
+      this.lengthIndicator.has_tie = true; // Force tie
     }
   }, {
     key: "exportCode",
@@ -15752,7 +15753,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         }; // TODO : Check
       }
       // If syncopation is associated and we have shadow chord which is placed at the right place, we do not render chord symbol for this.
-      if (chord.syncopated) {
+      if (chord.syncopationElement && !chord.isSyncopationShadowChord) {
         return {
           width: B,
           bb: new _graphic__WEBPACK_IMPORTED_MODULE_3__.BoundingBox(x, y_body_base, B, B)

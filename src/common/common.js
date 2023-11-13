@@ -491,13 +491,14 @@ export class Chord extends Element {
         return n;
     }
     setSyncopationAndGetShadowChord(se){
-        this.syncopated = true;
+        this.syncopationElement = se;
 
         let n = new Chord(this.chord_str);
-        n.syncopotaionElement = se;
+        n.syncopationElement = se;
+        n.isSyncopationShadowChord = true;
 
         n.note_group_list.forEach((ng)=>{
-            ng.lengthIndicator = se.lengthindicator;
+            ng.lengthIndicator = se.lengthIndicator;
         });
 
         return n;
@@ -512,8 +513,8 @@ export class Chord extends Element {
         this.exceptinal_comment = null;
         this.lyric = null;
 
-        this.syncopated = false; // This is set to the original chord for which syncopation is applied.
-        this.syncopotaionElement = null; // This is set to the generated shadow chord which is syncopation of other chord.
+        this.isSyncopationShadowChord = false; // This is set to the original chord for which syncopation is applied.
+        this.syncopationElement = null; // This is set to the generated shadow chord which is syncopation of other chord.
 
         this.note_group_list = null;
 
@@ -1183,8 +1184,8 @@ export class Syncopation extends Element {
         // Note : Content of indicators are not always integers.
         // intindicators is storage for integer indicators analyzed from indicators.
         this.indstr = ins;
-        this.lengthindicator = Chord.parseLengthIndicator(ins);
-        this.lengthindicator.has_tie = true; // Force tie
+        this.lengthIndicator = Chord.parseLengthIndicator(ins);
+        this.lengthIndicator.has_tie = true; // Force tie
     }
     exportCode(){  
         return `<:${this.indstr}`;

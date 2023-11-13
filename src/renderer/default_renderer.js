@@ -2805,7 +2805,7 @@ export class DefaultRenderer extends Renderer {
             return { width: B, bb: new graphic.BoundingBox(x, y_body_base, B, B) }; // TODO : Check
         }
         // If syncopation is associated and we have shadow chord which is placed at the right place, we do not render chord symbol for this.
-        if (chord.syncopated) {
+        if (chord.syncopationElement && (!chord.isSyncopationShadowChord)) {
             return { width: B, bb: new graphic.BoundingBox(x, y_body_base, B, B) }; // TODO : Check
         }
         

@@ -10540,7 +10540,7 @@ var Chord = /*#__PURE__*/function (_Element7) {
   }, {
     key: "exportCode",
     value: function exportCode() {
-      if (this.syncopotaionElement) return ""; // This shall be not exported.
+      if (this.syncopationElement && this.isSyncopationShadowChord) return ""; // This shall be not exported.
 
       var code = "";
       if (this.exceptinal_comment) {

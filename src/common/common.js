@@ -609,7 +609,7 @@ export class Chord extends Element {
     }
 
     exportCode(){
-        if(this.syncopotaionElement) return ""; // This shall be not exported.
+        if(this.syncopationElement && this.isSyncopationShadowChord) return ""; // This shall be not exported.
 
         let code = "";
         if(this.exceptinal_comment){

@@ -1677,8 +1677,8 @@ export class DefaultRenderer extends Renderer {
                 }
        
                 var e0 = element_group.elems[0];
-                let cr = null;
-                if (e0 instanceof common.Chord) {
+                let cr = {width:0};
+                if (e0 instanceof common.Chord && !e0.isSyncopatedSource()) {
                     cr = this.render_chord_simplified(
                         draw, 
                         e0,
@@ -1694,7 +1694,7 @@ export class DefaultRenderer extends Renderer {
 
                     if(draw) this.hitManager.add(paper, cr.bb.scale(draw_scale,1), e0);
 
-                    if (draw && e0.exceptinal_comment !== null && !e0.isSyncopatedSource()) {
+                    if (draw && e0.exceptinal_comment !== null) {
                         let r = graphic.CanvasText(
                             paper,
                             x / draw_scale,
@@ -1705,7 +1705,7 @@ export class DefaultRenderer extends Renderer {
                         );
                         this.hitManager.add(paper, r.bb.scale(draw_scale,1), e0.exceptinal_comment);
                     }
-                    if (draw && e0.lyric !== null &&  !e0.isSyncopatedSource()) {
+                    if (draw && e0.lyric !== null) {
                         var llist = e0.lyric.lyric.split("/");
                         for (var li = 0; li < llist.length; ++li) {
                             let r = graphic.CanvasText(
@@ -1720,7 +1720,7 @@ export class DefaultRenderer extends Renderer {
                         }
                     }
 
-                } else { // Rest or Simile
+                } else { // Rest or Simile or SyncopatedSource chord
                     // Rest is drawn in render_rs_area function in RS area
                     cr = {width:0};
                     
@@ -2804,11 +2804,6 @@ export class DefaultRenderer extends Renderer {
         if (bases[0] == null && bases[1] == null && elems === undefined) {
             return { width: B, bb: new graphic.BoundingBox(x, y_body_base, B, B) }; // TODO : Check
         }
-        // If syncopation is associated and we have shadow chord which is placed at the right place, we do not render chord symbol for this.
-        if (chord.syncopationElement && (!chord.isSyncopationShadowChord)) {
-            return { width: B, bb: new graphic.BoundingBox(x, y_body_base, B, B) }; // TODO : Check
-        }
-        
 
         var _3rdelem = ce._3rdelem;
         var _5thelem = ce._5thelem;

@@ -10607,6 +10607,16 @@ var Chord = /*#__PURE__*/function (_Element7) {
         return code + "\"".concat(this.chord_str, "\"");
       }
     }
+  }, {
+    key: "remove",
+    value: function remove() {
+      if (this.isSyncopatedSource()) {
+        this.syncopationElement.remove();
+      } else if (this.isSyncopatedShadow()) {
+        this.syncopationElement.remove();
+      }
+      _get(_getPrototypeOf(Chord.prototype), "remove", this).call(this);
+    }
 
     // More sophiscated method based on BNF based parsing
     /*
@@ -15017,15 +15027,17 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             }
           }
           var e0 = element_group.elems[0];
-          var cr = null;
-          if (e0 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__.Chord) {
+          var cr = {
+            width: 0
+          };
+          if (e0 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__.Chord && !e0.isSyncopatedSource()) {
             cr = _this5.render_chord_simplified(draw, e0, transpose, half_type, key, paper, x / _draw_scale, yprof.body.y, param, C7_width);
             if (draw) _this5.hitManager.add(paper, cr.bb.scale(_draw_scale, 1), e0);
-            if (draw && e0.exceptinal_comment !== null && !e0.isSyncopatedSource()) {
+            if (draw && e0.exceptinal_comment !== null) {
               var r = _graphic__WEBPACK_IMPORTED_MODULE_3__.CanvasText(paper, x / _draw_scale, yprof.mu.y + yprof.mu.height, e0.exceptinal_comment.comment, param.base_font_size / 2, "lb");
               _this5.hitManager.add(paper, r.bb.scale(_draw_scale, 1), e0.exceptinal_comment);
             }
-            if (draw && e0.lyric !== null && !e0.isSyncopatedSource()) {
+            if (draw && e0.lyric !== null) {
               var llist = e0.lyric.lyric.split("/");
               for (var li = 0; li < llist.length; ++li) {
                 var _r2 = _graphic__WEBPACK_IMPORTED_MODULE_3__.CanvasText(paper, x / _draw_scale, yprof.ml.y + li * param.ml_row_height, llist[li], param.base_font_size / 3, "lt");
@@ -15033,7 +15045,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
               }
             }
           } else {
-            // Rest or Simile
+            // Rest or Simile or SyncopatedSource chord
             // Rest is drawn in render_rs_area function in RS area
             cr = {
               width: 0
@@ -15767,13 +15779,6 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
       // if bases are null, elems are null, then it is just a duration information
       if (bases[0] == null && bases[1] == null && elems === undefined) {
-        return {
-          width: B,
-          bb: new _graphic__WEBPACK_IMPORTED_MODULE_3__.BoundingBox(x, y_body_base, B, B)
-        }; // TODO : Check
-      }
-      // If syncopation is associated and we have shadow chord which is placed at the right place, we do not render chord symbol for this.
-      if (chord.syncopationElement && !chord.isSyncopationShadowChord) {
         return {
           width: B,
           bb: new _graphic__WEBPACK_IMPORTED_MODULE_3__.BoundingBox(x, y_body_base, B, B)

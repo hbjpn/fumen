@@ -675,6 +675,15 @@ export class Chord extends Element {
         }
     }
 
+    remove(){
+        if(this.isSyncopatedSource()){
+            this.syncopationElement.remove();
+        }else if(this.isSyncopatedShadow()){
+            this.syncopationElement.remove();
+        }
+        super.remove();
+    }
+
     // More sophiscated method based on BNF based parsing
     /*
     CHORD ::= ROOT ( "m" | "dim"|"aug"|"+")? "M"? ("5" | "6"|"7"|"9"|"11"|"13"|"69")? ("sus" ("4"|"2")? )?  ","? TENSIONLIST* ( EOF | ":" | "/" )

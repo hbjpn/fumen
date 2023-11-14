@@ -110,6 +110,8 @@ let capture = (async(addr, fumenfile, headInfo, base_commit) => {
     let scs = listScreenShortsForCommit(scdirname,tcname);
     scs.filter((v,i)=>i>scs.length-10).forEach(s=>console.log(s.file));
     let prev_sc_file = null;
+
+    // If base commit is specified by the commandline argument use it. Otherwise use the  screen short of the latest commit.
     if(base_commit){
         prev_sc_file = scs.find(e=>e.commit == base_commit) || null;
         if(prev_sc_file) console.log(`Base commit set to ${base_commit}`);
@@ -126,8 +128,11 @@ let capture = (async(addr, fumenfile, headInfo, base_commit) => {
     let numDiffPixels = 0;
     if(prev_sc_file && prev_sc_file.file == pngname){
         // Not yet comitted. In that case, the image is generated with the name indicating it is workingcopy
-        console.log("No commit after last commit. PNG generated with suffix workingcopy.");
-        pngname = `${tcname}.workingcopy.${headInfo.commit}.png`;
+        // Workingcopy  will never be used as a comparison base. Just a temporal comparison with the latest commit while you are editting/debugging your change.
+        // So, you can just repeat your testing before commiting the code and after you confirm the change is good,
+        // then commit it and run test script again to generate the bsase screenshort for the new commit.(will be used as a comparison base hereafter)
+        console.log("No commit after last commit. PNG generated with suffix workingcopy."); 
+        pngname = `${tcname}.workingcopy.${headInfo.commit}.png`; 
     }
 
     //console.log(clips[0]);

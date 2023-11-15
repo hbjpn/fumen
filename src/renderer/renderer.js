@@ -604,16 +604,16 @@ export class Renderer {
                 // eslint-disable-next-line no-empty
                 if (d == "0") {
                 } else if (d == "1") {
-                    r = graphic.CanvasImage(paper, graphic.G_imgmap["uniE0A2"], //w1note
+                    r = graphic.canvasImage(paper, graphic.G_imgmap["uniE0A2"], //w1note
                         note_x_center, y, null, _5lines_intv, "lm", draw);
                     
                 } else if (d == "2") {
 
-                    r = graphic.CanvasImage(paper, graphic.G_imgmap["uniE0A3"], //w2note
+                    r = graphic.canvasImage(paper, graphic.G_imgmap["uniE0A3"], //w2note
                     note_x_center, y, null, _5lines_intv, "lm", draw);
                 } else {
 
-                    r = graphic.CanvasImage(paper, graphic.G_imgmap["uniE0A4"], // bnote
+                    r = graphic.canvasImage(paper, graphic.G_imgmap["uniE0A4"], // bnote
                     note_x_center, y, null, _5lines_intv, "lm", draw);
                 }
 
@@ -632,7 +632,7 @@ export class Renderer {
                     let dy =
                         pos_on_5lines[ci] % 2 == 0 ? -_5lines_intv / 2 : 0;
     
-                    r = graphic.CanvasCircle(paper, note_x_center + 12 + i * 5, y + dy, 1, draw);
+                    r = graphic.canvasCircle(paper, note_x_center + 12 + i * 5, y + dy, 1, draw);
                     
                     bounding_box.add_BB(r.bb);
                     dots_bounding_box.add_BB(r.bb);
@@ -656,7 +656,7 @@ export class Renderer {
                     let svg_dy = { 11: -0.5, 1: 0, 0: 0 };
                     let url = svgname[sharp_flats[ci]];
                     let dy = svg_dy[sharp_flats[ci]];
-                    r = graphic.CanvasImage(paper, graphic.G_imgmap[url],
+                    r = graphic.canvasImage(paper, graphic.G_imgmap[url],
                         x, y + _5lines_intv*dy, null, _5lines_intv*2.5, "lm", draw);
                     
                     bounding_box.add_BB(r.bb);
@@ -668,7 +668,7 @@ export class Renderer {
                     var a5y = (_5lines_intv / 2) * (8 - p5i); // rs_y_base corresponds to pos#3
 
 
-                    graphic.CanvasLine(paper,
+                    graphic.canvasLine(paper,
                         note_x_center - 3,
                         rs_y_base + a5y,
                         note_x_center + 12,
@@ -679,7 +679,7 @@ export class Renderer {
                     if (p5i % 2 != 0) continue;
                     let a5y = (_5lines_intv / 2) * (8 - p5i); // rs_y_base corresponds to pos#3
 
-                    graphic.CanvasLine(paper,
+                    graphic.canvasLine(paper,
                         note_x_center - 3,
                         rs_y_base + a5y,
                         note_x_center + 12,
@@ -1016,7 +1016,7 @@ export class Renderer {
                             //if(paper == music_context.tie_info.rs_prev_tie_paper)
                             //    music_context.tie_info.rs_prev_tie_paper.getContext("2d").scale(1.0/draw_scale, 1.0);
 
-                            graphic.CanvasbBzierCurve(music_context.tie_info.rs_prev_tie_paper,
+                            graphic.canvasbBzierCurve(music_context.tie_info.rs_prev_tie_paper,
                                 brace_points, false, false, 
                                 {"clip-rect":clip_rect});
 
@@ -1032,7 +1032,7 @@ export class Renderer {
 
                             //paper.getContext("2d").scale(1.0/draw_scale, 1.0);
                             
-                            graphic.CanvasbBzierCurve(paper, brace_points, false, false,
+                            graphic.canvasbBzierCurve(paper, brace_points, false, false,
                                 {"clip-rect":clip_rect});
 
                             //paper.getContext("2d").scale(draw_scale, 1.0);
@@ -1047,7 +1047,7 @@ export class Renderer {
 
                             //paper.getContext("2d").scale(1.0/draw_scale, 1.0);
                             
-                            graphic.CanvasbBzierCurve(paper, brace_points, false, false);
+                            graphic.canvasbBzierCurve(paper, brace_points, false, false);
                             
                             //paper.getContext("2d").scale(draw_scale, 1.0);
                         }
@@ -1114,7 +1114,7 @@ export class Renderer {
                 (upper_position ? really_min_y - param.note_bar_length : really_max_y + param.note_bar_length);
         }
 
-        let r = graphic.CanvasText(paper,
+        let r = graphic.canvasText(paper,
             center_x,
             slope * center_x +
                 intercept +
@@ -1174,9 +1174,9 @@ export class Renderer {
                     ]
                 ]; 
 
-            let r = graphic.CanvasPolygon(paper, points1, false, false, null, draw);
+            let r = graphic.canvasPolygon(paper, points1, false, false, null, draw);
             bounding_box.add_BB(r.bb);
-            r = graphic.CanvasPolygon(paper, points2, false, false, null, draw);
+            r = graphic.canvasPolygon(paper, points2, false, false, null, draw);
             bounding_box.add_BB(r.bb);
         }
     }
@@ -1226,7 +1226,7 @@ export class Renderer {
                 // eslint-disable-next-line no-empty
                 if (d <= 1) {
                 } else {
-                    let r = graphic.CanvasLine(paper,
+                    let r = graphic.canvasLine(paper,
                         bar_x,
                         ys[0] + 3,
                         bar_x,
@@ -1249,7 +1249,7 @@ export class Renderer {
                     // Draw the basic vertical line. For the note with standalone flag(s), some additional length will be added when to draw flags.
 
 
-                    let r = graphic.CanvasLine(paper,
+                    let r = graphic.canvasLine(paper,
                         bar_x,
                         y0,
                         bar_x,
@@ -1293,7 +1293,7 @@ export class Renderer {
                 : Math.max.apply(null, ys) + param.note_bar_length + barlen_delta;
 
             paper.getContext("2d").scale(this_elem_draw_scale, 1.0);
-            let r = graphic.CanvasImage(paper, graphic.G_imgmap[url],
+            let r = graphic.canvasImage(paper, graphic.G_imgmap[url],
                 (bar_x + x_adj)/this_elem_draw_scale,
                 y1,
                 flag_w,  // No need to apply "/this_elem_draw_scale" otherwise no compression apply :).
@@ -1379,7 +1379,7 @@ export class Renderer {
                 // eslint-disable-next-line no-empty
                 if (d <= 1) {
                 } else {
-                    let r = graphic.CanvasLine(paper,
+                    let r = graphic.canvasLine(paper,
                         bar_x,
                         ys[0] + (upper_flag ? -3 : +3),
                         bar_x,
@@ -1399,7 +1399,7 @@ export class Renderer {
                     // Draw the basic vertical line. For the note with standalone flag(s), some additional length will be added when to draw flags.
 
 
-                    let r = graphic.CanvasLine(paper,
+                    let r = graphic.canvasLine(paper,
                         bar_x,
                         y0,
                         bar_x,
@@ -1421,7 +1421,7 @@ export class Renderer {
         // Draw flag for balken
         // Common balken
         if (elements[first_chord_idx].balken_element.note_value >= 8) {
-            let r = graphic.CanvasLine(paper,
+            let r = graphic.canvasLine(paper,
                 ps_bar_x,
                 slope * ps_bar_x + intercept,
                 pe_bar_x,
@@ -1454,7 +1454,7 @@ export class Renderer {
                 for (var fi = 1; fi < numflag; ++fi) {
                     // fi=0 is alread drawn by common balken
                     
-                    let r = graphic.CanvasLine(paper,
+                    let r = graphic.canvasLine(paper,
                         pssx,
                         slope * pssx +
                             intercept +
@@ -1476,7 +1476,7 @@ export class Renderer {
                     ++fi // fi=0 is alread drawn by common balken
                 ) {
 
-                    let r = graphic.CanvasLine(paper,
+                    let r = graphic.canvasLine(paper,
                         pssx,
                         slope * pssx +
                             intercept +
@@ -1511,14 +1511,14 @@ export class Renderer {
 
             //var obj = null;
             if (d == "1" || d == "2") {
-                graphic.CanvasPolygon(paper, points, true, false);
+                graphic.canvasPolygon(paper, points, true, false);
             } else {
                 // '0' and other
-                graphic.CanvasPolygon(paper, points, true, true);
+                graphic.canvasPolygon(paper, points, true, true);
             }
             //group.push(obj);
             for (var i = 0; i < numdot; ++i) {
-                graphic.CanvasCircle(paper, x + rsgw + 5 + i * 5, y - _5lines_intv / 2, 1);
+                graphic.canvasCircle(paper, x + rsgw + 5 + i * 5, y - _5lines_intv / 2, 1);
             }
         }
 

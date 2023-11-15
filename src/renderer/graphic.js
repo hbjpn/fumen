@@ -71,7 +71,7 @@ export class BoundingBox{
     }
 }
 
-export function CanvasRect(canvas, x, y, w, h, fill=null) {
+export function canvasRect(canvas, x, y, w, h, fill=null) {
     var context = canvas.getContext("2d");
     context.save();
     if(fill){
@@ -85,7 +85,7 @@ export function CanvasRect(canvas, x, y, w, h, fill=null) {
     context.restore();
 }
 
-export function CanvasCircle(canvas, x, y, r, draw=true) {
+export function canvasCircle(canvas, x, y, r, draw=true) {
     if(draw){
         var context = canvas.getContext("2d");
         context.beginPath();
@@ -97,7 +97,7 @@ export function CanvasCircle(canvas, x, y, r, draw=true) {
     
 }
 
-export function CanvasLine(canvas, x0, y0, x1, y1, opt, draw=true) {
+export function canvasLine(canvas, x0, y0, x1, y1, opt, draw=true) {
     if(draw){
         var context = canvas.getContext("2d");
         context.save(); // In iOS 16.1, somewhat lineWidth is not reset....
@@ -115,7 +115,7 @@ export function CanvasLine(canvas, x0, y0, x1, y1, opt, draw=true) {
     return {bb:new BoundingBox(Math.min(x0,x1), Math.min(y0,y1), Math.abs(x0-x1), Math.abs(y0-y1))};
 }
 
-export function CanvasPolygon(canvas, points, close=false, fill=false, opt=null, draw=true){
+export function canvasPolygon(canvas, points, close=false, fill=false, opt=null, draw=true){
 
     let bb = new BoundingBox();
     for(let i=0; i < points.length; ++i){
@@ -157,7 +157,7 @@ export function CanvasPolygon(canvas, points, close=false, fill=false, opt=null,
     return {bb:bb};
 }
 
-export function CanvasbBzierCurve(canvas, points, close=false, fill=false, opt=null){
+export function canvasbBzierCurve(canvas, points, close=false, fill=false, opt=null){
     // points shuld have 4 points, (start point, control point 1, control point 2, end point)
     var context = canvas.getContext("2d");
 
@@ -195,7 +195,7 @@ export function CanvasbBzierCurve(canvas, points, close=false, fill=false, opt=n
     context.restore();
 }
 
-export function CanvasPath(canvas, svgpathdata, fill=false, opt) {
+export function canvasPath(canvas, svgpathdata, fill=false, opt) {
 
     var ctx = canvas.getContext("2d");
 
@@ -253,7 +253,7 @@ export function fontDesc(fsize,confs){ //fontfamily,bold) {
     return s;
 }
 
-export function GetCharProfile(fsize,confs,ratio,zoom) {
+export function getCharProfile(fsize,confs,ratio,zoom) {
     let font = fontDesc(fsize,confs);
     let refstr = font+"/"+ratio+"/"+zoom;
 
@@ -263,18 +263,18 @@ export function GetCharProfile(fsize,confs,ratio,zoom) {
         let memkey = ratio+"/"+zoom;
         if (!(memkey in G_memCanvasStore)) {
             let memCanvas = document.createElement("canvas");
-            SetupHiDPICanvas(memCanvas, G_mem_Canvas_size[0], G_mem_Canvas_size[1], ratio, zoom);
+            setupHiDPICanvas(memCanvas, G_mem_Canvas_size[0], G_mem_Canvas_size[1], ratio, zoom);
             //console.log("Pixel ratio = " + ratio + " , zoom = " + zoom);
             G_memCanvasStore[memkey] = memCanvas;
         }
-        yroom = JudgeTextYPosOffset(G_memCanvasStore[memkey], font); //bold, fontfamily, fsize);
+        yroom = judgeTextYPosOffset(G_memCanvasStore[memkey], font); //bold, fontfamily, fsize);
         G_y_char_offsets[refstr] = yroom;
     }
 
     return yroom;
 }
 
-export function CanvasText(canvas, x, y, text, fsize, align, xwidth, notdraw, opt) {
+export function canvasText(canvas, x, y, text, fsize, align, xwidth, notdraw, opt) {
     var context = canvas.getContext("2d");
     var ta = {
         l: "left",
@@ -302,7 +302,7 @@ export function CanvasText(canvas, x, y, text, fsize, align, xwidth, notdraw, op
         context.textBaseline = tb[align[1]]; //tb[align[1]];
     
     }else{
-        yroom = GetCharProfile(fsize, opt && opt.font, canvas.ratio,canvas.zoom);
+        yroom = getCharProfile(fsize, opt && opt.font, canvas.ratio,canvas.zoom);
 
 
         if (align[1] == "t") {
@@ -336,11 +336,11 @@ export function CanvasText(canvas, x, y, text, fsize, align, xwidth, notdraw, op
 
     // eslint-disable-next-line no-constant-condition
     if (false) {
-        CanvasLine(canvas, x, y, x + xwidth, y);
-        CanvasLine(canvas, x, y + yadjust, x + xwidth, y + yadjust, {
+        canvasLine(canvas, x, y, x + xwidth, y);
+        canvasLine(canvas, x, y + yadjust, x + xwidth, y + yadjust, {
             dash: true
         });
-        CanvasLine(canvas, x, y, x, y + fsize);
+        canvasLine(canvas, x, y, x, y + fsize);
     }
 
     if (opt != null) {
@@ -357,25 +357,25 @@ export function CanvasText(canvas, x, y, text, fsize, align, xwidth, notdraw, op
     return ret;
 }
 
-export function CanvasTextWithBox(canvas, x, y, text, fsize, margin=2, min_width=null) {
+export function canvasTextWithBox(canvas, x, y, text, fsize, margin=2, min_width=null) {
     let ret = null;
     if(min_width != null){
-        ret = CanvasText(canvas, x + margin, y + margin, text, fsize, "lt", undefined, true);
+        ret = canvasText(canvas, x + margin, y + margin, text, fsize, "lt", undefined, true);
         if(ret.width < min_width){
-            ret = CanvasText(canvas, x + margin + min_width/2, y + margin, text, fsize, "ct");
+            ret = canvasText(canvas, x + margin + min_width/2, y + margin, text, fsize, "ct");
             ret.width = min_width;
         }else{
-            ret = CanvasText(canvas, x + margin, y + margin, text, fsize, "lt");
+            ret = canvasText(canvas, x + margin, y + margin, text, fsize, "lt");
         }
     }else{
-        ret = CanvasText(canvas, x + margin, y + margin, text, fsize, "lt");
+        ret = canvasText(canvas, x + margin, y + margin, text, fsize, "lt");
     }
-    CanvasRect(canvas, x, y, ret.width + 2*margin, ret.height + 2*margin);
+    canvasRect(canvas, x, y, ret.width + 2*margin, ret.height + 2*margin);
     //return {x:x, y:y, width: ret.width+2*margin, height:ret.height+2*margin};
     return {bb: new BoundingBox(x, y, ret.width+2*margin, ret.height+2*margin)};
 }
 
-export function CanvasImage(canvas, img, x, y, w, h, align = "lt", draw=true)
+export function canvasImage(canvas, img, x, y, w, h, align = "lt", draw=true)
 {
     let act_w = img.width;
     let act_h = img.height;
@@ -456,7 +456,7 @@ export function svgArcBezie(point_array)
 var G_y_char_offsets = {};
 
 
-export function GetPixelRatio(canvas) {
+export function getPixelRatio(canvas) {
     var ctx = canvas.getContext("2d"),
         dpr = window.devicePixelRatio || 1;
     let bsr =
@@ -470,8 +470,8 @@ export function GetPixelRatio(canvas) {
     return dpr / bsr;
 }
 
-export function SetupHiDPICanvas(canvas, w, h, ratio, zoom, zoomChangeOnly=false) {
-    if (!ratio) ratio = GetPixelRatio(canvas);
+export function setupHiDPICanvas(canvas, w, h, ratio, zoom, zoomChangeOnly=false) {
+    if (!ratio) ratio = getPixelRatio(canvas);
     if (!zoom) zoom = 1.0;
 
     canvas.ratio = ratio;
@@ -495,7 +495,7 @@ export function SetupHiDPICanvas(canvas, w, h, ratio, zoom, zoomChangeOnly=false
     return { ratio: ratio };
 }
 
-function JudgeTextYPosOffset(canvas, font, code)/*bold, fontfamily, fontsize) */{
+function judgeTextYPosOffset(canvas, font, code)/*bold, fontfamily, fontsize) */{
     var context = canvas.getContext("2d");
     if(!code) code = "D";
 
@@ -597,7 +597,7 @@ export function getFontSizeFromHeight(height, fontfamily, code, tol, opt, ratio,
     let memkey = ratio + "/" + zoom;
     if (!(memkey in G_memCanvasStore)) {
         let memCanvas = document.createElement("canvas");
-        SetupHiDPICanvas(memCanvas, G_mem_Canvas_size[0], G_mem_Canvas_size[1], ratio, zoom);
+        setupHiDPICanvas(memCanvas, G_mem_Canvas_size[0], G_mem_Canvas_size[1], ratio, zoom);
         //console.log("Pixel ratio = " + ratio, + " , Zoom = " + zoom);
         G_memCanvasStore[memkey] = memCanvas;
     }
@@ -612,7 +612,7 @@ export function getFontSizeFromHeight(height, fontfamily, code, tol, opt, ratio,
     var loop = 0;
     if(!tol) tol=0.5;
     while(loop < maxLoop){
-        var ret = JudgeTextYPosOffset(canvas_to_use, px + "px '"+fontfamily+"'", code);
+        var ret = judgeTextYPosOffset(canvas_to_use, px + "px '"+fontfamily+"'", code);
         //console.log("px="+px+", target height="+height);
         //console.log(ret);
         //var tol = 0.4;
@@ -630,7 +630,7 @@ export function getFontSizeFromHeight(height, fontfamily, code, tol, opt, ratio,
     return px;
 }
 
-export function ReleaseCanvas(canvas){
+export function releaseCanvas(canvas){
     // To eliminate memory leak, explictly resize to 0.
     canvas.width = 0;
     canvas.height = 0;
@@ -640,7 +640,7 @@ export function ReleaseCanvas(canvas){
 
 export var G_imgmap = {};
 
-export function PreloadImages(imageurls) {
+export function preloadImages(imageurls) {
     var promises = [];
 
     for (var i = 0; i < imageurls.length; ++i) {

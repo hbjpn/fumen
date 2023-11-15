@@ -216,7 +216,7 @@ export class DefaultRenderer extends Renderer {
         });
     }
 
-    room_for_equal_ratio_divison(x_width_info, total_width, 
+    roomForEqualRatioDivison(x_width_info, total_width, 
         num_meas, num_meas_to_consider){
         
         let num_flexible_rooms = this.field_sum(x_width_info,"meas_num_flexible_rooms");
@@ -253,7 +253,7 @@ export class DefaultRenderer extends Renderer {
     optimizeType1(row_elements_list, x_width_info, total_width,
         num_meas, num_meas_to_consider, reduced_meas_valid){
         
-        let room_equal_ratio = this.room_for_equal_ratio_divison(x_width_info, total_width, 
+        let room_equal_ratio = this.roomForEqualRatioDivison(x_width_info, total_width, 
             num_meas, num_meas_to_consider);
         
         row_elements_list.forEach((e,mi)=>{
@@ -267,7 +267,7 @@ export class DefaultRenderer extends Renderer {
         });
     }
 
-    room_per_meas_for_equal_divison(x_width_info, total_width, 
+    roomPerMeasForEqualDivison(x_width_info, total_width, 
         num_meas, num_meas_to_consider){
         let room_per_meas_even_meas = []; // room per measure for each meas in case even division of width for each measure
         for(let mi=0; mi < num_meas; ++mi){
@@ -282,7 +282,7 @@ export class DefaultRenderer extends Renderer {
         num_meas, num_meas_to_consider, reduced_meas_valid, room_per_elem_dist){
 
         // Equal division
-        let room_per_meas_even_meas = this.room_per_meas_for_equal_divison(
+        let room_per_meas_even_meas = this.roomPerMeasForEqualDivison(
             x_width_info, total_width,
             num_meas, num_meas_to_consider);
 
@@ -320,7 +320,7 @@ export class DefaultRenderer extends Renderer {
         let num_flexible_rooms = this.field_sum(x_width_info,"meas_num_flexible_rooms");
         let fixed_width = this.field_sum(x_width_info,"meas_fixed_width");
         
-        let room_per_meas_even_meas = this.room_per_meas_for_equal_divison(
+        let room_per_meas_even_meas = this.roomPerMeasForEqualDivison(
             x_width_info, total_width,
             num_meas, num_meas_to_consider);
         
@@ -369,11 +369,11 @@ export class DefaultRenderer extends Renderer {
         // Here alpha=1 case is filtered at the first IF statement, then we only consider the case
         // where room when optimize_type = 0 is positive.
 
-        let room_per_meas_even_meas = this.room_per_meas_for_equal_divison(
+        let room_per_meas_even_meas = this.roomPerMeasForEqualDivison(
             x_width_info, total_width, 
             num_meas, num_meas_to_consider);
         
-        let room_equal_ratio = this.room_for_equal_ratio_divison(
+        let room_equal_ratio = this.roomForEqualRatioDivison(
             x_width_info, total_width, 
             num_meas, num_meas_to_consider);
 
@@ -793,7 +793,7 @@ export class DefaultRenderer extends Renderer {
 
         // Title
         if(track.getVariable("TITLE")){
-            let ri = graphic.CanvasText(
+            let ri = graphic.canvasText(
                 canvas,
                 x + width / 2,
                 param.y_title_offset,
@@ -810,7 +810,7 @@ export class DefaultRenderer extends Renderer {
 
         // Sub Title
         if (track.getVariable("SUB_TITLE")){
-            let ri = graphic.CanvasText(
+            let ri = graphic.canvasText(
                 canvas,
                 x + width / 2,
                 param.y_subtitle_offset,
@@ -827,7 +827,7 @@ export class DefaultRenderer extends Renderer {
 
         // Artist
         if(track.getVariable("ARTIST")){
-            let ri = graphic.CanvasText(
+            let ri = graphic.canvasText(
                 canvas,
                 x + width,
                 param.y_artist_offset,
@@ -1038,7 +1038,7 @@ export class DefaultRenderer extends Renderer {
             // Canvas on memory for screening
             // TODO : Canvas height 400 is enough ?
             this.memCanvas = document.createElement("canvas");
-            graphic.SetupHiDPICanvas(
+            graphic.setupHiDPICanvas(
                 this.memCanvas,
                 param.paper_width / param.text_size,
                 400 / param.text_size, /// 400 is dammy
@@ -1128,7 +1128,7 @@ export class DefaultRenderer extends Renderer {
        if(show_footer) y_base_screening += param.y_footer_offset;
 
        // Release memCanvas
-       graphic.ReleaseCanvas(this.memCanvas);
+       graphic.releaseCanvas(this.memCanvas);
        this.memCanvas = null;
        
         // ----------------------
@@ -1155,7 +1155,7 @@ export class DefaultRenderer extends Renderer {
             if (canvas == null) {
                 canvas = await this.canvas_provider();
             }
-            graphic.SetupHiDPICanvas(
+            graphic.setupHiDPICanvas(
                 canvas,
                 param.paper_width / param.text_size, // Internally, canvas size is set to this value * zoom, then eventually equals to param.paper_height.
                 (param.paper_height > 0 ? param.paper_height/param.text_size : y_base_screening),
@@ -1164,7 +1164,7 @@ export class DefaultRenderer extends Renderer {
             );
 
             if(param.background_color)
-                graphic.CanvasRect(canvas, 0, 0, 
+                graphic.canvasRect(canvas, 0, 0, 
                     param.paper_width / param.text_size, 
                     (param.paper_height > 0 ? param.paper_height/param.text_size : y_base_screening), 
                     param.background_color);
@@ -1176,7 +1176,7 @@ export class DefaultRenderer extends Renderer {
         }else if(this.context.current_canvas.zoom != param.text_size){
             // text_size is changed  from the previous score drawing. This can happen when ncol and/or nrow > 1
             // Only change the zooming configuration.
-            graphic.SetupHiDPICanvas(
+            graphic.setupHiDPICanvas(
                 this.context.current_canvas,
                 0, // not used
                 0, // not used
@@ -1245,7 +1245,7 @@ export class DefaultRenderer extends Renderer {
                     if(this.context.pageidx % (param.ncol * param.nrow) == 0){
                         this.hitManager.commit(this.context.current_canvas);
                         this.context.current_canvas = await this.canvas_provider();
-                        graphic.SetupHiDPICanvas(
+                        graphic.setupHiDPICanvas(
                             this.context.current_canvas,
                             yse[pei].param.paper_width / param.text_size,
                             yse[pei].param.paper_height / param.text_size,
@@ -1254,7 +1254,7 @@ export class DefaultRenderer extends Renderer {
                         );
                         
                         if(param.background_color)
-                            graphic.CanvasRect(this.context.current_canvas, 0, 0, 
+                            graphic.canvasRect(this.context.current_canvas, 0, 0, 
                                 param.paper_width / param.text_size, 
                                 param.paper_height / param.text_size, 
                                 param.background_color);
@@ -1296,7 +1296,7 @@ export class DefaultRenderer extends Renderer {
 
                 let footerstr =
                     (songname ? (songname + " - ") : "") + (l_pageidx + 1) + " of " + pages.length;
-                graphic.CanvasText(
+                graphic.canvasText(
                     page.canvas,
                     page_origin.x + page_width / 2,
                     page_origin.y + page_height - param.y_footer_offset, 
@@ -1695,7 +1695,7 @@ export class DefaultRenderer extends Renderer {
                     if(draw) this.hitManager.add(paper, cr.bb.scale(draw_scale,1), e0);
 
                     if (draw && e0.exceptinal_comment !== null) {
-                        let r = graphic.CanvasText(
+                        let r = graphic.canvasText(
                             paper,
                             x / draw_scale,
                             yprof.mu.y + yprof.mu.height,
@@ -1708,7 +1708,7 @@ export class DefaultRenderer extends Renderer {
                     if (draw && e0.lyric !== null) {
                         var llist = e0.lyric.lyric.split("/");
                         for (var li = 0; li < llist.length; ++li) {
-                            let r = graphic.CanvasText(
+                            let r = graphic.canvasText(
                                 paper,
                                 x / draw_scale,
                                 yprof.ml.y + li * param.ml_row_height,
@@ -1811,7 +1811,7 @@ export class DefaultRenderer extends Renderer {
                         );
 
                         if (draw && e.exceptinal_comment !== null && !e.isSyncopatedSource()) {
-                            let r = graphic.CanvasText(
+                            let r = graphic.canvasText(
                                 paper,
                                 x / draw_scale,
                                 yprof.mu.y + yprof.mu.height,
@@ -1824,7 +1824,7 @@ export class DefaultRenderer extends Renderer {
                         if (draw && e.lyric !== null && !e.isSyncopatedSource()) {
                             var llist = e.lyric.lyric.split("/");
                             for (var li = 0; li < llist.length; ++li) {
-                                let r = graphic.CanvasText(
+                                let r = graphic.canvasText(
                                     paper,
                                     x / draw_scale,
                                     yprof.ml.y + li * param.ml_row_height,
@@ -1913,7 +1913,7 @@ export class DefaultRenderer extends Renderer {
                             x += elem_width;
                             unscale(draw_scale);
                         }else{
-                            let r = graphic.CanvasText(paper, 0, 0, "M", 
+                            let r = graphic.canvasText(paper, 0, 0, "M", 
                                 param.base_font_size, "lt", 0.5*param.base_font_size, true, null); // width parameter needs to be aligned with chord rendering
                             e.renderprop.w = e.length * r.width;
                             fixed_width += e.renderprop.w;
@@ -2064,14 +2064,14 @@ export class DefaultRenderer extends Renderer {
 
                 let reharsal_group = m.renderprop.rg_from_here;
 
-                let r = graphic.CanvasTextWithBox(
+                let r = graphic.canvasTextWithBox(
                     paper,
                     meas_base_x,
                     inner_reharsal_mark ? yprof.mu.y : yprof.rm.y,
                     reharsal_group.name,
                     param.reharsal_mark_font_size,
                     2, 
-                    graphic.GetCharProfile(param.reharsal_mark_font_size, null, paper.ratio, paper.zoom).height
+                    graphic.getCharProfile(param.reharsal_mark_font_size, null, paper.ratio, paper.zoom).height
                 );
                 
                 this.hitManager.add(paper, r.bb, reharsal_group);
@@ -2107,7 +2107,7 @@ export class DefaultRenderer extends Renderer {
                 } else if (e instanceof common.Comment) {
                     // If this comment is associated with a chord with exceptional comment, not rendered here.
                     if (!e.chorddep) {
-                        let r = graphic.CanvasText(
+                        let r = graphic.canvasText(
                             paper,
                             meas_base_x + mh_offset,
                             yprof.mu.y + yprof.mu.height,
@@ -2156,13 +2156,13 @@ export class DefaultRenderer extends Renderer {
                     if(r.bb) this.hitManager.add(paper, r.bb, e);
                     if(r.bb2) this.hitManager.add(paper, r.bb2, e);
                 } else if (e instanceof common.Time) {
-                    let chord_str_height = graphic.GetCharProfile(
+                    let chord_str_height = graphic.getCharProfile(
                         param.base_font_size, null, paper.ratio, paper.zoom).height;
                     let row_height = yprof.rs.detected ?param.rs_area_height : param.row_height;
                     let cont_height = yprof.rs.detected ?param.rs_area_height : chord_str_height;
                     let left_margin = 2;
                     
-                    let rd = graphic.CanvasImage(paper, 
+                    let rd = graphic.canvasImage(paper, 
                         graphic.G_imgmap["uniE08"+e.numer],// numbers
                         x + left_margin, 
                         y_body_or_rs_base + row_height/2, 
@@ -2170,7 +2170,7 @@ export class DefaultRenderer extends Renderer {
                         cont_height/2,
                         "lb",
                         true);
-                    let rn = graphic.CanvasImage(paper, 
+                    let rn = graphic.canvasImage(paper, 
                         graphic.G_imgmap["uniE08"+e.denom],// numbers
                         x + left_margin, 
                         y_body_or_rs_base + row_height/2, 
@@ -2238,7 +2238,7 @@ export class DefaultRenderer extends Renderer {
                     if(r.bb) this.hitManager.add(paper, r.bb, e);
                     if(r.bb2) this.hitManager.add(paper, r.bb2, e);
                 } else if (e instanceof common.DaCapo) {
-                    let r = graphic.CanvasText(
+                    let r = graphic.canvasText(
                         paper,
                         x,
                         repeat_mark_y_base,
@@ -2248,7 +2248,7 @@ export class DefaultRenderer extends Renderer {
                     );
                     this.hitManager.add(paper, r.bb, e);
                 } else if (e instanceof common.DalSegno) {
-                    let r = graphic.CanvasText(
+                    let r = graphic.canvasText(
                         paper,
                         x,
                         repeat_mark_y_base,
@@ -2267,7 +2267,7 @@ export class DefaultRenderer extends Renderer {
                         e,
                         param.base_font_size
                     );
-                    let rt = graphic.CanvasText(
+                    let rt = graphic.canvasText(
                         paper,
                         x - r.bb.width(),
                         repeat_mark_y_base,
@@ -2277,7 +2277,7 @@ export class DefaultRenderer extends Renderer {
                     );
                     this.hitManager.add(paper, r.bb.add_BB(rt.bb), e);
                 } else if (e instanceof common.Fine) {
-                    let r = graphic.CanvasText(
+                    let r = graphic.canvasText(
                         paper,
                         x,
                         repeat_mark_y_base,
@@ -2304,12 +2304,12 @@ export class DefaultRenderer extends Renderer {
                     var ly = yprof.body.y - 2 - oy;
                     var sx = meas_start_x_actual_boundary;
                     var fx = meas_start_x + (meas_end_x - meas_start_x) * 0.7;
-                    graphic.CanvasLine(paper, sx, ly, sx, ly + oy);
-                    graphic.CanvasLine(paper, sx, ly, fx, ly);
+                    graphic.canvasLine(paper, sx, ly, sx, ly + oy);
+                    graphic.canvasLine(paper, sx, ly, fx, ly);
                     bb.add(sx, ly+oy);
                     bb.add(fx, ly);
                     var s = e.indstr;
-                    let r = graphic.CanvasText(
+                    let r = graphic.canvasText(
                         paper,
                         sx + 2,
                         ly + oy/2,
@@ -2341,7 +2341,7 @@ export class DefaultRenderer extends Renderer {
 
 
                     let bb = new graphic.BoundingBox();
-                    let r = graphic.CanvasLine(
+                    let r = graphic.canvasLine(
                         paper,
                         lx,
                         y_body_or_rs_base + height / 2 + yshift,
@@ -2350,7 +2350,7 @@ export class DefaultRenderer extends Renderer {
                         { width: height/5 }
                     );
                     bb.add_BB(r.bb);
-                    r = graphic.CanvasLine(
+                    r = graphic.canvasLine(
                         paper,
                         lx,
                         y_body_or_rs_base + rh * vlmargin + yshift,
@@ -2359,7 +2359,7 @@ export class DefaultRenderer extends Renderer {
                         { width: "1" }
                     );
                     bb.add_BB(r.bb);
-                    r = graphic.CanvasLine(
+                    r = graphic.canvasLine(
                         paper,
                         rx,
                         y_body_or_rs_base + rh * vlmargin + yshift,
@@ -2368,7 +2368,7 @@ export class DefaultRenderer extends Renderer {
                         { width: "1" }
                     );
                     bb.add_BB(r.bb);
-                    r = graphic.CanvasText(
+                    r = graphic.canvasText(
                         paper,
                         (sx + fx) / 2,
                         y_body_or_rs_base,
@@ -2442,7 +2442,7 @@ export class DefaultRenderer extends Renderer {
             for (let i = 0; i < 5; ++i) {
                 let intv = _5lines_intv;
                 let dy = 0;
-                graphic.CanvasLine(paper, 
+                graphic.canvasLine(paper, 
                     start_x, yprof.rs.y + i*intv+dy,
                     end_x,   yprof.rs.y + i*intv+dy,
                     {width:1});
@@ -2459,7 +2459,7 @@ export class DefaultRenderer extends Renderer {
         var img_height = B/2;
         var text_size = B/2;
         let bb = new graphic.BoundingBox();
-        let r = graphic.CanvasImage(paper, 
+        let r = graphic.canvasImage(paper, 
             graphic.G_imgmap["uniE047"], //segno.svg
             lx, 
             y, 
@@ -2470,7 +2470,7 @@ export class DefaultRenderer extends Renderer {
         lx += img_width;
         bb.add_BB(r.bb);
         if (segno.number !== null) {
-            let r = graphic.CanvasText(
+            let r = graphic.canvasText(
                 paper,
                 lx,
                 y,
@@ -2483,7 +2483,7 @@ export class DefaultRenderer extends Renderer {
             bb.add_BB(r.bb);
         }
         if (segno.opt !== null) {
-            let r = graphic.CanvasText(
+            let r = graphic.canvasText(
                 paper,
                 lx,
                 y,
@@ -2515,7 +2515,7 @@ export class DefaultRenderer extends Renderer {
 
         if (align[0] == "r") {
             if (coda.number !== null) {
-                let r = graphic.CanvasText(
+                let r = graphic.canvasText(
                     paper,
                     x,
                     y, //img_y + img_height,
@@ -2526,7 +2526,7 @@ export class DefaultRenderer extends Renderer {
                 width += r.width;
                 bb.add_BB(r.bb);
             }
-            let r = graphic.CanvasImage(paper, 
+            let r = graphic.canvasImage(paper, 
                 graphic.G_imgmap["uniE048"],  //coda.svg
                 x - width, 
                 y, 
@@ -2537,7 +2537,7 @@ export class DefaultRenderer extends Renderer {
             width += img_width;
             bb.add_BB(r.bb);
         } else if (align[0] == "l") {
-            let r = graphic.CanvasImage(paper, 
+            let r = graphic.canvasImage(paper, 
                 graphic.G_imgmap["uniE048"],  // coda.svg
                 x , 
                 y, 
@@ -2548,7 +2548,7 @@ export class DefaultRenderer extends Renderer {
             width += img_width;
             bb.add_BB(r.bb);
             if (coda.number !== null) {
-                let r = graphic.CanvasText(
+                let r = graphic.canvasText(
                     paper,
                     x + width,
                     y, //img_y + img_height,
@@ -2567,7 +2567,7 @@ export class DefaultRenderer extends Renderer {
     }
 
     renderChordAsString(chord, paper, x, y_body_base, param, draw) {
-        let r = graphic.CanvasText(
+        let r = graphic.canvasText(
             paper,
             x,
             y_body_base + param.row_height / 2,
@@ -2628,7 +2628,7 @@ export class DefaultRenderer extends Renderer {
         // eslint-disable-next-line no-constant-condition
         if (false) {
             for (var i = 0; i < 5; ++i) {
-                graphic.CanvasLine(
+                graphic.canvasLine(
                     paper,
                     x,
                     y_body_or_rs_base + i * _5i,
@@ -2682,7 +2682,7 @@ export class DefaultRenderer extends Renderer {
             }
             // dots
             for (var di = 0; di < numdot; ++di) {
-                graphic.CanvasCircle(
+                graphic.canvasCircle(
                     paper,
                     x + dot_xoffsets[rd] + di * 5,
                     y_body_or_rs_base + row_height / 2 - _5i / 2,
@@ -2719,7 +2719,7 @@ export class DefaultRenderer extends Renderer {
         var x0 = x;
         let bb = new graphic.BoundingBox();
         if (draw){
-            let r = graphic.CanvasCircle(
+            let r = graphic.canvasCircle(
                 paper,
                 x + cm,
                 y_body_base + row_height/2 - _5lines_intv * 0.5,
@@ -2737,12 +2737,12 @@ export class DefaultRenderer extends Renderer {
                     [x + h + H, y - _5lines_intv * 1],
                     [x + H, y - _5lines_intv * 1]
                 ];
-                let r = graphic.CanvasPolygon(paper, points, true, true);   
+                let r = graphic.canvasPolygon(paper, points, true, true);   
                 bb.add_BB(r.bb);  
             }
         }
         if (draw){
-            let r = graphic.CanvasCircle(
+            let r = graphic.canvasCircle(
                 paper,
                 x + h + H - cm,
                 y_body_base + row_height/2 + _5lines_intv * 0.5,
@@ -2752,7 +2752,7 @@ export class DefaultRenderer extends Renderer {
         }
         if (put_boundary) {
             if (draw){
-                let r = graphic.CanvasLine(
+                let r = graphic.canvasLine(
                     paper,
                     x0 + width / 2,
                     y_body_base,
@@ -2815,7 +2815,7 @@ export class DefaultRenderer extends Renderer {
         var tensions_width = 0;
         var onbass_width = 0;
 
-        var rootCharHeight = graphic.GetCharProfile(B, null, canvas.ratio, canvas.zoom).height;
+        var rootCharHeight = graphic.getCharProfile(B, null, canvas.ratio, canvas.zoom).height;
 
 
         // Position parameters
@@ -2840,7 +2840,7 @@ export class DefaultRenderer extends Renderer {
         var space_char_width = 0.3;
 
         if (root) {
-            let r = graphic.CanvasText(
+            let r = graphic.canvasText(
                 canvas,
                 x,
                 y + param.row_height/2 + chord_offset_on_bass,
@@ -2858,7 +2858,7 @@ export class DefaultRenderer extends Renderer {
                 let acc_width = B * 0.25;
                 if (root[1] == "b") {
                     if (draw){
-                        let r = graphic.CanvasImage(
+                        let r = graphic.canvasImage(
                             canvas,
                             graphic.G_imgmap["uni266D"], // flat.svg
                             x + upper_width,
@@ -2871,7 +2871,7 @@ export class DefaultRenderer extends Renderer {
                     upper_width += acc_width;
                 } else {
                     if (draw){
-                        let r = graphic.CanvasImage(
+                        let r = graphic.canvasImage(
                             canvas,
                             graphic.G_imgmap["uni266F"], // sharp.svg
                             x + upper_width,
@@ -2900,7 +2900,7 @@ export class DefaultRenderer extends Renderer {
             _6791113suselem = _6791113suselem.filter((e)=>!(e.type=="dig"&&e.value=="7"));
             _5thelem = _5thelem.filter((e)=>!(e.type=="tension"&&e.value=="b"));
 
-            let r = graphic.CanvasText(
+            let r = graphic.canvasText(
                 canvas,
                 x + lower_width,
                 y + param.row_height/2 + rootCharHeight/2 + chord_offset_on_bass + lower_onbass_y_offset,
@@ -2916,7 +2916,7 @@ export class DefaultRenderer extends Renderer {
 
         _3rdelem.forEach(e => {
             if (e.type == "M"/* && _6791113suselem.length > 0*/) {
-                let r = graphic.CanvasText(
+                let r = graphic.canvasText(
                     canvas,
                     x + lower_width,
                     y + param.row_height/2 + rootCharHeight/2 + chord_offset_on_bass + lower_onbass_y_offset,
@@ -2929,7 +2929,7 @@ export class DefaultRenderer extends Renderer {
                 lower_width += r.width;
                 bb.add_BB(r.bb);
             } else if (e.type == "triad" && e.value == "m") {
-                let r = graphic.CanvasText(
+                let r = graphic.canvasText(
                     canvas,
                     x + lower_width,
                     y + param.row_height/2 + rootCharHeight/2 + chord_offset_on_bass + lower_onbass_y_offset,
@@ -2942,7 +2942,7 @@ export class DefaultRenderer extends Renderer {
                 lower_width += r.width;
                 bb.add_BB(r.bb);
             } else if (e.type == "triad" && e.value == "dim") {
-                let r = graphic.CanvasText(
+                let r = graphic.canvasText(
                     canvas,
                     x + lower_width,
                     y + param.row_height/2 + rootCharHeight/2 + chord_offset_on_bass + lower_onbass_y_offset,
@@ -2960,7 +2960,7 @@ export class DefaultRenderer extends Renderer {
         });
         _6791113suselem.forEach(e => {
             if (e.type == "dig") {
-                let r = graphic.CanvasText(
+                let r = graphic.canvasText(
                     canvas,
                     x + lower_width,
                     y + param.row_height/2 + rootCharHeight/2 + chord_offset_on_bass + lower_onbass_y_offset,
@@ -2973,7 +2973,7 @@ export class DefaultRenderer extends Renderer {
                 lower_width += r.width;
                 bb.add_BB(r.bb);
             } else if (e.type == "sus") {
-                let r = graphic.CanvasText(
+                let r = graphic.canvasText(
                     canvas,
                     x + lower_width,
                     y + param.row_height/2 + rootCharHeight/2 + chord_offset_on_bass + lower_onbass_y_offset,
@@ -2986,7 +2986,7 @@ export class DefaultRenderer extends Renderer {
                 lower_width += r.width;
                 bb.add_BB(r.bb);
             } else if (e.type == "tension" && e.value == "add") {
-                let r = graphic.CanvasText(
+                let r = graphic.canvasText(
                     canvas,
                     x + lower_width,
                     y + param.row_height/2 + rootCharHeight/2 + chord_offset_on_bass + lower_onbass_y_offset,
@@ -3002,7 +3002,7 @@ export class DefaultRenderer extends Renderer {
         });
         _5thelem.forEach(e => {
             if (e.type == "tension" && e.value == "b") {
-                let r = graphic.CanvasText(
+                let r = graphic.canvasText(
                     canvas,
                     x + upper_width,
                     y + param.row_height/2 + chord_offset_on_bass + upper_tension_y_offset,
@@ -3015,7 +3015,7 @@ export class DefaultRenderer extends Renderer {
                 upper_width += r.width;
                 bb.add_BB(r.bb);
             } else if (e.type == "tension" && e.value == "#") {
-                let r = graphic.CanvasText(
+                let r = graphic.canvasText(
                     canvas,
                     x + upper_width,
                     y + param.row_height/2 + chord_offset_on_bass + upper_tension_y_offset,
@@ -3028,7 +3028,7 @@ export class DefaultRenderer extends Renderer {
                 upper_width += r.width;
                 bb.add_BB(r.bb);
             } else if (e.type == "triad" && e.value == "+") {
-                let r = graphic.CanvasText(
+                let r = graphic.canvasText(
                     canvas,
                     x + upper_width,
                     y + param.row_height/2 + chord_offset_on_bass + upper_tension_y_offset,
@@ -3045,7 +3045,7 @@ export class DefaultRenderer extends Renderer {
 
         if (_alteredelem.length > 0) {
             var tensions_pos = Math.max(upper_width, lower_width); // Assume onbass below does not exceed lower_width
-            let r = graphic.CanvasText(
+            let r = graphic.canvasText(
                 canvas,
                 x + tensions_pos,
                 y + param.row_height/2 + chord_offset_on_bass + upper_tension_y_offset,
@@ -3057,11 +3057,11 @@ export class DefaultRenderer extends Renderer {
             );
             tensions_width += r.width;
             bb.add_BB(r.bb);
-            var h = graphic.GetCharProfile(B * 0.5, null, canvas.ratio, canvas.zoom).height;
+            var h = graphic.getCharProfile(B * 0.5, null, canvas.ratio, canvas.zoom).height;
             _alteredelem.forEach((e, index) => {
                 if(e.type == "tension" && (e.value == "b" || e.value == "#")){
                     if (draw){
-                        let r = graphic.CanvasImage(canvas,
+                        let r = graphic.canvasImage(canvas,
                             graphic.G_imgmap[e.value=="b" ? "uni266D" : "uni266F"], // flat.svg,
                             x + tensions_pos + tensions_width,
                             y + param.row_height/2 + chord_offset_on_bass + upper_tension_y_offset,
@@ -3073,7 +3073,7 @@ export class DefaultRenderer extends Renderer {
                     }
                     tensions_width += B * 0.2;
 
-                    let r = graphic.CanvasText(
+                    let r = graphic.canvasText(
                         canvas,
                         x + tensions_pos + tensions_width,
                         y + param.row_height/2 + chord_offset_on_bass + upper_tension_y_offset,
@@ -3086,7 +3086,7 @@ export class DefaultRenderer extends Renderer {
                     tensions_width += r.width;
                     bb.add_BB(r.bb);
                 } else if (e.type == "tension" && e.value == "omit"){
-                    let r = graphic.CanvasText(
+                    let r = graphic.canvasText(
                         canvas,
                         x + tensions_pos + tensions_width,
                         y + param.row_height/2 + chord_offset_on_bass + upper_tension_y_offset,
@@ -3101,7 +3101,7 @@ export class DefaultRenderer extends Renderer {
                 }
 
                 if (index != _alteredelem.length - 1) {
-                    let r = graphic.CanvasText(
+                    let r = graphic.canvasText(
                         canvas,
                         x + tensions_pos + tensions_width,
                         y + param.row_height/2 + chord_offset_on_bass + upper_tension_y_offset,
@@ -3115,7 +3115,7 @@ export class DefaultRenderer extends Renderer {
                     bb.add_BB(r.bb);
                 }
             });
-            r = graphic.CanvasText(
+            r = graphic.canvasText(
                 canvas,
                 x + tensions_pos + tensions_width,
                 y + param.row_height/2 + chord_offset_on_bass + upper_tension_y_offset,
@@ -3143,7 +3143,7 @@ export class DefaultRenderer extends Renderer {
                 0 :
                 lower_onbass_y_offset;
 
-            let r = graphic.CanvasText(
+            let r = graphic.canvasText(
                 canvas,
                 onbass_pos,
                 y + param.row_height/2 + rootCharHeight/2
@@ -3161,7 +3161,7 @@ export class DefaultRenderer extends Renderer {
             if (onbass.length == 2) {
                 if (onbass[1] == "b") {
                     if (draw){
-                        let rd = graphic.CanvasImage(canvas, 
+                        let rd = graphic.canvasImage(canvas, 
                             graphic.G_imgmap["uni266D"], // flat.svg
                             onbass_pos + onbass_width, 
                             y + param.row_height/2 + rootCharHeight/2
@@ -3178,7 +3178,7 @@ export class DefaultRenderer extends Renderer {
                     onbass_width += B * 0.2;
                 } else {
                     if (draw){
-                        let rd = graphic.CanvasImage(canvas, 
+                        let rd = graphic.canvasImage(canvas, 
                             graphic.G_imgmap["uni266F"], // sharp.svg 
                             onbass_pos + onbass_width, 
                             y + param.row_height/2 + rootCharHeight/2 
@@ -3284,7 +3284,7 @@ export class DefaultRenderer extends Renderer {
                 w = 1 + (nline - 1) * barintv;
                 for (var li = 0; li < nline; ++li) {
                     if (draw){
-                        let r = graphic.CanvasLine(
+                        let r = graphic.canvasLine(
                             canvas,
                             x + li * barintv,
                             y_body_base,
@@ -3301,7 +3301,7 @@ export class DefaultRenderer extends Renderer {
                 w = 8;
                 actual_boundary = x;
                 if (draw){
-                    let r = graphic.CanvasLine(
+                    let r = graphic.canvasLine(
                         canvas,
                         x,
                         y_body_base,
@@ -3310,7 +3310,7 @@ export class DefaultRenderer extends Renderer {
                         { width: 2 }
                     );
                     bb.add_BB(r.bb);
-                    r = graphic.CanvasLine(
+                    r = graphic.canvasLine(
                         canvas,
                         x + 3,
                         y_body_base,
@@ -3318,14 +3318,14 @@ export class DefaultRenderer extends Renderer {
                         y_body_base + row_height
                     );
                     bb.add_BB(r.bb);
-                    r = graphic.CanvasCircle(
+                    r = graphic.canvasCircle(
                         canvas,
                         x + 7,
                         y_body_base + (row_height / 4) * 1.5,
                         1
                     );
                     bb.add_BB(r.bb);
-                    r = graphic.CanvasCircle(
+                    r = graphic.canvasCircle(
                         canvas,
                         x + 7,
                         y_body_base + (row_height / 4) * 2.5,
@@ -3340,21 +3340,21 @@ export class DefaultRenderer extends Renderer {
                 actual_boundary = x + w;
                 xshift = side == "end" ? 0 : 0;
                 if (draw){
-                    let r = graphic.CanvasCircle(
+                    let r = graphic.canvasCircle(
                         canvas,
                         x + xshift,
                         y_body_base + (row_height / 4) * 1.5,
                         1
                     );
                     bb.add_BB(r.bb);
-                    r = graphic.CanvasCircle(
+                    r = graphic.canvasCircle(
                         canvas,
                         x + xshift,
                         y_body_base + (row_height / 4) * 2.5,
                         1
                     );
                     bb.add_BB(r.bb);
-                    r = graphic.CanvasLine(
+                    r = graphic.canvasLine(
                         canvas,
                         x + xshift + 4,
                         y_body_base,
@@ -3362,7 +3362,7 @@ export class DefaultRenderer extends Renderer {
                         y_body_base + row_height
                     );
                     bb.add_BB(r.bb);
-                    r = graphic.CanvasLine(
+                    r = graphic.canvasLine(
                         canvas,
                         x + xshift + 7,
                         y_body_base,
@@ -3375,7 +3375,7 @@ export class DefaultRenderer extends Renderer {
                 if (e0.times !== null && (e0.ntimes || e0.times != 2)) {
                     let stimes = e0.ntimes == true ? "X" : "" + e0.times;
                     if (draw){
-                        let r = graphic.CanvasText(
+                        let r = graphic.canvasText(
                             canvas,
                             x + xshift + w,
                             y_body_base + row_height + param.xtimes_mark_y_margin,
@@ -3392,21 +3392,21 @@ export class DefaultRenderer extends Renderer {
                 w = 15;
                 actual_boundary = x + w/2;
                 if (draw){
-                    let r = graphic.CanvasCircle(
+                    let r = graphic.canvasCircle(
                         canvas,
                         x,
                         y_body_base + (row_height / 4) * 1.5,
                         1
                     );
                     bb.add_BB(r.bb);
-                    r = graphic.CanvasCircle(
+                    r = graphic.canvasCircle(
                         canvas,
                         x,
                         y_body_base + (row_height / 4) * 2.5,
                         1
                     );
                     bb.add_BB(r.bb);
-                    r = graphic.CanvasLine(
+                    r = graphic.canvasLine(
                         canvas,
                         x + 4,
                         y_body_base,
@@ -3414,7 +3414,7 @@ export class DefaultRenderer extends Renderer {
                         y_body_base + row_height
                     );
                     bb.add_BB(r.bb);
-                    r = graphic.CanvasLine(
+                    r = graphic.canvasLine(
                         canvas,
                         x + 7,
                         y_body_base,
@@ -3423,7 +3423,7 @@ export class DefaultRenderer extends Renderer {
                         { width: 2 }
                     );
                     bb.add_BB(r.bb);
-                    r = graphic.CanvasLine(
+                    r = graphic.canvasLine(
                         canvas,
                         x + 10,
                         y_body_base,
@@ -3436,7 +3436,7 @@ export class DefaultRenderer extends Renderer {
                 if (e0.times !== null && (e0.ntimes || e0.times != 2)) {
                     let stimes = e0.ntimes == true ? "X" : "" + e0.times;
                     if (draw){
-                        let r = graphic.CanvasText(
+                        let r = graphic.canvasText(
                             canvas,
                             x + 8,
                             y_body_base + row_height + param.xtimes_mark_y_margin,
@@ -3448,14 +3448,14 @@ export class DefaultRenderer extends Renderer {
                     }
                 }
                 if (draw){
-                    let r = graphic.CanvasCircle(
+                    let r = graphic.canvasCircle(
                         canvas,
                         x + 14,
                         y_body_base + (row_height / 4) * 1.5,
                         1
                     );
                     bb.add_BB(r.bb);
-                    r = graphic.CanvasCircle(
+                    r = graphic.canvasCircle(
                         canvas,
                         x + 14,
                         y_body_base + (row_height / 4) * 2.5,
@@ -3470,7 +3470,7 @@ export class DefaultRenderer extends Renderer {
                 xshift = side == "end" ? 0 : 0;
                 actual_boundary = x + w;
                 if (draw){
-                    let r = graphic.CanvasLine(
+                    let r = graphic.canvasLine(
                         canvas,
                         x + xshift,
                         y_body_base,
@@ -3478,7 +3478,7 @@ export class DefaultRenderer extends Renderer {
                         y_body_base + row_height
                     );
                     bb.add_BB(r.bb);
-                    r = graphic.CanvasLine(
+                    r = graphic.canvasLine(
                         canvas,
                         x + xshift + 3,
                         y_body_base,

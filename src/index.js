@@ -2,12 +2,12 @@ import "@babel/polyfill";
 export { Parser } from "./parser/parser";
 //export * from './renderer/default_renderer';
 export { DefaultRenderer } from "./renderer/default_renderer";
-export { SetupHiDPICanvas } from "./renderer/graphic";
+export { setupHiDPICanvas } from "./renderer/graphic";
 
 // Debug
-export { GetCharProfile } from "./renderer/graphic";
-export { CanvasTextWithBox } from "./renderer/graphic";
-export { CanvasText } from "./renderer/graphic";
+export { getCharProfile } from "./renderer/graphic";
+export { canvasTextWithBox } from "./renderer/graphic";
+export { canvasText } from "./renderer/graphic";
 export { getFontSizeFromHeight } from "./renderer/graphic";
 
 // Export Component Classes

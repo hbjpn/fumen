@@ -15078,7 +15078,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             var tmp_fixed_width_details = [];
             element_group.elems.forEach(function (e) {
               var balken_element = _this5.generateBalkenElement(e, x, yprof.rs.height, music_context);
-              var r = _this5.drawRsAreaWithoutFlagBalken(draw, paper, param, e, balken_element, x, yprof.rs.y, yprof.rs.height);
+              var r = _this5.drawRsAreaWithoutFlagBalken(false, paper, param, e, balken_element, x, yprof.rs.y, yprof.rs.height);
               e.renderprop.balken_element = balken_element;
               rs_area_bounding_box.add_BB(r.bounding_box);
               x += r.bounding_box.width();
@@ -17713,7 +17713,7 @@ var Renderer = /*#__PURE__*/function () {
 
           // Flush current groups
           if (_flushCond) {
-            var dbret = this.drawRsAreaElements(true, draw_scale, paper, balken, rs_y_base, row_height, meas_start_x, music_context, meas, param);
+            var dbret = this.drawRsAreaElements(draw_scale, paper, balken, rs_y_base, row_height, meas_start_x, music_context, meas, param);
             balken.groups = [];
             x = dbret.x;
             music_context.first_li = balken_element.lengthIndicator; // update the head li. Could be null.
@@ -17744,7 +17744,7 @@ var Renderer = /*#__PURE__*/function () {
         music_context.pos_in_a_measure % (_common_common__WEBPACK_IMPORTED_MODULE_1__.WHOLE_NOTE_LENGTH / 4) == 0 || balken_element.chord_length >= _common_common__WEBPACK_IMPORTED_MODULE_1__.WHOLE_NOTE_LENGTH / 4) || music_context.in_tuplet == true && music_context.first_li && music_context.cumal_block_duration == threshDuration;
         if (flushCond || ei == elems.length - 1 && is_last_body_elem_group_in_a_measure // the last element in a measure
         ) {
-          var _dbret = this.drawRsAreaElements(true, draw_scale, paper, balken, rs_y_base, row_height, meas_start_x, music_context, meas, param);
+          var _dbret = this.drawRsAreaElements(draw_scale, paper, balken, rs_y_base, row_height, meas_start_x, music_context, meas, param);
           x = _dbret.x;
           balken.groups = [];
           music_context.first_li = null; // update the head li
@@ -18047,7 +18047,7 @@ var Renderer = /*#__PURE__*/function () {
     }
   }, {
     key: "drawRsAreaElements",
-    value: function drawRsAreaElements(draw, draw_scale,
+    value: function drawRsAreaElements(draw_scale,
     // This is the draw scale of latest element, coudl be differnt from draw scale of old eleents in registred bolken groups
     paper, balken, rs_y_base, row_height, meas_start_x, music_context, meas, param) {
       var bounding_box = new _graphic__WEBPACK_IMPORTED_MODULE_2__.BoundingBox();
@@ -18067,15 +18067,15 @@ var Renderer = /*#__PURE__*/function () {
         // c : sole CHord/Note with shorter than 4th note but is judged as sole note
         // d : more than 1 contiguous chords with shorter than 4th notes. Balken will be drawn. Mixing of Space lement is possible unless number of chord >= 2.
         if (balkenGroup.type == "a" || balkenGroup.type == "b" || balkenGroup.type == "c") {
-          x = this.drawBalkenABC(balkenGroup, x, rs_y_base, _5lines_intv, bounding_box, param, paper, draw, row_height, music_context, meas_start_x, meas, draw_scale);
+          x = this.drawBalkenABC(balkenGroup, x, rs_y_base, _5lines_intv, bounding_box, param, paper, row_height, music_context, meas_start_x, meas, draw_scale);
         } else if (balkenGroup.type == "d") {
           // This is what we need to call draw balken
-          x = this.drawBalkenD(balkenGroup, x, rs_y_base, _5lines_intv, param, bounding_box, paper, draw, music_context, row_height, meas_start_x, meas, draw_scale);
+          x = this.drawBalkenD(balkenGroup, x, rs_y_base, _5lines_intv, param, bounding_box, paper, music_context, row_height, meas_start_x, meas, draw_scale);
         }
       }
 
       // Draw tuplet signs if needed
-      this.drawTuplet(balken, balkenGroups, bounding_box, paper, draw, param);
+      this.drawTuplet(balken, balkenGroups, bounding_box, paper, true, param);
       return {
         x: x,
         bb: bounding_box
@@ -18170,7 +18170,7 @@ var Renderer = /*#__PURE__*/function () {
     }
   }, {
     key: "drawWithoutBalkensWrap",
-    value: function drawWithoutBalkensWrap(balkenGroup, paper, draw, param, rs_y_base, row_height, bounding_box, music_context, x, upper_flag, meas_start_x, meas, draw_scale) {
+    value: function drawWithoutBalkensWrap(balkenGroup, paper, param, rs_y_base, row_height, bounding_box, music_context, x, upper_flag, meas_start_x, meas, draw_scale) {
       var _this = this;
       var _loop = function _loop() {
         var this_elem_draw_scale = balkenGroup[gbi].org_draw_scale;
@@ -18181,7 +18181,7 @@ var Renderer = /*#__PURE__*/function () {
         paper.getContext("2d").scale(this_elem_draw_scale, 1);
         // Here all the output and set value by following funtion will be that with scaling apply.
         // To use the values which the following functions generates, apply "* this_elem_draw_scale".
-        var wo_flags = _this.drawRsAreaWithoutFlagBalken(draw, paper, param, e, balken_element, x / this_elem_draw_scale, rs_y_base, row_height);
+        var wo_flags = _this.drawRsAreaWithoutFlagBalken(true, paper, param, e, balken_element, x / this_elem_draw_scale, rs_y_base, row_height);
         paper.getContext("2d").scale(1.0 / this_elem_draw_scale, 1);
 
         // ----
@@ -18363,7 +18363,7 @@ var Renderer = /*#__PURE__*/function () {
     }
   }, {
     key: "drawBalkenABC",
-    value: function drawBalkenABC(balkenGroup, x, rs_y_base, _5lines_intv, bounding_box, param, paper, draw, row_height, music_context, meas_start_x, meas, draw_scale) {
+    value: function drawBalkenABC(balkenGroup, x, rs_y_base, _5lines_intv, bounding_box, param, paper, row_height, music_context, meas_start_x, meas, draw_scale) {
       var elements = balkenGroup.elem;
       if (elements.length != 1) {
         throw "Invalid context in draw_balken_abc";
@@ -18380,7 +18380,7 @@ var Renderer = /*#__PURE__*/function () {
       //let x = balkenGroup[0].org_x; // on screen position, no scaling applied
 
       // 2. Draw notes and slashes without bars, flags and balkens
-      x = this.drawWithoutBalkensWrap(elements, paper, draw, param, rs_y_base, row_height, bounding_box, music_context, x, upper_flag, meas_start_x, meas, draw_scale);
+      x = this.drawWithoutBalkensWrap(elements, paper, param, rs_y_base, row_height, bounding_box, music_context, x, upper_flag, meas_start_x, meas, draw_scale);
       if (!(elements[0].e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Chord)) {
         return x; //{ x: x, bb: bounding_box };
       }
@@ -18403,7 +18403,7 @@ var Renderer = /*#__PURE__*/function () {
           if (_d <= 1) {} else {
             var r = _graphic__WEBPACK_IMPORTED_MODULE_2__.canvasLine(paper, _bar_x, ys[0] + 3, _bar_x, ys[0] + (upper_flag ? -param.note_bar_length : param.note_bar_length), {
               width: 1
-            }, draw);
+            }, true);
             bounding_box.add_BB(r.bb);
           }
           //bar_flag_group.push(o);
@@ -18417,7 +18417,7 @@ var Renderer = /*#__PURE__*/function () {
 
             var _r3 = _graphic__WEBPACK_IMPORTED_MODULE_2__.canvasLine(paper, _bar_x2, y0, _bar_x2, y1, {
               width: 1
-            }, draw);
+            }, true);
             bounding_box.add_BB(_r3.bb);
           }
           // eslint-disable-next-line no-empty
@@ -18450,7 +18450,7 @@ var Renderer = /*#__PURE__*/function () {
         paper.getContext("2d").scale(this_elem_draw_scale, 1.0);
         var _r4 = _graphic__WEBPACK_IMPORTED_MODULE_2__.canvasImage(paper, _graphic__WEBPACK_IMPORTED_MODULE_2__.G_imgmap[url], (bar_x + x_adj) / this_elem_draw_scale, _y2, flag_w,
         // No need to apply "/this_elem_draw_scale" otherwise no compression apply :).
-        null, "l" + (upper_flag ? "t" : "b"), draw);
+        null, "l" + (upper_flag ? "t" : "b"), true);
         bounding_box.add_BB(_r4.bb.scale(this_elem_draw_scale, 1.0)); // add based on on-screen coordinates
         paper.getContext("2d").scale(1.0 / this_elem_draw_scale, 1.0);
       }
@@ -18458,7 +18458,7 @@ var Renderer = /*#__PURE__*/function () {
     }
   }, {
     key: "drawBalkenD",
-    value: function drawBalkenD(balkenGroup, x, rs_y_base, _5lines_intv, param, bounding_box, paper, draw, music_context, row_height, meas_start_x, meas, draw_scale) {
+    value: function drawBalkenD(balkenGroup, x, rs_y_base, _5lines_intv, param, bounding_box, paper, music_context, row_height, meas_start_x, meas, draw_scale) {
       var elements = balkenGroup.elem;
       if (!elements.every(function (g) {
         return g.e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Chord || g.e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Space;
@@ -18481,7 +18481,7 @@ var Renderer = /*#__PURE__*/function () {
       //let x = balkenGroup[0].org_x; // on screen position, no scaling applied
 
       // 2. Draw notes and slashes without bars, flags and balkens
-      x = this.drawWithoutBalkensWrap(elements, paper, draw, param, rs_y_base, row_height, bounding_box, music_context, x, upper_flag, meas_start_x, meas, draw_scale);
+      x = this.drawWithoutBalkensWrap(elements, paper, param, rs_y_base, row_height, bounding_box, music_context, x, upper_flag, meas_start_x, meas, draw_scale);
 
       // 3. Determine the flag intercept and slope
       // Slope and intercepts are calucated for the first and last Chord element. Space is skipped.
@@ -18516,7 +18516,7 @@ var Renderer = /*#__PURE__*/function () {
           if (d <= 1) {} else {
             var r = _graphic__WEBPACK_IMPORTED_MODULE_2__.canvasLine(paper, bar_x, ys[0] + (upper_flag ? -3 : +3), bar_x, slope * bar_x + intercept, {
               width: 1
-            }, draw);
+            }, true);
             bounding_box.add_BB(r.bb);
           }
           //bar_flag_group.push(o);
@@ -18529,7 +18529,7 @@ var Renderer = /*#__PURE__*/function () {
 
             var _r5 = _graphic__WEBPACK_IMPORTED_MODULE_2__.canvasLine(paper, _bar_x3, y0, _bar_x3, slope * _bar_x3 + intercept, {
               width: 1
-            }, draw);
+            }, true);
             bounding_box.add_BB(_r5.bb);
           }
           // eslint-disable-next-line no-empty
@@ -18546,7 +18546,7 @@ var Renderer = /*#__PURE__*/function () {
       if (elements[first_chord_idx].balken_element.note_value >= 8) {
         var _r6 = _graphic__WEBPACK_IMPORTED_MODULE_2__.canvasLine(paper, ps_bar_x, slope * ps_bar_x + intercept, pe_bar_x, slope * pe_bar_x + intercept, {
           width: param.balken_width
-        }, draw);
+        }, true);
         bounding_box.add_BB(_r6.bb);
       }
 
@@ -18573,7 +18573,7 @@ var Renderer = /*#__PURE__*/function () {
 
             var _r7 = _graphic__WEBPACK_IMPORTED_MODULE_2__.canvasLine(paper, pssx, slope * pssx + intercept + (upper_flag ? +1 : -1) * fi * param.note_flag_interval, pssx + dir * blen, slope * (pssx + dir * blen) + intercept + (upper_flag ? +1 : -1) * fi * param.note_flag_interval, {
               width: param.balken_width
-            }, draw);
+            }, true);
             bounding_box.add_BB(_r7.bb);
           }
         } else if (same_sds.length >= 2) {
@@ -18583,7 +18583,7 @@ var Renderer = /*#__PURE__*/function () {
           ) {
             var _r8 = _graphic__WEBPACK_IMPORTED_MODULE_2__.canvasLine(paper, _pssx, slope * _pssx + intercept + (upper_flag ? +1 : -1) * _fi * param.note_flag_interval, psex, slope * psex + intercept + (upper_flag ? +1 : -1) * _fi * param.note_flag_interval, {
               width: param.balken_width
-            }, draw);
+            }, true);
             bounding_box.add_BB(_r8.bb);
           }
         }

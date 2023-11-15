@@ -1766,7 +1766,7 @@ export class DefaultRenderer extends Renderer {
                         let balken_element = this.generateBalkenElement(
                             e, x, yprof.rs.height, music_context);
                         let r = this.drawRsAreaWithoutFlagBalken(
-                            draw, paper, param, e, balken_element, x, yprof.rs.y, yprof.rs.height);
+                            false, paper, param, e, balken_element, x, yprof.rs.y, yprof.rs.height);
                         e.renderprop.balken_element = balken_element;
                         rs_area_bounding_box.add_BB(r.bounding_box);
                         x += r.bounding_box.width();

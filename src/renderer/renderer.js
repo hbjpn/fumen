@@ -345,7 +345,6 @@ export class Renderer {
                 // Flush current groups
                 if (flushCond) {
                     var dbret = this.drawRsAreaElements(
-                        true, 
                         draw_scale,
                         paper,
                         balken,
@@ -405,7 +404,6 @@ export class Renderer {
                 (ei == elems.length - 1 && is_last_body_elem_group_in_a_measure) // the last element in a measure
             ) {
                 let dbret = this.drawRsAreaElements(
-                    true, 
                     draw_scale,
                     paper,
                     balken,
@@ -775,7 +773,6 @@ export class Renderer {
     }
 
     drawRsAreaElements(
-        draw, 
         draw_scale, // This is the draw scale of latest element, coudl be differnt from draw scale of old eleents in registred bolken groups
         paper,
         balken,
@@ -806,17 +803,17 @@ export class Renderer {
             if(balkenGroup.type == "a" || balkenGroup.type == "b" || balkenGroup.type == "c"){
                 x = this.drawBalkenABC(
                     balkenGroup, x, rs_y_base, _5lines_intv, bounding_box, param, paper, 
-                    draw, row_height, music_context, meas_start_x, meas, draw_scale);
+                    row_height, music_context, meas_start_x, meas, draw_scale);
             }else if(balkenGroup.type == "d"){
                 // This is what we need to call draw balken
                 x = this.drawBalkenD(
                     balkenGroup, x, rs_y_base, _5lines_intv, param, bounding_box, paper, 
-                    draw, music_context, row_height, meas_start_x, meas, draw_scale);
+                    music_context, row_height, meas_start_x, meas, draw_scale);
             }
         }
         
         // Draw tuplet signs if needed
-        this.drawTuplet(balken, balkenGroups, bounding_box, paper, draw, param);
+        this.drawTuplet(balken, balkenGroups, bounding_box, paper, true, param);
 
         return { x: x, bb: bounding_box };
 
@@ -906,7 +903,7 @@ export class Renderer {
     }
 
     drawWithoutBalkensWrap(
-        balkenGroup, paper, draw, param, rs_y_base, row_height, bounding_box,
+        balkenGroup, paper, param, rs_y_base, row_height, bounding_box,
         music_context, x, upper_flag, meas_start_x, meas, draw_scale)
     {
         for (let gbi = 0; gbi < balkenGroup.length; ++gbi) {
@@ -921,7 +918,7 @@ export class Renderer {
             paper.getContext("2d").scale(this_elem_draw_scale, 1);
             // Here all the output and set value by following funtion will be that with scaling apply.
             // To use the values which the following functions generates, apply "* this_elem_draw_scale".
-            let wo_flags = this.drawRsAreaWithoutFlagBalken(draw, paper, param, e,
+            let wo_flags = this.drawRsAreaWithoutFlagBalken(true, paper, param, e,
                 balken_element, x/this_elem_draw_scale, rs_y_base, row_height);
             paper.getContext("2d").scale(1.0/this_elem_draw_scale, 1);
 
@@ -1181,7 +1178,7 @@ export class Renderer {
         }
     }
 
-    drawBalkenABC(balkenGroup, x, rs_y_base, _5lines_intv, bounding_box, param, paper, draw, row_height, music_context, meas_start_x, meas, draw_scale){
+    drawBalkenABC(balkenGroup, x, rs_y_base, _5lines_intv, bounding_box, param, paper, row_height, music_context, meas_start_x, meas, draw_scale){
         let elements = balkenGroup.elem;
 
         if(elements.length != 1){
@@ -1202,7 +1199,7 @@ export class Renderer {
 
         // 2. Draw notes and slashes without bars, flags and balkens
         x = this.drawWithoutBalkensWrap(
-            elements, paper, draw, param, rs_y_base, row_height, bounding_box,
+            elements, paper, param, rs_y_base, row_height, bounding_box,
             music_context, x, upper_flag, meas_start_x, meas, draw_scale);
 
         if(!(elements[0].e instanceof common.Chord) ){
@@ -1231,7 +1228,7 @@ export class Renderer {
                         ys[0] + 3,
                         bar_x,
                         ys[0] + (upper_flag ? -param.note_bar_length : param.note_bar_length),
-                        {width:1}, draw);
+                        {width:1}, true);
                     bounding_box.add_BB(r.bb);
                 }
                 //bar_flag_group.push(o);
@@ -1254,7 +1251,7 @@ export class Renderer {
                         y0,
                         bar_x,
                         y1,
-                        {width:1}, draw);
+                        {width:1}, true);
                     bounding_box.add_BB(r.bb);
 
                 }
@@ -1297,7 +1294,7 @@ export class Renderer {
                 (bar_x + x_adj)/this_elem_draw_scale,
                 y1,
                 flag_w,  // No need to apply "/this_elem_draw_scale" otherwise no compression apply :).
-                null, "l"+(upper_flag?"t":"b"), draw);
+                null, "l"+(upper_flag?"t":"b"), true);
             bounding_box.add_BB(r.bb.scale(this_elem_draw_scale, 1.0)); // add based on on-screen coordinates
             paper.getContext("2d").scale(1.0/this_elem_draw_scale, 1.0);
 
@@ -1306,7 +1303,7 @@ export class Renderer {
         return x; //{ x: x, bb: bounding_box };
     }
 
-    drawBalkenD(balkenGroup, x, rs_y_base, _5lines_intv, param, bounding_box, paper, draw, music_context, row_height, meas_start_x, meas, draw_scale){
+    drawBalkenD(balkenGroup, x, rs_y_base, _5lines_intv, param, bounding_box, paper, music_context, row_height, meas_start_x, meas, draw_scale){
         
         let elements = balkenGroup.elem;
 
@@ -1331,7 +1328,7 @@ export class Renderer {
 
         // 2. Draw notes and slashes without bars, flags and balkens
         x = this.drawWithoutBalkensWrap(
-            elements, paper, draw, param, rs_y_base, row_height, bounding_box,
+            elements, paper, param, rs_y_base, row_height, bounding_box,
             music_context, x, upper_flag, meas_start_x, meas, draw_scale);
 
         // 3. Determine the flag intercept and slope
@@ -1384,7 +1381,7 @@ export class Renderer {
                         ys[0] + (upper_flag ? -3 : +3),
                         bar_x,
                         slope * bar_x + intercept,
-                        {width:1}, draw);
+                        {width:1}, true);
                     bounding_box.add_BB(r.bb);
                 }
                 //bar_flag_group.push(o);
@@ -1404,7 +1401,7 @@ export class Renderer {
                         y0,
                         bar_x,
                         slope * bar_x + intercept,
-                        {width:1}, draw);
+                        {width:1}, true);
                     bounding_box.add_BB(r.bb);
 
                 }
@@ -1426,7 +1423,7 @@ export class Renderer {
                 slope * ps_bar_x + intercept,
                 pe_bar_x,
                 slope * pe_bar_x + intercept,
-                {width:param.balken_width}, draw);
+                {width:param.balken_width}, true);
             bounding_box.add_BB(r.bb);
         }
 
@@ -1463,7 +1460,7 @@ export class Renderer {
                         slope * (pssx + dir * blen) +
                             intercept +
                             (upper_flag ? +1 : -1) * fi * param.note_flag_interval,
-                        {width:param.balken_width}, draw);
+                        {width:param.balken_width}, true);
                     bounding_box.add_BB(r.bb);
                 }
             } else if (same_sds.length >= 2) {
@@ -1485,7 +1482,7 @@ export class Renderer {
                         slope * psex +
                             intercept +
                             (upper_flag ? +1 : -1) * fi * param.note_flag_interval,
-                        {width:param.balken_width}, draw);
+                        {width:param.balken_width}, true);
                     bounding_box.add_BB(r.bb);
 
                 }

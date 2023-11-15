@@ -13624,7 +13624,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         _this.init_param[key] = _common_common__WEBPACK_IMPORTED_MODULE_2__.deepcopy(_presets__WEBPACK_IMPORTED_MODULE_4__[preset][key]);
       }
     }
-    _this.merge_param(_this.init_param, param, false);
+    _this.mergeParam(_this.init_param, param, false);
     _this.track = null;
     _this.context = {
       pageidx: 0,
@@ -13653,7 +13653,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       var param = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       this.track = track;
       return _graphic__WEBPACK_IMPORTED_MODULE_3__.PreloadJsonFont().then(function () {
-        return _this2.render_impl(track, param);
+        return _this2.renderImpl(track, param);
       });
     }
   }, {
@@ -13666,8 +13666,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       })[field];
     }
   }, {
-    key: "optimize_type0",
-    value: function optimize_type0(row_elements_list, x_width_info, total_width) {
+    key: "optimizeType0",
+    value: function optimizeType0(row_elements_list, x_width_info, total_width) {
       var num_flexible_rooms = this.field_sum(x_width_info, "meas_num_flexible_rooms");
       var fixed_width = this.field_sum(x_width_info, "meas_fixed_width");
       var room_per_elem_constant = (total_width - fixed_width) / num_flexible_rooms; // Constant room for all room
@@ -13714,8 +13714,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       };
     }
   }, {
-    key: "optimize_type1",
-    value: function optimize_type1(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid) {
+    key: "optimizeType1",
+    value: function optimizeType1(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid) {
       var room_equal_ratio = this.room_for_equal_ratio_divison(x_width_info, total_width, num_meas, num_meas_to_consider);
       row_elements_list.forEach(function (e, mi) {
         e.renderprop.room_per_elem = room_equal_ratio.room_per_elem[mi];
@@ -13737,8 +13737,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       return room_per_meas_even_meas;
     }
   }, {
-    key: "optimize_type2",
-    value: function optimize_type2(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid, room_per_elem_dist) {
+    key: "optimizeType2",
+    value: function optimizeType2(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid, room_per_elem_dist) {
       // Equal division
       var room_per_meas_even_meas = this.room_per_meas_for_equal_divison(x_width_info, total_width, num_meas, num_meas_to_consider);
       row_elements_list.forEach(function (e, mi) {
@@ -13764,8 +13764,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       if (reduced_meas_valid && row_elements_list[0].align == "right") row_elements_list[0].renderprop.left_margin = total_width / num_meas_to_consider * (num_meas_to_consider - num_meas);
     }
   }, {
-    key: "optimize_type3",
-    value: function optimize_type3(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid) {
+    key: "optimizeType3",
+    value: function optimizeType3(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid) {
       // https://docs.google.com/document/d/1oPmUvAF6-KTsQrEovYJgMZSDqlztp4pL-XVs8uee7A4/edit?usp=sharing
       // Here alpha=1 case is filtered at the first IF statement, then we only consider the case
       // where room when optimize_type = 0 is positive.
@@ -13807,8 +13807,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       console.log("alpha = " + alpha);
     }
   }, {
-    key: "optimize_type4",
-    value: function optimize_type4(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid, opt2_room_dist) {
+    key: "optimizeType4",
+    value: function optimizeType4(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid, opt2_room_dist) {
       // https://docs.google.com/document/d/1oPmUvAF6-KTsQrEovYJgMZSDqlztp4pL-XVs8uee7A4/edit?usp=sharing
       // Here alpha=1 case is filtered at the first IF statement, then we only consider the case
       // where room when optimize_type = 0 is positive.
@@ -13857,8 +13857,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       if (reduced_meas_valid && row_elements_list[0].align == "right") row_elements_list[0].renderprop.left_margin = total_width - row_total_width;
     }
   }, {
-    key: "determine_rooms",
-    value: function determine_rooms(param, reharsal_x_width_info, total_width) {
+    key: "determineRooms",
+    value: function determineRooms(param, reharsal_x_width_info, total_width) {
       // Optimize width of each measure
       var row = 0;
       while (row < reharsal_x_width_info.length) {
@@ -13883,22 +13883,22 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           }
         }
         if (param.optimize_type == 0) {
-          this.optimize_type0(row_elements_list, x_width_info, total_width);
+          this.optimizeType0(row_elements_list, x_width_info, total_width);
           row++;
         } else if (param.optimize_type == 1) {
-          this.optimize_type1(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid);
+          this.optimizeType1(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid);
           row++;
         } else if (param.optimize_type == 2) {
           // Equal division
-          this.optimize_type2(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid, param.opt2_room_dist);
+          this.optimizeType2(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid, param.opt2_room_dist);
           row++;
         } else if (param.optimize_type == 3) {
           // Combination of 2_0 and 0(fallback option when negative total room)
-          this.optimize_type3(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid);
+          this.optimizeType3(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid);
           row++;
         } else if (param.optimize_type == 4) {
           // Combination of 2_0|2_1 and 1(fallback option when negative total room)
-          this.optimize_type4(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid, param.opt2_room_dist);
+          this.optimizeType4(row_elements_list, x_width_info, total_width, num_meas, num_meas_to_consider, reduced_meas_valid, param.opt2_room_dist);
           row++;
         } else {
           throw "Invalid optimize type";
@@ -14178,8 +14178,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       }
     }
   }, {
-    key: "merge_param",
-    value: function merge_param(param, additional_param) {
+    key: "mergeParam",
+    value: function mergeParam(param, additional_param) {
       var takemax = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
       // Important to do this before merging, otherwise the offset_l|r|b|t value already configured remains to be used.
       this.setoffsetparam(additional_param);
@@ -14227,9 +14227,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       return max_header_height;
     }
   }, {
-    key: "render_impl",
+    key: "renderImpl",
     value: function () {
-      var _render_impl = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(track, rparam) {
+      var _renderImpl = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(track, rparam) {
         var _this3 = this;
         var param, page_width, page_content_width, show_footer, music_context, meas_row_list, accum_block_id, meas_row, meas_row_rg_ids, meas_row_block_ids, reharsal_groups, i, rg, blocks, bi, block_measures, ml, m, meas_row_list_inv, _loop4, _i2, _i3, _rg, _blocks, _bi, _block_measures, _ml, _m, y_stacks, next_reharsal_group_index, yse, y_base_screening, headerHeight, dammy_music_context, current_accum_block_id, reharsal_x_width_info, pei, row_elements_list, _ml2, _m2, elements, geret, yprof, x_width_info, page_height, pageOffset, start_pageidx, page_origin, canvas, y_base, max_header_height, headerH, pages, _pei, _row_elements_list3, ylimit, r, rb, songname, title, artist;
         return _regeneratorRuntime().wrap(function _callee$(_context2) {
@@ -14237,11 +14237,11 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             case 0:
               // parameter constructing. Parameter applicability order: Embeded track variable > Parameter specifed in render() call > Parameter specified in constructor
               param = _common_common__WEBPACK_IMPORTED_MODULE_2__.deepcopy(this.init_param); // Merge parameter specified by render() call
-              this.merge_param(param, rparam, false);
+              this.mergeParam(param, rparam, false);
 
               // firstly, merge global PARAM specified in the source.
               if (track.getVariable("PARAM")) {
-                this.merge_param(param, track.getVariable("PARAM"), false); // Merge to defaul param
+                this.mergeParam(param, track.getVariable("PARAM"), false); // Merge to defaul param
               }
               page_width = param.paper_width / param.text_size / param.ncol;
               page_content_width = page_width - (param.x_offset_left + param.x_offset_right);
@@ -14428,10 +14428,10 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                   var mparam = m.getVariable("PARAM");
                   if (mparam) {
                     if (!param_for_row_alt) {
-                      _this3.merge_param(param_for_row, _common_common__WEBPACK_IMPORTED_MODULE_2__.deepcopy(mparam), false); // Overwrite 
+                      _this3.mergeParam(param_for_row, _common_common__WEBPACK_IMPORTED_MODULE_2__.deepcopy(mparam), false); // Overwrite 
                       param_for_row_alt = true;
                     } else {
-                      _this3.merge_param(param_for_row, _common_common__WEBPACK_IMPORTED_MODULE_2__.deepcopy(mparam), true); // Update 
+                      _this3.mergeParam(param_for_row, _common_common__WEBPACK_IMPORTED_MODULE_2__.deepcopy(mparam), true); // Update 
                     }
                   }
                 });
@@ -14487,7 +14487,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
               if (!yse[pei].block_ids.includes(current_accum_block_id)) {
                 // Per block optimization
-                this.determine_rooms(yse[pei].param, reharsal_x_width_info, page_content_width);
+                this.determineRooms(yse[pei].param, reharsal_x_width_info, page_content_width);
                 current_accum_block_id = yse[pei].block_ids[0]; // First block ID is the reference block id
                 reharsal_x_width_info = [];
               }
@@ -14498,23 +14498,23 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 _m2 = row_elements_list[_ml2];
                 elements = this.classifyElements(_m2); // Too much call of calssify elements.
                 // Grouping body elements which share the same balken
-                geret = this.grouping_body_elemnts_enh(elements.body);
+                geret = this.determineBodyElementGrouping(elements.body);
                 _m2.renderprop.body_grouping_info = geret;
               }
 
               // y-screening is done in stage 2 as well : TODO : Make it once
               // Do it in the dammy position y = 0;
-              yprof = this.screening_y_areas(row_elements_list, 0, yse[pei].param, yse[pei].cont[0].getVariable("SHOW_STAFF"), yse[pei].cont[0].getVariable("REHARSAL_MARK_POSITION") == "Inner"); // yprof.end.y means the row total height
+              yprof = this.screeningYAreas(row_elements_list, 0, yse[pei].param, yse[pei].cont[0].getVariable("SHOW_STAFF"), yse[pei].cont[0].getVariable("REHARSAL_MARK_POSITION") == "Inner"); // yprof.end.y means the row total height
               y_base_screening += yprof.end.y;
 
               // Screening x elements and determine the rendering policy for x-axis.
-              x_width_info = this.screening_x_areas(track, 0,
+              x_width_info = this.screeningzXAreas(track, 0,
               // dammy x position as it is not a matter
               this.memCanvas, row_elements_list, yse[pei].pm, yse[pei].nm, yprof, yse[pei].param, dammy_music_context);
               reharsal_x_width_info.push([row_elements_list, x_width_info]);
               if (pei == yse.length - 1) {
                 // Per block optimization
-                this.determine_rooms(yse[pei].param, reharsal_x_width_info, page_content_width);
+                this.determineRooms(yse[pei].param, reharsal_x_width_info, page_content_width);
               }
             case 49:
               ++pei;
@@ -14616,7 +14616,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
               }
               _row_elements_list3 = yse[_pei].cont;
               ylimit = this.canvas_provider != null ? page_origin.y + page_height - yse[_pei].param.y_offset_bottom - (show_footer ? yse[_pei].param.y_footer_offset : 0) : null;
-              r = this.render_measure_row_simplified(track, page_origin.x + param.x_offset_left, this.context.current_canvas, _row_elements_list3, yse[_pei].pm, yse[_pei].nm, y_base, yse[_pei].param, yse[_pei].cont[0].getVariable("REHARSAL_MARK_POSITION") == "Inner", ylimit, music_context);
+              r = this.renderMeasureRow(track, page_origin.x + param.x_offset_left, this.context.current_canvas, _row_elements_list3, yse[_pei].pm, yse[_pei].nm, y_base, yse[_pei].param, yse[_pei].cont[0].getVariable("REHARSAL_MARK_POSITION") == "Inner", ylimit, music_context);
               if (r) {
                 _context2.next = 105;
                 break;
@@ -14694,14 +14694,14 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           }
         }, _callee, this);
       }));
-      function render_impl(_x2, _x3) {
-        return _render_impl.apply(this, arguments);
+      function renderImpl(_x2, _x3) {
+        return _renderImpl.apply(this, arguments);
       }
-      return render_impl;
+      return renderImpl;
     }()
   }, {
-    key: "screening_y_areas",
-    value: function screening_y_areas(row_elements_list, y_base, param, show_staff, inner_reharsal_mark) {
+    key: "screeningYAreas",
+    value: function screeningYAreas(row_elements_list, y_base, param, show_staff, inner_reharsal_mark) {
       var ycomps = ["rm", "mu", "body", "rs", "ml", "irm", "end"];
       var yprof = {
         rm: {
@@ -14821,8 +14821,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       return yprof;
     }
   }, {
-    key: "screening_x_areas",
-    value: function screening_x_areas(track, x, paper, row_elements_list, prev_measure, next_measure, yprof, param, music_context) {
+    key: "screeningzXAreas",
+    value: function screeningzXAreas(track, x, paper, row_elements_list, prev_measure, next_measure, yprof, param, music_context) {
       var _this4 = this;
       var transpose = track.getVariable("TRANSPOSE");
       var half_type = track.getVariable("KEY_TYPE");
@@ -14852,7 +14852,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__.MeasureBoundary) {
             var pm = ml == 0 ? prev_measure : row_elements_list[ml - 1];
             var ne = pm ? pm.childNodes[pm.childNodes.length - 1] : null;
-            var r = _this4.draw_boundary_simplified("begin", ne, e, ml == 0,
+            var r = _this4.drawBoundary("begin", ne, e, ml == 0,
             //m.raw_new_line,
             paper, x, 0, dammy_rs_area_height,
             // any value is OK
@@ -14882,7 +14882,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           type: "fixed",
           f: param.header_body_margin
         });
-        rberet = _this4.render_body_elements(false, x, elements, param, music_context, yprof, paper, 0, 0 /*meas_start_x*/, m, 1, transpose, half_type, key, 0, 0);
+        rberet = _this4.renderBodyElements(false, x, elements, param, music_context, yprof, paper, 0, 0 /*meas_start_x*/, m, 1, transpose, half_type, key, 0, 0);
         meas_fixed_width += rberet.fixed_width;
         meas_num_flexible_rooms += rberet.num_flexible_rooms;
         all_fixed_width_details = all_fixed_width_details.concat(rberet.fixed_width_details);
@@ -14897,7 +14897,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__.MeasureBoundary) {
             var nm = ml == row_elements_list.length - 1 ? next_measure : row_elements_list[ml + 1];
             var ne = nm ? nm.childNodes[0] : null;
-            var r = _this4.draw_boundary_simplified("end", e, ne, ml == row_elements_list.length - 1,
+            var r = _this4.drawBoundary("end", e, ne, ml == row_elements_list.length - 1,
             //nm ? nm.raw_new_line : false,
             paper, x, 0, dammy_rs_area_height, dammy_rs_area_height, param, false);
             e.renderprop = {
@@ -14934,8 +14934,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       return x_width_info;
     }
   }, {
-    key: "render_body_elements",
-    value: function render_body_elements(draw, x, elements, param, music_context, yprof, paper, _5lines_intv, meas_start_x, m, x_global_scale, transpose, half_type, key, C7_width, y_body_or_rs_base, balken) {
+    key: "renderBodyElements",
+    value: function renderBodyElements(draw, x, elements, param, music_context, yprof, paper, _5lines_intv, meas_start_x, m, x_global_scale, transpose, half_type, key, C7_width, y_body_or_rs_base, balken) {
       var _this5 = this;
       var fixed_width = 0;
       var fixed_width_details = []; // show be same as num_flexible_rooms
@@ -15031,7 +15031,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             width: 0
           };
           if (e0 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__.Chord && !e0.isSyncopatedSource()) {
-            cr = _this5.render_chord_simplified(draw, e0, transpose, half_type, key, paper, x / _draw_scale, yprof.body.y, param, C7_width);
+            cr = _this5.renderChord(draw, e0, transpose, half_type, key, paper, x / _draw_scale, yprof.body.y, param, C7_width);
             if (draw) _this5.hitManager.add(paper, cr.bb.scale(_draw_scale, 1), e0);
             if (draw && e0.exceptinal_comment !== null) {
               var r = _graphic__WEBPACK_IMPORTED_MODULE_3__.CanvasText(paper, x / _draw_scale, yprof.mu.y + yprof.mu.height, e0.exceptinal_comment.comment, param.base_font_size / 2, "lb");
@@ -15118,7 +15118,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 _draw_scale2 = _scale10[0];
                 _elem_width = _scale10[1];
               }
-              var _cr = _this5.render_chord_simplified(draw, e, transpose, half_type, key, paper, x / _draw_scale2, yprof.body.y, param, C7_width);
+              var _cr = _this5.renderChord(draw, e, transpose, half_type, key, paper, x / _draw_scale2, yprof.body.y, param, C7_width);
               if (draw && e.exceptinal_comment !== null && !e.isSyncopatedSource()) {
                 var _r3 = _graphic__WEBPACK_IMPORTED_MODULE_3__.CanvasText(paper, x / _draw_scale2, yprof.mu.y + yprof.mu.height, e.exceptinal_comment.comment, param.base_font_size / 2, "lb");
                 _this5.hitManager.add(paper, _r3.bb.scale(_draw_scale2, 1), e.exceptinal_comment);
@@ -15152,7 +15152,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 _draw_scale3 = _scale12[0];
                 _elem_width2 = _scale12[1];
               }
-              var _cr2 = _this5.render_rest_plain(e, paper, draw, x / _draw_scale3, y_body_or_rs_base, "l", yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, param);
+              var _cr2 = _this5.renderRest(e, paper, draw, x / _draw_scale3, y_body_or_rs_base, "l", yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, param);
               if (draw) {
                 x += _elem_width2;
                 _this5.hitManager.add(paper, _cr2.bb.scale(_draw_scale3, 1), e);
@@ -15175,7 +15175,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
                 _draw_scale4 = _scale14[0];
                 _elem_width3 = _scale14[1];
               }
-              var _cr3 = _this5.render_simile_mark_plain(draw, paper, x / _draw_scale4, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, e.numslash, false, "l");
+              var _cr3 = _this5.renderSimileMark(draw, paper, x / _draw_scale4, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, e.numslash, false, "l");
               if (draw) {
                 x += _elem_width3;
                 _this5.hitManager.add(paper, _cr3.bb.scale(_draw_scale4, 1), e);
@@ -15226,8 +15226,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       };
     }
   }, {
-    key: "grouping_body_elemnts_enh",
-    value: function grouping_body_elemnts_enh(body_elements) {
+    key: "determineBodyElementGrouping",
+    value: function determineBodyElementGrouping(body_elements) {
       // First, guess chord duration here.
       // In current version, each chord in the measure is assumed to have the same duration.
       // TODO : Improve based on number of spaces or duration indication mark.
@@ -15283,8 +15283,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       };
     }
   }, {
-    key: "render_measure_row_simplified",
-    value: function render_measure_row_simplified(track, x, paper, row_elements_list, prev_measure, next_measure, y_base, param, inner_reharsal_mark, ylimit, music_context) {
+    key: "renderMeasureRow",
+    value: function renderMeasureRow(track, x, paper, row_elements_list, prev_measure, next_measure, y_base, param, inner_reharsal_mark, ylimit, music_context) {
       var _this6 = this;
       var x_global_scale = track.getVariable("X_GLOBAL_SCALE");
       var transpose = track.getVariable("TRANSPOSE");
@@ -15297,7 +15297,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
 
       // interval of 5 lines
       var _5lines_intv = param.rs_area_height / (5 - 1);
-      var yprof = this.screening_y_areas(row_elements_list, y_base, param, show_staff, inner_reharsal_mark);
+      var yprof = this.screeningYAreas(row_elements_list, y_base, param, show_staff, inner_reharsal_mark);
       var y_body_or_rs_base = yprof.rs.detected ? yprof.rs.y : yprof.body.y;
       var repeat_mark_y_base = yprof.rs.detected ? yprof.rs.y - param.repeat_mark_y_margin : yprof.mu.y + yprof.mu.height;
 
@@ -15340,11 +15340,11 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         for (ei = 0; ei < elements.header.length; ++ei) {
           var e = elements.header[ei];
           if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__.Coda) {
-            var _r6 = _this6.draw_coda_plain(paper, param, meas_base_x + mh_offset, yprof.mu.y + yprof.mu.height, "lb", e, param.base_font_size);
+            var _r6 = _this6.drawCoda(paper, param, meas_base_x + mh_offset, yprof.mu.y + yprof.mu.height, "lb", e, param.base_font_size);
             mh_offset += _r6.bb.width();
             _this6.hitManager.add(paper, _r6.bb, e);
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__.Segno) {
-            var _r7 = _this6.draw_segno_plain(paper, param, meas_base_x + mh_offset, yprof.mu.y + yprof.mu.height, e, param.base_font_size);
+            var _r7 = _this6.drawSegno(paper, param, meas_base_x + mh_offset, yprof.mu.y + yprof.mu.height, e, param.base_font_size);
             mh_offset += _r7.width;
             _this6.hitManager.add(paper, _r7.bb, e);
           } else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__.Comment) {
@@ -15371,7 +15371,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__.MeasureBoundary) {
             var pm = ml == 0 ? prev_measure : row_elements_list[ml - 1];
             var ne = pm ? pm.childNodes[pm.childNodes.length - 1] : null;
-            var _r9 = _this6.draw_boundary_simplified("begin", ne, e, ml == 0,
+            var _r9 = _this6.drawBoundary("begin", ne, e, ml == 0,
             //m.raw_new_line,
             paper, x, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, param, true);
             m.renderprop.y = y_body_or_rs_base;
@@ -15400,7 +15400,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         x += param.header_body_margin;
 
         // Draw body
-        var rberet = _this6.render_body_elements(true, x, elements, param, music_context, yprof, paper, _5lines_intv, meas_start_x, m, x_global_scale, transpose, half_type, key, C7_width, y_body_or_rs_base, balken);
+        var rberet = _this6.renderBodyElements(true, x, elements, param, music_context, yprof, paper, _5lines_intv, meas_start_x, m, x_global_scale, transpose, half_type, key, C7_width, y_body_or_rs_base, balken);
         x = rberet.x;
         x += param.body_footer_margin;
         var footer_start_x = x;
@@ -15412,7 +15412,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__.MeasureBoundary) {
             nm = ml == row_elements_list.length - 1 ? next_measure : row_elements_list[ml + 1];
             ne = nm ? nm.childNodes[0] : null;
-            var _r10 = _this6.draw_boundary_simplified("end", _e2, ne, ml == row_elements_list.length - 1,
+            var _r10 = _this6.drawBoundary("end", _e2, ne, ml == row_elements_list.length - 1,
             //nm ? nm.raw_new_line : false,
             paper, x, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, param, true);
             m.renderprop.ex = x;
@@ -15430,7 +15430,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             });
             _this6.hitManager.add(paper, _r12.bb, _e2);
           } else if (_e2 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__.ToCoda) {
-            var _r13 = _this6.draw_coda_plain(paper, param, x, repeat_mark_y_base, "rb", _e2, param.base_font_size);
+            var _r13 = _this6.drawCoda(paper, param, x, repeat_mark_y_base, "rb", _e2, param.base_font_size);
             var rt = _graphic__WEBPACK_IMPORTED_MODULE_3__.CanvasText(paper, x - _r13.bb.width(), repeat_mark_y_base, "To", param.base_font_size / 2, "rb", null, null, {
               font: param.repeat_mark_font
             });
@@ -15500,13 +15500,13 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             // This shall be whole rest
             var _sx2 = meas_start_x + header_width; // header_width does not include header_body_margin
             var _fx2 = meas_end_x - footer_width;
-            var cr = _this6.render_rest_plain(_e3, paper, true, (_sx2 + _fx2) / 2, y_body_or_rs_base, "c", yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, param);
+            var cr = _this6.renderRest(_e3, paper, true, (_sx2 + _fx2) / 2, y_body_or_rs_base, "c", yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, param);
             _this6.hitManager.add(paper, cr.bb, _e3);
           } else if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__.Simile) {
             // Simile mark in measure wide element if there is no other body elements in this measure
             var _sx3 = meas_start_x + header_width; // header_width does not include header_body_margin
             var _fx3 = meas_end_x - footer_width;
-            var _r17 = _this6.render_simile_mark_plain(true, paper, (_sx3 + _fx3) / 2, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, _e3.numslash, false, "c");
+            var _r17 = _this6.renderSimileMark(true, paper, (_sx3 + _fx3) / 2, y_body_or_rs_base, yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, _e3.numslash, false, "c");
             _this6.hitManager.add(paper, _r17.bb, _e3);
           } else {
             throw "Unkown measure wide instance detected";
@@ -15542,8 +15542,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       };
     }
   }, {
-    key: "draw_segno_plain",
-    value: function draw_segno_plain(paper, param, x, y, segno, B) {
+    key: "drawSegno",
+    value: function drawSegno(paper, param, x, y, segno, B) {
       var lx = x;
       var img_width = B / 3;
       var img_height = B / 2;
@@ -15574,8 +15574,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       };
     }
   }, {
-    key: "draw_coda_plain",
-    value: function draw_coda_plain(paper, param, x, y, align, coda, B) {
+    key: "drawCoda",
+    value: function drawCoda(paper, param, x, y, align, coda, B) {
       var bb = new _graphic__WEBPACK_IMPORTED_MODULE_3__.BoundingBox();
       var width = 0;
       var ys = 0;
@@ -15627,16 +15627,16 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       };
     }
   }, {
-    key: "render_chord_as_string_plain",
-    value: function render_chord_as_string_plain(chord, paper, x, y_body_base, param, draw) {
+    key: "renderChordAsString",
+    value: function renderChordAsString(chord, paper, x, y_body_base, param, draw) {
       var r = _graphic__WEBPACK_IMPORTED_MODULE_3__.CanvasText(paper, x, y_body_base + param.row_height / 2, chord.chord_str, param.base_font_size * 0.6, "lm", undefined, !draw);
       return {
         bb: r.bb
       };
     }
   }, {
-    key: "render_rest_plain",
-    value: function render_rest_plain(e, paper, draw, x, y_body_or_rs_base, align,
+    key: "renderRest",
+    value: function renderRest(e, paper, draw, x, y_body_or_rs_base, align,
     // "l or "c" or "r"
     row_height, base_body_height, param) {
       var _5i = base_body_height / 4;
@@ -15715,8 +15715,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       };
     }
   }, {
-    key: "render_simile_mark_plain",
-    value: function render_simile_mark_plain(draw, paper, x, y_body_base, row_height, base_body_height,
+    key: "renderSimileMark",
+    value: function renderSimileMark(draw, paper, x, y_body_base, row_height, base_body_height,
     // In RS area, row_height == base_body_height is asuumed
     numslash, put_boundary, align) {
       var h = 4;
@@ -15760,10 +15760,10 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       };
     }
   }, {
-    key: "render_chord_simplified",
-    value: function render_chord_simplified(draw, chord, transpose, half_type, key, canvas, x, y_body_base, param, C7_width) {
+    key: "renderChord",
+    value: function renderChord(draw, chord, transpose, half_type, key, canvas, x, y_body_base, param, C7_width) {
       if (!chord.is_valid_chord) {
-        var r = this.render_chord_as_string_plain(chord, canvas, x, y_body_base, param, draw);
+        var r = this.renderChordAsString(chord, canvas, x, y_body_base, param, draw);
         // add width for now. TODO : remove
         return {
           width: r.bb.width(),
@@ -16013,8 +16013,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
      *             x : updated x position.
      */
   }, {
-    key: "draw_boundary_simplified",
-    value: function draw_boundary_simplified(side, e0, e1, is_row_edge, canvas, x, y_body_base, row_height, base_body_height, param, draw) {
+    key: "drawBoundary",
+    value: function drawBoundary(side, e0, e1, is_row_edge, canvas, x, y_body_base, row_height, base_body_height, param, draw) {
       var draw_type = null; // "s, d, lb, le, lb, f"
 
       var w = 0; // width of boundary
@@ -16154,7 +16154,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
           }
           break;
         case "r":
-          r = this.render_simile_mark_plain(draw, canvas, x, y_body_base, row_height, base_body_height, 2, true, "l");
+          r = this.renderSimileMark(draw, canvas, x, y_body_base, row_height, base_body_height, 2, true, "l");
           x += r.width;
           w = r.width;
           actual_boundary = x + w / 2;
@@ -17960,7 +17960,8 @@ var Renderer = /*#__PURE__*/function () {
           }
         }
       } else if (balken_element.type == "rest") {
-        var _r = this.render_rest_plain(e, paper, draw, x, rs_y_base, "l", row_height, row_height, param);
+        // This calls the child class's renderRest ... maybe good to refactor
+        var _r = this.renderRest(e, paper, draw, x, rs_y_base, "l", row_height, row_height, param);
         bounding_box.add_BB(_r.bb);
         if (draw) {
           // notes_coord.x : 

@@ -161,7 +161,7 @@ export class DefaultRenderer extends Renderer {
             }
         }
 
-        this.merge_param(this.init_param, param, false);
+        this.mergeParam(this.init_param, param, false);
         
         this.track = null;
 
@@ -188,7 +188,7 @@ export class DefaultRenderer extends Renderer {
 
         return graphic.PreloadJsonFont()
         .then(()=>{
-            return this.render_impl(track,param);
+            return this.renderImpl(track,param);
         });
     }
 
@@ -196,7 +196,7 @@ export class DefaultRenderer extends Renderer {
         return arr.reduce( (acc,e)=>{ let obj={}; obj[field]=acc[field]+e[field]; return obj;} )[field];
     }
 
-    optimize_type0(row_elements_list, x_width_info, total_width){
+    optimizeType0(row_elements_list, x_width_info, total_width){
 
         let num_flexible_rooms = this.field_sum(x_width_info,"meas_num_flexible_rooms");
         let fixed_width = this.field_sum(x_width_info,"meas_fixed_width");
@@ -250,7 +250,7 @@ export class DefaultRenderer extends Renderer {
             "room_per_meas":room_per_meas_even_ratio_meas};
     }
 
-    optimize_type1(row_elements_list, x_width_info, total_width,
+    optimizeType1(row_elements_list, x_width_info, total_width,
         num_meas, num_meas_to_consider, reduced_meas_valid){
         
         let room_equal_ratio = this.room_for_equal_ratio_divison(x_width_info, total_width, 
@@ -278,7 +278,7 @@ export class DefaultRenderer extends Renderer {
         return room_per_meas_even_meas;
     }
 
-    optimize_type2(row_elements_list, x_width_info, total_width, 
+    optimizeType2(row_elements_list, x_width_info, total_width, 
         num_meas, num_meas_to_consider, reduced_meas_valid, room_per_elem_dist){
 
         // Equal division
@@ -312,7 +312,7 @@ export class DefaultRenderer extends Renderer {
                 num_meas_to_consider * (num_meas_to_consider - num_meas);
     }
 
-    optimize_type3(row_elements_list, x_width_info, total_width, 
+    optimizeType3(row_elements_list, x_width_info, total_width, 
         num_meas, num_meas_to_consider, reduced_meas_valid){
         // https://docs.google.com/document/d/1oPmUvAF6-KTsQrEovYJgMZSDqlztp4pL-XVs8uee7A4/edit?usp=sharing
         // Here alpha=1 case is filtered at the first IF statement, then we only consider the case
@@ -363,7 +363,7 @@ export class DefaultRenderer extends Renderer {
         console.log("alpha = " + alpha);
     }
 
-    optimize_type4(row_elements_list, x_width_info, total_width, 
+    optimizeType4(row_elements_list, x_width_info, total_width, 
         num_meas, num_meas_to_consider, reduced_meas_valid, opt2_room_dist){
         // https://docs.google.com/document/d/1oPmUvAF6-KTsQrEovYJgMZSDqlztp4pL-XVs8uee7A4/edit?usp=sharing
         // Here alpha=1 case is filtered at the first IF statement, then we only consider the case
@@ -423,7 +423,7 @@ export class DefaultRenderer extends Renderer {
             row_elements_list[0].renderprop.left_margin = total_width - row_total_width;
     }
 
-    determine_rooms(param, reharsal_x_width_info, total_width){
+    determineRooms(param, reharsal_x_width_info, total_width){
         // Optimize width of each measure
         let row = 0;
 
@@ -453,25 +453,25 @@ export class DefaultRenderer extends Renderer {
             }
 
             if( param.optimize_type == 0){
-                this.optimize_type0(row_elements_list, x_width_info, total_width);
+                this.optimizeType0(row_elements_list, x_width_info, total_width);
                 row++;
             }else if( param.optimize_type == 1){
-                this.optimize_type1(row_elements_list, x_width_info, total_width,
+                this.optimizeType1(row_elements_list, x_width_info, total_width,
                     num_meas, num_meas_to_consider, reduced_meas_valid);
                 row++;
             }else if(param.optimize_type == 2){
                 // Equal division
-                this.optimize_type2(row_elements_list, x_width_info, total_width, 
+                this.optimizeType2(row_elements_list, x_width_info, total_width, 
                     num_meas, num_meas_to_consider, reduced_meas_valid, param.opt2_room_dist);
                 row++;          
             }else if(param.optimize_type == 3){
                 // Combination of 2_0 and 0(fallback option when negative total room)
-                this.optimize_type3(row_elements_list, x_width_info, total_width, 
+                this.optimizeType3(row_elements_list, x_width_info, total_width, 
                     num_meas, num_meas_to_consider, reduced_meas_valid);
                 row++; 
             }else if(param.optimize_type == 4){
                 // Combination of 2_0|2_1 and 1(fallback option when negative total room)
-                this.optimize_type4(row_elements_list, x_width_info, total_width, 
+                this.optimizeType4(row_elements_list, x_width_info, total_width, 
                     num_meas, num_meas_to_consider, reduced_meas_valid, param.opt2_room_dist);
                 row++; 
             }else{
@@ -772,7 +772,7 @@ export class DefaultRenderer extends Renderer {
         }
     }
 
-    merge_param(param, additional_param, takemax=false){
+    mergeParam(param, additional_param, takemax=false){
         // Important to do this before merging, otherwise the offset_l|r|b|t value already configured remains to be used.
         this.setoffsetparam(additional_param);
 
@@ -845,17 +845,17 @@ export class DefaultRenderer extends Renderer {
         return max_header_height;
     }
 
-    async render_impl(track, rparam) {
+    async renderImpl(track, rparam) {
 
         // parameter constructing. Parameter applicability order: Embeded track variable > Parameter specifed in render() call > Parameter specified in constructor
         let param =  common.deepcopy(this.init_param);
 
         // Merge parameter specified by render() call
-        this.merge_param(param, rparam, false);
+        this.mergeParam(param, rparam, false);
 
         // firstly, merge global PARAM specified in the source.
         if(track.getVariable("PARAM")){
-            this.merge_param(param, track.getVariable("PARAM"), false); // Merge to defaul param
+            this.mergeParam(param, track.getVariable("PARAM"), false); // Merge to defaul param
         }
 
         let page_width = param.paper_width / param.text_size / param.ncol;
@@ -1010,10 +1010,10 @@ export class DefaultRenderer extends Renderer {
                 let mparam = m.getVariable("PARAM");
                 if(mparam){
                     if(!param_for_row_alt){
-                        this.merge_param(param_for_row, common.deepcopy(mparam), false); // Overwrite 
+                        this.mergeParam(param_for_row, common.deepcopy(mparam), false); // Overwrite 
                         param_for_row_alt = true;
                     }else{
-                        this.merge_param(param_for_row, common.deepcopy(mparam), true); // Update 
+                        this.mergeParam(param_for_row, common.deepcopy(mparam), true); // Update 
                     }
                     
                 }
@@ -1073,7 +1073,7 @@ export class DefaultRenderer extends Renderer {
 
             if(!yse[pei].block_ids.includes(current_accum_block_id)){
                // Per block optimization
-               this.determine_rooms(yse[pei].param, reharsal_x_width_info, page_content_width);
+               this.determineRooms(yse[pei].param, reharsal_x_width_info, page_content_width);
                
                current_accum_block_id = yse[pei].block_ids[0]; // First block ID is the reference block id
                reharsal_x_width_info = [];
@@ -1090,14 +1090,14 @@ export class DefaultRenderer extends Renderer {
                let elements = this.classifyElements(m); // Too much call of calssify elements.
    
                // Grouping body elements which share the same balken
-               let geret = this.grouping_body_elemnts_enh(elements.body);
+               let geret = this.determineBodyElementGrouping(elements.body);
    
                m.renderprop.body_grouping_info = geret;
            }
 
            // y-screening is done in stage 2 as well : TODO : Make it once
            // Do it in the dammy position y = 0;
-           var yprof = this.screening_y_areas(
+           var yprof = this.screeningYAreas(
                row_elements_list, 0, yse[pei].param, 
                yse[pei].cont[0].getVariable("SHOW_STAFF"), 
                yse[pei].cont[0].getVariable("REHARSAL_MARK_POSITION")=="Inner");
@@ -1106,7 +1106,7 @@ export class DefaultRenderer extends Renderer {
             y_base_screening += yprof.end.y;
 
            // Screening x elements and determine the rendering policy for x-axis.
-           var x_width_info = this.screening_x_areas(
+           var x_width_info = this.screeningzXAreas(
                track,
                0, // dammy x position as it is not a matter
                this.memCanvas,
@@ -1121,7 +1121,7 @@ export class DefaultRenderer extends Renderer {
 
            if(pei == yse.length - 1){
                // Per block optimization
-               this.determine_rooms(yse[pei].param, reharsal_x_width_info, page_content_width);
+               this.determineRooms(yse[pei].param, reharsal_x_width_info, page_content_width);
            }
        }
        y_base_screening += param.y_offset_bottom; // Here y_base_screening means the height of the total score if single page applied.
@@ -1218,7 +1218,7 @@ export class DefaultRenderer extends Renderer {
                     ? page_origin.y + page_height - yse[pei].param.y_offset_bottom - (show_footer ? yse[pei].param.y_footer_offset : 0)
                     : null;
                 
-                let r = this.render_measure_row_simplified(
+                let r = this.renderMeasureRow(
                     track,
                     page_origin.x + param.x_offset_left,
                     this.context.current_canvas,
@@ -1317,7 +1317,7 @@ export class DefaultRenderer extends Renderer {
         };
     }
 
-    screening_y_areas(row_elements_list, y_base, param, show_staff, 
+    screeningYAreas(row_elements_list, y_base, param, show_staff, 
         inner_reharsal_mark){
 
         var ycomps = ["rm", "mu","body","rs","ml","irm","end"];
@@ -1431,7 +1431,7 @@ export class DefaultRenderer extends Renderer {
         return yprof;
     }
 
-    screening_x_areas(
+    screeningzXAreas(
         track,
         x,
         paper,
@@ -1473,7 +1473,7 @@ export class DefaultRenderer extends Renderer {
                 if (e instanceof common.MeasureBoundary) {
                     var pm = ml == 0 ? prev_measure : row_elements_list[ml - 1];
                     var ne = pm ? pm.childNodes[pm.childNodes.length - 1] : null;
-                    let r = this.draw_boundary_simplified(
+                    let r = this.drawBoundary(
                         "begin",
                         ne,
                         e,
@@ -1500,7 +1500,7 @@ export class DefaultRenderer extends Renderer {
             meas_fixed_width += param.header_body_margin;
             all_fixed_width_details.push({type:"fixed",f:param.header_body_margin});
 
-            var rberet = this.render_body_elements(
+            var rberet = this.renderBodyElements(
                 false, x, elements, 
                 param, music_context, 
                 yprof, 
@@ -1529,7 +1529,7 @@ export class DefaultRenderer extends Renderer {
                             ? next_measure
                             : row_elements_list[ml + 1];
                     var ne = nm ? nm.childNodes[0] : null;
-                    let r = this.draw_boundary_simplified(
+                    let r = this.drawBoundary(
                         "end",
                         e,
                         ne,
@@ -1569,7 +1569,7 @@ export class DefaultRenderer extends Renderer {
         return x_width_info;
     }
 
-    render_body_elements(
+    renderBodyElements(
         draw, x, elements, 
         param, music_context, 
         yprof, 
@@ -1679,7 +1679,7 @@ export class DefaultRenderer extends Renderer {
                 var e0 = element_group.elems[0];
                 let cr = {width:0};
                 if (e0 instanceof common.Chord && !e0.isSyncopatedSource()) {
-                    cr = this.render_chord_simplified(
+                    cr = this.renderChord(
                         draw, 
                         e0,
                         transpose,
@@ -1797,7 +1797,7 @@ export class DefaultRenderer extends Renderer {
                         if(draw) [draw_scale, elem_width] =
                             scale(e.renderprop.w, m.renderprop.room_per_elem[this_group_start_index+ei]);
                         
-                        let cr = this.render_chord_simplified(
+                        let cr = this.renderChord(
                             draw,
                             e,
                             transpose,
@@ -1852,7 +1852,7 @@ export class DefaultRenderer extends Renderer {
                         if(draw) [draw_scale, elem_width] =
                             scale(e.renderprop.w, m.renderprop.room_per_elem[this_group_start_index+ei]);
 
-                        let cr = this.render_rest_plain(
+                        let cr = this.renderRest(
                             e,
                             paper,
                             draw,
@@ -1879,7 +1879,7 @@ export class DefaultRenderer extends Renderer {
                         if(draw) [draw_scale, elem_width] =
                             scale(e.renderprop.w, m.renderprop.room_per_elem[this_group_start_index+ei]);
                         
-                        let cr = this.render_simile_mark_plain(
+                        let cr = this.renderSimileMark(
                             draw,
                             paper,
                             x / draw_scale,
@@ -1930,7 +1930,7 @@ export class DefaultRenderer extends Renderer {
         return {x:x, fixed_width:fixed_width, num_flexible_rooms:num_flexible_rooms, fixed_width_details:fixed_width_details};
     }
     
-    grouping_body_elemnts_enh(body_elements){
+    determineBodyElementGrouping(body_elements){
         // First, guess chord duration here.
         // In current version, each chord in the measure is assumed to have the same duration.
         // TODO : Improve based on number of spaces or duration indication mark.
@@ -1990,7 +1990,7 @@ export class DefaultRenderer extends Renderer {
     }
 
 
-    render_measure_row_simplified(
+    renderMeasureRow(
         track,
         x,
         paper,
@@ -2015,7 +2015,7 @@ export class DefaultRenderer extends Renderer {
         // interval of 5 lines
         var _5lines_intv = param.rs_area_height / (5 - 1);
 
-        var yprof = this.screening_y_areas(row_elements_list, y_base, param, show_staff, 
+        var yprof = this.screeningYAreas(row_elements_list, y_base, param, show_staff, 
             inner_reharsal_mark);
         
         var y_body_or_rs_base = yprof.rs.detected ? yprof.rs.y : yprof.body.y;
@@ -2082,7 +2082,7 @@ export class DefaultRenderer extends Renderer {
             for (var ei = 0; ei < elements.header.length; ++ei) {
                 let e = elements.header[ei];
                 if (e instanceof common.Coda) {
-                    let r = this.draw_coda_plain(
+                    let r = this.drawCoda(
                         paper,
                         param,
                         meas_base_x + mh_offset,
@@ -2094,7 +2094,7 @@ export class DefaultRenderer extends Renderer {
                     mh_offset += r.bb.width();
                     this.hitManager.add(paper, r.bb, e);
                 } else if (e instanceof common.Segno) {
-                    let r = this.draw_segno_plain(
+                    let r = this.drawSegno(
                         paper,
                         param,
                         meas_base_x + mh_offset,
@@ -2135,7 +2135,7 @@ export class DefaultRenderer extends Renderer {
                 if (e instanceof common.MeasureBoundary) {
                     var pm = ml == 0 ? prev_measure : row_elements_list[ml - 1];
                     var ne = pm ? pm.childNodes[pm.childNodes.length - 1] : null;
-                    let r = this.draw_boundary_simplified(
+                    let r = this.drawBoundary(
                         "begin",
                         ne,
                         e,
@@ -2188,7 +2188,7 @@ export class DefaultRenderer extends Renderer {
             x += param.header_body_margin;
 
             // Draw body
-            let rberet = this.render_body_elements(
+            let rberet = this.renderBodyElements(
                 true, x, elements, 
                 param, music_context, 
                 yprof, 
@@ -2219,7 +2219,7 @@ export class DefaultRenderer extends Renderer {
                             ? next_measure
                             : row_elements_list[ml + 1];
                     var ne = nm ? nm.childNodes[0] : null;
-                    let r = this.draw_boundary_simplified(
+                    let r = this.drawBoundary(
                         "end",
                         e,
                         ne,
@@ -2258,7 +2258,7 @@ export class DefaultRenderer extends Renderer {
                     );
                     this.hitManager.add(paper, r.bb, e);
                 } else if (e instanceof common.ToCoda) {
-                    let r = this.draw_coda_plain(
+                    let r = this.drawCoda(
                         paper,
                         param,
                         x,
@@ -2390,7 +2390,7 @@ export class DefaultRenderer extends Renderer {
                         meas_start_x +
                         header_width; // header_width does not include header_body_margin
                     let fx = meas_end_x - footer_width;
-                    let cr = this.render_rest_plain(
+                    let cr = this.renderRest(
                         e,
                         paper,
                         true,
@@ -2408,7 +2408,7 @@ export class DefaultRenderer extends Renderer {
                         meas_start_x +
                         header_width; // header_width does not include header_body_margin
                     let fx = meas_end_x - footer_width;
-                    let r = this.render_simile_mark_plain(
+                    let r = this.renderSimileMark(
                         true,
                         paper,
                         (sx + fx) / 2,
@@ -2453,7 +2453,7 @@ export class DefaultRenderer extends Renderer {
         return { rm_detected: yprof.rm.detected, mu_y: yprof.mu.y, y_base: yprof.end.y };
     }
 
-    draw_segno_plain(paper, param, x, y, segno, B) {
+    drawSegno(paper, param, x, y, segno, B) {
         var lx = x;
         var img_width = B/3;
         var img_height = B/2;
@@ -2499,7 +2499,7 @@ export class DefaultRenderer extends Renderer {
         return { width: lx - x, bb:bb };
     }
 
-    draw_coda_plain(paper, param, x, y, align, coda, B) {
+    drawCoda(paper, param, x, y, align, coda, B) {
         let bb = new graphic.BoundingBox();
         var width = 0;
         var ys = 0;
@@ -2566,7 +2566,7 @@ export class DefaultRenderer extends Renderer {
         return { bb: bb };
     }
 
-    render_chord_as_string_plain(chord, paper, x, y_body_base, param, draw) {
+    renderChordAsString(chord, paper, x, y_body_base, param, draw) {
         let r = graphic.CanvasText(
             paper,
             x,
@@ -2581,7 +2581,7 @@ export class DefaultRenderer extends Renderer {
         return { bb: r.bb };
     }
 
-    render_rest_plain(
+    renderRest(
         e,
         paper,
         draw,
@@ -2694,7 +2694,7 @@ export class DefaultRenderer extends Renderer {
         return { bb: new graphic.BoundingBox(x,y_body_or_rs_base, w, row_height)};
     }
 
-    render_simile_mark_plain(
+    renderSimileMark(
         draw,
         paper,
         x,
@@ -2766,7 +2766,7 @@ export class DefaultRenderer extends Renderer {
         return {width: width, bb:bb};
     }
 
-    render_chord_simplified(
+    renderChord(
         draw,
         chord,
         transpose,
@@ -2779,7 +2779,7 @@ export class DefaultRenderer extends Renderer {
         C7_width
     ) {
         if (!chord.is_valid_chord) {
-            let r = this.render_chord_as_string_plain(
+            let r = this.renderChordAsString(
                 chord,
                 canvas,
                 x,
@@ -3233,7 +3233,7 @@ export class DefaultRenderer extends Renderer {
      * @return dictionary with following keys and values
      *             x : updated x position.
      */
-    draw_boundary_simplified(
+    drawBoundary(
         side,
         e0,
         e1,
@@ -3490,7 +3490,7 @@ export class DefaultRenderer extends Renderer {
                 }
                 break;
             case "r":
-                r = this.render_simile_mark_plain(
+                r = this.renderSimileMark(
                     draw,
                     canvas,
                     x,

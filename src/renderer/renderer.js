@@ -689,7 +689,8 @@ export class Renderer {
             }
         }else if (balken_element.type == "rest") {
 
-            let r = this.render_rest_plain(
+            // This calls the child class's renderRest ... maybe good to refactor
+            let r = this.renderRest(
                 e,
                 paper,
                 draw,

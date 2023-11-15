@@ -13,12 +13,12 @@ export class Renderer {
         return this.hitManager.get(paper, coord);
     }
 
-	get_boundary_sign(e) {
+	getBoundarySign(e) {
         if (e === null) return "n";
         return e.typestr;
     }
 
-    boundary_type_without_line_break(b0, b1) {
+    boundaryTypeWithoutLineBreak(b0, b1) {
         // b0 and b1 must be either following characters
         // s : Single, d : Double, b: Loop Begin, e: Loop End, B: Loop Both, r: Double Simile, n:null
         var profile = {
@@ -43,14 +43,14 @@ export class Renderer {
             nd: "d",
             nb: "b"
         };
-        var key = this.get_boundary_sign(b0) + this.get_boundary_sign(b1);
+        var key = this.getBoundarySign(b0) + this.getBoundarySign(b1);
         if (key in profile) {
             return profile[key];
         }
         throw "Invalid boundary pair : " + key;
     }
 
-    boundary_type_with_line_break(b0, b1, side) {
+    boundaryTypeWithLineBreak(b0, b1, side) {
         // b0 and b1 must be either following characters
         // s : Single, d : Double, b: Loop Begin, e: Loop End, B: Loop Both, r: Double Simile, n:null
         // side must be either 'end' or 'begin'
@@ -69,7 +69,7 @@ export class Renderer {
             BB: "eb",
             rr: "rr"
         };
-        var key = this.get_boundary_sign(b0) + this.get_boundary_sign(b1);
+        var key = this.getBoundarySign(b0) + this.getBoundarySign(b1);
         if (key in profile) {
             return profile[key][side == "begin" ? 1 : 0];
         }else{
@@ -178,7 +178,7 @@ export class Renderer {
         };
     }
 	
-	chord_elem_classify(chord, transpose, half_type, key) {
+	chordElemClassify(chord, transpose, half_type, key) {
         var bases = chord.getChordStrBase(transpose, half_type, key);
         var elems = chord.mid_elem_objs;
 
@@ -278,7 +278,7 @@ export class Renderer {
         return base_length;
     }
     
-    render_rs_area(
+    renderRsArea(
         x,          // This represents screen position and scaling is not considered
         draw_scale, // scaling applied fro this elements. 
         elems,
@@ -344,7 +344,7 @@ export class Renderer {
     
                 // Flush current groups
                 if (flushCond) {
-                    var dbret = this.draw_rs_area_balkens(
+                    var dbret = this.drawRsAreaElements(
                         true, 
                         draw_scale,
                         paper,
@@ -404,7 +404,7 @@ export class Renderer {
                 flushCond || 
                 (ei == elems.length - 1 && is_last_body_elem_group_in_a_measure) // the last element in a measure
             ) {
-                let dbret = this.draw_rs_area_balkens(
+                let dbret = this.drawRsAreaElements(
                     true, 
                     draw_scale,
                     paper,
@@ -427,7 +427,7 @@ export class Renderer {
         return { x: x };
     }
 
-    generate_balken_element(e, x, row_height, music_context)
+    generateBalkenElement(e, x, row_height, music_context)
     {
        // no duration information
         if (e.note_group_list === null) {
@@ -521,7 +521,7 @@ export class Renderer {
         return balken_element;
     }
 
-    draw_rs_area_without_flag_balken(draw, paper, param, e, balken_element, x, rs_y_base, row_height){
+    drawRsAreaWithoutFlagBalken(draw, paper, param, e, balken_element, x, rs_y_base, row_height){
 
         let bounding_box = new graphic.BoundingBox();
 
@@ -548,7 +548,7 @@ export class Renderer {
             let ret = null;
 
             if (d == "0" || d == "1") {
-                ret = this.render_slash(
+                ret = this.renderSlash(
                     paper,
                     bo_group,
                     x,
@@ -559,7 +559,7 @@ export class Renderer {
                     draw
                 );
             } else {
-                ret = this.render_slash(
+                ret = this.renderSlash(
                     paper,
                     bo_group,
                     x,
@@ -773,7 +773,7 @@ export class Renderer {
         return balkenGroups;
     }
 
-    draw_rs_area_balkens(
+    drawRsAreaElements(
         draw, 
         draw_scale, // This is the draw scale of latest element, coudl be differnt from draw scale of old eleents in registred bolken groups
         paper,
@@ -803,19 +803,19 @@ export class Renderer {
             // c : sole CHord/Note with shorter than 4th note but is judged as sole note
             // d : more than 1 contiguous chords with shorter than 4th notes. Balken will be drawn. Mixing of Space lement is possible unless number of chord >= 2.
             if(balkenGroup.type == "a" || balkenGroup.type == "b" || balkenGroup.type == "c"){
-                x = this.draw_balken_abc(
+                x = this.drawBalkenABC(
                     balkenGroup, x, rs_y_base, _5lines_intv, bounding_box, param, paper, 
                     draw, row_height, music_context, meas_start_x, meas, draw_scale);
             }else if(balkenGroup.type == "d"){
                 // This is what we need to call draw balken
-                x = this.draw_balken_d(
+                x = this.drawBalkenD(
                     balkenGroup, x, rs_y_base, _5lines_intv, param, bounding_box, paper, 
                     draw, music_context, row_height, meas_start_x, meas, draw_scale);
             }
         }
         
         // Draw tuplet signs if needed
-        this.draw_tuplet(balken, balkenGroups, bounding_box, paper, draw, param);
+        this.drawTuplet(balken, balkenGroups, bounding_box, paper, draw, param);
 
         return { x: x, bb: bounding_box };
 
@@ -904,7 +904,7 @@ export class Renderer {
         return {upper_flag, gbi_at_min_y, gbi_at_max_y, min_y, max_y};
     }
 
-    draw_without_balkens_wrap(
+    drawWithoutBalkensWrap(
         balkenGroup, paper, draw, param, rs_y_base, row_height, bounding_box,
         music_context, x, upper_flag, meas_start_x, meas, draw_scale)
     {
@@ -920,7 +920,7 @@ export class Renderer {
             paper.getContext("2d").scale(this_elem_draw_scale, 1);
             // Here all the output and set value by following funtion will be that with scaling apply.
             // To use the values which the following functions generates, apply "* this_elem_draw_scale".
-            let wo_flags = this.draw_rs_area_without_flag_balken(draw, paper, param, e,
+            let wo_flags = this.drawRsAreaWithoutFlagBalken(draw, paper, param, e,
                 balken_element, x/this_elem_draw_scale, rs_y_base, row_height);
             paper.getContext("2d").scale(1.0/this_elem_draw_scale, 1);
 
@@ -1071,7 +1071,7 @@ export class Renderer {
         return x;
     }
 
-    draw_tuplet(balken, balkenGroups, bounding_box, paper, draw, param){
+    drawTuplet(balken, balkenGroups, bounding_box, paper, draw, param){
                 // Draw tuplet(renpu) marker.
         // Tuplet marker drawing is possible even if no balken drawn. e.g. 
         let first_chord_rest_idx = balken.groups.findIndex(g=> (g.e instanceof common.Chord || g.e instanceof common.Rest));
@@ -1180,7 +1180,7 @@ export class Renderer {
         }
     }
 
-    draw_balken_abc(balkenGroup, x, rs_y_base, _5lines_intv, bounding_box, param, paper, draw, row_height, music_context, meas_start_x, meas, draw_scale){
+    drawBalkenABC(balkenGroup, x, rs_y_base, _5lines_intv, bounding_box, param, paper, draw, row_height, music_context, meas_start_x, meas, draw_scale){
         let elements = balkenGroup.elem;
 
         if(elements.length != 1){
@@ -1200,7 +1200,7 @@ export class Renderer {
         //let x = balkenGroup[0].org_x; // on screen position, no scaling applied
 
         // 2. Draw notes and slashes without bars, flags and balkens
-        x = this.draw_without_balkens_wrap(
+        x = this.drawWithoutBalkensWrap(
             elements, paper, draw, param, rs_y_base, row_height, bounding_box,
             music_context, x, upper_flag, meas_start_x, meas, draw_scale);
 
@@ -1305,7 +1305,7 @@ export class Renderer {
         return x; //{ x: x, bb: bounding_box };
     }
 
-    draw_balken_d(balkenGroup, x, rs_y_base, _5lines_intv, param, bounding_box, paper, draw, music_context, row_height, meas_start_x, meas, draw_scale){
+    drawBalkenD(balkenGroup, x, rs_y_base, _5lines_intv, param, bounding_box, paper, draw, music_context, row_height, meas_start_x, meas, draw_scale){
         
         let elements = balkenGroup.elem;
 
@@ -1329,7 +1329,7 @@ export class Renderer {
         //let x = balkenGroup[0].org_x; // on screen position, no scaling applied
 
         // 2. Draw notes and slashes without bars, flags and balkens
-        x = this.draw_without_balkens_wrap(
+        x = this.drawWithoutBalkensWrap(
             elements, paper, draw, param, rs_y_base, row_height, bounding_box,
             music_context, x, upper_flag, meas_start_x, meas, draw_scale);
 
@@ -1430,7 +1430,7 @@ export class Renderer {
         }
 
         // Balken for each note_value level
-        var gg = this.to_same_value_group(elements, function(o) {
+        var gg = this.toSameValueGroup(elements, function(o) {
             return o.balken_element.note_value;
         });
         for (var g = 0; g < gg.length; ++g) {
@@ -1494,7 +1494,7 @@ export class Renderer {
         return x; //{ x: x, bb: bounding_box };
     }
 
-    render_slash(paper, group, x, y, d, numdot, _5lines_intv, draw=true) {
+    renderSlash(paper, group, x, y, d, numdot, _5lines_intv, draw=true) {
         var rsgw = 8;
         var rsgh = _5lines_intv * 2;
         var rsh = 4;
@@ -1528,7 +1528,7 @@ export class Renderer {
     /*
      * Group objs to the ones which has same values with 'field' ( Neighbor ). Skip the null or undefined value.
      */
-    to_same_value_group(objs, comp) {
+    toSameValueGroup(objs, comp) {
         var ret = [];
         var tmp = [];
         var cur_v = null;

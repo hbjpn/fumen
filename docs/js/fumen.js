@@ -15062,7 +15062,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             var _scale8 = _slicedToArray(_scale7, 2);
             _draw_scale = _scale8[0];
             element_group_width = _scale8[1];
-            var g = _this5.render_rs_area(x,
+            var g = _this5.renderRsArea(x,
             // does not scale, all the scaing things are processed inside this function
             _draw_scale, element_group.elems, paper, yprof.rs.y, yprof.rs.height, meas_start_x,
             // NOTE : meas_start_x sould be irrespective of draw_scale.
@@ -15077,8 +15077,8 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             // Only try to esimate using non-flag-balken drawer
             var tmp_fixed_width_details = [];
             element_group.elems.forEach(function (e) {
-              var balken_element = _this5.generate_balken_element(e, x, yprof.rs.height, music_context);
-              var r = _this5.draw_rs_area_without_flag_balken(draw, paper, param, e, balken_element, x, yprof.rs.y, yprof.rs.height);
+              var balken_element = _this5.generateBalkenElement(e, x, yprof.rs.height, music_context);
+              var r = _this5.drawRsAreaWithoutFlagBalken(draw, paper, param, e, balken_element, x, yprof.rs.y, yprof.rs.height);
               e.renderprop.balken_element = balken_element;
               rs_area_bounding_box.add_BB(r.bounding_box);
               x += r.bounding_box.width();
@@ -15771,7 +15771,7 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
         };
       }
       var bb = new _graphic__WEBPACK_IMPORTED_MODULE_3__.BoundingBox();
-      var ce = this.chord_elem_classify(chord, transpose, half_type, key);
+      var ce = this.chordElemClassify(chord, transpose, half_type, key);
       var bases = ce.bases;
       var elems = ce.mid_elem_objs;
       var y = y_body_base;
@@ -16036,11 +16036,11 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
       if (is_row_edge === null || is_row_edge == false) {
         // 1. 2 boundaries in  differnt rows in the code will be rendered as an adjacent measure, or
         // 2. The adjacent measures in the codes are measured as is
-        draw_type = this.boundary_type_without_line_break(e0, e1);
+        draw_type = this.boundaryTypeWithoutLineBreak(e0, e1);
       } else {
         // 1. The adjacnet measures in the codes are measured in differnt rows
         // 2. 2 boundraies in differnt rows in the code will be rendered as is (i.e. for differnt rows)
-        draw_type = this.boundary_type_with_line_break(e0, e1, side);
+        draw_type = this.boundaryTypeWithLineBreak(e0, e1, side);
       }
 
       //console.log([draw_type, side]);
@@ -17412,14 +17412,14 @@ var Renderer = /*#__PURE__*/function () {
       return this.hitManager.get(paper, coord);
     }
   }, {
-    key: "get_boundary_sign",
-    value: function get_boundary_sign(e) {
+    key: "getBoundarySign",
+    value: function getBoundarySign(e) {
       if (e === null) return "n";
       return e.typestr;
     }
   }, {
-    key: "boundary_type_without_line_break",
-    value: function boundary_type_without_line_break(b0, b1) {
+    key: "boundaryTypeWithoutLineBreak",
+    value: function boundaryTypeWithoutLineBreak(b0, b1) {
       // b0 and b1 must be either following characters
       // s : Single, d : Double, b: Loop Begin, e: Loop End, B: Loop Both, r: Double Simile, n:null
       var profile = {
@@ -17444,15 +17444,15 @@ var Renderer = /*#__PURE__*/function () {
         nd: "d",
         nb: "b"
       };
-      var key = this.get_boundary_sign(b0) + this.get_boundary_sign(b1);
+      var key = this.getBoundarySign(b0) + this.getBoundarySign(b1);
       if (key in profile) {
         return profile[key];
       }
       throw "Invalid boundary pair : " + key;
     }
   }, {
-    key: "boundary_type_with_line_break",
-    value: function boundary_type_with_line_break(b0, b1, side) {
+    key: "boundaryTypeWithLineBreak",
+    value: function boundaryTypeWithLineBreak(b0, b1, side) {
       // b0 and b1 must be either following characters
       // s : Single, d : Double, b: Loop Begin, e: Loop End, B: Loop Both, r: Double Simile, n:null
       // side must be either 'end' or 'begin'
@@ -17471,7 +17471,7 @@ var Renderer = /*#__PURE__*/function () {
         BB: "eb",
         rr: "rr"
       };
-      var key = this.get_boundary_sign(b0) + this.get_boundary_sign(b1);
+      var key = this.getBoundarySign(b0) + this.getBoundarySign(b1);
       if (key in profile) {
         return profile[key][side == "begin" ? 1 : 0];
       } else {
@@ -17574,8 +17574,8 @@ var Renderer = /*#__PURE__*/function () {
       };
     }
   }, {
-    key: "chord_elem_classify",
-    value: function chord_elem_classify(chord, transpose, half_type, key) {
+    key: "chordElemClassify",
+    value: function chordElemClassify(chord, transpose, half_type, key) {
       var bases = chord.getChordStrBase(transpose, half_type, key);
       var elems = chord.mid_elem_objs;
 
@@ -17675,8 +17675,8 @@ var Renderer = /*#__PURE__*/function () {
       return base_length;
     }
   }, {
-    key: "render_rs_area",
-    value: function render_rs_area(x,
+    key: "renderRsArea",
+    value: function renderRsArea(x,
     // This represents screen position and scaling is not considered
     draw_scale,
     // scaling applied fro this elements. 
@@ -17713,7 +17713,7 @@ var Renderer = /*#__PURE__*/function () {
 
           // Flush current groups
           if (_flushCond) {
-            var dbret = this.draw_rs_area_balkens(true, draw_scale, paper, balken, rs_y_base, row_height, meas_start_x, music_context, meas, param);
+            var dbret = this.drawRsAreaElements(true, draw_scale, paper, balken, rs_y_base, row_height, meas_start_x, music_context, meas, param);
             balken.groups = [];
             x = dbret.x;
             music_context.first_li = balken_element.lengthIndicator; // update the head li. Could be null.
@@ -17744,7 +17744,7 @@ var Renderer = /*#__PURE__*/function () {
         music_context.pos_in_a_measure % (_common_common__WEBPACK_IMPORTED_MODULE_1__.WHOLE_NOTE_LENGTH / 4) == 0 || balken_element.chord_length >= _common_common__WEBPACK_IMPORTED_MODULE_1__.WHOLE_NOTE_LENGTH / 4) || music_context.in_tuplet == true && music_context.first_li && music_context.cumal_block_duration == threshDuration;
         if (flushCond || ei == elems.length - 1 && is_last_body_elem_group_in_a_measure // the last element in a measure
         ) {
-          var _dbret = this.draw_rs_area_balkens(true, draw_scale, paper, balken, rs_y_base, row_height, meas_start_x, music_context, meas, param);
+          var _dbret = this.drawRsAreaElements(true, draw_scale, paper, balken, rs_y_base, row_height, meas_start_x, music_context, meas, param);
           x = _dbret.x;
           balken.groups = [];
           music_context.first_li = null; // update the head li
@@ -17757,8 +17757,8 @@ var Renderer = /*#__PURE__*/function () {
       };
     }
   }, {
-    key: "generate_balken_element",
-    value: function generate_balken_element(e, x, row_height, music_context) {
+    key: "generateBalkenElement",
+    value: function generateBalkenElement(e, x, row_height, music_context) {
       // no duration information
       if (e.note_group_list === null) {
         throw "SOMETHING WRONG WITH LENGTH INDICATOR SCREENING";
@@ -17837,8 +17837,8 @@ var Renderer = /*#__PURE__*/function () {
       return balken_element;
     }
   }, {
-    key: "draw_rs_area_without_flag_balken",
-    value: function draw_rs_area_without_flag_balken(draw, paper, param, e, balken_element, x, rs_y_base, row_height) {
+    key: "drawRsAreaWithoutFlagBalken",
+    value: function drawRsAreaWithoutFlagBalken(draw, paper, param, e, balken_element, x, rs_y_base, row_height) {
       var bounding_box = new _graphic__WEBPACK_IMPORTED_MODULE_2__.BoundingBox();
       var _5lines_intv = row_height / 4;
       var deltax_acc = 10;
@@ -17859,9 +17859,9 @@ var Renderer = /*#__PURE__*/function () {
       if (balken_element.type == "slash") {
         var ret = null;
         if (d == "0" || d == "1") {
-          ret = this.render_slash(paper, bo_group, x, ys[0], d, numdot, _5lines_intv, draw);
+          ret = this.renderSlash(paper, bo_group, x, ys[0], d, numdot, _5lines_intv, draw);
         } else {
-          ret = this.render_slash(paper, bo_group, x, ys[0], d, numdot, _5lines_intv, draw);
+          ret = this.renderSlash(paper, bo_group, x, ys[0], d, numdot, _5lines_intv, draw);
         }
         bounding_box.add_rect(ret.bounding_box);
         balken_element.renderprop.note_x_center = x;
@@ -18045,8 +18045,8 @@ var Renderer = /*#__PURE__*/function () {
       return balkenGroups;
     }
   }, {
-    key: "draw_rs_area_balkens",
-    value: function draw_rs_area_balkens(draw, draw_scale,
+    key: "drawRsAreaElements",
+    value: function drawRsAreaElements(draw, draw_scale,
     // This is the draw scale of latest element, coudl be differnt from draw scale of old eleents in registred bolken groups
     paper, balken, rs_y_base, row_height, meas_start_x, music_context, meas, param) {
       var bounding_box = new _graphic__WEBPACK_IMPORTED_MODULE_2__.BoundingBox();
@@ -18066,15 +18066,15 @@ var Renderer = /*#__PURE__*/function () {
         // c : sole CHord/Note with shorter than 4th note but is judged as sole note
         // d : more than 1 contiguous chords with shorter than 4th notes. Balken will be drawn. Mixing of Space lement is possible unless number of chord >= 2.
         if (balkenGroup.type == "a" || balkenGroup.type == "b" || balkenGroup.type == "c") {
-          x = this.draw_balken_abc(balkenGroup, x, rs_y_base, _5lines_intv, bounding_box, param, paper, draw, row_height, music_context, meas_start_x, meas, draw_scale);
+          x = this.drawBalkenABC(balkenGroup, x, rs_y_base, _5lines_intv, bounding_box, param, paper, draw, row_height, music_context, meas_start_x, meas, draw_scale);
         } else if (balkenGroup.type == "d") {
           // This is what we need to call draw balken
-          x = this.draw_balken_d(balkenGroup, x, rs_y_base, _5lines_intv, param, bounding_box, paper, draw, music_context, row_height, meas_start_x, meas, draw_scale);
+          x = this.drawBalkenD(balkenGroup, x, rs_y_base, _5lines_intv, param, bounding_box, paper, draw, music_context, row_height, meas_start_x, meas, draw_scale);
         }
       }
 
       // Draw tuplet signs if needed
-      this.draw_tuplet(balken, balkenGroups, bounding_box, paper, draw, param);
+      this.drawTuplet(balken, balkenGroups, bounding_box, paper, draw, param);
       return {
         x: x,
         bb: bounding_box
@@ -18168,8 +18168,8 @@ var Renderer = /*#__PURE__*/function () {
       };
     }
   }, {
-    key: "draw_without_balkens_wrap",
-    value: function draw_without_balkens_wrap(balkenGroup, paper, draw, param, rs_y_base, row_height, bounding_box, music_context, x, upper_flag, meas_start_x, meas, draw_scale) {
+    key: "drawWithoutBalkensWrap",
+    value: function drawWithoutBalkensWrap(balkenGroup, paper, draw, param, rs_y_base, row_height, bounding_box, music_context, x, upper_flag, meas_start_x, meas, draw_scale) {
       var _this = this;
       var _loop = function _loop() {
         var this_elem_draw_scale = balkenGroup[gbi].org_draw_scale;
@@ -18180,7 +18180,7 @@ var Renderer = /*#__PURE__*/function () {
         paper.getContext("2d").scale(this_elem_draw_scale, 1);
         // Here all the output and set value by following funtion will be that with scaling apply.
         // To use the values which the following functions generates, apply "* this_elem_draw_scale".
-        var wo_flags = _this.draw_rs_area_without_flag_balken(draw, paper, param, e, balken_element, x / this_elem_draw_scale, rs_y_base, row_height);
+        var wo_flags = _this.drawRsAreaWithoutFlagBalken(draw, paper, param, e, balken_element, x / this_elem_draw_scale, rs_y_base, row_height);
         paper.getContext("2d").scale(1.0 / this_elem_draw_scale, 1);
 
         // ----
@@ -18296,8 +18296,8 @@ var Renderer = /*#__PURE__*/function () {
       return x;
     }
   }, {
-    key: "draw_tuplet",
-    value: function draw_tuplet(balken, balkenGroups, bounding_box, paper, draw, param) {
+    key: "drawTuplet",
+    value: function drawTuplet(balken, balkenGroups, bounding_box, paper, draw, param) {
       // Draw tuplet(renpu) marker.
       // Tuplet marker drawing is possible even if no balken drawn. e.g. 
       var first_chord_rest_idx = balken.groups.findIndex(function (g) {
@@ -18361,8 +18361,8 @@ var Renderer = /*#__PURE__*/function () {
       }
     }
   }, {
-    key: "draw_balken_abc",
-    value: function draw_balken_abc(balkenGroup, x, rs_y_base, _5lines_intv, bounding_box, param, paper, draw, row_height, music_context, meas_start_x, meas, draw_scale) {
+    key: "drawBalkenABC",
+    value: function drawBalkenABC(balkenGroup, x, rs_y_base, _5lines_intv, bounding_box, param, paper, draw, row_height, music_context, meas_start_x, meas, draw_scale) {
       var elements = balkenGroup.elem;
       if (elements.length != 1) {
         throw "Invalid context in draw_balken_abc";
@@ -18379,7 +18379,7 @@ var Renderer = /*#__PURE__*/function () {
       //let x = balkenGroup[0].org_x; // on screen position, no scaling applied
 
       // 2. Draw notes and slashes without bars, flags and balkens
-      x = this.draw_without_balkens_wrap(elements, paper, draw, param, rs_y_base, row_height, bounding_box, music_context, x, upper_flag, meas_start_x, meas, draw_scale);
+      x = this.drawWithoutBalkensWrap(elements, paper, draw, param, rs_y_base, row_height, bounding_box, music_context, x, upper_flag, meas_start_x, meas, draw_scale);
       if (!(elements[0].e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Chord)) {
         return x; //{ x: x, bb: bounding_box };
       }
@@ -18456,8 +18456,8 @@ var Renderer = /*#__PURE__*/function () {
       return x; //{ x: x, bb: bounding_box };
     }
   }, {
-    key: "draw_balken_d",
-    value: function draw_balken_d(balkenGroup, x, rs_y_base, _5lines_intv, param, bounding_box, paper, draw, music_context, row_height, meas_start_x, meas, draw_scale) {
+    key: "drawBalkenD",
+    value: function drawBalkenD(balkenGroup, x, rs_y_base, _5lines_intv, param, bounding_box, paper, draw, music_context, row_height, meas_start_x, meas, draw_scale) {
       var elements = balkenGroup.elem;
       if (!elements.every(function (g) {
         return g.e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Chord || g.e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Space;
@@ -18480,7 +18480,7 @@ var Renderer = /*#__PURE__*/function () {
       //let x = balkenGroup[0].org_x; // on screen position, no scaling applied
 
       // 2. Draw notes and slashes without bars, flags and balkens
-      x = this.draw_without_balkens_wrap(elements, paper, draw, param, rs_y_base, row_height, bounding_box, music_context, x, upper_flag, meas_start_x, meas, draw_scale);
+      x = this.drawWithoutBalkensWrap(elements, paper, draw, param, rs_y_base, row_height, bounding_box, music_context, x, upper_flag, meas_start_x, meas, draw_scale);
 
       // 3. Determine the flag intercept and slope
       // Slope and intercepts are calucated for the first and last Chord element. Space is skipped.
@@ -18550,7 +18550,7 @@ var Renderer = /*#__PURE__*/function () {
       }
 
       // Balken for each note_value level
-      var gg = this.to_same_value_group(elements, function (o) {
+      var gg = this.toSameValueGroup(elements, function (o) {
         return o.balken_element.note_value;
       });
       for (var g = 0; g < gg.length; ++g) {
@@ -18590,8 +18590,8 @@ var Renderer = /*#__PURE__*/function () {
       return x; //{ x: x, bb: bounding_box };
     }
   }, {
-    key: "render_slash",
-    value: function render_slash(paper, group, x, y, d, numdot, _5lines_intv) {
+    key: "renderSlash",
+    value: function renderSlash(paper, group, x, y, d, numdot, _5lines_intv) {
       var draw = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : true;
       var rsgw = 8;
       var rsgh = _5lines_intv * 2;
@@ -18626,8 +18626,8 @@ var Renderer = /*#__PURE__*/function () {
      * Group objs to the ones which has same values with 'field' ( Neighbor ). Skip the null or undefined value.
      */
   }, {
-    key: "to_same_value_group",
-    value: function to_same_value_group(objs, comp) {
+    key: "toSameValueGroup",
+    value: function toSameValueGroup(objs, comp) {
       var ret = [];
       var tmp = [];
       var cur_v = null;

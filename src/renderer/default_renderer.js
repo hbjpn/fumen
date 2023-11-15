@@ -1738,7 +1738,7 @@ export class DefaultRenderer extends Renderer {
                         room_for_rs, 
                         true); // Only estimation actual scaing not apply
                     
-                    let g = this.render_rs_area(
+                    let g = this.renderRsArea(
                         x, // does not scale, all the scaing things are processed inside this function
                         draw_scale,
                         element_group.elems,
@@ -1763,9 +1763,9 @@ export class DefaultRenderer extends Renderer {
                     // Only try to esimate using non-flag-balken drawer
                     let tmp_fixed_width_details = [];
                     element_group.elems.forEach(e=>{
-                        let balken_element = this.generate_balken_element(
+                        let balken_element = this.generateBalkenElement(
                             e, x, yprof.rs.height, music_context);
-                        let r = this.draw_rs_area_without_flag_balken(
+                        let r = this.drawRsAreaWithoutFlagBalken(
                             draw, paper, param, e, balken_element, x, yprof.rs.y, yprof.rs.height);
                         e.renderprop.balken_element = balken_element;
                         rs_area_bounding_box.add_BB(r.bounding_box);
@@ -2793,7 +2793,7 @@ export class DefaultRenderer extends Renderer {
 
         var bb = new graphic.BoundingBox();
 
-        var ce = this.chord_elem_classify(chord, transpose, half_type, key);
+        var ce = this.chordElemClassify(chord, transpose, half_type, key);
         var bases = ce.bases;
         var elems = ce.mid_elem_objs;
 
@@ -3263,11 +3263,11 @@ export class DefaultRenderer extends Renderer {
         if (is_row_edge === null || is_row_edge == false) {
             // 1. 2 boundaries in  differnt rows in the code will be rendered as an adjacent measure, or
             // 2. The adjacent measures in the codes are measured as is
-            draw_type = this.boundary_type_without_line_break(e0, e1);
+            draw_type = this.boundaryTypeWithoutLineBreak(e0, e1);
         } else {
             // 1. The adjacnet measures in the codes are measured in differnt rows
             // 2. 2 boundraies in differnt rows in the code will be rendered as is (i.e. for differnt rows)
-            draw_type = this.boundary_type_with_line_break(e0, e1, side);
+            draw_type = this.boundaryTypeWithLineBreak(e0, e1, side);
         }
 
         //console.log([draw_type, side]);

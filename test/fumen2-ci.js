@@ -157,7 +157,9 @@ let capture = (async(addr, fumenfile, headInfo, base_commit) => {
 
     await browser.close();
     
-    return {numDiffPixels:numDiffPixels, head_full_path:head_full_path, prev_full_path:prev_full_path, diff_full_path:diff_full_path};
+    return {numDiffPixels:numDiffPixels, head_full_path:head_full_path, prev_full_path:prev_full_path, diff_full_path:diff_full_path, 
+        headId:(pngname.includes("workingcopy") ? `Working copy of ${headInfo.commit}` : ` ${headInfo.commit}`),
+        prevId: `${prev_sc_file.commit}`};
 });
 
 let imgtag = function(src){
@@ -191,8 +193,10 @@ let dotest = async (headInfo)=>{
         "tuplet.fumen",
         "multiup.fumen"];
     const results = [];
+
     for(let i=0; i<files.length; ++i){
         let r = await capture(addr,files[i], headInfo, base_commit);
+        if(i==0)  report_html += tablerowtag(["Test Case", "Num Different Pixels", r.headId, r.prevId, "Diff Image"]); 
         results.push(r.numDiffPixels);
         report_html += tablerowtag([
             files[i], r.numDiffPixels,

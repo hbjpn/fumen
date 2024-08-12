@@ -106,6 +106,7 @@ Measures are contents of a measur row. It consists of multiple measures bounded 
 | \|\|:   | Start of repeat |
 | :\|\|   | End of repeat |
 | :\|\|x3   | End of repeat with repeat number |
+| :\|\|xX   | End of repeat with arbitral times : X times |
 | :\|\|:  | End and start of repeat |
 | ./\|/.  | Boundary with overlapping Simile mark |
 
@@ -114,7 +115,8 @@ Measures are contents of a measur row. It consists of multiple measures bounded 
 %SHOW_FOOTER="NO"
 
 [A]
-| A || B ||: C :||: D :|| E  ./|/. ||.
+| A || B ||: C :||: D :|| E  ./|/.  |
+||: F | G :||:x3 A | B :||xX C | D ||. 
 <!-- fumen:end -->
 
 ### Measure contents

@@ -17,7 +17,7 @@ Duration indicator is colon ":" followed by numbers and optional periods indicat
 | C:4_5 :4_5 :4_5 :4_5 :4_5 | Quarter note quintuplet. Duration numbers of 1, 2, 8, 16, 32 or 64 can also be specified with quintuplet mark. Suffix _6 and _7 can be specified with the same manner to indicate sextuplet and septuplet. Not applicable for rests.|
 | :4 | This is the form of omitted chord name but specify only duration informatin. This is benefical for the case where the same chord is maintained for several rhthm slashes. Not applicable for rests.| 
 | C:4~ :4 | The tilde (~) mark indicates the "tie" mark. Rhthm slashes are connected via tie symbol. Not applicable for rests. |
-| <:16 C:4 | The C chord with a half-note duration is syncopated by a 16th-note duration. |
+| <:16 C:4 | The C chord with a half-note duration syncopated by a 16th-note duration. |
 
 
 <!-- fumen:start -->

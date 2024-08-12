@@ -7,6 +7,7 @@
 | C/D        | Chord on bass |
 | /D           | Only on bass |
 | C:4.          | Chord with duration. Example with dotted quarter. See [Duration Indicator](duration-indicator.md) for detail. |
+| <:16 C:2          | Syncopated chord. See [Duration Indicator](duration-indicator.md) for detail. |
 | r:4.          | Rest with duration. |
 | -2-          | Long rest |
 | \|      | Single line boundary |
@@ -15,6 +16,7 @@
 | \|\|:   | Start of repeat |
 | :\|\|   | End of repeat |
 | :\|\|x3   | End of repeat with repeat numbers |
+| :\|\|xX   | End of repeat with arbitral repeat numbers |
 | :\|\|:  | End and start of repeat |
 | ./\|/.  | Boundary with overlapping Simile mark |
 | >       | Right align(speicfy it at the head of row) |
@@ -44,6 +46,7 @@ Variables can be specified with the form of "%VARIABLE_NAME=VALUE".
 | Variable Name        | Value Type          | Description  |
 | ------------- |:-------------:| -----|
 | TITLE     | String      | Title of the song. | 
+| SUB_TITLE     | String      | Sub title of the song. | 
 | ARTIST     | String      | Artist name. | 
 | KEY        | String      | Key of the song. e.g. C, Gm |
 | TRANSPOSE | String\|Integer | Transposed key (String) or transpose interval by integer in semitone unit. See [Transose](transpose.md) for details. |

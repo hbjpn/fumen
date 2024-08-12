@@ -4,6 +4,8 @@
 
 Normal [rest](rest.md) symbols shall be specified with duration indicators.
 
+By combining the "<" symbol with a duration indicator, the following chord is syncopated by the specified time duration.
+
 Duration indicator is colon ":" followed by numbers and optional periods indicating the duration of that chord or rest.
 
 | Markdown | note |
@@ -15,6 +17,7 @@ Duration indicator is colon ":" followed by numbers and optional periods indicat
 | C:4_5 :4_5 :4_5 :4_5 :4_5 | Quarter note quintuplet. Duration numbers of 1, 2, 8, 16, 32 or 64 can also be specified with quintuplet mark. Suffix _6 and _7 can be specified with the same manner to indicate sextuplet and septuplet. Not applicable for rests.|
 | :4 | This is the form of omitted chord name but specify only duration informatin. This is benefical for the case where the same chord is maintained for several rhthm slashes. Not applicable for rests.| 
 | C:4~ :4 | The tilde (~) mark indicates the "tie" mark. Rhthm slashes are connected via tie symbol. Not applicable for rests. |
+| <:16 C:4 | The C chord with a half-note duration is syncopated by a 16th-note duration. |
 
 
 <!-- fumen:start -->
@@ -26,4 +29,8 @@ Duration indicator is colon ":" followed by numbers and optional periods indicat
 
 [Rests]
 |  A:4 r:8. r:16 r:4 | r:1 | r:2 r:2 |
+
+[Syncopation]
+| A:2 B:2  | <:16 C:2 D:2 | 
+
 <!-- fumen:end -->

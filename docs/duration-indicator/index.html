@@ -420,6 +420,7 @@
                 <h1 id="duration-indicator">Duration Indicator</h1>
 <p><a href="../chord/">Chord</a> symbols can be specified with duration indicator and in that case rhythm slahses are drawn together with the staff. </p>
 <p>Normal <a href="../rest/">rest</a> symbols shall be specified with duration indicators.</p>
+<p>By combining the "&lt;" symbol with a duration indicator, the following chord is syncopated by the specified time duration.</p>
 <p>Duration indicator is colon ":" followed by numbers and optional periods indicating the duration of that chord or rest.</p>
 <table>
 <thead>
@@ -457,6 +458,10 @@
 <td>C:4~ :4</td>
 <td>The tilde (~) mark indicates the "tie" mark. Rhthm slashes are connected via tie symbol. Not applicable for rests.</td>
 </tr>
+<tr>
+<td>&lt;:16 C:4</td>
+<td>The C chord with a half-note duration is syncopated by a 16th-note duration.</td>
+</tr>
 </tbody>
 </table>
 <p><div class='fumenbox'><textarea class='fumencode'>%SHOW_FOOTER="NO"
@@ -466,7 +471,10 @@
 | C:4_3 :4_3 :4_3~ :4_5 :4_5 :4_5 :4_5 :4_5  |
 
 [Rests]
-|  A:4 r:8. r:16 r:4 | r:1 | r:2 r:2 |</textarea><div class='score_area'></div></div></p>
+|  A:4 r:8. r:16 r:4 | r:1 | r:2 r:2 |
+
+[Syncopation]
+| A:2 B:2  | <:16 C:2 D:2 |</textarea><div class='score_area'></div></div></p>
                 
               
               

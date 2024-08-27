@@ -528,7 +528,7 @@ export class Chord extends Element {
         this.note_group_list = null;
 
         // Analyze Chord symbol
-        var r = /^(((A|B|C|D|E|F|G)(#|b)?([^/:]*))?(\/(A|B|C|D|E|F|G)(#|b)?)?)(:((([\d_]+)(\.*)(~)?)|(\(.*\))))?/;
+        var r = /^(((A|B|C|D|E|F|G)(#|b)?([^/r:]*))?(\/(A|B|C|D|E|F|G)(#|b)?)?)(r)?(:((([\d_]+)(\.*)(~)?)|(\(.*\))))?/;
         var m = chord_str.match(r);
         //console.log(m);
         // [0] is entire matched string
@@ -553,15 +553,18 @@ export class Chord extends Element {
                 this.is_valid_chord = ret !== null;
             }
             if (m[9]) {
-                if (m[11]) {
-                    var li = Chord.parseLengthIndicator(m[11]);
+                this.is_with_rest = true;
+            }
+            if (m[10]) {
+                if (m[12]) {
+                    var li = Chord.parseLengthIndicator(m[12]);
                     //this.length_s = m[11];
                     //this.length = li.length;
                     this.note_group_list = [{ lengthIndicator: li, note_profiles: null }];
                     //this.tie = li.has_tie;
-                } else if (m[15]) {
+                } else if (m[16]) {
                     // Notes
-                    let ret = Chord.parseChordNotes(m[15]);
+                    let ret = Chord.parseChordNotes(m[16]);
                     if(ret.length > 0) // empty note_group_list does not work
                         this.note_group_list = ret;
                     //console.log(this.note_group_list);

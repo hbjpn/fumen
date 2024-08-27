@@ -496,8 +496,11 @@ export class Renderer {
         if(e instanceof common.Rest) type = "rest";
         else if(e instanceof common.Space) type = "space";
         else if(e instanceof common.Simile) type = "simile";
-        else if(e.note_group_list[0].note_profiles === null) type = "slash";
-        else type = "notes";
+        else if(e instanceof common.Chord){
+            if(e.is_with_rest) type = "rest";
+            else if(e.note_group_list[0].note_profiles === null) type = "slash";
+            else type = "notes";
+        }
 
         let lengthIndicator = null;
         if(e instanceof common.Chord) lengthIndicator = e.note_group_list[0].lengthIndicator;
@@ -686,6 +689,7 @@ export class Renderer {
                 }
             }
         }else if (balken_element.type == "rest") {
+            // e is Rest or Chord(with with_rest flag on)
 
             // This calls the child class's renderRest ... maybe good to refactor
             let r = this.renderRest(
@@ -736,7 +740,7 @@ export class Renderer {
         for (let gbi = 0; gbi < balken.groups.length; ++gbi) {
             //let ys = balken.groups[gbi].balken_element.notes_coord[1]; // This is relative value to rs_y_base
             let g = balken.groups[gbi];
-            if(g.e instanceof common.Rest || g.e instanceof common.Space){
+            if(g.e instanceof common.Rest || g.e instanceof common.Space || (g.e instanceof common.Chord && g.e.is_with_rest) ){
                 balkenGroups.push({type:"a", elem:[g]});
             }else if(g.e instanceof common.Chord && g.balken_element.note_value <= 4){
                 balkenGroups.push({type:"b", elem:[g]});
@@ -744,10 +748,10 @@ export class Renderer {
                 // 8-th and shorter Chord
                 let tmp = [g];
                 let t_gbi = gbi + 1;
-                // Collect contiguous Chord of 8th and shorter and Space.  Space is included intentionally for the case space is inserted between chords with balken.
+                // Collect contiguous Chord(not with rest) of less than 8th duration and Space.  Space is included intentionally for the case space is inserted between chords with balken.
                 while(t_gbi < balken.groups.length){
                     if((balken.groups[t_gbi].e instanceof common.Space) ||
-                       (balken.groups[t_gbi].e instanceof common.Chord && balken.groups[t_gbi].balken_element.note_value >= 8))
+                       (balken.groups[t_gbi].e instanceof common.Chord && (!balken.groups[t_gbi].e.is_with_rest) && balken.groups[t_gbi].balken_element.note_value >= 8))
                     {
                         tmp.push(balken.groups[t_gbi]);
                         ++t_gbi;
@@ -935,7 +939,7 @@ export class Renderer {
 
             let xs = balken_element.notes_coord.x;
 
-            if( e instanceof common.Chord){
+            if( e instanceof common.Chord && (!e.is_with_rest)){
                 if (music_context.tie_info.rs_prev_has_tie) {
                     // NOTE : Tie is always drawn with on-screen coordinates, no scaling apply
 
@@ -1202,7 +1206,8 @@ export class Renderer {
             elements, paper, param, rs_y_base, row_height, bounding_box,
             music_context, x, upper_flag, meas_start_x, meas, draw_scale);
 
-        if(!(elements[0].e instanceof common.Chord) ){
+        if( (!(elements[0].e instanceof common.Chord)) || 
+            (  elements[0].e instanceof common.Chord && elements[0].e.is_with_rest )) {
             return x; //{ x: x, bb: bounding_box };
         }
 

@@ -10466,7 +10466,7 @@ var Chord = /*#__PURE__*/function (_Element7) {
       this.note_group_list = null;
 
       // Analyze Chord symbol
-      var r = /^(((A|B|C|D|E|F|G)(#|b)?([^/:]*))?(\/(A|B|C|D|E|F|G)(#|b)?)?)(:((([\d_]+)(\.*)(~)?)|(\(.*\))))?/;
+      var r = /^(((A|B|C|D|E|F|G)(#|b)?([^/r:]*))?(\/(A|B|C|D|E|F|G)(#|b)?)?)(r)?(:((([\d_]+)(\.*)(~)?)|(\(.*\))))?/;
       var m = chord_str.match(r);
       //console.log(m);
       // [0] is entire matched string
@@ -10489,8 +10489,11 @@ var Chord = /*#__PURE__*/function (_Element7) {
           this.is_valid_chord = ret !== null;
         }
         if (m[9]) {
-          if (m[11]) {
-            var li = Chord.parseLengthIndicator(m[11]);
+          this.is_with_rest = true;
+        }
+        if (m[10]) {
+          if (m[12]) {
+            var li = Chord.parseLengthIndicator(m[12]);
             //this.length_s = m[11];
             //this.length = li.length;
             this.note_group_list = [{
@@ -10498,9 +10501,9 @@ var Chord = /*#__PURE__*/function (_Element7) {
               note_profiles: null
             }];
             //this.tie = li.has_tie;
-          } else if (m[15]) {
+          } else if (m[16]) {
             // Notes
-            var _ret = Chord.parseChordNotes(m[15]);
+            var _ret = Chord.parseChordNotes(m[16]);
             if (_ret.length > 0)
               // empty note_group_list does not work
               this.note_group_list = _ret;
@@ -17812,7 +17815,9 @@ var Renderer = /*#__PURE__*/function () {
       }
 
       var type = null;
-      if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Rest) type = "rest";else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Space) type = "space";else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Simile) type = "simile";else if (e.note_group_list[0].note_profiles === null) type = "slash";else type = "notes";
+      if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Rest) type = "rest";else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Space) type = "space";else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Simile) type = "simile";else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Chord) {
+        if (e.is_with_rest) type = "rest";else if (e.note_group_list[0].note_profiles === null) type = "slash";else type = "notes";
+      }
       var lengthIndicator = null;
       if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Chord) lengthIndicator = e.note_group_list[0].lengthIndicator;else if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Rest) lengthIndicator = e.note_group_list[0].lengthIndicator;
       var balken_element = {
@@ -17960,6 +17965,8 @@ var Renderer = /*#__PURE__*/function () {
           }
         }
       } else if (balken_element.type == "rest") {
+        // e is Rest or Chord(with with_rest flag on)
+
         // This calls the child class's renderRest ... maybe good to refactor
         var _r = this.renderRest(e, paper, draw, x, rs_y_base, "l", row_height, row_height, param);
         bounding_box.add_BB(_r.bb);
@@ -17997,7 +18004,7 @@ var Renderer = /*#__PURE__*/function () {
       for (var gbi = 0; gbi < balken.groups.length; ++gbi) {
         //let ys = balken.groups[gbi].balken_element.notes_coord[1]; // This is relative value to rs_y_base
         var g = balken.groups[gbi];
-        if (g.e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Rest || g.e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Space) {
+        if (g.e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Rest || g.e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Space || g.e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Chord && g.e.is_with_rest) {
           balkenGroups.push({
             type: "a",
             elem: [g]
@@ -18011,9 +18018,9 @@ var Renderer = /*#__PURE__*/function () {
           // 8-th and shorter Chord
           var tmp = [g];
           var t_gbi = gbi + 1;
-          // Collect contiguous Chord of 8th and shorter and Space.  Space is included intentionally for the case space is inserted between chords with balken.
+          // Collect contiguous Chord(not with rest) of less than 8th duration and Space.  Space is included intentionally for the case space is inserted between chords with balken.
           while (t_gbi < balken.groups.length) {
-            if (balken.groups[t_gbi].e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Space || balken.groups[t_gbi].e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Chord && balken.groups[t_gbi].balken_element.note_value >= 8) {
+            if (balken.groups[t_gbi].e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Space || balken.groups[t_gbi].e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Chord && !balken.groups[t_gbi].e.is_with_rest && balken.groups[t_gbi].balken_element.note_value >= 8) {
               tmp.push(balken.groups[t_gbi]);
               ++t_gbi;
             } else {
@@ -18197,7 +18204,7 @@ var Renderer = /*#__PURE__*/function () {
         bounding_box.add(wo_flags.bounding_box); // global RS are bounding box
 
         var xs = balken_element.notes_coord.x;
-        if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Chord) {
+        if (e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Chord && !e.is_with_rest) {
           if (music_context.tie_info.rs_prev_has_tie) {
             // NOTE : Tie is always drawn with on-screen coordinates, no scaling apply
             // Draw tie line
@@ -18381,7 +18388,7 @@ var Renderer = /*#__PURE__*/function () {
 
       // 2. Draw notes and slashes without bars, flags and balkens
       x = this.drawWithoutBalkensWrap(elements, paper, param, rs_y_base, row_height, bounding_box, music_context, x, upper_flag, meas_start_x, meas, draw_scale);
-      if (!(elements[0].e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Chord)) {
+      if (!(elements[0].e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Chord) || elements[0].e instanceof _common_common__WEBPACK_IMPORTED_MODULE_1__.Chord && elements[0].e.is_with_rest) {
         return x; //{ x: x, bb: bounding_box };
       }
 

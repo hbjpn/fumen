@@ -421,6 +421,7 @@
 <p>Two types of rest symbols are supported. Normal rests and long rests.</p>
 <p><strong>Normal rests</strong> are rests of which duration is not more than one measure and is specified by small letter "r" followed by <a href="../duration-indicator/">duration indictor</a>.</p>
 <p><strong>Long rests</strong> are rests of which duration is multiple of one measure and is specified by number of measures to rest enclosed within hyphens.</p>
+<p>You can also draw chord symbol above the rest symbol by putting chord symbol before the "r"(without any space) . Rendering is valid only when the 5 lines are shown. </p>
 <table>
 <thead>
 <tr>
@@ -434,6 +435,10 @@
 <td>Normal rests of whote rest, half rest, quarter rest, eighth rest, sixteenth rest thirty-second rest and six-forth rest.  Please see <a href="../duration-indicator/">duration indicator</a> for the detail of duration indicator syntax.</td>
 </tr>
 <tr>
+<td>Cr:4</td>
+<td>Chord symbol is drawn avobe the rests. Valid only when 5 lines are shown.</td>
+</tr>
+<tr>
 <td>-2-</td>
 <td>Long rests with duration of 2 measures. Arbitral integer can be specified within hyphens.</td>
 </tr>
@@ -442,7 +447,7 @@
 <p><div class='fumenbox'><textarea class='fumencode'>%SHOW_FOOTER="NO"
 
 [Normal rests]
-| C:4 D:4 r:4. E:8 |
+| C:4 D:4 r:4. E:8 Fr:4|
 
 [Long rests]
 | -2- |</textarea><div class='score_area'></div></div></p>

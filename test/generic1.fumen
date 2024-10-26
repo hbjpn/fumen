@@ -46,4 +46,7 @@
 [Z]
 | C | Cm <Fine> | F | F7 <D.S.2> |
                     
-          
+[Rest]
+| r:1 | A r:2 | r:1 r:2 r:4 r:16 r:32 r:64. | 
+| r:1 | A:2 r:2 | r:1 r:2 r:4 r:16 r:32 r:64. |
+| Cr:1 | A:2 Fr:2 | Gr:1 Ar:2 Br:4 Cr:16 Dr:32 Er:64. |           

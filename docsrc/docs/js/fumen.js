@@ -15501,6 +15501,9 @@ var DefaultRenderer = /*#__PURE__*/function (_Renderer) {
             //rest_or_long_rests_detected |= true;
           } else if (_e3 instanceof _common_common__WEBPACK_IMPORTED_MODULE_2__.Rest) {
             // This shall be whole rest
+            if (_e3.note_group_list[0].lengthIndicator.base != 1) {
+              throw "Other than whole rest is here";
+            }
             var _sx2 = meas_start_x + header_width; // header_width does not include header_body_margin
             var _fx2 = meas_end_x - footer_width;
             var cr = _this6.renderRest(_e3, paper, true, (_sx2 + _fx2) / 2, y_body_or_rs_base, "c", yprof.rs.detected ? param.rs_area_height : param.row_height, yprof.rs.detected ? param.rs_area_height : param.base_body_height, param);

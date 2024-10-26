@@ -2386,6 +2386,9 @@ export class DefaultRenderer extends Renderer {
                     //rest_or_long_rests_detected |= true;
                 } else if (e instanceof common.Rest){
                     // This shall be whole rest
+                    if(e.note_group_list[0].lengthIndicator.base != 1){
+                        throw "Other than whole rest is here";
+                    }
                     let sx =
                         meas_start_x +
                         header_width; // header_width does not include header_body_margin
